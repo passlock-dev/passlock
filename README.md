@@ -57,7 +57,7 @@ Passlock is free. Create an account on [passlock.dev][passlock-signup]
 ## Install the dependencies
 
 ```
-cd sveltekit-passkeys
+cd svelte-passkeys
 npm install
 ```
 
@@ -69,19 +69,17 @@ At a minimum you'll need to set three variables:
 2. PUBLIC_PASSLOCK_CLIENT_ID
 3. PASSLOCK_API_KEY
 
-These can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Create a `.env.local` file containing the relevant credentials.
-
-Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]: Tenancy information -> Vite .env -> Download
+These can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Create a `.env.local` file containing the relevant credentials. Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]: `Tenancy information -> Vite .env -> Download`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 # Usage
 
-## Run the app
+Start the dev server
 
 `npm run dev`
 
-**Note:** by default this app runs on port 5174 when in dev mode (see vite.config.ts)
+**Note:** by default this app runs on port 5174 when in dev mode (see [vite.config.ts](vite.config.ts))
 
 ## Create an account and passkey
 
@@ -97,7 +95,7 @@ Logout then navigate to the [login](http://localhost:5174/login) page. You shoul
 
 # Sign in with Google
 
-This app also allows users to register/sign using a Google account. It uses the current [sign in with google][google-signin] code, avoiding redirects.
+This app also allows users to register/sign using a Google account. It uses the latest [sign in with google][google-signin] code, avoiding redirects.
 
 ## Adding Google sign in
 
@@ -121,7 +119,7 @@ This starter project also supports mailbox verification emails (via Passlock):
 
 ![Verifying mailbox ownership](https://github.com/passlock-dev/svelte-passkeys/assets/208345/2f7c06d6-c2a9-40f2-a8db-0a44fa378281)
 
-Take a look at [src/routes/register/+page.svelte](src/routes/register/+page.svelte):
+You can choose to verify an email address during passkey registration. Take a look at [src/routes/register/+page.svelte](src/routes/register/+page.svelte):
 
 ```typescript
 // Email a verification link
