@@ -1,0 +1,45 @@
+{
+  "name": "sveltekit",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "vite dev --host",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-auto": "^3.2.0",
+    "@sveltejs/kit": "^2.5.6",
+    "@sveltejs/vite-plugin-svelte": "^3.1.0",
+    "@tailwindcss/forms": "^0.5.7",
+    "@types/better-sqlite3": "^7.6.9",
+    "@types/google-one-tap": "^1.2.6",
+    "autoprefixer": "^10.4.19",
+    "dedent": "^1.5.3",
+    "lucia": "^3.1.1",
+    "postcss": "^8.4.38",
+    "postcss-load-config": "^5.0.3",
+    "svelte": "^4.2.14",
+    "svelte-check": "^3.6.9",
+    "tailwindcss": "^3.4.3",
+    "tslib": "^2.6.2",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.9"
+  },
+  "type": "module",
+  "dependencies": {
+    "@lucia-auth/adapter-sqlite": "^3.0.1",
+    "@passlock/client": "0.9.7",
+    "better-sqlite3": "^9.5.0",
+    "js-sha256": "^0.11.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@passlock/client": "file:../../Passlock/packages/client",
+      "@passlock/shared": "file:../../Passlock/packages/shared"
+    }
+  },
+  "packageManager": "pnpm@8.15.6+sha256.01c01eeb990e379b31ef19c03e9d06a14afa5250b82e81303f88721c99ff2e6f"
+}
