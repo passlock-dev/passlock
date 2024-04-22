@@ -15,7 +15,7 @@
 </div>
 
 <div align="center">
-  <img align="center" height=50 src="static/repo-banner.svg" />
+  <img align="center" width=550 height=50 src="static/repo-banner.svg" />
 </div>
 
 ![Register a passkey](https://github.com/passlock-dev/svelte-passkeys/assets/208345/9c8a1a66-5f15-4dfd-888d-00f36bdad18a)
