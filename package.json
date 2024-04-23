@@ -7,34 +7,35 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "ncu": "ncu -x @passlock/client -x @passlock/shared",
+    "ncu:save": "ncu -u -x @passlock/client -x @passlock/shared"
   },
   "devDependencies": {
+    "@lucia-auth/adapter-sqlite": "^3.0.1",
+    "@passlock/client": "file:/Users/toby/Development/Passlock/packages/client",
     "@sveltejs/adapter-auto": "^3.2.0",
-    "@sveltejs/kit": "^2.5.6",
+    "@sveltejs/kit": "^2.5.7",
     "@sveltejs/vite-plugin-svelte": "^3.1.0",
     "@tailwindcss/forms": "^0.5.7",
-    "@types/better-sqlite3": "^7.6.9",
+    "@types/better-sqlite3": "^7.6.10",
     "@types/google-one-tap": "^1.2.6",
     "autoprefixer": "^10.4.19",
+    "better-sqlite3": "^9.5.0",
     "dedent": "^1.5.3",
+    "js-sha256": "^0.11.0",
     "lucia": "^3.1.1",
+    "node-check-updates": "^0.1.9",
     "postcss": "^8.4.38",
     "postcss-load-config": "^5.0.3",
-    "svelte": "^4.2.14",
+    "svelte": "^4.2.15",
     "svelte-check": "^3.6.9",
     "tailwindcss": "^3.4.3",
     "tslib": "^2.6.2",
     "typescript": "^5.4.5",
-    "vite": "^5.2.9"
+    "vite": "^5.2.10"
   },
   "type": "module",
-  "dependencies": {
-    "@lucia-auth/adapter-sqlite": "^3.0.1",
-    "@passlock/client": "0.9.7",
-    "better-sqlite3": "^9.5.0",
-    "js-sha256": "^0.11.0"
-  },
   "pnpm": {
     "overrides": {
       "@passlock/client": "file:../../Passlock/packages/client",

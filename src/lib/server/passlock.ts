@@ -12,15 +12,6 @@ export type Principal = {
     email: string
     emailVerified: boolean
   },
-  socials: {
-    google?: {
-      id: string
-      givenName: string
-      familyName: string
-      email: string
-      emailVerified: boolean
-    }
-  },
   authStatement: {
     authType: 'email' | 'passkey'
     userVerified: boolean
@@ -42,7 +33,7 @@ export const exchangeToken = async (token: string): Promise<Principal> => {
   
   const headers = {
     'Accept': 'application/json',
-    'X-API-KEY': PASSLOCK_API_KEY
+    'Authorization': `Bearer ${PASSLOCK_API_KEY}`
   }
   
   const response = await fetch(url, { headers })
