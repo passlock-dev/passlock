@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@lucia-auth/adapter-sqlite": "^3.0.1",
-    "@passlock/client": "0.9.7",
+    "@passlock/client": "0.9.8",
     "@sveltejs/adapter-auto": "^3.2.0",
     "@sveltejs/kit": "^2.5.7",
     "@sveltejs/vite-plugin-svelte": "^3.1.0",

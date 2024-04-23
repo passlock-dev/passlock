@@ -9,8 +9,8 @@ devDependencies:
     specifier: ^3.0.1
     version: 3.0.1(better-sqlite3@9.5.0)(lucia@3.1.1)
   '@passlock/client':
-    specifier: 0.9.7
-    version: 0.9.7(@effect/platform@0.50.3)(fast-check@3.17.2)
+    specifier: 0.9.8
+    version: 0.9.8(@effect/platform@0.50.3)(fast-check@3.17.2)
   '@sveltejs/adapter-auto':
     specifier: ^3.2.0
     version: 3.2.0(@sveltejs/kit@2.5.7)
@@ -736,19 +736,19 @@ packages:
       fastq: 1.17.1
     dev: true
 
-  /@passlock/client@0.9.7(@effect/platform@0.50.3)(fast-check@3.17.2):
-    resolution: {integrity: sha512-T9KQa9JVV84G/4Uk4u8Wh8BsRLoVHhBnxyKIxCckJZMia1Ty9UGUbM1vWuG15Hir1y57PrQH+GGnrpOaebvR5Q==}
+  /@passlock/client@0.9.8(@effect/platform@0.50.3)(fast-check@3.17.2):
+    resolution: {integrity: sha512-1Xw2TycqRTeD971sGFIv8CJ3IHjmY0GCBiz2zigbjH1UlFSZsh0XTc7j7AsH3rr0/oXOmq/aTFRuOvSO1H7rbw==}
     dependencies:
       '@github/webauthn-json': 2.1.1
-      '@passlock/shared': 0.9.7(@effect/platform@0.50.3)(effect@3.0.3)(fast-check@3.17.2)
+      '@passlock/shared': 0.9.8(@effect/platform@0.50.3)(effect@3.0.3)(fast-check@3.17.2)
       effect: 3.0.3
     transitivePeerDependencies:
       - '@effect/platform'
       - fast-check
     dev: true
 
-  /@passlock/shared@0.9.7(@effect/platform@0.50.3)(effect@3.0.3)(fast-check@3.17.2):
-    resolution: {integrity: sha512-vjV3LEz5f1EYfrxqzp61pgNdo/DLlyXyCzPMvzmGnWapq6/tOwVFrhvm0Pfav+CCKigi63kdfxt5qxHv7YLFIg==}
+  /@passlock/shared@0.9.8(@effect/platform@0.50.3)(effect@3.0.3)(fast-check@3.17.2):
+    resolution: {integrity: sha512-6jBfi1gGUy/pRJppfCTZ6gqFWB0fH1pUPUQPDWN3rPsqeRkkhRa9VUnIZgFIA0JvOrCUJF4YM+fvS/zEkMmWDQ==}
     peerDependencies:
       effect: ^3.0.0
     dependencies:
