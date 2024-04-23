@@ -15,11 +15,18 @@
 </div>
 
 <div align="center">
-  <img align="center" height=50 src="static/repo-banner.svg" />
+  <picture align="center">
+    <source srcset="static/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
+    <img align="center" width=550 height=50 src="static/repo-banner.svg" />
+  </picture>
 </div>
+
+<br />
 
 ![Register a passkey](https://github.com/passlock-dev/svelte-passkeys/assets/208345/9c8a1a66-5f15-4dfd-888d-00f36bdad18a)
 <p align="center">Registering a new account and passkey</p>
+
+<br />
 
 # Features
 
@@ -50,7 +57,7 @@ Passlock is free. Create an account on [passlock.dev][passlock-signup]
 ## Install the dependencies
 
 ```
-cd sveltekit-passkeys
+cd svelte-passkeys
 npm install
 ```
 
@@ -62,19 +69,17 @@ At a minimum you'll need to set three variables:
 2. PUBLIC_PASSLOCK_CLIENT_ID
 3. PASSLOCK_API_KEY
 
-These can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Create a `.env.local` file containing the relevant credentials.
-
-Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]: Tenancy information -> Vite .env -> Download
+These can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Create a `.env.local` file containing the relevant credentials. Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]: `Tenancy information -> Vite .env -> Download`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 # Usage
 
-## Run the app
+Start the dev server
 
 `npm run dev`
 
-**Note:** by default this app runs on port 5174 when in dev mode (see vite.config.ts)
+**Note:** by default this app runs on port 5174 when in dev mode (see [vite.config.ts](vite.config.ts))
 
 ## Create an account and passkey
 
@@ -90,7 +95,7 @@ Logout then navigate to the [login](http://localhost:5174/login) page. You shoul
 
 # Sign in with Google
 
-This app also allows users to register/sign using a Google account. It uses the current [sign in with google][google-signin] code, avoiding redirects.
+This app also allows users to register/sign in using a Google account. It uses the latest [sign in with google][google-signin] code, avoiding redirects.
 
 ## Adding Google sign in
 
@@ -114,7 +119,7 @@ This starter project also supports mailbox verification emails (via Passlock):
 
 ![Verifying mailbox ownership](https://github.com/passlock-dev/svelte-passkeys/assets/208345/2f7c06d6-c2a9-40f2-a8db-0a44fa378281)
 
-Take a look at [src/routes/register/+page.svelte](src/routes/register/+page.svelte):
+You can choose to verify an email address during passkey registration. Take a look at [src/routes/register/+page.svelte](src/routes/register/+page.svelte):
 
 ```typescript
 // Email a verification link
@@ -139,9 +144,9 @@ See the emails section of your [Passlock console][passlock-settings]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-# Understand the code
+# Code walkthrough
 
-The code is well documented. If something is not clear or you run into problems please file an issue and I'll update the docs accordingly.
+The code is well documented. If something is not clear or you run into problems please file an [issue][issues] and I'll update the docs accordingly.
 
 ## Passkey registration
 
@@ -151,7 +156,7 @@ See [src/routes/register/+page.svelte](src/routes/register/+page.svelte). The ba
 2. We ask the Passlock library to create a passkey
 3. This call returns a token, representing the new passkey
 4. Attach this token to the form and submit it
-5. In the backend action we verify the token by exchanging it for a Principal
+5. In the [src/routes/register/+page.server.ts](src/routes/register/+page.server.ts) action we verify the token by exchanging it for a Principal
 6. This principal includes a user id
 7. We create a new local user and link the user id
 
@@ -163,11 +168,11 @@ See [src/routes/login/+page.svelte](src/routes/login/+page.svelte). Very similar
 2. We ask the Passlock library to authenticate using a passkey
 3. This call returns a token, representing the passkey authentication
 4. Attach this token to the form and submit it
-5. In the backend action we verify the token by exchanging it for a Principal
+5. In the [src/routes/login/+page.server.ts](src/routes/login/+page.server.ts) action we verify the token by exchanging it for a Principal
 6. This principal includes a user id
 7. Lookup the local user by user id and create a new Lucia session
 
-## Google
+## Google sign in
 
 Again it's very similar. 
 
@@ -176,11 +181,21 @@ Again it's very similar.
 3. This call returns a token, representing the user
 4. As above
 
+## Mailbox verification
+
+During the `registerPasslock()` call you pass a verifyEmail option. The backend action then redirects to [src/routes/verify-email/+page.svelte](src/routes/verify-email/+page.svelte). This route is responsible for:
+
+1. Prompting the user to check their mails (if we emailed a link)
+2. Verifying a code (if we emailed a code)
+3. Verifying a link (when the user clicks the link in the verification email)
+
+**Note:** You can swap out the 6 digit multi field code input for a single field input. The advantage of the single field input is that it supports Apple [autofill of email verification codes](apple-verification-codes). However, I've found this feature to be a bit flaky. 
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 # Questions? Problems
 
-Please file an issue and I'll respond ASAP.
+Please file an [issue][issues] and I'll respond ASAP.
 
 [passlock]: https://passlock.dev
 [lucia]: https://lucia-auth.com
@@ -192,3 +207,5 @@ Please file an issue and I'll respond ASAP.
 [passlock-apikeys]: https://console.passlock.dev/apikeys
 [google-signin]: https://developers.google.com/identity/gsi/web/guides/overview
 [google-client-id]: https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#get_your_google_api_client_id
+[issues]: https://github.com/passlock-dev/svelte-passkeys/issues
+[apple-verification-codes]: https://www.cultofmac.com/819421/ios-17-autofill-verification-codes-safari-mail-app/
