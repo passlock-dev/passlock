@@ -55,13 +55,13 @@
 <div>
   <div use:melt={$root} class="flex items-center gap-2">
     <input 
-      class="block size-[46px] text-center border-gray-200 rounded-md text-sm [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+      class="pin size-[46px]"
       use:melt={$input()} use:focus
     />  
   
     {#each Array.from({ length: 5 }) as _}
       <input 
-        class="block size-[46px] text-center border-gray-200 rounded-md text-sm [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+        class="pin size-[46px]"
         use:melt={$input()}
       />
     {/each}

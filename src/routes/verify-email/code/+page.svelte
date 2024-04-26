@@ -57,19 +57,12 @@
 
       <PIN {form} field="code" on:complete={() => console.log("complete" )} />
 
-      <p class="text-center text-sm text-gray-600 dark:text-gray-400">
+      <p class="text-center text-sm text-base-600 dark:text-base-400">
           Still waiting?
           <button
             on:click={resend} 
             disabled={resendDisabled}
-            class="
-              decoration-2 
-              hover:underline 
-              font-medium 
-              text-blue-600 
-              dark:text-blue-500 
-              disabled:opacity-50 
-              disabled:cursor-not-allowed">
+            class="link-primary">
             Resend the code
           </button>
       </p>      

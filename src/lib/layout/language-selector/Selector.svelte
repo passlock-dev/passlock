@@ -49,11 +49,11 @@
     type="button"
     use:melt={$trigger}
     aria-label="Update dimensions"
-    class="py-2 px-3 inline-flex items-center gap-x-2 text-sm rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800">
+    class="btn btn-secondary font-normal">
     <svelte:component this={selected} />
     <svg
       class:rotate-180={$open}
-      class="flex-shrink-0 size-4 text-gray-600"
+      class="flex-shrink-0 size-4 text-base-600"
       xmlns="http://www.w3.org/2000/svg"
       width="24"
       height="24"
@@ -75,27 +75,27 @@
       aria-labelledby="footer-language-dropdown">
       <button
         on:click={select('en')}
-        class="flex items-center gap-x-2 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300">
+        class="w-full flex items-center gap-x-2 py-2 px-3 rounded-lg text-sm text-base-800 hover:bg-gray-100 dark:text-base-400 dark:hover:bg-gray-700 dark:hover:text-base-300">
         <EN />
       </button>
       <button
         on:click={select('de')}
-        class="flex items-center gap-x-2 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300">
+        class="w-full flex items-center gap-x-2 py-2 px-3 rounded-lg text-sm text-base-800 hover:bg-gray-100 dark:text-base-400 dark:hover:bg-gray-700 dark:hover:text-base-300">
         <DE />
       </button>
       <button
         on:click={select('dk')}
-        class="flex items-center gap-x-2 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300">
+        class="w-full flex items-center gap-x-2 py-2 px-3 rounded-lg text-sm text-base-800 hover:bg-gray-100 dark:text-base-400 dark:hover:bg-gray-700 dark:hover:text-base-300">
         <DK />
       </button>
       <button
         on:click={select('it')}
-        class="flex items-center gap-x-2 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300">
+        class="w-full flex items-center gap-x-2 py-2 px-3 rounded-lg text-sm text-base-800 hover:bg-gray-100 dark:text-base-400 dark:hover:bg-gray-700 dark:hover:text-base-300">
         <IT />
       </button>
       <button
         on:click={select('jp')}
-        class="flex items-center gap-x-2 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300">
+        class="w-full flex items-center gap-x-2 py-2 px-3 rounded-lg text-sm text-base-800 hover:bg-gray-100 dark:text-base-400 dark:hover:bg-gray-700 dark:hover:text-base-300">
         <JP />
       </button>
     </div>

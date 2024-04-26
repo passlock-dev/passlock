@@ -40,7 +40,7 @@
       </SubHeading>
     </div>
 
-    <p class="text-center text-sm text-gray-600 dark:text-gray-400">
+    <p class="text-center text-sm text-base-600 dark:text-base-400">
       Still waiting?
       <button
         on:click={resend} 

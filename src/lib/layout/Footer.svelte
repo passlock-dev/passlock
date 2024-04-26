@@ -14,7 +14,7 @@
         aria-label="Brand">
         {PUBLIC_ORG_NAME}
       </a>
-      <p class="mt-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+      <p class="mt-3 text-xs sm:text-sm text-base-600 dark:text-base-400">
         © 2024 {PUBLIC_ORG_NAME}
       </p>
     </div>
@@ -22,36 +22,32 @@
 
     <div>
       <h4
-        class="text-xs font-semibold text-gray-900 uppercase dark:text-gray-100">
+        class="text-xs font-semibold text-base-900 uppercase dark:text-base-100">
         Product
       </h4>
 
       <div class="mt-3 grid space-y-3 text-sm">
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Pricing
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Changelog
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Docs
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Download
           </a>
         </p>
@@ -61,29 +57,26 @@
 
     <div>
       <h4
-        class="text-xs font-semibold text-gray-900 uppercase dark:text-gray-100">
+        class="text-xs font-semibold text-base-900 uppercase dark:text-base-100">
         Company
       </h4>
 
       <div class="mt-3 grid space-y-3 text-sm">
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             About us
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Blog
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Careers
           </a>
           <span class="inline text-blue-600 dark:text-blue-500">
@@ -92,22 +85,19 @@
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Customers
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Newsroom
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Sitemap
           </a>
         </p>
@@ -117,43 +107,38 @@
 
     <div>
       <h4
-        class="text-xs font-semibold text-gray-900 uppercase dark:text-gray-100">
+        class="text-xs font-semibold text-base-900 uppercase dark:text-base-100">
         Resources
       </h4>
 
       <div class="mt-3 grid space-y-3 text-sm">
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Community
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Help & Support
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             eBook
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             What's New
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Status
           </a>
         </p>
@@ -163,29 +148,26 @@
 
     <div>
       <h4
-        class="text-xs font-semibold text-gray-900 uppercase dark:text-gray-100">
+        class="text-xs font-semibold text-base-900 uppercase dark:text-base-100">
         Developers
       </h4>
 
       <div class="mt-3 grid space-y-3 text-sm">
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Api
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Status
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             GitHub
           </a>
           <span class="inline text-blue-600 dark:text-blue-500">— New</span>
@@ -193,22 +175,20 @@
       </div>
 
       <h4
-        class="mt-7 text-xs font-semibold text-gray-900 uppercase dark:text-gray-100">
+        class="mt-7 text-xs font-semibold text-base-900 uppercase dark:text-base-100">
         Industries
       </h4>
 
       <div class="mt-3 grid space-y-3 text-sm">
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Financial Services
           </a>
         </p>
         <p>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Education
           </a>
         </p>
@@ -218,25 +198,22 @@
   </div>
   <!-- End Grid -->
 
-  <div class="pt-5 mt-5 border-t border-gray-200 dark:border-gray-700">
+  <div class="pt-5 mt-5 border-t border-base-200 dark:border-gray-700">
     <div class="sm:flex sm:justify-between sm:items-center">
       <div class="flex items-center gap-x-3">
         <LangSelector />
 
         <div class="space-x-4 text-sm ms-4">
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Terms
           </a>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Privacy
           </a>
           <a
-            class="inline-flex gap-x-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-            href="#">
+            class="link-secondary" href="#">
             Status
           </a>
         </div>
@@ -250,7 +227,7 @@
             aria-label="Brand">
             Brand
           </a>
-          <p class="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+          <p class="mt-1 text-xs sm:text-sm text-base-600 dark:text-base-400">
             © 2022 Preline.
           </p>
         </div>
@@ -258,7 +235,7 @@
         <!-- Social Brands -->
         <div class="space-x-4">
           <a
-            class="inline-block text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
+            class="inline-block text-base-500 hover:text-base-800 dark:hover:text-base-200"
             href="#">
             <svg
               class="flex-shrink-0 size-4"
@@ -272,7 +249,7 @@
             </svg>
           </a>
           <a
-            class="inline-block text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
+            class="inline-block text-base-500 hover:text-base-800 dark:hover:text-base-200"
             href="#">
             <svg
               class="flex-shrink-0 size-4"
@@ -286,7 +263,7 @@
             </svg>
           </a>
           <a
-            class="inline-block text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
+            class="inline-block text-base-500 hover:text-base-800 dark:hover:text-base-200"
             href="#">
             <svg
               class="flex-shrink-0 size-4"

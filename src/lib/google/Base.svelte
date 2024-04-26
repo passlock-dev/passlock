@@ -99,4 +99,5 @@
 <div bind:this={googleBtnWrapper} class="hidden" />
 
 <slot {click} />
+
 <slot name="error" {error} />

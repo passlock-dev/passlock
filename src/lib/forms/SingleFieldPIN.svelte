@@ -58,25 +58,7 @@
   name="code"
   autocomplete="one-time-code"
   maxlength="6"
-  class="
-    font-mono
-    text-lg
-    text-center
-    tracking-[0.5em]
-    w-full
-    p-2
-    border-gray-200
-    rounded-md
-    [&::-webkit-outer-spin-button]:appearance-none
-    [&::-webkit-inner-spin-button]:appearance-none
-    focus:border-blue-500
-    focus:ring-blue-500
-    disabled:opacity-50
-    disabled:pointer-events-none
-    dark:bg-slate-900
-    dark:border-gray-700
-    dark:text-gray-400
-    dark:focus:ring-gray-600" />
+  class="pin text-lg tracking-[0.5em] w-full" />
 
   {#if $errors}
     <div class="mt-2 text-sm text-red-600 dark:text-red-400">

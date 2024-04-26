@@ -24,7 +24,7 @@
     alt="Gravatar for {user.givenName} {user.familyName}" />
   <span
     use:melt={$fallback}
-    class="text-lg font-medium text-gray-700 uppercase">
+    class="text-lg font-medium text-base-700 uppercase">
     {user.initials}
   </span>
 </div>

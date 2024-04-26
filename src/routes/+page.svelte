@@ -8,12 +8,12 @@
   <div class="grid md:grid-cols-2 gap-4 md:gap-8 xl:gap-20 md:items-center">
     <div>
       <h1
-        class="block text-3xl font-bold text-gray-800 sm:text-4xl lg:text-6xl lg:leading-tight dark:text-white">
-        Start your journey with <span class="text-blue-600">
+        class="block text-3xl font-bold text-base-800 sm:text-4xl lg:text-6xl lg:leading-tight dark:text-white">
+        Start your journey with <span class="text-primary-600">
           {PUBLIC_ORG_NAME}
         </span>
       </h1>
-      <p class="mt-3 text-lg text-gray-800 dark:text-gray-400">
+      <p class="mt-3 text-lg text-base-800 dark:text-base-50">
         Hand-picked professionals and expertly crafted components, designed for
         any kind of entrepreneur.
       </p>
@@ -22,7 +22,7 @@
       <div class="mt-7 grid gap-3 w-full sm:inline-flex">
         <a
           href="/register"
-          class="py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+          class="btn btn-primary py-3 px-4">
           Get started
           <svg
             class="flex-shrink-0 size-4"
@@ -38,8 +38,9 @@
             <path d="m9 18 6-6-6-6" />
           </svg>
         </a>
+
         <a
-          class="py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800"
+          class="btn btn-secondary"
           href="/contact">
           Contact sales team
         </a>
@@ -52,7 +53,7 @@
         <div class="py-5">
           <div class="flex space-x-1">
             <svg
-              class="size-4 text-gray-800 dark:text-gray-200"
+              class="size-4 text-base-800 dark:text-base-200"
               width="51"
               height="51"
               viewBox="0 0 51 51"
@@ -63,7 +64,7 @@
                 fill="currentColor" />
             </svg>
             <svg
-              class="size-4 text-gray-800 dark:text-gray-200"
+              class="size-4 text-base-800 dark:text-base-200"
               width="51"
               height="51"
               viewBox="0 0 51 51"
@@ -74,7 +75,7 @@
                 fill="currentColor" />
             </svg>
             <svg
-              class="size-4 text-gray-800 dark:text-gray-200"
+              class="size-4 text-base-800 dark:text-base-200"
               width="51"
               height="51"
               viewBox="0 0 51 51"
@@ -85,7 +86,7 @@
                 fill="currentColor" />
             </svg>
             <svg
-              class="size-4 text-gray-800 dark:text-gray-200"
+              class="size-4 text-base-800 dark:text-base-200"
               width="51"
               height="51"
               viewBox="0 0 51 51"
@@ -96,7 +97,7 @@
                 fill="currentColor" />
             </svg>
             <svg
-              class="size-4 text-gray-800 dark:text-gray-200"
+              class="size-4 text-base-800 dark:text-base-200"
               width="51"
               height="51"
               viewBox="0 0 51 51"
@@ -108,7 +109,7 @@
             </svg>
           </div>
 
-          <p class="mt-3 text-sm text-gray-800 dark:text-gray-200">
+          <p class="mt-3 text-sm text-base-800 dark:text-base-200">
             <span class="font-bold">4.6</span>
              /5 - from 12k reviews
           </p>
@@ -116,7 +117,7 @@
           <div class="mt-5">
             <!-- Star -->
             <svg
-              class="h-auto w-16 text-gray-800 dark:text-white"
+              class="h-auto w-16 text-base-800 dark:text-white"
               width="80"
               height="27"
               viewBox="0 0 80 27"
@@ -150,7 +151,7 @@
         <div class="py-5">
           <div class="flex space-x-1">
             <svg
-              class="size-4 text-gray-800 dark:text-gray-200"
+              class="size-4 text-base-800 dark:text-base-200"
               width="51"
               height="51"
               viewBox="0 0 51 51"
@@ -161,7 +162,7 @@
                 fill="currentColor" />
             </svg>
             <svg
-              class="size-4 text-gray-800 dark:text-gray-200"
+              class="size-4 text-base-800 dark:text-base-200"
               width="51"
               height="51"
               viewBox="0 0 51 51"
@@ -172,7 +173,7 @@
                 fill="currentColor" />
             </svg>
             <svg
-              class="size-4 text-gray-800 dark:text-gray-200"
+              class="size-4 text-base-800 dark:text-base-200"
               width="51"
               height="51"
               viewBox="0 0 51 51"
@@ -183,7 +184,7 @@
                 fill="currentColor" />
             </svg>
             <svg
-              class="size-4 text-gray-800 dark:text-gray-200"
+              class="size-4 text-base-800 dark:text-base-200"
               width="51"
               height="51"
               viewBox="0 0 51 51"
@@ -194,7 +195,7 @@
                 fill="currentColor" />
             </svg>
             <svg
-              class="size-4 text-gray-800 dark:text-gray-200"
+              class="size-4 text-base-800 dark:text-base-200"
               width="51"
               height="51"
               viewBox="0 0 51 51"
@@ -209,7 +210,7 @@
             </svg>
           </div>
 
-          <p class="mt-3 text-sm text-gray-800 dark:text-gray-200">
+          <p class="mt-3 text-sm text-base-800 dark:text-base-200">
             <span class="font-bold">4.8</span>
              /5 - from 5k reviews
           </p>
@@ -217,7 +218,7 @@
           <div class="mt-5">
             <!-- Star -->
             <svg
-              class="h-auto w-16 text-gray-800 dark:text-white"
+              class="h-auto w-16 text-base-800 dark:text-white"
               width="110"
               height="28"
               viewBox="0 0 110 28"

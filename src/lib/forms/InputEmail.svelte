@@ -54,7 +54,7 @@
 </script>
 
 <div>
-  <label for={id} class="block text-sm mb-2 dark:text-white">{label}</label>
+  <label for={id} class="block text-sm mb-2 text-base-950 dark:text-white">{label}</label>
   <div class="relative">
     <input
       {id}
@@ -65,25 +65,7 @@
       bind:value={$value}
       {...$constraints}
       {...$$restProps}
-      class="
-        py-3
-        px-4
-        block
-        w-full
-        rounded-lg
-        text-sm
-        read-only:opacity-50
-        read-only:pointer-events-none
-        focus:border-blue-500
-        bg-white
-        dark:bg-slate-900
-        text-black
-        dark:text-gray-400
-        border-gray-200 
-        dark:border-gray-700
-        aria-invalid:border-red-600
-        focus:ring-blue-500
-        dark:focus:ring-gray-600" />
+      class="input" />
 
     {#if $errors}
       <div class="absolute inset-y-0 end-0 flex items-center pointer-events-none pe-3">
@@ -103,7 +85,7 @@
   {/if}
 
   {#if $$slots.description}
-    <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+    <div class="mt-2 text-sm text-base-600 dark:text-base-400">
       <slot name="description" />
     </div>
   {/if}  

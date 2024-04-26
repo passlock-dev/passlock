@@ -24,7 +24,7 @@
     aria-label="Global">
     <div class="flex items-center justify-between">
       <a
-        class="flex-none text-xl font-semibold text-slate-800 dark:text-slate-100"
+        class="flex-none text-xl font-semibold text-base-800 dark:text-base-100"
         href="/">
         {PUBLIC_ORG_NAME}
       </a>

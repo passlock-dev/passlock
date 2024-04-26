@@ -1,3 +1,5 @@
+const colors = require('tailwindcss/colors')
+
 /** @type {import('tailwindcss').Config}*/
 const config = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
@@ -6,6 +8,10 @@ const config = {
     extend: {
       aria: {
         invalid: 'invalid="true"',
+      },
+      colors: {
+        base: colors.slate,
+        primary: colors.blue
       },
     }
   },

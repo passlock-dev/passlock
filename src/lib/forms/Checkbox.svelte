@@ -58,18 +58,7 @@
       bind:checked={$value}
       {...$constraints}
       {...$$restProps}
-      class="
-        cursor-pointer
-        shrink-0
-        border-gray-200
-        rounded
-        text-blue-600
-        focus:ring-blue-500
-        dark:bg-gray-800
-        dark:border-gray-700
-        dark:checked:bg-blue-500
-        dark:checked:border-blue-500
-        dark:focus:ring-offset-gray-800" />
+      class="checkbox" />
   
     <label for={id} class="cursor-pointer text-sm dark:text-white">
       <slot name="label" />
@@ -83,7 +72,7 @@
   {/if}
 
   {#if $$slots.description}
-    <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+    <div class="mt-2 text-sm text-base-700 dark:text-base-400">
       <slot name="description" />
     </div>
   {/if}
