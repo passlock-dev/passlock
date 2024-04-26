@@ -1,9 +1,67 @@
 <script lang="ts">
-  import { PUBLIC_ORG_NAME } from '$env/static/public'
+  import {
+    PUBLIC_ORG_NAME,
+    PUBLIC_PASSLOCK_CLIENT_ID,
+    PUBLIC_PASSLOCK_ENDPOINT,
+    PUBLIC_PASSLOCK_TENANCY_ID
+  } from '$env/static/public'
+  import CenteredPanel from '$lib/forms/CenteredPanel.svelte'
+  import Checkbox from '$lib/forms/Checkbox.svelte'
+  import Divider from '$lib/forms/Divider.svelte'
+  import Heading from '$lib/forms/Heading.svelte'
+  import InputEmail from '$lib/forms/InputEmail.svelte'
+  import InputText from '$lib/forms/InputText.svelte'
+  import PoweredBy from '$lib/forms/PoweredBy.svelte'
+  import SubHeading from '$lib/forms/SubHeading.svelte'
+  import SubmitButton from '$lib/forms/SubmitButton.svelte'
+  import Google from '$lib/icons/Google.svelte'
+  import Passkey from '$lib/icons/Passkey.svelte'
+  import Link from '$lib/layout/Link.svelte'
+  import GoogleButton from '$lib/google/Button.svelte'
+  import { SveltePasslock, saveEmailLocally, updateForm } from '$lib/passlock'
+  import type { VerifyEmail } from '@passlock/client'
+  import { superForm } from 'sveltekit-superforms'
+  import { valibotClient } from 'sveltekit-superforms/adapters'
+  import { registrationFormSchema } from '$lib/schemas.js'
+  import { onMount } from 'svelte'
+  import { page } from '$app/stores'
+
+  export let data
+
+  const endpoint = PUBLIC_PASSLOCK_ENDPOINT
+  const tenancyId = PUBLIC_PASSLOCK_TENANCY_ID
+  const clientId = PUBLIC_PASSLOCK_CLIENT_ID
+
+  const passlock = new SveltePasslock({ tenancyId, clientId, endpoint })
+  const redirectUrl = new URL('/verify-email/link', $page.url).href
+  const verifyEmail: VerifyEmail = { method: 'link', redirectUrl }
+
+  const form = superForm(data.form, {
+    validators: valibotClient(registrationFormSchema),
+    delayMs: 0,
+
+    onSubmit: async ({ formData, cancel }) => {
+      // we don't yet have a token so register a passkey to obtain one
+      await passlock.register({ form, formData, cancel, verifyEmail })
+    },
+
+    onResult: () => {
+      if ($superformData.authType === 'passkey') {
+        saveEmailLocally($superformData.email)
+      }
+    }
+  })
+
+  onMount(async () => {
+    await passlock.preConnect()
+  })
+
+  const { enhance, delayed, form: superformData } = form
+  $: readonly = $superformData.token?.length > 0 ? 'readonly' : undefined
 </script>
 
 <!-- Hero -->
-<div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8">
+<div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 lg:py-12">
   <!-- Grid -->
   <div class="grid md:grid-cols-2 gap-4 md:gap-8 xl:gap-20 md:items-center">
     <div>
@@ -20,9 +78,7 @@
 
       <!-- Buttons -->
       <div class="mt-7 grid gap-3 w-full sm:inline-flex">
-        <a
-          href="/register"
-          class="btn btn-primary py-3 px-4">
+        <a href="/" class="btn btn-primary py-3 px-4">
           Get started
           <svg
             class="flex-shrink-0 size-4"
@@ -39,11 +95,7 @@
           </svg>
         </a>
 
-        <a
-          class="btn btn-secondary"
-          href="/contact">
-          Contact sales team
-        </a>
+        <a class="btn btn-secondary" href="/contact">Contact sales team</a>
       </div>
       <!-- End Buttons -->
 
@@ -111,7 +163,7 @@
 
           <p class="mt-3 text-sm text-base-800 dark:text-base-200">
             <span class="font-bold">4.6</span>
-             /5 - from 12k reviews
+            /5 - from 12k reviews
           </p>
 
           <div class="mt-5">
@@ -212,7 +264,7 @@
 
           <p class="mt-3 text-sm text-base-800 dark:text-base-200">
             <span class="font-bold">4.8</span>
-             /5 - from 5k reviews
+            /5 - from 5k reviews
           </p>
 
           <div class="mt-5">
@@ -241,43 +293,64 @@
     <!-- End Col -->
 
     <div class="relative ms-4">
-      <img
-        class="w-full rounded-md"
-        src="https://images.unsplash.com/photo-1665686377065-08ba896d16fd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=700&h=800&q=80"
-        alt="Happy users" />
-      <div
-        class="absolute inset-0 -z-[1] bg-gradient-to-tr from-gray-200 via-white/0 to-white/0 size-full rounded-md mt-4 -mb-4 me-4 -ms-4 lg:mt-6 lg:-mb-6 lg:me-6 lg:-ms-6 dark:from-slate-800 dark:via-slate-900/0 dark:to-slate-900/0">
-      </div>
+      <CenteredPanel>
+        <div class="text-center">
+          <Heading>Sign up</Heading>
+          <SubHeading>
+            Already have an account?
+            <Link href="/login">Sign in here</Link>
+          </SubHeading>
+        </div>
 
-      <!-- SVG-->
-      <div class="absolute bottom-0 start-0">
-        <svg
-          class="w-2/3 ms-auto h-auto text-white dark:text-slate-900"
-          width="630"
-          height="451"
-          viewBox="0 0 630 451"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg">
-          <rect x="531" y="352" width="99" height="99" fill="currentColor" />
-          <rect x="140" y="352" width="106" height="99" fill="currentColor" />
-          <rect x="482" y="402" width="64" height="49" fill="currentColor" />
-          <rect x="433" y="402" width="63" height="49" fill="currentColor" />
-          <rect x="384" y="352" width="49" height="50" fill="currentColor" />
-          <rect x="531" y="328" width="50" height="50" fill="currentColor" />
-          <rect x="99" y="303" width="49" height="58" fill="currentColor" />
-          <rect x="99" y="352" width="49" height="50" fill="currentColor" />
-          <rect x="99" y="392" width="49" height="59" fill="currentColor" />
-          <rect x="44" y="402" width="66" height="49" fill="currentColor" />
-          <rect x="234" y="402" width="62" height="49" fill="currentColor" />
-          <rect x="334" y="303" width="50" height="49" fill="currentColor" />
-          <rect x="581" width="49" height="49" fill="currentColor" />
-          <rect x="581" width="49" height="64" fill="currentColor" />
-          <rect x="482" y="123" width="49" height="49" fill="currentColor" />
-          <rect x="507" y="124" width="49" height="24" fill="currentColor" />
-          <rect x="531" y="49" width="99" height="99" fill="currentColor" />
-        </svg>
-      </div>
-      <!-- End SVG-->
+        <div class="mt-5">
+          <GoogleButton operation="register" on:principal={updateForm(form)} />
+
+          <Divider />
+
+          <form method="POST" use:enhance>
+            <div class="flex flex-col gap-4">
+              <InputEmail
+                {form}
+                field="email"
+                label="Email address"
+                autocomplete="email"
+                {readonly} />
+              <InputText
+                {form}
+                field="givenName"
+                label="First name"
+                autocomplete="given-name"
+                {readonly} />
+              <InputText
+                {form}
+                field="familyName"
+                label="Last name"
+                autocomplete="family-name"
+                {readonly} />
+
+              <Checkbox {form} field="acceptTerms">
+                <div slot="label">
+                  I accept the <Link>Terms and Conditions</Link>
+                </div>
+              </Checkbox>
+
+              {#if $superformData.token}
+                <SubmitButton requestPending={$delayed}>
+                  <Google slot="icon" />
+                  Sign up with Google
+                </SubmitButton>
+              {:else}
+                <SubmitButton requestPending={$delayed}>
+                  <Passkey slot="icon" />
+                  Create passkey
+                </SubmitButton>
+              {/if}
+            </div>
+
+            <PoweredBy />
+          </form>
+        </div>
+      </CenteredPanel>
     </div>
     <!-- End Col -->
   </div>

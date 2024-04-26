@@ -32,6 +32,6 @@ export const actions = {
       ...sessionCookie.attributes
     })
 
-    redirect(302, '/')
+    redirect(302, '/app')
   }
 } satisfies Actions

@@ -44,7 +44,7 @@ export const actions = {
     } else if (authType === 'passkey' && verifyEmail === 'link') {
       redirect(302, `/verify-email/awaiting-link`)
     } else {
-      redirect(302, '/')
+      redirect(302, '/app')
     }
   }
 } satisfies Actions

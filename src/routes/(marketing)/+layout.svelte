@@ -1,9 +1,10 @@
 <script lang="ts">
-  import '../app.pcss'
+  import '../../app.pcss'
   import Footer from '$lib/layout/Footer.svelte'
   import Header from '$lib/layout/Header.svelte'
   import type { LayoutData } from './$types'
   import { ModeWatcher } from 'mode-watcher'
+  import Banner from '$lib/layout/Banner.svelte'
 
   export let data: LayoutData
 </script>
@@ -12,9 +13,12 @@
   <script src="https://accounts.google.com/gsi/client" async></script>
 </svelte:head>
 
+<ModeWatcher />
+
 <div class="h-screen flex flex-col bg-white dark:bg-slate-950">
+  <Banner />
+  
   <Header user={data.user} />
-  <ModeWatcher />
 
   <main class="pt-2 pb-8 px-8 grow">
     <slot />
