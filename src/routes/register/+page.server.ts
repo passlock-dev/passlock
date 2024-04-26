@@ -1,35 +1,50 @@
-import { error, redirect } from '@sveltejs/kit';
-import type { Actions } from './$types';
-import { exchangeToken } from '$lib/server/passlock';
-import { lucia } from "$lib/server/auth";
-import { createUser } from '$lib/server/db';
+// +page.server.ts
+import { superValidate } from 'sveltekit-superforms'
+import { valibot } from 'sveltekit-superforms/adapters'
+import type { PageServerLoad } from './$types'
+import { registrationFormSchema } from '$lib/schemas'
+
+import { fail, redirect } from '@sveltejs/kit'
+import type { Actions } from './$types'
+import { exchangeToken } from '$lib/server/passlock'
+import { lucia } from '$lib/server/auth'
+import { createUser } from '$lib/server/db'
+
+export const load: PageServerLoad = async () => {
+  return {
+    form: await superValidate(valibot(registrationFormSchema))
+  }
+}
 
 export const actions = {
-	default: async ({ request, cookies }) => {
-		const formData = await request.formData()
+  default: async ({ request, cookies }) => {
+    const form = await superValidate(request, valibot(registrationFormSchema))
 
-    const token = formData.get('token')
-    if (token == null || typeof token === 'object') {
-      error(400, "Expected token to be a string")
+    if (!form.valid) {
+      return fail(400, { form })
     }
 
-    const principal = await exchangeToken(token)
-    
-    createUser(principal.user)
-    const session = await lucia.createSession(principal.user.id, { })
-    const sessionCookie = lucia.createSessionCookie(session.id);
-		
+    console.log({data: form.data })
+
+    const principal = await exchangeToken(form.data.token)
+    const user = createUser(principal.user)
+    const session = await lucia.createSession(user.id, {})
+    const sessionCookie = lucia.createSessionCookie(session.id)
+
     cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: "/",
-			...sessionCookie.attributes
-		});
+      path: '/',
+      ...sessionCookie.attributes
+    })
 
-    const verifyEmailMethod = formData.get('verifyEmailMethod')
+    const authType = form.data.authType
+    const verifyEmail = form.data.verifyEmail
 
-    if (verifyEmailMethod) {
-      redirect(302, `/verify-email?method=${verifyEmailMethod}`)
+    if (authType === 'passkey' && verifyEmail === 'code') {
+      redirect(302, `/verify-email/code`)
+    } else if (authType === 'passkey' && verifyEmail === 'link') {
+      redirect(302, `/verify-email/awaiting-link`)
     } else {
-      redirect(302, "/")
+      redirect(302, '/')
     }
-	}
-} satisfies Actions;
+  }
+} satisfies Actions

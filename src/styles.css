@@ -4,7 +4,8 @@
   --primary-color__disabled: #cccbdc;
 }
 
-html, body {
+html,
+body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -33,7 +34,7 @@ html, body {
   background-color: var(--primary-color__hover);
 }
 
-main { 
+main {
   padding: 1em;
 }
 
@@ -43,7 +44,8 @@ main {
   max-width: 400px;
 }
 
-.form input[type=text], input[type=email] {
+.form input[type='text'],
+input[type='email'] {
   width: 100%;
   padding: 12px 20px;
   margin: 8px 0;
@@ -62,7 +64,7 @@ main {
   display: inline-block;
 }
 
-.form input[type=submit] {
+.form input[type='submit'] {
   width: 100%;
   background-color: var(--primary-color);
   color: white;
@@ -74,11 +76,11 @@ main {
   cursor: pointer;
 }
 
-.form input[type=submit]:hover {
+.form input[type='submit']:hover {
   background-color: var(--primary-color__hover);
 }
 
-.form input[type=submit]:disabled {
+.form input[type='submit']:disabled {
   background-color: var(--primary-color__disabled);
   cursor: not-allowed;
 }

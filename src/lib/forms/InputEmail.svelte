@@ -1,40 +1,110 @@
-<script lang="ts">
-  export let value: string
-  export let name: string
-  export let displayName: string
-  export let error = ''
+<!--
+  @component
+  Accessible email input field that pairs with a Superform.
+
+  Usage:
+
+  ```html
+  <EmailInput {form} field="email" label="Email address" autocomplete="email">
+    <div slot="description">lorem ipsum dolor sit amet</div>
+  </EmailInput>
+  ```
+
+  **Important** - pass in a `SuperForm`, not `SuperFormData` i.e.
+
+   ```javascript
+  // correct
+  const form = superform()
+  // wrong
+  const { form } = superform()
+  ```
+-->
+<script lang="ts" generics="T extends Record<string, unknown>">
+  import { generateId } from './utils'
+
+  import {
+    formFieldProxy,
+    type SuperForm,
+    type FormPathLeaves
+  } from 'sveltekit-superforms'
+
+  import FieldError from '$lib/icons/FieldError.svelte'
+
+  /**
+   * Make sure you pass in a raw Superform, i.e. const form = superform(...),
+   * not const { form } = superform(...)
+   */
+  export let form: SuperForm<T>
   
-  $:border = error ? 'border-red-600' : 'border-gray-200 dark:border-gray-700'
+  /**
+   * A field on the form e.g. "email"
+   */
+  export let field: FormPathLeaves<T>
+
+  /**
+   * Display label e.g. "Email address"
+   */  
+  export let label: string
+
+  const { value, errors, constraints } = formFieldProxy(form, field)
+
+  $:invalid = Array.isArray($errors) && $errors.length ? true : undefined
+  $:id = `${field}-${generateId()}`
+  $:errId = invalid ? `${id}-error` : undefined
 </script>
 
 <div>
-  <label for={name} class="block text-sm mb-2 dark:text-white">{displayName}</label>
+  <label for={id} class="block text-sm mb-2 dark:text-white">{label}</label>
   <div class="relative">
-    <input 
-      bind:value 
-      type="email" 
-      id={name} 
-      name={name} 
-      autocomplete="email"       
-      required={$$restProps.required}
-      disabled={$$restProps.disabled}
+    <input
+      {id}
+      name={field}
+      type="email"
+      aria-invalid={invalid}
+      aria-describedby={errId}
+      bind:value={$value}
+      {...$constraints}
+      {...$$restProps}
       class="
-        py-3 
-        px-4 
-        block 
-        w-full 
-        {border}
-        rounded-lg 
-        text-sm 
-        focus:border-blue-500 
-        focus:ring-blue-500 
-        disabled:opacity-50 
-        disabled:pointer-events-none 
-        dark:bg-slate-900 
-        dark:text-gray-400 
+        py-3
+        px-4
+        block
+        w-full
+        rounded-lg
+        text-sm
+        read-only:opacity-50
+        read-only:pointer-events-none
+        focus:border-blue-500
+        bg-white
+        dark:bg-slate-900
+        text-black
+        dark:text-gray-400
+        border-gray-200 
+        dark:border-gray-700
+        aria-invalid:border-red-600
+        focus:ring-blue-500
         dark:focus:ring-gray-600" />
-    {#if error}
-      <div class="mt-2 text-sm text-red-600 dark:text-red-400">{error}</div>
+
+    {#if $errors}
+      <div class="absolute inset-y-0 end-0 flex items-center pointer-events-none pe-3">
+        <FieldError />
+      </div>
     {/if}
   </div>
+  
+  {#if $errors}
+    <div id={errId} class="mt-2 text-sm text-red-600 dark:text-red-400">
+      <ul>
+        {#each $errors as error}
+          <li>{error}</li>
+        {/each}
+      </ul>
+    </div>
+  {/if}
+
+  {#if $$slots.description}
+    <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+      <slot name="description" />
+    </div>
+  {/if}  
 </div>

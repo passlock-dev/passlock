@@ -1,7 +1,7 @@
-import sqlite from "better-sqlite3";
-import dedent from 'dedent';
+import sqlite from 'better-sqlite3'
+import dedent from 'dedent'
 
-export const db = sqlite("./sqlite.db")
+export const db = sqlite('./sqlite.db')
 
 const sql = dedent(`
   CREATE TABLE IF NOT EXISTS user (
@@ -19,8 +19,8 @@ const sql = dedent(`
   );
 `)
 
-export const initLucia = () => { 
-  db.exec(sql) 
+export const initLucia = () => {
+  db.exec(sql)
 }
 
 export type CreateUser = {
@@ -32,8 +32,11 @@ export type CreateUser = {
 
 export const createUser = (user: CreateUser) => {
   const insert = db.prepare(
-    'INSERT INTO user (id, email, given_name, family_name) ' + 
-    'VALUES (@id, @email, @givenName, @familyName)'
-  );
+    'INSERT INTO user (id, email, given_name, family_name) ' +
+      'VALUES (@id, @email, @givenName, @familyName)'
+  )
+
   insert.run(user)
+
+  return user
 }

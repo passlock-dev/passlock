@@ -1,18 +1,18 @@
 /** @type {import('tailwindcss').Config}*/
 const config = {
-  content: [
-    "./src/**/*.{html,js,svelte,ts}",
-  ],
+  content: ['./src/**/*.{html,js,svelte,ts}'],
 
   theme: {
-    extend: {},
+    extend: {
+      aria: {
+        invalid: 'invalid="true"',
+      },
+    }
   },
 
-  plugins: [
-    require('@tailwindcss/forms'),
-  ],
+  plugins: [require('@tailwindcss/forms')],
 
   darkMode: 'class'
-};
+}
 
-module.exports = config;
+module.exports = config

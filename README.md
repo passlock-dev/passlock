@@ -6,6 +6,7 @@
 </div>
 
 <a name="readme-top"></a>
+
 <h1 align="center">SvelteKit Passkey Starter</h1>
   <p align="center">
     Starter project illustrating Passkey authentication, Google sign in and mailbox verification.
@@ -24,6 +25,7 @@
 <br />
 
 ![Register a passkey](https://github.com/passlock-dev/svelte-passkeys/assets/208345/9c8a1a66-5f15-4dfd-888d-00f36bdad18a)
+
 <p align="center">Registering a new account and passkey</p>
 
 <br />
@@ -39,10 +41,10 @@
 
 1. [Passlock][passlock] - Serverless passkey platform. Passlock handles Passkey registration and authentication, mailbox verification, user management, logging, auditing and more.
 2. [Lucia][lucia] - Robust session management. Lucia is framework agnostic and works well with SvelteKit. Lucia works with many databases, we use Sqlite for this example.
-3. [Tailwind] - Utility-first CSS framework 
-4. [Preline] - Tailwind UI library <sup>*</sup>
+3. [Tailwind] - Utility-first CSS framework
+4. [Preline] - Tailwind UI library <sup>\*</sup>
 
-<span>*</span> Uses native Svelte in place of Preline JavaScript
+<span>\*</span> Uses native Svelte in place of Preline JavaScript
 
 # Getting started
 
@@ -115,7 +117,7 @@ If all went well you should be able to register an account and then sign in usin
 
 # Mailbox verification
 
-This starter project also supports mailbox verification emails (via Passlock): 
+This starter project also supports mailbox verification emails (via Passlock):
 
 ![Verifying mailbox ownership](https://github.com/passlock-dev/svelte-passkeys/assets/208345/2f7c06d6-c2a9-40f2-a8db-0a44fa378281)
 
@@ -130,7 +132,7 @@ const verifyEmailLink: VerifyEmail = {
 
 // Email a verification code
 const verifyEmailCode: VerifyEmail = {
-  method: 'code',
+  method: 'code'
 }
 
 // If you want to verify the user's email during registration
@@ -174,7 +176,7 @@ See [src/routes/login/+page.svelte](src/routes/login/+page.svelte). Very similar
 
 ## Google sign in
 
-Again it's very similar. 
+Again it's very similar.
 
 1. We ask Google to authenticate the user
 2. We ask the Passlock library to process Google's response
@@ -189,7 +191,7 @@ During the `registerPasslock()` call you pass a verifyEmail option. The backend 
 2. Verifying a code (if we emailed a code)
 3. Verifying a link (when the user clicks the link in the verification email)
 
-**Note:** You can swap out the 6 digit multi field code input for a single field input. The advantage of the single field input is that it supports Apple [autofill of email verification codes](apple-verification-codes). However, I've found this feature to be a bit flaky. 
+**Note:** You can swap out the 6 digit multi field code input for a single field input. The advantage of the single field input is that it supports Apple [autofill of email verification codes](apple-verification-codes). However, I've found this feature to be a bit flaky.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

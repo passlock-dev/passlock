@@ -1,1 +1,5 @@
-<a class="font-medium text-slate-800 hover:text-blue-500 dark:text-slate-200 dark:hover:text-blue-400" href="/login">Login</a>
+<a
+  class="font-medium text-slate-800 hover:text-blue-500 dark:text-slate-200 dark:hover:text-blue-400"
+  href="/login">
+  Login
+</a>
