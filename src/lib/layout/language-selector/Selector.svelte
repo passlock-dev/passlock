@@ -1,3 +1,7 @@
+<!--
+  @component
+  Placeholder language selector. 
+-->
 <script lang="ts">
   import { createPopover, melt } from '@melt-ui/svelte'
   import type { SvelteComponent } from 'svelte'

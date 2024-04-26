@@ -1,6 +1,3 @@
-<script lang="ts">
-</script>
-
 <a
   href="/register"
   class="

@@ -14,7 +14,7 @@
   }
 </script>
 
-<div class="relative">
+<div class="relative sm:border-s border-slate-800/30 sm:pl-4">
   <button
     type="button"
     use:melt={$trigger}

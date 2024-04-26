@@ -3,20 +3,17 @@
   import { PUBLIC_ORG_NAME } from '$env/static/public'
   import type { User } from 'lucia'
   import { slide } from 'svelte/transition'
-  import Avatar from './Avatar.svelte'
-  import LoginLink from './LoginLink.svelte'
-  import RegisterButton from './RegisterButton.svelte'
-  import ThemeSelector from './ThemeSelector.svelte'
-  import MenuToggle from './MenuToggle.svelte'
+
+  import MenuBar from './MenuBar.svelte'
+  import MobileMenu from './mobile/MobileMenu.svelte'
+  import MobileMenuBar from './mobile/MobileMenuBar.svelte'
 
   export let user: User | undefined
-
-  // Mobile menu
-  let menuVisible = false
+  let menuOpen = false
 
   beforeNavigate(() => {
     // close the menu
-    menuVisible = false
+    menuOpen = false
   })
 </script>
 
@@ -33,41 +30,20 @@
       </a>
 
       <div class="flex items-center gap-4 sm:hidden">
-        <ThemeSelector />
-        {#if user}
-          <Avatar {user} />
-        {/if}
-        <MenuToggle bind:visible={menuVisible} />
-      </div>
+        <MobileMenuBar {user} bind:menuOpen />
+      </div> 
     </div>
 
     <!-- Mobile dropdown -->
-    {#if menuVisible}
-      <div
-        transition:slide
-        class="absolute left-0 px-4 pb-6 w-full grow sm:hidden z-10 bg-white dark:bg-slate-950">
-        <div
-          class="flex flex-col gap-5 mt-5 sm:flex-row sm:items-center sm:justify-end sm:mt-0 sm:ps-5">
-          {#if !user}
-            <LoginLink />
-            <RegisterButton />
-          {/if}
-        </div>
+    {#if menuOpen}
+      <div transition:slide class="absolute left-0 px-4 pb-6 w-full grow sm:hidden z-10 bg-white dark:bg-slate-950">
+        <MobileMenu {user} />
       </div>
     {/if}
 
     <!-- Desktop menu -->
     <div class="hidden grow sm:block">
-      <div
-        class="flex flex-col gap-5 mt-5 sm:flex-row sm:items-center sm:justify-end sm:mt-0 sm:ps-5">
-        <ThemeSelector />
-        {#if user}
-          <Avatar {user} />
-        {:else}
-          <LoginLink />
-          <RegisterButton />
-        {/if}
-      </div>
+      <MenuBar {user} />
     </div>
   </nav>
 </header>

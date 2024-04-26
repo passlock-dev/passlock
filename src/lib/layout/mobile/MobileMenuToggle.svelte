@@ -1,3 +1,7 @@
+<!--
+  @component
+  Burger/X button to toggle the mobile dropdown menu
+-->
 <script lang="ts">
   export let visible = false
 
