@@ -1,848 +1,698 @@
-<!-- Table Section -->
-  <!-- Card -->
-  <div class="flex flex-col">
-    <div class="-m-1.5 overflow-x-auto">
-      <div class="p-1.5 min-w-full inline-block align-middle">
-        <div class="bg-white border border-base-200 rounded-xl shadow-sm overflow-hidden dark:bg-base-900 dark:border-base-700">
-          <!-- Header -->
-          <div class="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-b border-base-200 dark:border-base-700">
-            <div>
-              <h2 class="text-xl font-semibold text-base-800 dark:text-base-200">
-                Users
-              </h2>
-              <p class="text-sm text-base-600 dark:text-base-400">
-                Add users, edit and more.
-              </p>
-            </div>
+<script lang="ts">
+  import Sun from "lucide-svelte/icons/sun";
+  import Moon from "lucide-svelte/icons/moon";
+  import Device from "lucide-svelte/icons/monitor-smartphone";
+  import { resetMode, setMode } from "mode-watcher";
 
-            <div>
-              <div class="inline-flex gap-x-2">
-                <a class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-base-200 bg-white text-base-800 shadow-sm hover:bg-base-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-700 dark:text-white dark:hover:bg-base-800" href="#">
-                  View all
-                </a>
+  import ChevronLeft from "lucide-svelte/icons/chevron-left";
+  import ChevronRight from "lucide-svelte/icons/chevron-right";
+  import Copy from "lucide-svelte/icons/copy";
+  import CreditCard from "lucide-svelte/icons/credit-card";
+  import File from "lucide-svelte/icons/file";
+  import Home from "lucide-svelte/icons/home";
+  import LineChart from "lucide-svelte/icons/line-chart";
+  import ListFilter from "lucide-svelte/icons/list-filter";
+  import EllipsisVertical from "lucide-svelte/icons/ellipsis-vertical";
+  import Package from "lucide-svelte/icons/package";
+  import Package2 from "lucide-svelte/icons/package-2";
+  import PanelLeft from "lucide-svelte/icons/panel-left";
+  import Search from "lucide-svelte/icons/search";
+  import Settings from "lucide-svelte/icons/settings";
+  import ShoppingCart from "lucide-svelte/icons/shopping-cart";
+  import Truck from "lucide-svelte/icons/truck";
+  import UsersRound from "lucide-svelte/icons/users-round";
+  import * as Avatar from "$lib/components/ui/avatar";
 
-                <a class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" href="#">
-                  <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                  Add user
-                </a>
-              </div>
-            </div>
-          </div>
-          <!-- End Header -->
+  import { Badge } from "$lib/components/ui/badge/index.js";
+  import * as Breadcrumb from "$lib/components/ui/breadcrumb/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import * as Card from "$lib/components/ui/card/index.js";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import * as Pagination from "$lib/components/ui/pagination/index.js";
+  import { Progress } from "$lib/components/ui/progress/index.js";
+  import { Separator } from "$lib/components/ui/separator/index.js";
+  import * as Sheet from "$lib/components/ui/sheet/index.js";
+  import * as Table from "$lib/components/ui/table/index.js";
+  import * as Tabs from "$lib/components/ui/tabs/index.js";
+  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
+  import type { PageData } from "./$types"
 
-          <!-- Table -->
-          <table class="min-w-full divide-y divide-base-200 dark:divide-base-700">
-            <thead class="bg-base-50 dark:bg-base-900">
-              <tr>
-                <th scope="col" class="ps-6 py-3 text-start">
-                  <label for="hs-at-with-checkboxes-main" class="flex">
-                    <input type="checkbox" class="shrink-0 border-base-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-base-800" id="hs-at-with-checkboxes-main">
-                    <span class="sr-only">Checkbox</span>
-                  </label>
-                </th>
+  export let data: PageData
+  let logoutForm: HTMLFormElement
+</script>
 
-                <th scope="col" class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3 text-start">
-                  <div class="flex items-center gap-x-2">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-base-800 dark:text-base-200">
-                      Name
-                    </span>
-                  </div>
-                </th>
-
-                <th scope="col" class="px-6 py-3 text-start">
-                  <div class="flex items-center gap-x-2">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-base-800 dark:text-base-200">
-                      Position
-                    </span>
-                  </div>
-                </th>
-
-                <th scope="col" class="px-6 py-3 text-start">
-                  <div class="flex items-center gap-x-2">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-base-800 dark:text-base-200">
-                      Status
-                    </span>
-                  </div>
-                </th>
-
-                <th scope="col" class="px-6 py-3 text-start">
-                  <div class="flex items-center gap-x-2">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-base-800 dark:text-base-200">
-                      Portfolio
-                    </span>
-                  </div>
-                </th>
-
-                <th scope="col" class="px-6 py-3 text-start">
-                  <div class="flex items-center gap-x-2">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-base-800 dark:text-base-200">
-                      Created
-                    </span>
-                  </div>
-                </th>
-
-                <th scope="col" class="px-6 py-3 text-end"></th>
-              </tr>
-            </thead>
-
-            <tbody class="divide-y divide-base-200 dark:divide-base-700">
-              <tr>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 py-3">
-                    <label for="hs-at-with-checkboxes-1" class="flex">
-                      <input type="checkbox" class="shrink-0 border-base-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-base-800" id="hs-at-with-checkboxes-1">
-                      <span class="sr-only">Checkbox</span>
-                    </label>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <img class="inline-block size-[38px] rounded-full" src="https://images.unsplash.com/photo-1531927557220-a9e23c1e4794?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" alt="Image Description">
-                      <div class="grow">
-                        <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Christina Bersh</span>
-                        <span class="block text-sm text-base-500 dark:text-base-500">christina@site.com</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="h-px w-72 whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Director</span>
-                    <span class="block text-sm text-base-500 dark:text-base-500">Human resources</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500">
-                      <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                      </svg>
-                      Active
-                    </span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="text-xs text-base-500 dark:text-base-500">1/5</span>
-                      <div class="flex w-full h-1.5 bg-base-200 rounded-full overflow-hidden dark:bg-base-700">
-                        <div class="flex flex-col justify-center overflow-hidden bg-base-800 dark:bg-base-200" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="text-sm text-base-500 dark:text-base-500">28 Dec, 12:12</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-1.5">
-                    <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:text-blue-500" href="#">
-                      Edit
-                    </a>
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 py-3">
-                    <label for="hs-at-with-checkboxes-2" class="flex">
-                      <input type="checkbox" class="shrink-0 border-base-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-base-800" id="hs-at-with-checkboxes-2">
-                      <span class="sr-only">Checkbox</span>
-                    </label>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <img class="inline-block size-[38px] rounded-full" src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" alt="Image Description">
-                      <div class="grow">
-                        <span class="block text-sm font-semibold text-base-800 dark:text-base-200">David Harrison</span>
-                        <span class="block text-sm text-base-500 dark:text-base-500">david@site.com</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="h-px w-72 whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Seller</span>
-                    <span class="block text-sm text-base-500 dark:text-base-500">Branding products</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full dark:bg-yellow-500/10 dark:text-yellow-500">
-                      <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                      </svg>
-                      Warning
-                    </span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="text-xs text-base-500 dark:text-base-500">3/5</span>
-                      <div class="flex w-full h-1.5 bg-base-200 rounded-full overflow-hidden dark:bg-base-700">
-                        <div class="flex flex-col justify-center overflow-hidden bg-base-800 dark:bg-base-200" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="text-sm text-base-500 dark:text-base-500">20 Dec, 09:27</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-1.5">
-                    <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:text-blue-500" href="#">
-                      Edit
-                    </a>
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 py-3">
-                    <label for="hs-at-with-checkboxes-3" class="flex">
-                      <input type="checkbox" class="shrink-0 border-base-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-base-800" id="hs-at-with-checkboxes-3">
-                      <span class="sr-only">Checkbox</span>
-                    </label>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="inline-flex items-center justify-center size-[38px] rounded-full bg-white border border-base-300 dark:bg-base-900 dark:border-base-700">
-                        <span class="font-medium text-sm text-base-800 leading-none dark:text-base-200">A</span>
-                      </span>
-                      <div class="grow">
-                        <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Anne Richard</span>
-                        <span class="block text-sm text-base-500 dark:text-base-500">anne@site.com</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="h-px w-72 whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Designer</span>
-                    <span class="block text-sm text-base-500 dark:text-base-500">IT department</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500">
-                      <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                      </svg>
-                      Active
-                    </span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="text-xs text-base-500 dark:text-base-500">5/5</span>
-                      <div class="flex w-full h-1.5 bg-base-200 rounded-full overflow-hidden dark:bg-base-700">
-                        <div class="flex flex-col justify-center overflow-hidden bg-base-800 dark:bg-base-200" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="text-sm text-base-500 dark:text-base-500">18 Dec, 15:20</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-1.5">
-                    <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:text-blue-500" href="#">
-                      Edit
-                    </a>
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 py-3">
-                    <label for="hs-at-with-checkboxes-4" class="flex">
-                      <input type="checkbox" class="shrink-0 border-base-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-base-800" id="hs-at-with-checkboxes-4">
-                      <span class="sr-only">Checkbox</span>
-                    </label>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <img class="inline-block size-[38px] rounded-full" src="https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&&auto=format&fit=facearea&facepad=3&w=300&h=300&q=80" alt="Image Description">
-                      <div class="grow">
-                        <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Samia Kartoon</span>
-                        <span class="block text-sm text-base-500 dark:text-base-500">samia@site.com</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="h-px w-72 whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Executive director</span>
-                    <span class="block text-sm text-base-500 dark:text-base-500">Marketing</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500">
-                      <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                      </svg>
-                      Active
-                    </span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="text-xs text-base-500 dark:text-base-500">0/5</span>
-                      <div class="flex w-full h-1.5 bg-base-200 rounded-full overflow-hidden dark:bg-base-700">
-                        <div class="flex flex-col justify-center overflow-hidden bg-base-800 dark:bg-base-200" role="progressbar" style="width: 1%" aria-valuenow="1" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="text-sm text-base-500 dark:text-base-500">18 Dec, 15:20</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-1.5">
-                    <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:text-blue-500" href="#">
-                      Edit
-                    </a>
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 py-3">
-                    <label for="hs-at-with-checkboxes-5" class="flex">
-                      <input type="checkbox" class="shrink-0 border-base-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-base-800" id="hs-at-with-checkboxes-5">
-                      <span class="sr-only">Checkbox</span>
-                    </label>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="inline-flex items-center justify-center size-[38px] rounded-full bg-white border border-base-300 dark:bg-base-900 dark:border-base-700">
-                        <span class="font-medium text-sm text-base-800 leading-none dark:text-base-200">D</span>
-                      </span>
-                      <div class="grow">
-                        <span class="block text-sm font-semibold text-base-800 dark:text-base-200">David Harrison</span>
-                        <span class="block text-sm text-base-500 dark:text-base-500">david@site.com</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="h-px w-72 whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Developer</span>
-                    <span class="block text-sm text-base-500 dark:text-base-500">Mobile app</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-red-100 text-red-800 rounded-full dark:bg-red-500/10 dark:text-red-500">
-                      <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                      </svg>
-                      Danger
-                    </span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="text-xs text-base-500 dark:text-base-500">3/5</span>
-                      <div class="flex w-full h-1.5 bg-base-200 rounded-full overflow-hidden dark:bg-base-700">
-                        <div class="flex flex-col justify-center overflow-hidden bg-base-800 dark:bg-base-200" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="text-sm text-base-500 dark:text-base-500">15 Dec, 14:41</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-1.5">
-                    <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:text-blue-500" href="#">
-                      Edit
-                    </a>
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 py-3">
-                    <label for="hs-at-with-checkboxes-6" class="flex">
-                      <input type="checkbox" class="shrink-0 border-base-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-base-800" id="hs-at-with-checkboxes-6">
-                      <span class="sr-only">Checkbox</span>
-                    </label>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <img class="inline-block size-[38px] rounded-full" src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" alt="Image Description">
-                      <div class="grow">
-                        <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Brian Halligan</span>
-                        <span class="block text-sm text-base-500 dark:text-base-500">brian@site.com</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="h-px w-72 whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Accountant</span>
-                    <span class="block text-sm text-base-500 dark:text-base-500">Finance</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500">
-                      <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                      </svg>
-                      Active
-                    </span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="text-xs text-base-500 dark:text-base-500">2/5</span>
-                      <div class="flex w-full h-1.5 bg-base-200 rounded-full overflow-hidden dark:bg-base-700">
-                        <div class="flex flex-col justify-center overflow-hidden bg-base-800 dark:bg-base-200" role="progressbar" style="width: 40%" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="text-sm text-base-500 dark:text-base-500">11 Dec, 18:51</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-1.5">
-                    <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:text-blue-500" href="#">
-                      Edit
-                    </a>
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 py-3">
-                    <label for="hs-at-with-checkboxes-7" class="flex">
-                      <input type="checkbox" class="shrink-0 border-base-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-base-800" id="hs-at-with-checkboxes-7">
-                      <span class="sr-only">Checkbox</span>
-                    </label>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <img class="inline-block size-[38px] rounded-full" src="https://images.unsplash.com/photo-1659482634023-2c4fda99ac0c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2.5&w=320&h=320&q=80" alt="Image Description">
-                      <div class="grow">
-                        <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Andy Clerk</span>
-                        <span class="block text-sm text-base-500 dark:text-base-500">andy@site.com</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="h-px w-72 whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Director</span>
-                    <span class="block text-sm text-base-500 dark:text-base-500">Human resources</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500">
-                      <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                      </svg>
-                      Active
-                    </span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="text-xs text-base-500 dark:text-base-500">1/5</span>
-                      <div class="flex w-full h-1.5 bg-base-200 rounded-full overflow-hidden dark:bg-base-700">
-                        <div class="flex flex-col justify-center overflow-hidden bg-base-800 dark:bg-base-200" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="text-sm text-base-500 dark:text-base-500">28 Dec, 12:12</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-1.5">
-                    <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:text-blue-500" href="#">
-                      Edit
-                    </a>
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 py-3">
-                    <label for="hs-at-with-checkboxes-8" class="flex">
-                      <input type="checkbox" class="shrink-0 border-base-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-base-800" id="hs-at-with-checkboxes-8">
-                      <span class="sr-only">Checkbox</span>
-                    </label>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <img class="inline-block size-[38px] rounded-full" src="https://images.unsplash.com/photo-1601935111741-ae98b2b230b0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80" alt="Image Description">
-                      <div class="grow">
-                        <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Bart Simpson</span>
-                        <span class="block text-sm text-base-500 dark:text-base-500">Bart@site.com</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="h-px w-72 whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Seller</span>
-                    <span class="block text-sm text-base-500 dark:text-base-500">Branding products</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full dark:bg-yellow-500/10 dark:text-yellow-500">
-                      <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                      </svg>
-                      Warning
-                    </span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="text-xs text-base-500 dark:text-base-500">3/5</span>
-                      <div class="flex w-full h-1.5 bg-base-200 rounded-full overflow-hidden dark:bg-base-700">
-                        <div class="flex flex-col justify-center overflow-hidden bg-base-800 dark:bg-base-200" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="text-sm text-base-500 dark:text-base-500">20 Dec, 09:27</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-1.5">
-                    <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:text-blue-500" href="#">
-                      Edit
-                    </a>
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 py-3">
-                    <label for="hs-at-with-checkboxes-9" class="flex">
-                      <input type="checkbox" class="shrink-0 border-base-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-base-800" id="hs-at-with-checkboxes-9">
-                      <span class="sr-only">Checkbox</span>
-                    </label>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="inline-flex items-center justify-center size-[38px] rounded-full bg-white border border-base-300 dark:bg-base-900 dark:border-base-700">
-                        <span class="font-medium text-sm text-base-800 leading-none dark:text-base-200">C</span>
-                      </span>
-                      <div class="grow">
-                        <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Camila Welters</span>
-                        <span class="block text-sm text-base-500 dark:text-base-500">cwelt@site.com</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="h-px w-72 whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Designer</span>
-                    <span class="block text-sm text-base-500 dark:text-base-500">IT department</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500">
-                      <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                      </svg>
-                      Active
-                    </span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="text-xs text-base-500 dark:text-base-500">5/5</span>
-                      <div class="flex w-full h-1.5 bg-base-200 rounded-full overflow-hidden dark:bg-base-700">
-                        <div class="flex flex-col justify-center overflow-hidden bg-base-800 dark:bg-base-200" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="text-sm text-base-500 dark:text-base-500">18 Dec, 15:20</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-1.5">
-                    <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:text-blue-500" href="#">
-                      Edit
-                    </a>
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 py-3">
-                    <label for="hs-at-with-checkboxes-10" class="flex">
-                      <input type="checkbox" class="shrink-0 border-base-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-base-800" id="hs-at-with-checkboxes-10">
-                      <span class="sr-only">Checkbox</span>
-                    </label>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <img class="inline-block size-[38px] rounded-full" src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80" alt="Image Description">
-                      <div class="grow">
-                        <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Oliver Schevich</span>
-                        <span class="block text-sm text-base-500 dark:text-base-500">oliver@site.com</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="h-px w-72 whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Seller</span>
-                    <span class="block text-sm text-base-500 dark:text-base-500">Branding products</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full dark:bg-yellow-500/10 dark:text-yellow-500">
-                      <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                      </svg>
-                      Warning
-                    </span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="text-xs text-base-500 dark:text-base-500">3/5</span>
-                      <div class="flex w-full h-1.5 bg-base-200 rounded-full overflow-hidden dark:bg-base-700">
-                        <div class="flex flex-col justify-center overflow-hidden bg-base-800 dark:bg-base-200" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="text-sm text-base-500 dark:text-base-500">20 Dec, 09:27</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-1.5">
-                    <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:text-blue-500" href="#">
-                      Edit
-                    </a>
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 py-3">
-                    <label for="hs-at-with-checkboxes-11" class="flex">
-                      <input type="checkbox" class="shrink-0 border-base-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-base-800" id="hs-at-with-checkboxes-11">
-                      <span class="sr-only">Checkbox</span>
-                    </label>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="inline-flex items-center justify-center size-[38px] rounded-full bg-white border border-base-300 dark:bg-base-900 dark:border-base-700">
-                        <span class="font-medium text-sm text-base-800 leading-none dark:text-base-200">I</span>
-                      </span>
-                      <div class="grow">
-                        <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Inna Ivy</span>
-                        <span class="block text-sm text-base-500 dark:text-base-500">invy@site.com</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="h-px w-72 whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Designer</span>
-                    <span class="block text-sm text-base-500 dark:text-base-500">IT department</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500">
-                      <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                      </svg>
-                      Active
-                    </span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="text-xs text-base-500 dark:text-base-500">5/5</span>
-                      <div class="flex w-full h-1.5 bg-base-200 rounded-full overflow-hidden dark:bg-base-700">
-                        <div class="flex flex-col justify-center overflow-hidden bg-base-800 dark:bg-base-200" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="text-sm text-base-500 dark:text-base-500">18 Dec, 15:20</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-1.5">
-                    <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:text-blue-500" href="#">
-                      Edit
-                    </a>
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 py-3">
-                    <label for="hs-at-with-checkboxes-12" class="flex">
-                      <input type="checkbox" class="shrink-0 border-base-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-base-800" id="hs-at-with-checkboxes-12">
-                      <span class="sr-only">Checkbox</span>
-                    </label>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <img class="inline-block size-[38px] rounded-full" src="https://images.unsplash.com/photo-1670272505340-d906d8d77d03?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80" alt="Image Description">
-                      <div class="grow">
-                        <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Jessica Williams</span>
-                        <span class="block text-sm text-base-500 dark:text-base-500">myhairisred@site.com</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="h-px w-72 whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="block text-sm font-semibold text-base-800 dark:text-base-200">Executive director</span>
-                    <span class="block text-sm text-base-500 dark:text-base-500">Marketing</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500">
-                      <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                      </svg>
-                      Active
-                    </span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <div class="flex items-center gap-x-3">
-                      <span class="text-xs text-base-500 dark:text-base-500">0/5</span>
-                      <div class="flex w-full h-1.5 bg-base-200 rounded-full overflow-hidden dark:bg-base-700">
-                        <div class="flex flex-col justify-center overflow-hidden bg-base-800 dark:bg-base-200" role="progressbar" style="width: 1%" aria-valuenow="1" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span class="text-sm text-base-500 dark:text-base-500">18 Dec, 15:20</span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-1.5">
-                    <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:text-blue-500" href="#">
-                      Edit
-                    </a>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <!-- End Table -->
-
-          <!-- Footer -->
-          <div class="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-t border-base-200 dark:border-base-700">
-            <div>
-              <p class="text-sm text-base-600 dark:text-base-400">
-                <span class="font-semibold text-base-800 dark:text-base-200">12</span> results
-              </p>
-            </div>
-
-            <div>
-              <div class="inline-flex gap-x-2">
-                <button type="button" class="py-1.5 px-2 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-base-200 bg-white text-base-800 shadow-sm hover:bg-base-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-700 dark:text-white dark:hover:bg-base-800">
-                  <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                  Prev
-                </button>
-
-                <button type="button" class="py-1.5 px-2 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-base-200 bg-white text-base-800 shadow-sm hover:bg-base-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-base-700 dark:text-white dark:hover:bg-base-800">
-                  Next
-                  <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                </button>
-              </div>
-            </div>
-          </div>
-          <!-- End Footer -->
-        </div>
+<div class="flex min-h-screen w-full flex-col bg-muted/40">
+  <aside class="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
+    <nav class="flex flex-col items-center gap-4 px-2 sm:py-5">
+      <a
+        href="##"
+        class="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+      >
+        <Package2 class="h-4 w-4 transition-all group-hover:scale-110" />
+        <span class="sr-only">Acme Inc</span>
+      </a>
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild let:builder>
+          <a
+            href="##"
+            class="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+            use:builder.action
+            {...builder}
+          >
+            <Home class="h-5 w-5" />
+            <span class="sr-only">Dashboard</span>
+          </a>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="right">Dashboard</Tooltip.Content>
+      </Tooltip.Root>
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild let:builder>
+          <a
+            href="##"
+            class="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+            use:builder.action
+            {...builder}
+          >
+            <ShoppingCart class="h-5 w-5" />
+            <span class="sr-only">Orders</span>
+          </a>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="right">Orders</Tooltip.Content>
+      </Tooltip.Root>
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild let:builder>
+          <a
+            href="##"
+            class="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+            use:builder.action
+            {...builder}
+          >
+            <Package class="h-5 w-5" />
+            <span class="sr-only">Products</span>
+          </a>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="right">Products</Tooltip.Content>
+      </Tooltip.Root>
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild let:builder>
+          <a
+            href="##"
+            class="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+            use:builder.action
+            {...builder}
+          >
+            <UsersRound class="h-5 w-5" />
+            <span class="sr-only">Customers</span>
+          </a>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="right">Customers</Tooltip.Content>
+      </Tooltip.Root>
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild let:builder>
+          <a
+            href="##"
+            class="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+            use:builder.action
+            {...builder}
+          >
+            <LineChart class="h-5 w-5" />
+            <span class="sr-only">Analytics</span>
+          </a>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="right">Analytics</Tooltip.Content>
+      </Tooltip.Root>
+    </nav>
+    <nav class="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild let:builder>
+          <a
+            href="##"
+            class="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+            use:builder.action
+            {...builder}
+          >
+            <Settings class="h-5 w-5" />
+            <span class="sr-only">Settings</span>
+          </a>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="right">Settings</Tooltip.Content>
+      </Tooltip.Root>
+    </nav>
+  </aside>
+  <div class="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+    <header
+      class="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6"
+    >
+      <Sheet.Root>
+        <Sheet.Trigger asChild let:builder>
+          <Button builders={[builder]} size="icon" variant="outline" class="sm:hidden">
+            <PanelLeft class="h-5 w-5" />
+            <span class="sr-only">Toggle Menu</span>
+          </Button>
+        </Sheet.Trigger>
+        <Sheet.Content side="left" class="sm:max-w-xs">
+          <nav class="grid gap-6 text-lg font-medium">
+            <a
+              href="##"
+              class="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
+            >
+              <Package2 class="h-5 w-5 transition-all group-hover:scale-110" />
+              <span class="sr-only">Acme Inc</span>
+            </a>
+            <a
+              href="##"
+              class="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+            >
+              <Home class="h-5 w-5" />
+              Dashboard
+            </a>
+            <a href="##" class="flex items-center gap-4 px-2.5 text-foreground">
+              <ShoppingCart class="h-5 w-5" />
+              Orders
+            </a>
+            <a
+              href="##"
+              class="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+            >
+              <Package class="h-5 w-5" />
+              Products
+            </a>
+            <a
+              href="##"
+              class="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+            >
+              <UsersRound class="h-5 w-5" />
+              Customers
+            </a>
+            <a
+              href="##"
+              class="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+            >
+              <LineChart class="h-5 w-5" />
+              Settings
+            </a>
+          </nav>
+        </Sheet.Content>
+      </Sheet.Root>
+      <Breadcrumb.Root class="hidden md:flex">
+        <Breadcrumb.List>
+          <Breadcrumb.Item>
+            <Breadcrumb.Link href="##">Dashboard</Breadcrumb.Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Separator />
+          <Breadcrumb.Item>
+            <Breadcrumb.Link href="##">Orders</Breadcrumb.Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Separator />
+          <Breadcrumb.Item>
+            <Breadcrumb.Page>Recent Orders</Breadcrumb.Page>
+          </Breadcrumb.Item>
+        </Breadcrumb.List>
+      </Breadcrumb.Root>
+      <div class="relative ml-auto flex-1 md:grow-0">
+        <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder="Search..."
+          class="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
+        />
       </div>
-    </div>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild let:builder>
+          <Button
+            variant="outline"
+            size="icon"
+            class="overflow-hidden rounded-full"
+            builders={[builder]}>
+            <Avatar.Root>
+              <Avatar.Image src={data.user.avatar} alt={data.user.initials} class="overflow-hidden rounded-full" />
+              <Avatar.Fallback>{data.user.initials}</Avatar.Fallback>
+            </Avatar.Root>
+          </Button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content align="end">
+          <DropdownMenu.Item class="cursor-pointer" on:click={() => setMode("light")}>
+            <Sun class="size-4 mr-2" />
+            Light
+          </DropdownMenu.Item>
+          <DropdownMenu.Item class="cursor-pointer" on:click={() => setMode("dark")}>
+            <Moon class="size-4 mr-2" />
+            Dark
+          </DropdownMenu.Item>
+          <DropdownMenu.Item class="cursor-pointer" on:click={() => resetMode()}>
+            <Device class="size-4 mr-2" />
+            System
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator />
+          <DropdownMenu.Item class="cursor-pointer" on:click={() => logoutForm.requestSubmit()}>Logout</DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
+    </header>
+    <main
+      class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3"
+    >
+      <div class="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
+        <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+          <Card.Root class="sm:col-span-2">
+            <Card.Header class="pb-3">
+              <Card.Title>Your Orders</Card.Title>
+              <Card.Description class="max-w-lg text-balance leading-relaxed">
+                Introducing Our Dynamic Orders Dashboard for Seamless Management and
+                Insightful Analysis.
+              </Card.Description>
+            </Card.Header>
+            <Card.Footer>
+              <Button>Create New Order</Button>
+            </Card.Footer>
+          </Card.Root>
+          <Card.Root>
+            <Card.Header class="pb-2">
+              <Card.Description>This Week</Card.Description>
+              <Card.Title class="text-4xl">$1329</Card.Title>
+            </Card.Header>
+            <Card.Content>
+              <div class="text-xs text-muted-foreground">+25% from last week</div>
+            </Card.Content>
+            <Card.Footer>
+              <Progress value={25} aria-label="25% increase" />
+            </Card.Footer>
+          </Card.Root>
+          <Card.Root>
+            <Card.Header class="pb-2">
+              <Card.Description>This Month</Card.Description>
+              <Card.Title class="text-3xl">$5,329</Card.Title>
+            </Card.Header>
+            <Card.Content>
+              <div class="text-xs text-muted-foreground">+10% from last month</div>
+            </Card.Content>
+            <Card.Footer>
+              <Progress value={12} aria-label="12% increase" />
+            </Card.Footer>
+          </Card.Root>
+        </div>
+        <Tabs.Root value="week">
+          <div class="flex items-center">
+            <Tabs.List>
+              <Tabs.Trigger value="week">Week</Tabs.Trigger>
+              <Tabs.Trigger value="month">Month</Tabs.Trigger>
+              <Tabs.Trigger value="year">Year</Tabs.Trigger>
+            </Tabs.List>
+            <div class="ml-auto flex items-center gap-2">
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild let:builder>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    class="h-7 gap-1 text-sm"
+                    builders={[builder]}
+                  >
+                    <ListFilter class="h-3.5 w-3.5" />
+                    <span class="sr-only sm:not-sr-only">Filter</span>
+                  </Button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content align="end">
+                  <DropdownMenu.Label>Filter by</DropdownMenu.Label>
+                  <DropdownMenu.Separator />
+                  <DropdownMenu.CheckboxItem checked>
+                    Fulfilled
+                  </DropdownMenu.CheckboxItem>
+                  <DropdownMenu.CheckboxItem>Declined</DropdownMenu.CheckboxItem>
+                  <DropdownMenu.CheckboxItem>Refunded</DropdownMenu.CheckboxItem>
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
+              <Button size="sm" variant="outline" class="h-7 gap-1 text-sm">
+                <File class="h-3.5 w-3.5" />
+                <span class="sr-only sm:not-sr-only">Export</span>
+              </Button>
+            </div>
+          </div>
+          <Tabs.Content value="week">
+            <Card.Root>
+              <Card.Header class="px-7">
+                <Card.Title>Orders</Card.Title>
+                <Card.Description>Recent orders from your store.</Card.Description>
+              </Card.Header>
+              <Card.Content>
+                <Table.Root>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.Head>Customer</Table.Head>
+                      <Table.Head class="hidden sm:table-cell">
+                        Type
+                      </Table.Head>
+                      <Table.Head class="hidden sm:table-cell">
+                        Status
+                      </Table.Head>
+                      <Table.Head class="hidden md:table-cell">
+                        Date
+                      </Table.Head>
+                      <Table.Head class="text-right">Amount</Table.Head>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    <Table.Row class="bg-accent">
+                      <Table.Cell>
+                        <div class="font-medium">Liam Johnson</div>
+                        <div
+                          class="hidden text-sm text-muted-foreground md:inline"
+                        >
+                          liam@example.com
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        Sale
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        <Badge class="text-xs" variant="secondary">
+                          Fulfilled
+                        </Badge>
+                      </Table.Cell>
+                      <Table.Cell class="hidden md:table-cell">
+                        2023-06-23
+                      </Table.Cell>
+                      <Table.Cell class="text-right">$250.00</Table.Cell>
+                    </Table.Row>
+                    <Table.Row>
+                      <Table.Cell>
+                        <div class="font-medium">Olivia Smith</div>
+                        <div
+                          class="hidden text-sm text-muted-foreground md:inline"
+                        >
+                          olivia@example.com
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        Refund
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        <Badge class="text-xs" variant="outline">
+                          Declined
+                        </Badge>
+                      </Table.Cell>
+                      <Table.Cell class="hidden md:table-cell">
+                        2023-06-24
+                      </Table.Cell>
+                      <Table.Cell class="text-right">$150.00</Table.Cell>
+                    </Table.Row>
+                    <Table.Row>
+                      <Table.Cell>
+                        <div class="font-medium">Noah Williams</div>
+                        <div
+                          class="hidden text-sm text-muted-foreground md:inline"
+                        >
+                          noah@example.com
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        Subscription
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        <Badge class="text-xs" variant="secondary">
+                          Fulfilled
+                        </Badge>
+                      </Table.Cell>
+                      <Table.Cell class="hidden md:table-cell">
+                        2023-06-25
+                      </Table.Cell>
+                      <Table.Cell class="text-right">$350.00</Table.Cell>
+                    </Table.Row>
+                    <Table.Row>
+                      <Table.Cell>
+                        <div class="font-medium">Emma Brown</div>
+                        <div
+                          class="hidden text-sm text-muted-foreground md:inline"
+                        >
+                          emma@example.com
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        Sale
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        <Badge class="text-xs" variant="secondary">
+                          Fulfilled
+                        </Badge>
+                      </Table.Cell>
+                      <Table.Cell class="hidden md:table-cell">
+                        2023-06-26
+                      </Table.Cell>
+                      <Table.Cell class="text-right">$450.00</Table.Cell>
+                    </Table.Row>
+                    <Table.Row>
+                      <Table.Cell>
+                        <div class="font-medium">Liam Johnson</div>
+                        <div
+                          class="hidden text-sm text-muted-foreground md:inline"
+                        >
+                          liam@example.com
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        Sale
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        <Badge class="text-xs" variant="secondary">
+                          Fulfilled
+                        </Badge>
+                      </Table.Cell>
+                      <Table.Cell class="hidden md:table-cell">
+                        2023-06-23
+                      </Table.Cell>
+                      <Table.Cell class="text-right">$250.00</Table.Cell>
+                    </Table.Row>
+                    <Table.Row>
+                      <Table.Cell>
+                        <div class="font-medium">Liam Johnson</div>
+                        <div
+                          class="hidden text-sm text-muted-foreground md:inline"
+                        >
+                          liam@example.com
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        Sale
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        <Badge class="text-xs" variant="secondary">
+                          Fulfilled
+                        </Badge>
+                      </Table.Cell>
+                      <Table.Cell class="hidden md:table-cell">
+                        2023-06-23
+                      </Table.Cell>
+                      <Table.Cell class="text-right">$250.00</Table.Cell>
+                    </Table.Row>
+                    <Table.Row>
+                      <Table.Cell>
+                        <div class="font-medium">Olivia Smith</div>
+                        <div
+                          class="hidden text-sm text-muted-foreground md:inline"
+                        >
+                          olivia@example.com
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        Refund
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        <Badge class="text-xs" variant="outline">
+                          Declined
+                        </Badge>
+                      </Table.Cell>
+                      <Table.Cell class="hidden md:table-cell">
+                        2023-06-24
+                      </Table.Cell>
+                      <Table.Cell class="text-right">$150.00</Table.Cell>
+                    </Table.Row>
+                    <Table.Row>
+                      <Table.Cell>
+                        <div class="font-medium">Emma Brown</div>
+                        <div
+                          class="hidden text-sm text-muted-foreground md:inline"
+                        >
+                          emma@example.com
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        Sale
+                      </Table.Cell>
+                      <Table.Cell class="hidden sm:table-cell">
+                        <Badge class="text-xs" variant="secondary">
+                          Fulfilled
+                        </Badge>
+                      </Table.Cell>
+                      <Table.Cell class="hidden md:table-cell">
+                        2023-06-26
+                      </Table.Cell>
+                      <Table.Cell class="text-right">$450.00</Table.Cell>
+                    </Table.Row>
+                  </Table.Body>
+                </Table.Root>
+              </Card.Content>
+            </Card.Root>
+          </Tabs.Content>
+        </Tabs.Root>
+      </div>
+      <div>
+        <Card.Root class="overflow-hidden">
+          <Card.Header class="flex flex-row items-start bg-muted/50">
+            <div class="grid gap-0.5">
+              <Card.Title class="group flex items-center gap-2 text-lg">
+                Order Oe31b70H
+                <Button
+                  size="icon"
+                  variant="outline"
+                  class="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                >
+                  <Copy class="h-3 w-3" />
+                  <span class="sr-only">Copy Order ID</span>
+                </Button>
+              </Card.Title>
+              <Card.Description>Date: November 23, 2023</Card.Description>
+            </div>
+            <div class="ml-auto flex items-center gap-1">
+              <Button size="sm" variant="outline" class="h-8 gap-1">
+                <Truck class="h-3.5 w-3.5" />
+                <span class="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
+                  Track Order
+                </span>
+              </Button>
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild let:builder>
+                  <Button
+                    builders={[builder]}
+                    size="icon"
+                    variant="outline"
+                    class="h-8 w-8"
+                  >
+                    <EllipsisVertical class="h-3.5 w-3.5" />
+                    <span class="sr-only">More</span>
+                  </Button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content align="end">
+                  <DropdownMenu.Item>Edit</DropdownMenu.Item>
+                  <DropdownMenu.Item>Export</DropdownMenu.Item>
+                  <DropdownMenu.Separator />
+                  <DropdownMenu.Item>Trash</DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
+            </div>
+          </Card.Header>
+          <Card.Content class="p-6 text-sm">
+            <div class="grid gap-3">
+              <div class="font-semibold">Order Details</div>
+              <ul class="grid gap-3">
+                <li class="flex items-center justify-between">
+                  <span class="text-muted-foreground">
+                    Glimmer Lamps x <span>2</span>
+                  </span>
+                  <span>$250.00</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-muted-foreground">
+                    Aqua Filters x <span>1</span>
+                  </span>
+                  <span>$49.00</span>
+                </li>
+              </ul>
+              <Separator class="my-2" />
+              <ul class="grid gap-3">
+                <li class="flex items-center justify-between">
+                  <span class="text-muted-foreground">Subtotal</span>
+                  <span>$299.00</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-muted-foreground">Shipping</span>
+                  <span>$5.00</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="text-muted-foreground">Tax</span>
+                  <span>$25.00</span>
+                </li>
+                <li class="flex items-center justify-between font-semibold">
+                  <span class="text-muted-foreground">Total</span>
+                  <span>$329.00</span>
+                </li>
+              </ul>
+            </div>
+            <Separator class="my-4" />
+            <div class="grid grid-cols-2 gap-4">
+              <div class="grid gap-3">
+                <div class="font-semibold">Shipping Information</div>
+                <address class="grid gap-0.5 not-italic text-muted-foreground">
+                  <span>Liam Johnson</span>
+                  <span>1234 Main St.</span>
+                  <span>Anytown, CA 12345</span>
+                </address>
+              </div>
+              <div class="grid auto-rows-max gap-3">
+                <div class="font-semibold">Billing Information</div>
+                <div class="text-muted-foreground">Same as shipping address</div>
+              </div>
+            </div>
+            <Separator class="my-4" />
+            <div class="grid gap-3">
+              <div class="font-semibold">Customer Information</div>
+              <dl class="grid gap-3">
+                <div class="flex items-center justify-between">
+                  <dt class="text-muted-foreground">Customer</dt>
+                  <dd>Liam Johnson</dd>
+                </div>
+                <div class="flex items-center justify-between">
+                  <dt class="text-muted-foreground">Email</dt>
+                  <dd>
+                    <a href="mailto:">liam@acme.com</a>
+                  </dd>
+                </div>
+                <div class="flex items-center justify-between">
+                  <dt class="text-muted-foreground">Phone</dt>
+                  <dd>
+                    <a href="tel:">+1 234 567 890</a>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            <Separator class="my-4" />
+            <div class="grid gap-3">
+              <div class="font-semibold">Payment Information</div>
+              <dl class="grid gap-3">
+                <div class="flex items-center justify-between">
+                  <dt class="flex items-center gap-1 text-muted-foreground">
+                    <CreditCard class="h-4 w-4" />
+                    Visa
+                  </dt>
+                  <dd>**** **** **** 4532</dd>
+                </div>
+              </dl>
+            </div>
+          </Card.Content>
+          <Card.Footer class="flex flex-row items-center border-t bg-muted/50 px-6 py-3">
+            <div class="text-xs text-muted-foreground">
+              Updated <time dateTime="2023-11-23">November 23, 2023</time>
+            </div>
+            <Pagination.Root count={10} class="ml-auto mr-0 w-auto">
+              <Pagination.Content>
+                <Pagination.Item>
+                  <Button size="icon" variant="outline" class="h-6 w-6">
+                    <ChevronLeft class="h-3.5 w-3.5" />
+                    <span class="sr-only">Previous Order</span>
+                  </Button>
+                </Pagination.Item>
+                <Pagination.Item>
+                  <Button size="icon" variant="outline" class="h-6 w-6">
+                    <ChevronRight class="h-3.5 w-3.5" />
+                    <span class="sr-only">Next Order</span>
+                  </Button>
+                </Pagination.Item>
+              </Pagination.Content>
+            </Pagination.Root>
+          </Card.Footer>
+        </Card.Root>
+      </div>
+    </main>
   </div>
-  <!-- End Card -->
-<!-- End Table Section -->
+</div>
+
+<form bind:this={logoutForm} method="post" action="/logout" class="hidden">
+</form>

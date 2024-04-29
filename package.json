@@ -17,7 +17,7 @@
     "@lucia-auth/adapter-sqlite": "^3.0.1",
     "@melt-ui/pp": "^0.3.1",
     "@melt-ui/svelte": "^0.77.0",
-    "@passlock/client": "0.9.8",
+    "@passlock/client": "0.9.9",
     "@sveltejs/adapter-auto": "^3.2.0",
     "@sveltejs/kit": "^2.5.7",
     "@sveltejs/vite-plugin-svelte": "^3.1.0",
@@ -47,5 +47,12 @@
     "vite": "^5.2.10"
   },
   "type": "module",
-  "packageManager": "pnpm@8.15.6+sha256.01c01eeb990e379b31ef19c03e9d06a14afa5250b82e81303f88721c99ff2e6f"
+  "packageManager": "pnpm@8.15.6+sha256.01c01eeb990e379b31ef19c03e9d06a14afa5250b82e81303f88721c99ff2e6f",
+  "dependencies": {
+    "bits-ui": "^0.21.5",
+    "clsx": "^2.1.1",
+    "lucide-svelte": "^0.375.0",
+    "tailwind-merge": "^2.3.0",
+    "tailwind-variants": "^0.2.1"
+  }
 }
