@@ -72,7 +72,7 @@
 
   <Logo />
 
-  <div class="flex items-center justify-center">
+  <div class="h-full flex items-center justify-center">
     <div class="mx-auto grid w-[350px] gap-6">
       <div class="grid gap-2 text-center">
         <h1 class="text-3xl font-bold">Login</h1>

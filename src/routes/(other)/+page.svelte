@@ -89,7 +89,7 @@
     </div>
   </div>
 
-  <div class="flex items-center justify-center py-12">
+  <div class="h-full flex items-center justify-center py-12">
     <div
       class="px-8 mx-auto max-w-[500px] flex w-full flex-col justify-center space-y-6">
       <div class="flex flex-col space-y-2 text-center">
