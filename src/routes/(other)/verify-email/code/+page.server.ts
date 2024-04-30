@@ -1,5 +1,5 @@
 import { fail, superValidate } from 'sveltekit-superforms'
-import type { Actions, PageServerLoad } from './$types';
+import type { Actions, PageServerLoad } from './$types'
 import { valibot } from 'sveltekit-superforms/adapters'
 import { verifyEmailSchema } from '$lib/schemas'
 import { redirect } from '@sveltejs/kit'
@@ -8,10 +8,10 @@ export const load = (async () => {
   return {
     form: await superValidate(valibot(verifyEmailSchema))
   }
-}) satisfies PageServerLoad;
+}) satisfies PageServerLoad
 
 export const actions = {
-  default: async ({ request, cookies }) => {
+  default: async ({ request }) => {
     const form = await superValidate(request, valibot(verifyEmailSchema))
 
     if (!form.valid) {

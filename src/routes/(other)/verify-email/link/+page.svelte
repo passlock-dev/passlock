@@ -16,7 +16,7 @@
   import { ThemeSelector } from '$lib/components/theme'
   import * as Icons from '$lib/components/icons'
   import { onMount } from 'svelte'
-  
+
   export let data: PageData
 
   const endpoint = PUBLIC_PASSLOCK_ENDPOINT
@@ -59,7 +59,7 @@
   </div>
 
   <Logo />
-  
+
   <form method="post" use:enhance>
     <Card.Root class="w-full max-w-sm">
       <Card.Header>
@@ -76,13 +76,18 @@
             <Icons.mail class="h-4 w-4" />
           {/if}
           Verify email
-        </Button>  
+        </Button>
         <div class="mt-4 text-center text-sm">
           {#if resendDisabled}
             Email sent
           {:else}
             Still waiting?
-            <button on:click={() => resend()} type="button" class="hover:underline">Resend code</button>
+            <button
+              on:click={() => resend()}
+              type="button"
+              class="hover:underline">
+              Resend code
+            </button>
           {/if}
         </div>
       </Card.Footer>

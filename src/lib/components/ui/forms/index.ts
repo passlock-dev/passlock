@@ -4,10 +4,4 @@ import Checkbox from './checkbox.svelte'
 import PoweredBy from './poweredBy.svelte'
 import Divider from './divider.svelte'
 
-export {
-  InputEmail,
-  InputText,
-  Checkbox,
-  PoweredBy,
-  Divider
-}
+export { InputEmail, InputText, Checkbox, PoweredBy, Divider }

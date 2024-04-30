@@ -2,8 +2,10 @@ import { lucia } from '$lib/server/auth'
 import { initLucia } from '$lib/server/db'
 import { redirect, type Handle } from '@sveltejs/kit'
 
-const isProtectedRoute = (routeId: string | null) => routeId?.startsWith("/(app)")
-const isVerifyRoute  = (routeId: string | null) => routeId?.startsWith("/(other)/verify-email")
+const isProtectedRoute = (routeId: string | null) =>
+  routeId?.startsWith('/(app)')
+const isVerifyRoute = (routeId: string | null) =>
+  routeId?.startsWith('/(other)/verify-email')
 
 export const handle: Handle = async ({ event, resolve }) => {
   const sessionId = event.cookies.get(lucia.sessionCookieName)

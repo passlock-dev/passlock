@@ -1,5 +1,4 @@
 <script lang="ts">
-  
   import {
     PUBLIC_PASSLOCK_CLIENT_ID,
     PUBLIC_PASSLOCK_ENDPOINT,
@@ -10,7 +9,7 @@
   import { Button, Button as a } from '$lib/components/ui/button/index.js'
   import * as Forms from '$lib/components/ui/forms'
   import { GoogleButton } from '$lib/components/ui/google'
-  import { ThemeSelector } from "$lib/components/theme"
+  import { ThemeSelector } from '$lib/components/theme'
   import {
     SveltePasslock,
     getLocalEmail,
@@ -53,15 +52,22 @@
   })
 
   const { enhance, delayed, form: superformData } = form
-  const passkeyDelayed = derived(delayed, ($delayed) => $delayed && $superformData.authType === 'passkey')
-  const googleDelayed = derived(delayed, ($delayed) => $delayed && $superformData.authType === 'google')
+  const passkeyDelayed = derived(
+    delayed,
+    $delayed => $delayed && $superformData.authType === 'passkey'
+  )
+  const googleDelayed = derived(
+    delayed,
+    $delayed => $delayed && $superformData.authType === 'google'
+  )
 
   $: readonly = $superformData.token?.length > 0 ? 'readonly' : undefined
 </script>
 
-<div class="relative h-full w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">  
+<div
+  class="relative h-full w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
   <div class="absolute right-4 top-4 right-8 top-8 flex items-center gap-4">
-    <ThemeSelector mode='dark' />
+    <ThemeSelector mode="dark" />
   </div>
 
   <Logo />
@@ -78,29 +84,37 @@
       <div class="grid gap-2">
         <form method="post" use:enhance>
           <div class="grid gap-5 grid-cols-2">
-            <Forms.InputEmail {form} field="email" label="Email address" cols={2} />     
+            <Forms.InputEmail
+              {form}
+              field="email"
+              label="Email address"
+              cols={2} />
 
             <Button class="col-span-2 flex gap-2" type="submit">
               {#if $passkeyDelayed}
                 <Icons.spinner class="h-4 w-4 animate-spin" />
               {:else}
-                <Icons.passkey />
+                <Icons.passkey class="h-4 w-4 fill-current" />
               {/if}
               Login with passkey
-            </Button>            
+            </Button>
           </div>
         </form>
 
         <Forms.Divider />
-        <GoogleButton operation="login" on:principal={updateForm(form, true)} delayed={googleDelayed} />
+        <GoogleButton
+          operation="login"
+          on:principal={updateForm(form, true)}
+          delayed={googleDelayed} />
 
         <div class="mt-2 text-center text-sm">
           Don&apos;t have an account?
-          <a href="/" class="underline"> Sign up </a>
+          <a href="/" class="underline">Sign up</a>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="hidden bg-muted lg:block bg-cover bg-[url('/images/bg-hero.jpg')]" />
+  <div
+    class="hidden bg-muted lg:block bg-cover bg-[url('/images/bg-hero.jpg')]" />
 </div>

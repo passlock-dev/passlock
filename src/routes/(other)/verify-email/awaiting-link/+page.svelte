@@ -10,7 +10,7 @@
   import * as Card from '$lib/components/ui/card/index.js'
   import Logo from '$lib/components/ui/logo'
   import { ThemeSelector } from '$lib/components/theme'
-  
+
   export let data: PageData
 
   const endpoint = PUBLIC_PASSLOCK_ENDPOINT

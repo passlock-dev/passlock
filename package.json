@@ -27,10 +27,12 @@
     "@types/google-one-tap": "^1.2.6",
     "autoprefixer": "^10.4.19",
     "better-sqlite3": "^9.5.0",
+    "bits-ui": "^0.21.5",
+    "clsx": "^2.1.1",
     "dedent": "^1.5.3",
-    "formsnap": "^1.0.0",
     "js-sha256": "^0.11.0",
     "lucia": "^3.1.1",
+    "lucide-svelte": "^0.375.0",
     "mode-watcher": "^0.3.0",
     "node-check-updates": "^0.1.9",
     "postcss": "^8.4.38",
@@ -40,6 +42,8 @@
     "svelte": "^4.2.15",
     "svelte-check": "^3.6.9",
     "sveltekit-superforms": "^2.12.6",
+    "tailwind-merge": "^2.3.0",
+    "tailwind-variants": "^0.2.1",
     "tailwindcss": "^3.4.3",
     "tslib": "^2.6.2",
     "typescript": "^5.4.5",
@@ -47,12 +51,5 @@
     "vite": "^5.2.10"
   },
   "type": "module",
-  "packageManager": "pnpm@8.15.6+sha256.01c01eeb990e379b31ef19c03e9d06a14afa5250b82e81303f88721c99ff2e6f",
-  "dependencies": {
-    "bits-ui": "^0.21.5",
-    "clsx": "^2.1.1",
-    "lucide-svelte": "^0.375.0",
-    "tailwind-merge": "^2.3.0",
-    "tailwind-variants": "^0.2.1"
-  }
+  "packageManager": "pnpm@8.15.6+sha256.01c01eeb990e379b31ef19c03e9d06a14afa5250b82e81303f88721c99ff2e6f"
 }

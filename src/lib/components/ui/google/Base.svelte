@@ -45,9 +45,10 @@
   const dispatch = createEventDispatcher<{ principal: Principal }>()
 
   export let options: Options
-  
+
   let googleBtnWrapper: HTMLDivElement
   let googleBtn: HTMLButtonElement | null
+  let requestPending = false
   let error = ''
 
   const passlock = new Passlock(options)
@@ -57,6 +58,7 @@
       client_id: options.googleClientId,
       ux_mode: 'popup',
       callback: async ({ credential }) => {
+        requestPending = true
         const principal =
           options.operation === 'register'
             ? await passlock.registerOidc({
@@ -69,10 +71,13 @@
               })
 
         if (PasslockError.isError(principal) && principal.detail) {
+          requestPending = false
           error = `${principal.message}. ${principal.detail}`.trim()
         } else if (PasslockError.isError(principal)) {
+          requestPending = false
           error = principal.message
         } else {
+          requestPending = false
           dispatch('principal', principal)
         }
       }
@@ -98,6 +103,6 @@
 
 <div bind:this={googleBtnWrapper} class="hidden" />
 
-<slot {click} />
+<slot {click} {requestPending} />
 
 <slot name="error" {error} />

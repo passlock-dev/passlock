@@ -1,10 +1,16 @@
 <script lang="ts">
-	import type { SVGAttributes } from "svelte/elements";
+  import type { SVGAttributes } from 'svelte/elements'
 
-	type $$Props = SVGAttributes<SVGElement>;
+  type $$Props = SVGAttributes<SVGElement>
 </script>
 
-<svg role="img" width="46" height="47" viewBox="0 0 46 47" fill="none" {...$$restProps}>
+<svg
+  role="img"
+  width="46"
+  height="47"
+  viewBox="0 0 46 47"
+  fill="none"
+  {...$$restProps}>
   <path
     d="M46 24.0287C46 22.09 45.8533 20.68 45.5013 19.2112H23.4694V27.9356H36.4069C36.1429 30.1094 34.7347 33.37 31.5957 35.5731L31.5663 35.8669L38.5191 41.2719L38.9885 41.3306C43.4477 37.2181 46 31.1669 46 24.0287Z"
     fill="#4285F4" />

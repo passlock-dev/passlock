@@ -46,7 +46,7 @@
     field
   ) satisfies FormFieldProxy<boolean>
 
-  $:id = `${field}-${generateId()}`
+  $: id = `${field}-${generateId()}`
 </script>
 
 <div>
@@ -59,7 +59,7 @@
       {...$constraints}
       {...$$restProps}
       class="checkbox" />
-  
+
     <label for={id} class="cursor-pointer text-sm dark:text-white">
       <slot name="label" />
     </label>
@@ -77,4 +77,3 @@
     </div>
   {/if}
 </div>
-

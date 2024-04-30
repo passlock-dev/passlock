@@ -17,18 +17,21 @@
     formFieldProxy,
     type SuperForm,
     type FormPathLeaves,
-
     type FormFieldProxy
-
   } from 'sveltekit-superforms'
 
   export let form: SuperForm<T>
   export let field: FormPathLeaves<T, string>
-  const { value, errors } = formFieldProxy(form, field) satisfies FormFieldProxy<string>
+  const { value, errors } = formFieldProxy(
+    form,
+    field
+  ) satisfies FormFieldProxy<string>
 
   const dispatch = createEventDispatcher<{ complete: void }>()
 
-  const focus = (el: HTMLInputElement) => { el.focus() }
+  const focus = (el: HTMLInputElement) => {
+    el.focus()
+  }
 
   const onPaste = (e: ClipboardEvent) => {
     const text = e.clipboardData?.getData('text')
@@ -47,18 +50,18 @@
 </script>
 
 <div>
-<input
-  use:focus
-  bind:value={$value}
-  on:paste={onPaste}
-  on:keyup={onKeyUp}
-  type="text"
-  inputmode="numeric"
-  id="code"
-  name="code"
-  autocomplete="one-time-code"
-  maxlength="6"
-  class="pin text-lg tracking-[0.5em] w-full" />
+  <input
+    use:focus
+    bind:value={$value}
+    on:paste={onPaste}
+    on:keyup={onKeyUp}
+    type="text"
+    inputmode="numeric"
+    id="code"
+    name="code"
+    autocomplete="one-time-code"
+    maxlength="6"
+    class="pin text-lg tracking-[0.5em] w-full" />
 
   {#if $errors}
     <div class="mt-2 text-sm text-red-600 dark:text-red-400">
@@ -68,5 +71,5 @@
         {/each}
       </ul>
     </div>
-  {/if}  
-</div>  
+  {/if}
+</div>

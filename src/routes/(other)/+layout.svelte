@@ -13,7 +13,8 @@
 <div class="h-screen flex flex-col bg-white dark:bg-slate-950">
   <Banner>
     <p class="text-white">
-      <span class="font-semibold">Demo</span> - Please try registration, email verification & login
+      <span class="font-semibold">Demo</span>
+       - Please try registration, email verification & login
     </p>
   </Banner>
 

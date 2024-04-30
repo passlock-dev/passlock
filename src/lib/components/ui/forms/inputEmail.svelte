@@ -35,14 +35,14 @@
   } from 'sveltekit-superforms'
 
   export let cols = 1
-  $:colSpan = `col-span-${cols}`
+  $: colSpan = `col-span-${cols}`
 
   /**
    * Make sure you pass in a raw Superform, i.e. const form = superform(...),
    * not const { form } = superform(...)
    */
   export let form: SuperForm<T>
-  
+
   /**
    * A field on the form e.g. "email"
    */
@@ -50,14 +50,14 @@
 
   /**
    * Display label e.g. "Email address"
-   */  
+   */
   export let label: string
 
   const { value, errors, constraints } = formFieldProxy(form, field)
 
-  $:invalid = Array.isArray($errors) && $errors.length ? true : undefined
-  $:id = `${field}-${generateId()}`
-  $:errId = invalid ? `${id}-error` : undefined
+  $: invalid = Array.isArray($errors) && $errors.length ? true : undefined
+  $: id = `${field}-${generateId()}`
+  $: errId = invalid ? `${id}-error` : undefined
 </script>
 
 <div class={colSpan}>
@@ -75,12 +75,14 @@
       {...$$restProps} />
 
     {#if $errors}
-      <div class="absolute inset-y-0 end-0 flex items-center pointer-events-none pe-3">
-        <Icons.fieldError class="flex-shrink-0 size-4 text-red-600 dark:text-red-400" />
+      <div
+        class="absolute inset-y-0 end-0 flex items-center pointer-events-none pe-3">
+        <Icons.fieldError
+          class="flex-shrink-0 size-4 text-red-600 dark:text-red-400" />
       </div>
     {/if}
   </div>
-  
+
   {#if $errors}
     <div id={errId} class="mt-2 text-sm text-red-600 dark:text-red-400">
       <ul>
@@ -95,5 +97,5 @@
     <div class="mt-2 text-sm text-base-600 dark:text-base-400">
       <slot name="description" />
     </div>
-  {/if}  
+  {/if}
 </div>
