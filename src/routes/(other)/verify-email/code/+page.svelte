@@ -55,7 +55,7 @@
 
       <p class="text-center text-sm text-base-600 dark:text-base-400">
         Still waiting?
-        <button on:click={resend} disabled={resendDisabled} class="link-primary">Resend the code</button>
+        <button type="button" on:click={resend} disabled={resendDisabled} class="link-primary">Resend the code</button>
       </p>
 
       <Forms.SubmitButton {disabled} requestPending={$delayed}>
