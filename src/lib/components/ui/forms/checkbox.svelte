@@ -21,6 +21,8 @@
   ```
 -->
 <script lang="ts" generics="T extends Record<string, unknown>">
+  import type { HTMLInputAttributes } from 'svelte/elements'
+
   import { generateId } from './utils'
 
   import {
@@ -29,6 +31,11 @@
     type FormPathLeaves,
     type SuperForm
   } from 'sveltekit-superforms'
+
+  type $$Props = HTMLInputAttributes & {
+    form: SuperForm<T>,
+    field: FormPathLeaves<T>
+  }
 
   /**
    * Make sure you pass in a raw Superform, i.e. const form = superform(...),

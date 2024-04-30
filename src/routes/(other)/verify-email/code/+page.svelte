@@ -61,7 +61,8 @@
       <Card.Header>
         <Card.Title class="text-2xl text-center">Enter your code</Card.Title>
         <Card.Description class="text-center">
-          Enter your verification code below
+          We've sent you a verification code. <br />
+          Please check your emails (including junk)
         </Card.Description>
       </Card.Header>
       <Card.Content class="grid gap-4">

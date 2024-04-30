@@ -13,7 +13,7 @@
   import { registrationFormSchema } from '$lib/schemas.js'
   import type { VerifyEmail } from '@passlock/client'
   import { onMount } from 'svelte'
-  import { superForm } from 'sveltekit-superforms'
+  import { superForm, type SuperForm } from 'sveltekit-superforms'
   import { valibotClient } from 'sveltekit-superforms/adapters'
 
   import { Button } from '$lib/components/ui/button/index.js'
@@ -103,8 +103,8 @@
         <form method="post" use:enhance>
           <div class="grid gap-5 grid-cols-2">
             <Forms.InputText {form} field="givenName" label="First name" />
-            <Forms.InputText {form} field="familyName" label="Last name" />
-            <Forms.InputEmail {form} field="email" label="Email" cols={2} />
+            <Forms.InputText {form} field="familyName" label="Last name" autocomplete="family-name" />
+            <Forms.InputEmail {form} field="email" label="Email" cols={2} autocomplete="email" />
 
             <Button class="col-span-2 flex gap-2" type="submit">
               {#if $delayed}
@@ -133,7 +133,7 @@
       </div>
 
       <p class="px-8 text-center text-sm text-muted-foreground">
-        By clicking continue, you agree to our
+        By creating an account, you agree to our
         <a
           href="/terms"
           class="underline underline-offset-4 hover:text-primary">

@@ -20,6 +20,8 @@
   ```
 -->
 <script lang="ts" generics="T extends Record<string, unknown>">
+  import type { HTMLInputAttributes } from 'svelte/elements'
+
   import * as Icons from '$lib/components/icons'
 
   import { Label } from '$lib/components/ui/label'
@@ -34,6 +36,13 @@
     type FormPathLeaves
   } from 'sveltekit-superforms'
 
+  type $$Props = Omit<HTMLInputAttributes, 'form'> & {
+    form: SuperForm<T>,
+    field: FormPathLeaves<T>,
+    label: string,
+    cols?: number
+  }
+  
   export let cols = 1
   $: colSpan = `col-span-${cols}`
 
