@@ -16,7 +16,7 @@ devDependencies:
     version: 0.77.0(svelte@4.2.15)
   '@passlock/client':
     specifier: 0.9.10
-    version: 0.9.10(@effect/platform@0.51.0)(fast-check@3.18.0)
+    version: 0.9.10(@effect/platform@0.52.0)(fast-check@3.18.0)
   '@sveltejs/adapter-auto':
     specifier: ^3.2.0
     version: 3.2.0(@sveltejs/kit@2.5.7)
@@ -133,30 +133,30 @@ packages:
       regenerator-runtime: 0.14.1
     dev: true
 
-  /@effect/platform@0.51.0(@effect/schema@0.66.12)(effect@3.1.0)(ws@8.17.0):
-    resolution: {integrity: sha512-j5kV5jNsMYjBARYiCYdxuLe5FVqnOpYo8Ox3K0QupmsyUS0bvZ9v+xdhc29e+1Rn7Vtm1YlBsoY8Gi7HZPJAiw==}
+  /@effect/platform@0.52.0(@effect/schema@0.66.12)(effect@3.1.0)(ws@8.17.0):
+    resolution: {integrity: sha512-2m08Ibh7hmTZojV7M/Y02nIhW+aWSYsmwdJdGWRa64wJoUMwnRs0KRudtDMK0qLDlsoB1uvGkGBGe0euVfy2qg==}
     peerDependencies:
       '@effect/schema': ^0.66.12
       effect: ^3.1.0
     dependencies:
       '@effect/schema': 0.66.12(effect@3.1.0)(fast-check@3.18.0)
       effect: 3.1.0
-      find-my-way-ts: 0.1.1
+      find-my-way-ts: 0.1.2
       isows: 1.0.4(ws@8.17.0)
-      multipasta: 0.2.0
+      multipasta: 0.2.1
       path-browserify: 1.0.1
     transitivePeerDependencies:
       - ws
     dev: true
 
-  /@effect/rpc@0.30.14(@effect/platform@0.51.0)(@effect/schema@0.66.12)(effect@3.1.0):
-    resolution: {integrity: sha512-FHfFMBk+HSj79ArVFHU6u204mFQQxFqVx8hCP8dc4e8wVVjaz9uCWGv5z61wwwwQy9QK7gQ/v0x8rW3upcQH+w==}
+  /@effect/rpc@0.30.15(@effect/platform@0.52.0)(@effect/schema@0.66.12)(effect@3.1.0):
+    resolution: {integrity: sha512-kQdoL63f9PEtOqOnBWE3J+KBOZe/mYlkXaY0tiftY0Ne4qYOOsIL0UcCDWKoNDTPLPzxqRC9M4okvHvs7hvl0w==}
     peerDependencies:
-      '@effect/platform': ^0.51.0
+      '@effect/platform': ^0.52.0
       '@effect/schema': ^0.66.12
       effect: ^3.1.0
     dependencies:
-      '@effect/platform': 0.51.0(@effect/schema@0.66.12)(effect@3.1.0)(ws@8.17.0)
+      '@effect/platform': 0.52.0(@effect/schema@0.66.12)(effect@3.1.0)(ws@8.17.0)
       '@effect/schema': 0.66.12(effect@3.1.0)(fast-check@3.18.0)
       effect: 3.1.0
     dev: true
@@ -872,23 +872,23 @@ packages:
       fastq: 1.17.1
     dev: true
 
-  /@passlock/client@0.9.10(@effect/platform@0.51.0)(fast-check@3.18.0):
+  /@passlock/client@0.9.10(@effect/platform@0.52.0)(fast-check@3.18.0):
     resolution: {integrity: sha512-9t6zU+vLz9+TZIy119HVvw93igt3ZjsWpx88yX1WzZ+Gk6ENQ3qtBqPDFAqI6J8bZ6p5eCxHrRoOkHwOD3g2SQ==}
     dependencies:
       '@github/webauthn-json': 2.1.1
-      '@passlock/shared': 0.9.10(@effect/platform@0.51.0)(effect@3.1.0)(fast-check@3.18.0)
+      '@passlock/shared': 0.9.10(@effect/platform@0.52.0)(effect@3.1.0)(fast-check@3.18.0)
       effect: 3.1.0
     transitivePeerDependencies:
       - '@effect/platform'
       - fast-check
     dev: true
 
-  /@passlock/shared@0.9.10(@effect/platform@0.51.0)(effect@3.1.0)(fast-check@3.18.0):
+  /@passlock/shared@0.9.10(@effect/platform@0.52.0)(effect@3.1.0)(fast-check@3.18.0):
     resolution: {integrity: sha512-/nlRHG+qhL7ZXNpjFazs952wwW1DS7EtIvkuERqYvwZTSzVkQeNhS3U385U16vMYzmYoCNQ+LMmqftgWVKbmWg==}
     peerDependencies:
       effect: ^3.1.0
     dependencies:
-      '@effect/rpc': 0.30.14(@effect/platform@0.51.0)(@effect/schema@0.66.12)(effect@3.1.0)
+      '@effect/rpc': 0.30.15(@effect/platform@0.52.0)(@effect/schema@0.66.12)(effect@3.1.0)
       '@effect/schema': 0.66.12(effect@3.1.0)(fast-check@3.18.0)
       effect: 3.1.0
     transitivePeerDependencies:
@@ -1389,7 +1389,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001614
-      electron-to-chromium: 1.4.751
+      electron-to-chromium: 1.4.752
       node-releases: 2.0.14
       update-browserslist-db: 1.0.13(browserslist@4.23.0)
     dev: true
@@ -1604,8 +1604,8 @@ packages:
     resolution: {integrity: sha512-A0kUH8qeH0jS0X4ViJXf/O5qfMQBrJRsTD1xHed4jpFF5ChUP96LmseaV9LQkFbVDo791REFWTOlMPGCyM/0Ng==}
     dev: true
 
-  /electron-to-chromium@1.4.751:
-    resolution: {integrity: sha512-2DEPi++qa89SMGRhufWTiLmzqyuGmNF3SK4+PQetW1JKiZdEpF4XQonJXJCzyuYSA6mauiMhbyVhqYAP45Hvfw==}
+  /electron-to-chromium@1.4.752:
+    resolution: {integrity: sha512-P3QJreYI/AUTcfBVrC4zy9KvnZWekViThgQMX/VpJ+IsOBbcX5JFpORM4qWapwWQ+agb2nYAOyn/4PMXOk0m2Q==}
     dev: true
 
   /emoji-regex@8.0.0:
@@ -1734,8 +1734,8 @@ packages:
       to-regex-range: 5.0.1
     dev: true
 
-  /find-my-way-ts@0.1.1:
-    resolution: {integrity: sha512-nXUdq29JRQ1tYa1/n+DHTVChMARJHz+gi7sDZibwQukzHP7Hrr6s+sxKbaIM8xB3LzhSBJy5yLb0JhIUmHmOiA==}
+  /find-my-way-ts@0.1.2:
+    resolution: {integrity: sha512-AWsH49RGcyayzzxSAkwQKC1bToY5ForAfNreix88slo7wijg1wwTtCPvUUoVm/qhIY3UVSHBKApw8mOGPxsvSg==}
     dependencies:
       fast-querystring: 1.1.2
     dev: true
@@ -1762,8 +1762,8 @@ packages:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
     dev: true
 
-  /fs-monkey@1.0.5:
-    resolution: {integrity: sha512-8uMbBjrhzW76TYgEV27Y5E//W2f/lTFmx78P2w19FZSxarhI/798APGQyuGCwmkNxgwGRhrLfvWyLBvNtuOmew==}
+  /fs-monkey@1.0.6:
+    resolution: {integrity: sha512-b1FMfwetIKymC0eioW7mTywihSQE4oLzQn1dB6rZB5fx/3NpNEdAWeCSMB+60/AeT0TCXsxzAlcYVEFCTAksWg==}
     requiresBuild: true
     dev: true
     optional: true
@@ -2039,7 +2039,7 @@ packages:
     engines: {node: '>= 4.0.0'}
     requiresBuild: true
     dependencies:
-      fs-monkey: 1.0.5
+      fs-monkey: 1.0.6
     dev: true
     optional: true
 
@@ -2130,8 +2130,8 @@ packages:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
     dev: true
 
-  /multipasta@0.2.0:
-    resolution: {integrity: sha512-MNAym1D9GTpY0/CKYJFDmaJ3TfhblfsQyyipCCSsgasMZCAyR2fCNDJhR7lACfJ0YMwQSDi5RHeIdJcsze6WMg==}
+  /multipasta@0.2.1:
+    resolution: {integrity: sha512-0NR15o5iewJFMsZ4jN6cztCd4izTLZPyHUfBrakbg/x70B8zplPE6qumbs+A7LmhGtQMzpN/K8MOOdifMgAKFA==}
     dev: true
 
   /mz@2.7.0:

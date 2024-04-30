@@ -3,7 +3,7 @@ import dedent from 'dedent'
 
 export const db = sqlite('./sqlite.db')
 
-const sql = dedent(`
+const createTablesSql = dedent(`
   CREATE TABLE IF NOT EXISTS user (
     id TEXT NOT NULL PRIMARY KEY,
     email TEXT NOT NULL,
@@ -19,9 +19,7 @@ const sql = dedent(`
   );
 `)
 
-export const initLucia = () => {
-  db.exec(sql)
-}
+export const initLucia = () => { db.exec(createTablesSql) }
 
 export type CreateUser = {
   id: string
