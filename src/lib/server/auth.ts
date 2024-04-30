@@ -17,6 +17,9 @@ const buildGravatarUrl = (email: string) => {
   return `https://gravatar.com/avatar/${hashedEmail}?d=mp`
 }
 
+/**
+ * Swap this for a more robust implementation
+ */
 const adapter = new BetterSqlite3Adapter(db, {
   user: 'user',
   session: 'session'
