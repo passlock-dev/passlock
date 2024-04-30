@@ -306,9 +306,9 @@
 
           <form method="POST" use:enhance>
             <div class="flex flex-col gap-4">
-              <Forms.InputEmail {form} field="email" label="Email address" autocomplete="email" {readonly} />
               <Forms.InputText {form} field="givenName" label="First name" autocomplete="given-name" {readonly} />
               <Forms.InputText {form} field="familyName" label="Last name" autocomplete="family-name" {readonly} />
+              <Forms.InputEmail {form} field="email" label="Email address" autocomplete="email" {readonly} />
 
               <Forms.Checkbox {form} field="acceptTerms">
                 <div slot="label">
