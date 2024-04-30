@@ -1,10 +1,7 @@
 <script lang="ts">
   import Banner from '$lib/components/ui/banner'
   import '../../app.pcss'
-  import type { LayoutData } from './$types'
   import { ModeWatcher } from 'mode-watcher'
-
-  export let data: LayoutData
 </script>
 
 <svelte:head>

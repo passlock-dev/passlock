@@ -20,7 +20,7 @@
   ```
 -->
 <script lang="ts" generics="T extends Record<string, unknown>">
-  import { Icons } from '$lib/components/icons'
+  import * as Icons from '$lib/components/icons'
 
   import { Label } from '$lib/components/ui/label'
 

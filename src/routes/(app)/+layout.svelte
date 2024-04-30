@@ -1,9 +1,6 @@
 <script lang="ts">
   import { ModeWatcher } from 'mode-watcher'
   import '../../app.pcss'
-  import type { LayoutData } from './$types'
-
-  export let data: LayoutData
 </script>
 
 <svelte:head>

@@ -9,7 +9,7 @@
 
   import type { Readable } from 'svelte/store'
   import Base from './Base.svelte'
-  import { Icons } from '$lib/components/icons'
+  import * as Icons from '$lib/components/icons'
 
   export let operation: 'register' | 'login' = 'login'
   export let delayed: Readable<boolean>

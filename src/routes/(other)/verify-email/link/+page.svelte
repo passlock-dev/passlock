@@ -14,7 +14,8 @@
   import * as Card from '$lib/components/ui/card/index.js'
   import Logo from '$lib/components/ui/logo'
   import { ThemeSelector } from '$lib/components/theme'
-
+  import * as Icons from '$lib/components/icons'
+  import { onMount } from 'svelte'
   
   export let data: PageData
 
@@ -33,6 +34,8 @@
     }
   })
 
+  let resendDisabled = false
+
   const resend = async () => {
     if (data.user) {
       resendDisabled = true
@@ -43,12 +46,11 @@
     }
   }
 
-  const pinClass =
-    'block text-center border border-gray-200 rounded-md text-sm font-mono font-semibold [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-gray-700 dark:text-base-400 dark:focus:ring-gray-600 size-[46px]'
-
   const { enhance, delayed, form: formData } = form
-  $: disabled = $formData.code.length < 6 || $delayed
-  let resendDisabled = false
+
+  onMount(() => {
+    passlock.autoVerifyEmail(form)
+  })
 </script>
 
 <div class="relative h-full w-full flex justify-center items-center">
@@ -58,19 +60,32 @@
 
   <Logo />
   
-  <Card.Root class="w-full max-w-sm">
-    <Card.Header>
-      <Card.Title class="text-2xl text-center">Verify your email</Card.Title>
-      <Card.Description class="text-center">
-        Please click below to verify your email
-      </Card.Description>
-    </Card.Header>
-    <Card.Footer class="flex flex-col">
-      <Button class="w-full">Verify email</Button>
-      <div class="mt-4 text-center text-sm">
-        Still waiting?
-        <a href="/" class="underline">Resend code</a>
-      </div>
-    </Card.Footer>
-  </Card.Root>
+  <form method="post" use:enhance>
+    <Card.Root class="w-full max-w-sm">
+      <Card.Header>
+        <Card.Title class="text-2xl text-center">Verify your email</Card.Title>
+        <Card.Description class="text-center">
+          Please click below to verify your email
+        </Card.Description>
+      </Card.Header>
+      <Card.Footer class="flex flex-col">
+        <Button class="col-span-2 flex gap-2" type="submit">
+          {#if $delayed}
+            <Icons.spinner class="h-4 w-4 animate-spin" />
+          {:else}
+            <Icons.mail class="h-4 w-4" />
+          {/if}
+          Verify email
+        </Button>  
+        <div class="mt-4 text-center text-sm">
+          {#if resendDisabled}
+            Email sent
+          {:else}
+            Still waiting?
+            <button on:click={() => resend()} type="button" class="hover:underline">Resend code</button>
+          {/if}
+        </div>
+      </Card.Footer>
+    </Card.Root>
+  </form>
 </div>

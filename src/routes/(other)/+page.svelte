@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Icons } from "$lib/components/icons/index.js"
-
+  import * as Icons from "$lib/components/icons"
   import { page } from '$app/stores'
   import {
     PUBLIC_PASSLOCK_CLIENT_ID,
@@ -9,7 +8,6 @@
   } from '$env/static/public'
   import * as Forms from '$lib/components/ui/forms'
   import { GoogleButton } from '$lib/components/ui/google'
-  import Passkey from '$lib/icons/Passkey.svelte'
   import { ThemeSelector } from "$lib/components/theme"
   import { SveltePasslock, saveEmailLocally, updateForm } from '$lib/passlock'
   import { registrationFormSchema } from '$lib/schemas.js'
@@ -29,8 +27,18 @@
   const clientId = PUBLIC_PASSLOCK_CLIENT_ID
 
   const passlock = new SveltePasslock({ tenancyId, clientId, endpoint })
-  const redirectUrl = new URL('/verify-email/link', $page.url).href
-  const verifyEmail: VerifyEmail = { method: 'link', redirectUrl }
+  
+  // During the passkey registration process 
+  // Passlock can send a mailbox verification email.
+  // 
+  // If you would like to send a link instead of a code
+  // please change verifyEmail to:
+  // const redirectUrl = new URL('/verify-email/link', $page.url).href
+  // const verifyEmail: VerifyEmail = { method: 'link', redirectUrl }
+  // 
+  // To disable mailbox verification emails set to undefined
+  // see https://docs.passlock.dev/docs/howto/verify-emails
+  const verifyEmail: VerifyEmail = { method: 'code' }
 
   const form = superForm(data.form, {
     validators: valibotClient(registrationFormSchema),
@@ -55,7 +63,6 @@
   const { enhance, delayed, form: superformData } = form
   const passkeyDelayed = derived(delayed, ($delayed) => $delayed && $superformData.authType === 'passkey')
   const googleDelayed = derived(delayed, ($delayed) => $delayed && $superformData.authType === 'google')
-  $: readonly = $superformData.token?.length > 0 ? 'readonly' : undefined
 </script>
 
 <div class="relative h-full w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">  
@@ -99,7 +106,7 @@
               {#if $passkeyDelayed}
                 <Icons.spinner class="h-4 w-4 animate-spin" />
               {:else}
-                <Passkey />
+                <Icons.passkey class="fill-current h-5 w-5" />
               {/if}
               Create passkey
             </Button>

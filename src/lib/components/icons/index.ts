@@ -21,6 +21,7 @@ import Trash from "lucide-svelte/icons/trash";
 import TriangleAlert from "lucide-svelte/icons/triangle-alert";
 import User from "lucide-svelte/icons/user";
 import X from "lucide-svelte/icons/x";
+import Mail from "lucide-svelte/icons/mail";
 
 import type { SvelteComponent } from "svelte";
 import Apple from "./apple.svelte";
@@ -37,46 +38,46 @@ import Tailwind from "./tailwind.svelte";
 import Twitter from "./twitter.svelte";
 import Yarn from "./yarn.svelte";
 import FieldError from "./field-error.svelte"
+import Passkey from './passkey.svelte'
 
 export type Icon = SvelteComponent;
 
-export const Icons = {
-	logo: Logo,
-	close: X,
-	spinner: LoaderCircle,
-	chevronLeft: ChevronLeft,
-	chevronRight: ChevronRight,
-	trash: Trash,
-	post: FileText,
-	page: File,
-	media: Image,
-	settings: Settings,
-	billing: CreditCard,
-	ellipsis: EllipsisVertical,
-	add: Plus,
-	warning: TriangleAlert,
-	user: User,
-	arrowRight: ArrowRight,
-	help: CircleHelp,
-	pizza: Pizza,
-	twitter: Twitter,
-	check: Check,
-	copy: Copy,
-	copyDone: ClipboardCheck,
-	sun: SunMedium,
-	moon: Moon,
-	laptop: Laptop,
-	gitHub: GitHub,
-	radix: RadixSvelte,
-	"Radix Svelte": RadixSvelte,
-	aria: Aria,
-	npm: Npm,
-	yarn: Yarn,
-  fieldError: FieldError,
-	pnpm: Pnpm,
-	tailwind: Tailwind,
-	google: Google,
-	apple: Apple,
-	paypal: PayPal,
-	Hamburger,
-};
+export const logo = Logo
+export const close = X
+export const spinner = LoaderCircle
+export const chevronLeft = ChevronLeft
+export const chevronRight = ChevronRight
+export const trash = Trash
+export const post = FileText
+export const page = File
+export const media = Image
+export const settings = Settings
+export const billing = CreditCard
+export const ellipsis = EllipsisVertical
+export const add = Plus
+export const warning = TriangleAlert
+export const user = User
+export const arrowRight = ArrowRight
+export const help = CircleHelp
+export const pizza = Pizza
+export const twitter = Twitter
+export const check = Check
+export const copy = Copy
+export const copyDone = ClipboardCheck
+export const sun = SunMedium
+export const moon = Moon
+export const laptop = Laptop
+export const gitHub = GitHub
+export const radix = RadixSvelte
+export const aria = Aria
+export const npm = Npm
+export const yarn = Yarn
+export const fieldError = FieldError
+export const pnpm = Pnpm
+export const tailwind = Tailwind
+export const google = Google
+export const apple = Apple
+export const paypal = PayPal
+export const passkey = Passkey
+export const hamburger = Hamburger
+export const mail = Mail

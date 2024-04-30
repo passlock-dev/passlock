@@ -6,11 +6,10 @@
     PUBLIC_PASSLOCK_TENANCY_ID
   } from '$env/static/public'
   import Logo from '$lib/components/ui/logo'
-  import { Icons } from '$lib/components/icons'
+  import * as Icons from '$lib/components/icons'
   import { Button, Button as a } from '$lib/components/ui/button/index.js'
   import * as Forms from '$lib/components/ui/forms'
   import { GoogleButton } from '$lib/components/ui/google'
-  import Passkey from '$lib/icons/Passkey.svelte'
   import { ThemeSelector } from "$lib/components/theme"
   import {
     SveltePasslock,
@@ -85,7 +84,7 @@
               {#if $passkeyDelayed}
                 <Icons.spinner class="h-4 w-4 animate-spin" />
               {:else}
-                <Passkey />
+                <Icons.passkey />
               {/if}
               Login with passkey
             </Button>            
