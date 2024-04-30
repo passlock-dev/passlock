@@ -7,22 +7,19 @@ const config = {
   theme: {
     extend: {
       aria: {
-        invalid: 'invalid="true"',
+        invalid: 'invalid="true"'
       },
       colors: {
         base: colors.slate,
         primary: colors.blue
-      },
+      }
     }
   },
 
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/aspect-ratio'),
-  ],
+  plugins: [require('@tailwindcss/forms'), require('@tailwindcss/aspect-ratio')],
 
   corePlugins: {
-    aspectRatio: false,
+    aspectRatio: false
   },
 
   darkMode: 'class'

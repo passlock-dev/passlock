@@ -1,11 +1,15 @@
 import { lucia } from '$lib/server/auth'
 import { initLucia } from '$lib/server/db'
-import type { Handle } from '@sveltejs/kit'
+import { redirect, type Handle } from '@sveltejs/kit'
+
+const isProtectedRoute = (routeId: string | null) => routeId?.startsWith('/(app)')
 
 export const handle: Handle = async ({ event, resolve }) => {
   const sessionId = event.cookies.get(lucia.sessionCookieName)
 
-  if (!sessionId) {
+  if (!sessionId && isProtectedRoute(event.route.id)) {
+    return redirect(302, '/')
+  } else if (!sessionId) {
     event.locals.user = undefined
     event.locals.session = undefined
     return resolve(event)
@@ -34,7 +38,13 @@ export const handle: Handle = async ({ event, resolve }) => {
   event.locals.user = user || undefined
   event.locals.session = session || undefined
 
-  return resolve(event)
+  if (isProtectedRoute(event.route.id) && event.locals.user) {
+    return resolve(event)
+  } else if (isProtectedRoute(event.route.id)) {
+    redirect(302, '/')
+  } else {
+    return resolve(event)
+  }
 }
 
 initLucia()

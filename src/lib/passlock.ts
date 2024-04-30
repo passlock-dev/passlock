@@ -1,10 +1,4 @@
-import {
-  ErrorCode,
-  Passlock,
-  PasslockError,
-  type Principal,
-  type VerifyEmail
-} from '@passlock/client'
+import { ErrorCode, Passlock, PasslockError, type Principal, type VerifyEmail } from '@passlock/client'
 import { get } from 'svelte/store'
 import { type SuperForm } from 'sveltekit-superforms'
 
@@ -56,32 +50,28 @@ export class SveltePasslock {
     await this.passlock.preConnect()
   }
 
-  readonly register = async <T extends RegistrationData>(
-    options: SuperformData<T>
-  ) => {
+  readonly register = async <T extends RegistrationData>(options: SuperformData<T>) => {
     const { cancel, formData, form, verifyEmail } = options
     const { email, givenName, familyName, token, authType } = get(form.form)
 
     if (token && authType) {
-      // a bit hacky but basically the Google button sets the fields on the superform, 
-      // whos data is not necessarily posted to the backend unless we use a hidden 
-      // form field. We're basically duplicating the role of a hidden field here by 
+      // a bit hacky but basically the Google button sets the fields on the superform,
+      // whos data is not necessarily posted to the backend unless we use a hidden
+      // form field. We're basically duplicating the role of a hidden field here by
       // adding the token and authType to the request
       formData.set('token', token)
       formData.set('authType', authType)
     } else if (!token && authType === 'passkey') {
       const principal = await this.passlock.registerPasskey({
-        email, givenName, familyName, verifyEmail
+        email,
+        givenName,
+        familyName,
+        verifyEmail
       })
 
-      if (
-        PasslockError.isError(principal) &&
-        principal.code === ErrorCode.Duplicate
-      ) {
+      if (PasslockError.isError(principal) && principal.code === ErrorCode.Duplicate) {
         // detail will tell the user how to login (passkey or google)
-        const error = principal.detail
-          ? `${principal.message}. ${principal.detail}`
-          : principal.message
+        const error = principal.detail ? `${principal.message}. ${principal.detail}` : principal.message
 
         form.errors.update(errors => ({ ...errors, email: [error] }))
 
@@ -111,14 +101,9 @@ export class SveltePasslock {
         userVerification: 'discouraged'
       })
 
-      if (
-        PasslockError.isError(principal) &&
-        principal.code === ErrorCode.NotFound
-      ) {
+      if (PasslockError.isError(principal) && principal.code === ErrorCode.NotFound) {
         // detail will tell the user how to login (passkey or google)
-        const error = principal.detail
-          ? `${principal.message}. ${principal.detail}`
-          : principal.message
+        const error = principal.detail ? `${principal.message}. ${principal.detail}` : principal.message
         form.errors.update(errors => ({ ...errors, email: [error] }))
         cancel()
       } else if (PasslockError.isError(principal)) {
@@ -139,15 +124,15 @@ export class SveltePasslock {
 
     if (code.length >= 6) {
       const principal = await this.passlock.verifyEmailCode({ code })
-      
+
       if (PasslockError.isError(principal)) {
-        form.errors.update((old) => ({ ...old, code: [principal.message] }))
+        form.errors.update(old => ({ ...old, code: [principal.message] }))
         cancel()
       } else {
         formData.set('token', principal.token)
       }
     } else {
-      form.errors.update((old) => ({ ...old, code: ['Please enter your code'] }))
+      form.errors.update(old => ({ ...old, code: ['Please enter your code'] }))
       cancel()
     }
   }
@@ -185,7 +170,6 @@ export const updateForm =
  * @param email
  * @returns
  */
-export const saveEmailLocally = (email: string) =>
-  localStorage.setItem('email', email)
+export const saveEmailLocally = (email: string) => localStorage.setItem('email', email)
 
 export const getLocalEmail = () => localStorage.getItem('email')
