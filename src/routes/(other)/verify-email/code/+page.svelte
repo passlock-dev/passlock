@@ -69,7 +69,7 @@
         <MultiFieldPIN {form} field="code" />
       </Card.Content>
       <Card.Footer class="flex flex-col">
-        <Button class="col-span-2 flex gap-2" type="submit">
+        <Button variant="secondary" class="col-span-2 flex gap-2" type="submit">
           {#if $delayed}
             <Icons.spinner class="h-4 w-4 animate-spin" />
           {:else}

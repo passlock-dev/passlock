@@ -22,6 +22,7 @@ import TriangleAlert from 'lucide-svelte/icons/triangle-alert'
 import User from 'lucide-svelte/icons/user'
 import X from 'lucide-svelte/icons/x'
 import Mail from 'lucide-svelte/icons/mail'
+import FieldError from 'lucide-svelte/icons/triangle-alert'
 
 import type { SvelteComponent } from 'svelte'
 import Apple from './apple.svelte'
@@ -37,7 +38,6 @@ import RadixSvelte from './radix-svelte.svelte'
 import Tailwind from './tailwind.svelte'
 import Twitter from './twitter.svelte'
 import Yarn from './yarn.svelte'
-import FieldError from './field-error.svelte'
 import Passkey from './passkey.svelte'
 
 export type Icon = SvelteComponent
