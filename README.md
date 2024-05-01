@@ -96,7 +96,9 @@ These can be found in your [Passlock console][passlock-console] under [settings]
 
 Create a `.env.local` file containing the relevant credentials. 
 
-Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings] under `Tenancy information -> Vite .env -> Download`
+Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]:
+
+`Tenancy information -> Vite .env -> Download`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
