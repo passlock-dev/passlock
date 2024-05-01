@@ -11,8 +11,7 @@
   <p align="center">
     Starter project illustrating Passkey authentication, Google sign in and mailbox verification.
     <br />
-    <!-- <a href="https://passlock.dev/#demo">View Demo</a> -->
-  </p>
+    <a href="https://d1rl0ue18b0151.cloudfront.net">Demo</a>
 </div>
 
 <div align="center">
@@ -59,6 +58,14 @@
 # About
 
 Pretty much every web application requires authentication and authorization. Passkeys are the next generation authentication mechanism, replacing passwords and one time codes. This application makes full use of passkeys and social login (Google).
+
+# Demos
+
+I've published 2 live versions of this project:
+
+* [Master demo](https://d1rl0ue18b0151.cloudfront.net) - A version of the master branch (uses Preline + Melt UI)
+
+* [Shadcn demo](https://dbr4qrmypnl85.cloudfront.net) - A version of the shadcn branch (uses shadcn-svelte)
 
 # Getting started
 
