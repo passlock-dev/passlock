@@ -11,7 +11,7 @@
   <p align="center">
     Starter project illustrating Passkey authentication, Google sign in and mailbox verification.
     <br />
-    <a href="https://d1rl0ue18b0151.cloudfront.net">Demo</a>
+    <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Preline)</a> | <a href="https://dbr4qrmypnl85.cloudfront.net">Demo (Shadcn)</a>
 </div>
 
 <div align="center">
@@ -26,11 +26,6 @@
 
 ![Register a passkey](./docs/preline.png)
 <p align="center">Creating a new account and passkey</p>
-
-**Shadcn/ui variant**
-
-![Shadcn/ui variant](./docs/shadcn.png)
-<p align="center">Shadcn/ui variant</p>
 
 <br />
 
@@ -173,7 +168,10 @@ See the emails section of your [Passlock console][passlock-settings]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-# Shadcn variant
+# Shadcn/ui variant
+
+![Shadcn/ui variant](./docs/shadcn.png)
+<p align="center">Shadcn/ui variant</p>
 
 The default (master) branch uses [Preline][preline], however a [shadcn-svelte] variant is also available:
 
