@@ -11,7 +11,8 @@
   <p align="center">
     Starter project illustrating Passkey authentication, Google sign in and mailbox verification.
     <br />
-    <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Preline)</a> | <a href="https://dbr4qrmypnl85.cloudfront.net">Demo (Shadcn)</a>
+    <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Preline)</a> &nbsp; | &nbsp; <a href="https://dbr4qrmypnl85.cloudfront.net">Demo (Shadcn)</a>
+  </p>
 </div>
 
 <div align="center">
@@ -21,21 +22,23 @@
   </picture>
 </div>
 
-<br />
+# Features
 
+1. Passkey registration and authentication
+2. Google sign in / one-tap
+3. Mailbox verification (via a one time code or link)
+4. Dark mode with theme selection (light/dark/system)
+5. [Preline][preline] and [Shadcn][shadcn-svelte] variants
+
+# Screenshots
 
 ![Register a passkey](./docs/preline.png)
 <p align="center">Creating a new account and passkey</p>
 
 <br />
 
-# Features
-
-1. Passkey registration and authentication
-2. Google sign in / one-tap
-3. Mailbox verification
-4. Dark mode with theme selection (light/dark/system)
-5. [Preline][preline] and [Shadcn][shadcn-svelte] variants
+![Shadcn/ui variant](./docs/shadcn.png)
+<p align="center">Shadcn/ui variant</p>
 
 # Frameworks used
 
