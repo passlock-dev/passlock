@@ -59,7 +59,7 @@ Pretty much every web application requires authentication and authorization. Pas
 
 # Demos
 
-I've published 2 live versions of this project:
+I've deployed 2 live versions of this project:
 
 * [Master demo](https://d1rl0ue18b0151.cloudfront.net) - A version of the master branch (uses Preline + Melt UI)
 
