@@ -1,6 +1,5 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation'
-  import { PUBLIC_ORG_NAME } from '$env/static/public'
   import type { User } from 'lucia'
   import { slide } from 'svelte/transition'
 
@@ -21,7 +20,7 @@
   <nav class="relative w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between" aria-label="Global">
     <div class="flex items-center justify-between">
       <a class="flex-none text-xl font-semibold text-base-800 dark:text-base-100" href="/">
-        {PUBLIC_ORG_NAME}
+        Acme Inc.
       </a>
 
       <div class="flex items-center gap-4 sm:hidden">

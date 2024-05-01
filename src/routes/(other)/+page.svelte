@@ -1,7 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores'
   import {
-    PUBLIC_ORG_NAME,
     PUBLIC_PASSLOCK_CLIENT_ID,
     PUBLIC_PASSLOCK_ENDPOINT,
     PUBLIC_PASSLOCK_TENANCY_ID
@@ -68,7 +67,7 @@
     <div>
       <h1 class="block text-3xl font-bold text-base-800 sm:text-4xl lg:text-6xl lg:leading-tight dark:text-white">
         Start your journey with <span class="text-primary-600">
-          {PUBLIC_ORG_NAME}
+          Acme Inc.
         </span>
       </h1>
       <p class="mt-3 text-lg text-base-800 dark:text-base-50">
