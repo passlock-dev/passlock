@@ -53,6 +53,8 @@
 <sup>[1]</sup> Uses native Svelte in place of Preline JavaScript  
 <sup>[2]</sup> See the [shadcn branch](#shadcnui-variant)
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 # About
 
 Pretty much every web application requires authentication and authorization. Passkeys are the next generation authentication mechanism, replacing passwords and one time codes. This application makes full use of passkeys and social login (Google).
