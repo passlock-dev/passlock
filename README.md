@@ -38,7 +38,7 @@
 <br />
 
 ![Shadcn/ui variant](./docs/shadcn.png)
-<p align="center">Shadcn/ui variant</p>
+<p align="center">Shadcn/ui variant (dark mode)</p>
 
 # Frameworks used
 
