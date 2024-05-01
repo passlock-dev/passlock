@@ -57,7 +57,7 @@
 
 # About
 
-Pretty much every web application requires authentication and authorization. Passkeys are the next generation authentication mechanism, replacing passwords and one time codes. This application makes full use of passkeys and social login (Google).
+Pretty much every web application requires authentication and authorization. The future of web authenticaton lies in passkeys, and this starter app makes full use of them. Learn how to register and authenticate your users using passkeys, perform facial or fingerprint recognition and more. You'll also learn how to use some of SvelteKit's hottest libraries and implement Google's latest social sign in feature.
 
 # Demos
 
