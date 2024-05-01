@@ -24,33 +24,47 @@
 
 <br />
 
-![Register a passkey](https://github.com/passlock-dev/svelte-passkeys/assets/208345/9c8a1a66-5f15-4dfd-888d-00f36bdad18a)
 
-<p align="center">Registering a new account and passkey</p>
+![Register a passkey](./docs/preline.png)
+<p align="center">Creating a new account and passkey</p>
+
+**Shadcn/ui variant**
+
+![Shadcn/ui variant](./docs/shadcn.png)
+<p align="center">Shadcn/ui variant</p>
 
 <br />
 
 # Features
 
 1. Passkey registration and authentication
-2. Google sign in / Google one-tap
+2. Google sign in / one-tap
 3. Mailbox verification
 4. Dark mode with theme selection (light/dark/system)
+5. [Preline][preline] and [Shadcn][shadcn-svelte] variants
 
 # Frameworks used
 
-1. [Passlock][passlock] - Serverless passkey platform. Passlock handles Passkey registration and authentication, mailbox verification, user management, logging, auditing and more.
-2. [Lucia][lucia] - Robust session management. Lucia is framework agnostic and works well with SvelteKit. Lucia works with many databases, we use Sqlite for this example.
-3. [Tailwind] - Utility-first CSS framework
-4. [Preline] - Tailwind UI library <sup>\*</sup>
+1. [Passlock][passlock] - Serverless passkey platform
+2. [Superforms][superforms] - Makes form handling a breeze
+3. [Lucia][lucia] - Robust session management
+4. [Tailwind][tailwind] - Utility-first CSS framework
+5. [Preline][preline] - Tailwind UI library <sup>1</sup>
+6. [shadcn-svelte][shadcn-svelte] - Awesome tailwind ui components for Svelte <sup>2</sup>
+7. [Melt UI][meltui] - Headless component library for Svelte
 
-<span>\*</span> Uses native Svelte in place of Preline JavaScript
+[1] Uses native Svelte in place of Preline JavaScript  
+[2] Choose between Preline or shadcn-svelte
+
+# About
+
+Pretty much every web application requires authentication and authorization. Passkeys are the next generation authentication mechanism, replacing passwords and one time codes. This application makes full use of passkeys and social login (Google).
 
 # Getting started
 
 ## Prerequisites
 
-Passlock is free. Create an account on [passlock.dev][passlock-signup]
+This example project uses the cloud based Passlock framework for passkey registration and authentication. Create a free account at [passlock.dev][passlock-signup]
 
 ## Clone this repo
 
@@ -71,7 +85,11 @@ At a minimum you'll need to set three variables:
 2. PUBLIC_PASSLOCK_CLIENT_ID
 3. PASSLOCK_API_KEY
 
-These can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Create a `.env.local` file containing the relevant credentials. Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]: `Tenancy information -> Vite .env -> Download`
+These can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. 
+
+Create a `.env.local` file containing the relevant credentials. 
+
+Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings] under `Tenancy information -> Vite .env -> Download`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -85,13 +103,14 @@ Start the dev server
 
 ## Create an account and passkey
 
-Navigate to the [sign up](http://localhost:5174/register) page and complete the form. Assuming your browser supports passkeys (most do), you should be prompted to create a passkey.
+Navigate to the [home page](http://localhost:5174/) page and complete the form. Assuming your browser supports passkeys (most do), you should be prompted to create a passkey.
 
 ## Sign in
 
 Logout then navigate to the [login](http://localhost:5174/login) page. You should be prompted to authenticate using your newly created passkey.
 
-**Note:** Providing an email address during authentication is optional but **highly recommended**. Please see [src/routes/login/+page.svelte](src/routes/login/+page.svelte) to understand why.
+> [!TIP]
+> Providing an email address during authentication is optional but **highly recommended**. Please see [src/routes/login/+page.svelte](src/routes/login/+page.svelte) to understand why.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -105,7 +124,8 @@ This app also allows users to register/sign in using a Google account. It uses t
 2. Update your `.env` or `.env.local` to include a `PUBLIC_GOOGLE_CLIENT_ID` variable.
 3. Record your Google Client ID in your [Passlock settings][passlock-settings]: Social Login -> Google Client ID
 
-**IMPORTANT!** Don't forget the last step!
+> [!IMPORTANT]  
+> Don't forget the last step!
 
 ## Testing Google sign in
 
@@ -121,7 +141,7 @@ This starter project also supports mailbox verification emails (via Passlock):
 
 ![Verifying mailbox ownership](https://github.com/passlock-dev/svelte-passkeys/assets/208345/2f7c06d6-c2a9-40f2-a8db-0a44fa378281)
 
-You can choose to verify an email address during passkey registration. Take a look at [src/routes/register/+page.svelte](src/routes/register/+page.svelte):
+You can choose to verify an email address during passkey registration. Take a look at [src/routes/+page.svelte](src/routes/+page.svelte):
 
 ```typescript
 // Email a verification link
@@ -146,54 +166,26 @@ See the emails section of your [Passlock console][passlock-settings]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-# Code walkthrough
+# Shadcn variant
 
-The code is well documented. If something is not clear or you run into problems please file an [issue][issues] and I'll update the docs accordingly.
+The default (master) branch uses [Preline][preline], however a [shadcn-svelte] variant is also available:
 
-## Passkey registration
+```bash
+git checkout -b shadcn origin/shadcn
+```
 
-See [src/routes/register/+page.svelte](src/routes/register/+page.svelte). The basic approach is to use sveltekit's progressive enhancements:
+**IMPORTANT**: When switching between branches please re-install the NPM dependencies:
 
-1. We intercept the form submission
-2. We ask the Passlock library to create a passkey
-3. This call returns a token, representing the new passkey
-4. Attach this token to the form and submit it
-5. In the [src/routes/register/+page.server.ts](src/routes/register/+page.server.ts) action we verify the token by exchanging it for a Principal
-6. This principal includes a user id
-7. We create a new local user and link the user id
-
-## Passkey authentication
-
-See [src/routes/login/+page.svelte](src/routes/login/+page.svelte). Very similar to the registration:
-
-1. We intercept the form submission
-2. We ask the Passlock library to authenticate using a passkey
-3. This call returns a token, representing the passkey authentication
-4. Attach this token to the form and submit it
-5. In the [src/routes/login/+page.server.ts](src/routes/login/+page.server.ts) action we verify the token by exchanging it for a Principal
-6. This principal includes a user id
-7. Lookup the local user by user id and create a new Lucia session
-
-## Google sign in
-
-Again it's very similar.
-
-1. We ask Google to authenticate the user
-2. We ask the Passlock library to process Google's response
-3. This call returns a token, representing the user
-4. As above
-
-## Mailbox verification
-
-During the `registerPasslock()` call you pass a verifyEmail option. The backend action then redirects to [src/routes/verify-email/+page.svelte](src/routes/verify-email/+page.svelte). This route is responsible for:
-
-1. Prompting the user to check their mails (if we emailed a link)
-2. Verifying a code (if we emailed a code)
-3. Verifying a link (when the user clicks the link in the verification email)
-
-**Note:** You can swap out the 6 digit multi field code input for a single field input. The advantage of the single field input is that it supports Apple [autofill of email verification codes](apple-verification-codes). However, I've found this feature to be a bit flaky.
+```bash
+rm -r node_modules pnpm-lock.yaml
+pnpm install
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+# Documentation
+
+Please see the [developer docs](./docs/intro.md)
 
 # Questions? Problems
 
@@ -203,6 +195,8 @@ Please file an [issue][issues] and I'll respond ASAP.
 [lucia]: https://lucia-auth.com
 [tailwind]: https://tailwindcss.com
 [preline]: https://preline.co
+[meltui]: https://melt-ui.com
+[shadcn-svelte]: https://www.shadcn-svelte.com
 [passlock-signup]: https://console.passlock.dev/register
 [passlock-console]: https://console.passlock.dev
 [passlock-settings]: https://console.passlock.dev/settings
@@ -210,4 +204,5 @@ Please file an [issue][issues] and I'll respond ASAP.
 [google-signin]: https://developers.google.com/identity/gsi/web/guides/overview
 [google-client-id]: https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#get_your_google_api_client_id
 [issues]: https://github.com/passlock-dev/svelte-passkeys/issues
+[superforms]: https://superforms.rocks
 [apple-verification-codes]: https://www.cultofmac.com/819421/ios-17-autofill-verification-codes-safari-mail-app/

@@ -41,7 +41,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   if (isProtectedRoute(event.route.id) && event.locals.user) {
     return resolve(event)
   } else if (isProtectedRoute(event.route.id)) {
-    redirect(302, '/')
+    redirect(302, '/login')
   } else {
     return resolve(event)
   }
