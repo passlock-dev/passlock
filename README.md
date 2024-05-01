@@ -7,9 +7,9 @@
 
 <a name="readme-top"></a>
 
-<h1 align="center">SvelteKit Passkey Starter</h1>
+<h1 align="center">SvelteKit Passkey Template</h1>
   <p align="center">
-    Starter project featuring Passkey authentication, Google sign in and mailbox verification.
+    SvelteKit template project featuring Passkey authentication, Google sign in and mailbox verification.
     <br />
     <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Preline)</a> &nbsp; | &nbsp; <a href="https://dbr4qrmypnl85.cloudfront.net">Demo (Shadcn)</a>
   </p>
