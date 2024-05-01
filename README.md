@@ -51,7 +51,7 @@
 7. [Melt UI][meltui] - Headless component library for Svelte
 
 <sup>[1]</sup> Uses native Svelte in place of Preline JavaScript  
-<sup>[2]</sup> Choose between Preline or shadcn-svelte
+<sup>[2]</sup> See the [shadcn branch](#shadcnui-variant)
 
 # About
 
@@ -106,11 +106,11 @@ Start the dev server
 
 **Note:** by default this app runs on port 5174 when in dev mode (see [vite.config.ts](vite.config.ts))
 
-## Create an account and passkey
+## Register a passkey
 
 Navigate to the [home page](http://localhost:5174/) page and complete the form. Assuming your browser supports passkeys (most do), you should be prompted to create a passkey.
 
-## Sign in
+## Authenticate
 
 Logout then navigate to the [login](http://localhost:5174/login) page. You should be prompted to authenticate using your newly created passkey.
 
