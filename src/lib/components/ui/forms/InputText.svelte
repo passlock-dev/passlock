@@ -72,7 +72,7 @@
 
     {#if $errors}
       <div class="absolute inset-y-0 end-0 flex items-center pointer-events-none pe-3">
-        <Icons.FieldError class="size-4 flex-shrink-0 text-red-500" />
+        <Icons.FieldError class="size-5 flex-shrink-0 text-red-600 dark:text-red-400" />
       </div>
     {/if}
   </div>

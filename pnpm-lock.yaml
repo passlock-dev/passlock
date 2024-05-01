@@ -47,9 +47,6 @@ devDependencies:
   dedent:
     specifier: ^1.5.3
     version: 1.5.3
-  formsnap:
-    specifier: ^1.0.0
-    version: 1.0.0(svelte@4.2.15)(sveltekit-superforms@2.12.6)
   js-sha256:
     specifier: ^0.11.0
     version: 0.11.0
@@ -1706,17 +1703,6 @@ packages:
     dependencies:
       cross-spawn: 7.0.3
       signal-exit: 4.1.0
-    dev: true
-
-  /formsnap@1.0.0(svelte@4.2.15)(sveltekit-superforms@2.12.6):
-    resolution: {integrity: sha512-NQEbkCS1tKGnn6gBojIuNutxImmq/9bUk9JQ5kW8WOY37QNFtJxYr/SbX8ONWuiVLaczSvGSWXIv3hNu19arqQ==}
-    peerDependencies:
-      svelte: ^4.0.0
-      sveltekit-superforms: ^2.3.0
-    dependencies:
-      nanoid: 5.0.7
-      svelte: 4.2.15
-      sveltekit-superforms: 2.12.6(@sveltejs/kit@2.5.7)(@types/json-schema@7.0.15)(esbuild-runner@2.2.2)(esbuild@0.20.2)(svelte@4.2.15)
     dev: true
 
   /fraction.js@4.3.7:
