@@ -50,8 +50,8 @@
 6. [shadcn-svelte][shadcn-svelte] - Awesome tailwind ui components for Svelte <sup>2</sup>
 7. [Melt UI][meltui] - Headless component library for Svelte
 
-[1] Uses native Svelte in place of Preline JavaScript  
-[2] Choose between Preline or shadcn-svelte
+<sup>[1]</sup> Uses native Svelte in place of Preline JavaScript  
+<sup>[2]</sup> Choose between Preline or shadcn-svelte
 
 # About
 
