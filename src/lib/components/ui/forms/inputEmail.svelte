@@ -37,11 +37,11 @@
   } from 'sveltekit-superforms'
 
   type $$Props = Omit<HTMLInputAttributes, 'form'> & {
-    form: SuperForm<T>,
-    field: FormPathLeaves<T>,
-    label: string,
+    form: SuperForm<T>
+    field: FormPathLeaves<T>
+    label: string
     cols?: number
-  }  
+  }
 
   export let cols = 1
   $: colSpan = `col-span-${cols}`
@@ -86,7 +86,8 @@
     {#if $errors}
       <div
         class="absolute inset-y-0 end-0 flex items-center pointer-events-none pe-3">
-        <Icons.FieldError class="flex-shrink-0 size-5 text-red-600 dark:text-red-400" />
+        <Icons.FieldError
+          class="flex-shrink-0 size-5 text-red-600 dark:text-red-400" />
       </div>
     {/if}
   </div>

@@ -33,7 +33,7 @@
   } from 'sveltekit-superforms'
 
   type $$Props = HTMLInputAttributes & {
-    form: SuperForm<T>,
+    form: SuperForm<T>
     field: FormPathLeaves<T>
   }
 

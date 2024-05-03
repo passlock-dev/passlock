@@ -4,11 +4,11 @@
  * You can ignore it, but feel free to take a look :)
  */
 import {
-    ErrorCode,
-    Passlock,
-    PasslockError,
-    type Principal,
-    type VerifyEmail
+  ErrorCode,
+  Passlock,
+  PasslockError,
+  type Principal,
+  type VerifyEmail
 } from '@passlock/client'
 import { get } from 'svelte/store'
 import { type SuperForm } from 'sveltekit-superforms'
@@ -65,8 +65,8 @@ export class SveltePasslock {
    * Grab the givenName, familyName and email from the form and
    * use them to create a passkey and register it in the Passlock vault.
    * Then submit the associated token along with the other form data.
-   * 
-   * @param options 
+   *
+   * @param options
    */
   readonly register = async <T extends RegistrationData>(
     options: SuperformData<T>
@@ -116,11 +116,11 @@ export class SveltePasslock {
   /**
    * Grab the email from the form (if provided) and use it to look up
    * a specific passkey. Otherwise allow the browser to choose the passkey.
-   * Authenticate the passkey then submit the associated token along 
+   * Authenticate the passkey then submit the associated token along
    * with the other form data.
-   * 
-   * @param options 
-   */  
+   *
+   * @param options
+   */
   readonly login = async <T extends LoginData>(options: SuperformData<T>) => {
     const { cancel, formData, form } = options
     const { email, token, authType } = get(form.form)
@@ -160,8 +160,8 @@ export class SveltePasslock {
    * Verify the provided code with the Passlock backend. Note: this
    * could trigger re-authentication if there is no Passlock token in
    * local storage or it's expired (tokens are valid for 5 mins).
-   * 
-   * @param options 
+   *
+   * @param options
    */
   readonly verifyEmail = async <T extends VerifyEmailData>(
     options: SuperformData<T>
@@ -189,8 +189,8 @@ export class SveltePasslock {
    * so go ahead and submit the form. Otherwise do nothing in which case
    * the user will need to submit the form manually which will trigger
    * re-authentication.
-   * 
-   * @param form 
+   *
+   * @param form
    */
   readonly autoVerifyEmail = async <T extends VerifyEmailData>(
     form: SuperForm<T>
@@ -206,13 +206,13 @@ export class SveltePasslock {
 }
 
 /**
- * Update the token and authType fields on the form. 
+ * Update the token and authType fields on the form.
  * Used to wire up the principal fired by the GoogleButton's
  * on:principal event with the Superform data.
- * 
- * @param form 
- * @param submit 
- * @returns 
+ *
+ * @param form
+ * @param submit
+ * @returns
  */
 export const updateForm =
   <T extends Record<string, unknown>>(form: SuperForm<T>, submit = false) =>

@@ -1,8 +1,7 @@
 import Root from './separator.svelte'
 
 export {
-    Root,
-    //
-    Root as Separator
+  Root,
+  //
+  Root as Separator
 }
-

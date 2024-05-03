@@ -6,7 +6,10 @@
   export let submitting = false
 </script>
 
-<Button disabled={disabled || submitting} type="submit" class="col-span-2 flex gap-2">
+<Button
+  disabled={disabled || submitting}
+  type="submit"
+  class="col-span-2 flex gap-2">
   {#if submitting}
     <Icons.Spinner class="h-4 w-4 animate-spin" />
   {:else}

@@ -7,11 +7,19 @@ import PrevButton from './pagination-prev-button.svelte'
 import Root from './pagination.svelte'
 
 export {
-    Content, Ellipsis, Item,
-    Link, NextButton,
-    //
-    Root as Pagination,
-    Content as PaginationContent, Ellipsis as PaginationEllipsis, Item as PaginationItem,
-    Link as PaginationLink, NextButton as PaginationNextButton, PrevButton as PaginationPrevButton, PrevButton, Root
+  Content,
+  Ellipsis,
+  Item,
+  Link,
+  NextButton,
+  //
+  Root as Pagination,
+  Content as PaginationContent,
+  Ellipsis as PaginationEllipsis,
+  Item as PaginationItem,
+  Link as PaginationLink,
+  NextButton as PaginationNextButton,
+  PrevButton as PaginationPrevButton,
+  PrevButton,
+  Root
 }
-

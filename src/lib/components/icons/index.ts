@@ -19,7 +19,10 @@ import Plus from 'lucide-svelte/icons/plus'
 import Settings from 'lucide-svelte/icons/settings'
 import SunMedium from 'lucide-svelte/icons/sun-medium'
 import Trash from 'lucide-svelte/icons/trash'
-import { default as FieldError, default as TriangleAlert } from 'lucide-svelte/icons/triangle-alert'
+import {
+  default as FieldError,
+  default as TriangleAlert
+} from 'lucide-svelte/icons/triangle-alert'
 import User from 'lucide-svelte/icons/user'
 import X from 'lucide-svelte/icons/x'
 
@@ -42,7 +45,44 @@ import Yarn from './yarn.svelte'
 export type Icon = SvelteComponent
 
 export {
-  Apple, Aria, ArrowRight, Check, ChevronLeft,
-  ChevronRight, CircleHelp, ClipboardCheck, Copy, CreditCard,
-  EllipsisVertical, FieldError, File, FileText, GitHub, Google, Hamburger, Image, Laptop, LoaderCircle, Logo, Mail, Moon, Npm, Passkey, PayPal, Pizza, Plus, Pnpm, RadixSvelte, Settings, LoaderCircle as Spinner, SunMedium, Tailwind, Trash, TriangleAlert, Twitter, User, X, Yarn
+  Apple,
+  Aria,
+  ArrowRight,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  CircleHelp,
+  ClipboardCheck,
+  Copy,
+  CreditCard,
+  EllipsisVertical,
+  FieldError,
+  File,
+  FileText,
+  GitHub,
+  Google,
+  Hamburger,
+  Image,
+  Laptop,
+  LoaderCircle,
+  Logo,
+  Mail,
+  Moon,
+  Npm,
+  Passkey,
+  PayPal,
+  Pizza,
+  Plus,
+  Pnpm,
+  RadixSvelte,
+  Settings,
+  LoaderCircle as Spinner,
+  SunMedium,
+  Tailwind,
+  Trash,
+  TriangleAlert,
+  Twitter,
+  User,
+  X,
+  Yarn
 }

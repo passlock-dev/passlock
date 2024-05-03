@@ -63,7 +63,7 @@
     $submitting => $submitting && $superformData.authType === 'google'
   )
 
-  $:readonlyEmail = $submittingPasskey || undefined
+  $: readonlyEmail = $submittingPasskey || undefined
 </script>
 
 <div
@@ -86,18 +86,27 @@
       <div class="grid gap-2">
         <form method="post" use:enhance>
           <div class="grid gap-5 grid-cols-2">
-            <Forms.InputEmail {form} field="email" label="Email address" autocomplete="email" cols={2} readonly={readonlyEmail} />
+            <Forms.InputEmail
+              {form}
+              field="email"
+              label="Email address"
+              autocomplete="email"
+              cols={2}
+              readonly={readonlyEmail} />
 
             <Forms.SubmitButton submitting={$submittingPasskey}>
-              <Icons.Passkey class="h-4 w-4 fill-current" slot="icon" /> 
-              Login with passkey 
+              <Icons.Passkey class="h-4 w-4 fill-current" slot="icon" />
+              Login with passkey
             </Forms.SubmitButton>
           </div>
         </form>
 
         {#if PUBLIC_GOOGLE_CLIENT_ID}
           <Forms.Divider />
-          <Google.Button operation="login" submitting={$submittingGoogle} on:principal={updateForm(form, true)} />
+          <Google.Button
+            operation="login"
+            submitting={$submittingGoogle}
+            on:principal={updateForm(form, true)} />
         {/if}
 
         <div class="mt-2 text-center text-sm">

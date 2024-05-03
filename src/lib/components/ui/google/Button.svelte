@@ -43,7 +43,10 @@
   export let submitting = false
   export let disabled = false
 
-  $: message = options.operation === 'register' ? 'Sign up with Google' : 'Sign in with Google'
+  $: message =
+    options.operation === 'register'
+      ? 'Sign up with Google'
+      : 'Sign in with Google'
 
   $: options = {
     tenancyId: PUBLIC_PASSLOCK_TENANCY_ID,

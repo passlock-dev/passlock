@@ -5,10 +5,11 @@ const Root = TooltipPrimitive.Root
 const Trigger = TooltipPrimitive.Trigger
 
 export {
-    Content, Root,
-    //
-    Root as Tooltip,
-    Content as TooltipContent,
-    Trigger as TooltipTrigger, Trigger
+  Content,
+  Root,
+  //
+  Root as Tooltip,
+  Content as TooltipContent,
+  Trigger as TooltipTrigger,
+  Trigger
 }
-

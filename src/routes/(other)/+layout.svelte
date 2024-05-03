@@ -14,7 +14,7 @@
   <Banner>
     <p class="text-white">
       <span class="font-semibold">Demo</span>
-       - Please try registration, email verification & login
+      - Please try registration, email verification & login
     </p>
   </Banner>
 
@@ -26,7 +26,9 @@
 <style>
   /* See https://stackoverflow.com/a/43519235 */
   @media (prefers-color-scheme: dark) {
-    :global(input:not(input:-webkit-autofill)::-webkit-contacts-auto-fill-button) {
+    :global(
+        input:not(input:-webkit-autofill)::-webkit-contacts-auto-fill-button
+      ) {
       background-color: #fff;
     }
   }

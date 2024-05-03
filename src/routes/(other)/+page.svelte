@@ -66,12 +66,13 @@
   // Unlike login, registration is a two step process:
   // First the user clicks the Sign up with Google button which fetches their
   // data and creates an account (and token) in Passlock.
-  // 
+  //
   // Then they acccept the terms and submit the form.
   //
-  // So we want to disable the Sign in with Google button 
+  // So we want to disable the Sign in with Google button
   // once the first step is complete.
-  $: disableGoogleBtn = $superformData.token.length > 1 && $superformData.authType === 'google'
+  $: disableGoogleBtn =
+    $superformData.token.length > 1 && $superformData.authType === 'google'
 </script>
 
 <div
@@ -110,9 +111,24 @@
       <div class="grid gap-2">
         <form method="post" use:enhance>
           <div class="grid gap-5 grid-cols-2">
-            <Forms.InputText {form} field="givenName" label="First name" {readonly} />
-            <Forms.InputText {form} field="familyName" label="Last name" autocomplete="family-name" {readonly} />
-            <Forms.InputEmail {form} field="email" label="Email" cols={2} autocomplete="email" {readonly} />
+            <Forms.InputText
+              {form}
+              field="givenName"
+              label="First name"
+              {readonly} />
+            <Forms.InputText
+              {form}
+              field="familyName"
+              label="Last name"
+              autocomplete="family-name"
+              {readonly} />
+            <Forms.InputEmail
+              {form}
+              field="email"
+              label="Email"
+              cols={2}
+              autocomplete="email"
+              {readonly} />
 
             {#if $superformData.token && $superformData.authType === 'google'}
               <Forms.SubmitButton submitting={$submitting}>
@@ -130,7 +146,10 @@
 
         {#if PUBLIC_GOOGLE_CLIENT_ID}
           <Forms.Divider />
-          <Google.Button operation="register" disabled={disableGoogleBtn} on:principal={updateForm(form)} />
+          <Google.Button
+            operation="register"
+            disabled={disableGoogleBtn}
+            on:principal={updateForm(form)} />
         {/if}
       </div>
 

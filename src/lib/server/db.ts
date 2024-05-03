@@ -19,7 +19,9 @@ const createTablesSql = dedent(`
   );
 `)
 
-export const initLucia = () => { db.exec(createTablesSql) }
+export const initLucia = () => {
+  db.exec(createTablesSql)
+}
 
 export type CreateUser = {
   id: string
