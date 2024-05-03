@@ -119,7 +119,7 @@ Navigate to the [home page](http://localhost:5174/) page and complete the form. 
 Logout then navigate to the [login](http://localhost:5174/login) page. You should be prompted to authenticate using your newly created passkey.
 
 > [!TIP]
-> Providing an email address during authentication is optional but **highly recommended**. Please see [src/routes/login/+page.svelte](src/routes/login/+page.svelte) to understand why.
+> Providing an email address during authentication is optional but **highly recommended**. Please see [src/routes/(other)/login/+page.svelte](src/routes/(other)/login/+page.svelte) to understand why.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -150,7 +150,7 @@ This starter project also supports mailbox verification emails (via Passlock):
 
 ![Verifying mailbox ownership](https://github.com/passlock-dev/svelte-passkeys/assets/208345/2f7c06d6-c2a9-40f2-a8db-0a44fa378281)
 
-You can choose to verify an email address during passkey registration. Take a look at [src/routes/+page.svelte](src/routes/+page.svelte):
+You can choose to verify an email address during passkey registration. Take a look at [src/routes/(other)/+page.svelte](src/routes/(other)/+page.svelte):
 
 ```typescript
 // Email a verification link
