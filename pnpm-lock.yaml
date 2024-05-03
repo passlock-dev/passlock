@@ -15,8 +15,8 @@ devDependencies:
     specifier: ^0.77.0
     version: 0.77.0(svelte@4.2.15)
   '@passlock/client':
-    specifier: 0.9.10
-    version: 0.9.10(@effect/platform@0.51.0)(fast-check@3.18.0)
+    specifier: 0.9.11
+    version: 0.9.11(@effect/platform@0.52.2)(fast-check@3.18.0)
   '@sveltejs/adapter-auto':
     specifier: ^3.2.0
     version: 3.2.0(@sveltejs/kit@2.5.7)
@@ -114,41 +114,41 @@ packages:
       '@jridgewell/trace-mapping': 0.3.25
     dev: true
 
-  /@effect/platform@0.51.0(@effect/schema@0.66.12)(effect@3.1.0)(ws@8.17.0):
-    resolution: {integrity: sha512-j5kV5jNsMYjBARYiCYdxuLe5FVqnOpYo8Ox3K0QupmsyUS0bvZ9v+xdhc29e+1Rn7Vtm1YlBsoY8Gi7HZPJAiw==}
+  /@effect/platform@0.52.2(@effect/schema@0.66.14)(effect@3.1.2)(ws@8.17.0):
+    resolution: {integrity: sha512-1XOyE10gJdL5EsV8L29gpDQp1BbbZ3MPJOQD3vy+r02LfPprtGLm+xG2mpaBc60p2QlxpC4ZRXsXiA89LsYu+w==}
     peerDependencies:
-      '@effect/schema': ^0.66.12
-      effect: ^3.1.0
+      '@effect/schema': ^0.66.14
+      effect: ^3.1.2
     dependencies:
-      '@effect/schema': 0.66.12(effect@3.1.0)(fast-check@3.18.0)
-      effect: 3.1.0
-      find-my-way-ts: 0.1.1
+      '@effect/schema': 0.66.14(effect@3.1.2)(fast-check@3.18.0)
+      effect: 3.1.2
+      find-my-way-ts: 0.1.2
       isows: 1.0.4(ws@8.17.0)
-      multipasta: 0.2.0
+      multipasta: 0.2.1
       path-browserify: 1.0.1
     transitivePeerDependencies:
       - ws
     dev: true
 
-  /@effect/rpc@0.30.14(@effect/platform@0.51.0)(@effect/schema@0.66.12)(effect@3.1.0):
-    resolution: {integrity: sha512-FHfFMBk+HSj79ArVFHU6u204mFQQxFqVx8hCP8dc4e8wVVjaz9uCWGv5z61wwwwQy9QK7gQ/v0x8rW3upcQH+w==}
+  /@effect/rpc@0.30.17(@effect/platform@0.52.2)(@effect/schema@0.66.14)(effect@3.1.2):
+    resolution: {integrity: sha512-kEy2uZvvE6otJpSFBajuCsoN3ZefmuWyw6alhljyIF4PNYrurjpq3AlBq64E015QIjnLVrzgER20N3IiBsO7SQ==}
     peerDependencies:
-      '@effect/platform': ^0.51.0
-      '@effect/schema': ^0.66.12
-      effect: ^3.1.0
+      '@effect/platform': ^0.52.2
+      '@effect/schema': ^0.66.14
+      effect: ^3.1.2
     dependencies:
-      '@effect/platform': 0.51.0(@effect/schema@0.66.12)(effect@3.1.0)(ws@8.17.0)
-      '@effect/schema': 0.66.12(effect@3.1.0)(fast-check@3.18.0)
-      effect: 3.1.0
+      '@effect/platform': 0.52.2(@effect/schema@0.66.14)(effect@3.1.2)(ws@8.17.0)
+      '@effect/schema': 0.66.14(effect@3.1.2)(fast-check@3.18.0)
+      effect: 3.1.2
     dev: true
 
-  /@effect/schema@0.66.12(effect@3.1.0)(fast-check@3.18.0):
-    resolution: {integrity: sha512-14X3D2FxTFDtll41MWw5OkLQCWqcs6pLYhs38oRK1o7rQ9gM2fdL4sw/gJu4dayAqv122GMgoIEOrzO5PyBuYA==}
+  /@effect/schema@0.66.14(effect@3.1.2)(fast-check@3.18.0):
+    resolution: {integrity: sha512-2Yc6gnXpcMmwQnbU2JUwDl0ckeOJmFZzteXn2jjVWuNi9PGv+jp2yK7jxv0pALcieuYwdR5tKkCRI7STuhEwfg==}
     peerDependencies:
-      effect: ^3.1.0
+      effect: ^3.1.2
       fast-check: ^3.13.2
     dependencies:
-      effect: 3.1.0
+      effect: 3.1.2
       fast-check: 3.18.0
     dev: true
 
@@ -839,25 +839,23 @@ packages:
       fastq: 1.17.1
     dev: true
 
-  /@passlock/client@0.9.10(@effect/platform@0.51.0)(fast-check@3.18.0):
-    resolution: {integrity: sha512-9t6zU+vLz9+TZIy119HVvw93igt3ZjsWpx88yX1WzZ+Gk6ENQ3qtBqPDFAqI6J8bZ6p5eCxHrRoOkHwOD3g2SQ==}
+  /@passlock/client@0.9.11(@effect/platform@0.52.2)(fast-check@3.18.0):
+    resolution: {integrity: sha512-+Sb7mBVcHmXYpUBhoks9/9egJjsUSfhCOtZ7lYr/jwrWtkdciTju0mvnNKdhexGDC/7lgpVKuCYgKlsLw3iruA==}
     dependencies:
       '@github/webauthn-json': 2.1.1
-      '@passlock/shared': 0.9.10(@effect/platform@0.51.0)(effect@3.1.0)(fast-check@3.18.0)
-      effect: 3.1.0
+      '@passlock/shared': 0.9.11(@effect/platform@0.52.2)(fast-check@3.18.0)
+      effect: 3.1.2
     transitivePeerDependencies:
       - '@effect/platform'
       - fast-check
     dev: true
 
-  /@passlock/shared@0.9.10(@effect/platform@0.51.0)(effect@3.1.0)(fast-check@3.18.0):
-    resolution: {integrity: sha512-/nlRHG+qhL7ZXNpjFazs952wwW1DS7EtIvkuERqYvwZTSzVkQeNhS3U385U16vMYzmYoCNQ+LMmqftgWVKbmWg==}
-    peerDependencies:
-      effect: ^3.1.0
+  /@passlock/shared@0.9.11(@effect/platform@0.52.2)(fast-check@3.18.0):
+    resolution: {integrity: sha512-E6yK4n0iwp8+L9OwBUNJjeCwBb7QIvMgFFKK6wB14vgg+Evf/Wo0sAeK4noLpryuKD2ByEO0OnF6o44uPpj9gA==}
     dependencies:
-      '@effect/rpc': 0.30.14(@effect/platform@0.51.0)(@effect/schema@0.66.12)(effect@3.1.0)
-      '@effect/schema': 0.66.12(effect@3.1.0)(fast-check@3.18.0)
-      effect: 3.1.0
+      '@effect/rpc': 0.30.17(@effect/platform@0.52.2)(@effect/schema@0.66.14)(effect@3.1.2)
+      '@effect/schema': 0.66.14(effect@3.1.2)(fast-check@3.18.0)
+      effect: 3.1.2
     transitivePeerDependencies:
       - '@effect/platform'
       - fast-check
@@ -1551,8 +1549,8 @@ packages:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
     dev: true
 
-  /effect@3.1.0:
-    resolution: {integrity: sha512-A0kUH8qeH0jS0X4ViJXf/O5qfMQBrJRsTD1xHed4jpFF5ChUP96LmseaV9LQkFbVDo791REFWTOlMPGCyM/0Ng==}
+  /effect@3.1.2:
+    resolution: {integrity: sha512-XakSWck6w6ROqKyEys0tKE9K6Gx2p8W/09u2ZTEZZrneO5Z3QEdPhXzWTyC73kD5zUvfJinZLVIas8I1xoHaTg==}
     dev: true
 
   /electron-to-chromium@1.4.751:
@@ -1685,8 +1683,8 @@ packages:
       to-regex-range: 5.0.1
     dev: true
 
-  /find-my-way-ts@0.1.1:
-    resolution: {integrity: sha512-nXUdq29JRQ1tYa1/n+DHTVChMARJHz+gi7sDZibwQukzHP7Hrr6s+sxKbaIM8xB3LzhSBJy5yLb0JhIUmHmOiA==}
+  /find-my-way-ts@0.1.2:
+    resolution: {integrity: sha512-AWsH49RGcyayzzxSAkwQKC1bToY5ForAfNreix88slo7wijg1wwTtCPvUUoVm/qhIY3UVSHBKApw8mOGPxsvSg==}
     dependencies:
       fast-querystring: 1.1.2
     dev: true
@@ -2081,8 +2079,8 @@ packages:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
     dev: true
 
-  /multipasta@0.2.0:
-    resolution: {integrity: sha512-MNAym1D9GTpY0/CKYJFDmaJ3TfhblfsQyyipCCSsgasMZCAyR2fCNDJhR7lACfJ0YMwQSDi5RHeIdJcsze6WMg==}
+  /multipasta@0.2.1:
+    resolution: {integrity: sha512-0NR15o5iewJFMsZ4jN6cztCd4izTLZPyHUfBrakbg/x70B8zplPE6qumbs+A7LmhGtQMzpN/K8MOOdifMgAKFA==}
     dev: true
 
   /mz@2.7.0:

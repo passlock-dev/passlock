@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { page } from '$app/stores'
   import {
     PUBLIC_PASSLOCK_CLIENT_ID,
     PUBLIC_PASSLOCK_ENDPOINT,
-    PUBLIC_PASSLOCK_TENANCY_ID
+    PUBLIC_PASSLOCK_TENANCY_ID,
+    PUBLIC_GOOGLE_CLIENT_ID
   } from '$env/static/public'
   import * as Icons from '$lib/components/icons'
   import Link from '$lib/components/layout/Link.svelte'
@@ -299,9 +299,10 @@
         </div>
 
         <div class="mt-5">
-          <Google.Button operation="register" on:principal={updateForm(form)} />
-
-          <Forms.Divider />
+          {#if PUBLIC_GOOGLE_CLIENT_ID}
+            <Google.Button operation="register" on:principal={updateForm(form)} />
+            <Forms.Divider />
+          {/if}
 
           <form method="POST" use:enhance>
             <div class="flex flex-col gap-4">

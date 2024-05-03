@@ -86,13 +86,16 @@ npm install
 
 ## Set the environment variables
 
-At a minimum you'll need to set three variables:
+You'll need to set four variables:
 
 1. PUBLIC_PASSLOCK_TENANCY_ID
 2. PUBLIC_PASSLOCK_CLIENT_ID
 3. PASSLOCK_API_KEY
+4. PUBLIC_GOOGLE_CLIENT_ID <sup>1</sup>
 
-These can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. 
+<sup>[1]</sup> - If you don't wish to use Google sign in/One tap set this variable to an empty string
+
+Your Passlock tenancy id, client id and api key (token) can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Please see the section [Sign in with google](#sign-in-with-google) if using Google sign in.
 
 Create a `.env.local` file containing the relevant credentials. 
 

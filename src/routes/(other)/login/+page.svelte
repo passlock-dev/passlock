@@ -1,7 +1,12 @@
 <script lang="ts">
   import Link from '$lib/components/layout/Link.svelte'
 
-  import { PUBLIC_PASSLOCK_CLIENT_ID, PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public'
+  import { 
+    PUBLIC_PASSLOCK_CLIENT_ID, 
+    PUBLIC_PASSLOCK_ENDPOINT, 
+    PUBLIC_PASSLOCK_TENANCY_ID,
+    PUBLIC_GOOGLE_CLIENT_ID
+  } from '$env/static/public'
 
   import * as Forms from '$lib/components/ui/forms'
   import * as Google from '$lib/components/ui/google'
@@ -56,9 +61,10 @@
   </div>
 
   <div class="mt-5">
-    <Google.Button operation="login" on:principal={updateForm(form, true)} />
-
-    <Forms.Divider />
+    {#if PUBLIC_GOOGLE_CLIENT_ID}
+      <Google.Button operation="login" on:principal={updateForm(form, true)} />
+      <Forms.Divider />
+    {/if}
 
     <form method="POST" use:enhance>
       <div class="flex flex-col gap-4">
