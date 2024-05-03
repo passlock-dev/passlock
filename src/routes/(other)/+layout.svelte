@@ -1,7 +1,7 @@
 <script lang="ts">
   import Banner from '$lib/components/ui/banner'
-  import '../../app.pcss'
   import { ModeWatcher } from 'mode-watcher'
+  import '../../app.pcss'
 </script>
 
 <svelte:head>

@@ -1,14 +1,14 @@
 <script lang="ts">
-  import * as Icons from '$lib/components/icons'
   import {
+    PUBLIC_GOOGLE_CLIENT_ID,
     PUBLIC_PASSLOCK_CLIENT_ID,
     PUBLIC_PASSLOCK_ENDPOINT,
-    PUBLIC_PASSLOCK_TENANCY_ID,
-    PUBLIC_GOOGLE_CLIENT_ID
+    PUBLIC_PASSLOCK_TENANCY_ID
   } from '$env/static/public'
-  import * as Forms from '$lib/components/ui/forms'
-  import { GoogleButton } from '$lib/components/ui/google'
+  import * as Icons from '$lib/components/icons'
   import { ThemeSelector } from '$lib/components/theme'
+  import * as Forms from '$lib/components/ui/forms'
+  import * as Google from '$lib/components/ui/google'
   import { SveltePasslock, saveEmailLocally, updateForm } from '$lib/passlock'
   import { registrationFormSchema } from '$lib/schemas.js'
   import type { VerifyEmail } from '@passlock/client'
@@ -16,8 +16,6 @@
   import { superForm } from 'sveltekit-superforms'
   import { valibotClient } from 'sveltekit-superforms/adapters'
 
-  import { Button } from '$lib/components/ui/button/index.js'
-  import { writable } from 'svelte/store'
   import Logo from '$lib/components/ui/logo'
 
   export let data
@@ -60,10 +58,20 @@
     await passlock.preConnect()
   })
 
-  const { enhance, delayed, form: superformData } = form
-  
-  const googleDelayed = writable(false)
-  $:googleDisabled = $superformData.authType === 'google' && $superformData.token.length > 1
+  const { enhance, submitting, form: superformData } = form
+
+  // We must have created a passkey or grabbed the data from google
+  $: readonly = $superformData.token?.length > 0 ? true : undefined
+
+  // Unlike login, registration is a two step process:
+  // First the user clicks the Sign up with Google button which fetches their
+  // data and creates an account (and token) in Passlock.
+  // 
+  // Then they acccept the terms and submit the form.
+  //
+  // So we want to disable the Sign in with Google button 
+  // once the first step is complete.
+  $: disableGoogleBtn = $superformData.token.length > 1 && $superformData.authType === 'google'
 </script>
 
 <div
@@ -102,35 +110,27 @@
       <div class="grid gap-2">
         <form method="post" use:enhance>
           <div class="grid gap-5 grid-cols-2">
-            <Forms.InputText {form} field="givenName" label="First name" />
-            <Forms.InputText {form} field="familyName" label="Last name" autocomplete="family-name" />
-            <Forms.InputEmail {form} field="email" label="Email" cols={2} autocomplete="email" />
+            <Forms.InputText {form} field="givenName" label="First name" {readonly} />
+            <Forms.InputText {form} field="familyName" label="Last name" autocomplete="family-name" {readonly} />
+            <Forms.InputEmail {form} field="email" label="Email" cols={2} autocomplete="email" {readonly} />
 
-            <Button class="col-span-2 flex gap-2" type="submit">
-              {#if $delayed}
-                <Icons.spinner class="h-4 w-4 animate-spin" />
-              {:else if $superformData.authType === 'passkey'}
-                <Icons.passkey class="fill-current h-5 w-5" />
-              {:else if $superformData.authType === 'google'}
-                <Icons.google class="h-4 w-4" />
-              {/if}
-              {#if $superformData.authType === 'passkey'}
-                Create passkey
-              {:else if $superformData.authType === 'google'}
+            {#if $superformData.token && $superformData.authType === 'google'}
+              <Forms.SubmitButton submitting={$submitting}>
+                <Icons.Google class="size-4" slot="icon" />
                 Sign up with Google
-              {/if}
-            </Button>
+              </Forms.SubmitButton>
+            {:else}
+              <Forms.SubmitButton submitting={$submitting}>
+                <Icons.Passkey class="size-5 fill-current" slot="icon" />
+                Create passkey
+              </Forms.SubmitButton>
+            {/if}
           </div>
         </form>
 
         {#if PUBLIC_GOOGLE_CLIENT_ID}
           <Forms.Divider />
-          
-          <GoogleButton
-            operation="register"
-            on:principal={updateForm(form, false)}
-            delayed={googleDelayed}
-            disabled={googleDisabled} />
+          <Google.Button operation="register" disabled={disableGoogleBtn} on:principal={updateForm(form)} />
         {/if}
       </div>
 

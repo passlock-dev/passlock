@@ -1,16 +1,15 @@
 <script lang="ts">
   import {
+    PUBLIC_GOOGLE_CLIENT_ID,
     PUBLIC_PASSLOCK_CLIENT_ID,
     PUBLIC_PASSLOCK_ENDPOINT,
-    PUBLIC_PASSLOCK_TENANCY_ID,
-    PUBLIC_GOOGLE_CLIENT_ID
+    PUBLIC_PASSLOCK_TENANCY_ID
   } from '$env/static/public'
-  import Logo from '$lib/components/ui/logo'
   import * as Icons from '$lib/components/icons'
-  import { Button, Button as a } from '$lib/components/ui/button/index.js'
-  import * as Forms from '$lib/components/ui/forms'
-  import { GoogleButton } from '$lib/components/ui/google'
   import { ThemeSelector } from '$lib/components/theme'
+  import * as Forms from '$lib/components/ui/forms'
+  import * as Google from '$lib/components/ui/google'
+  import Logo from '$lib/components/ui/logo'
   import {
     SveltePasslock,
     getLocalEmail,
@@ -52,17 +51,19 @@
     await passlock.preConnect()
   })
 
-  const { enhance, delayed, form: superformData } = form
-  const passkeyDelayed = derived(
-    delayed,
-    $delayed => $delayed && $superformData.authType === 'passkey'
-  )
-  const googleDelayed = derived(
-    delayed,
-    $delayed => $delayed && $superformData.authType === 'google'
+  const { enhance, submitting, form: superformData } = form
+
+  const submittingPasskey = derived(
+    submitting,
+    $submitting => $submitting && $superformData.authType === 'passkey'
   )
 
-  $: readonly = $superformData.token?.length > 0 ? 'readonly' : undefined
+  const submittingGoogle = derived(
+    submitting,
+    $submitting => $submitting && $superformData.authType === 'google'
+  )
+
+  $:readonlyEmail = $submittingPasskey || undefined
 </script>
 
 <div
@@ -85,30 +86,18 @@
       <div class="grid gap-2">
         <form method="post" use:enhance>
           <div class="grid gap-5 grid-cols-2">
-            <Forms.InputEmail
-              {form}
-              field="email"
-              label="Email address"
-              cols={2} />
+            <Forms.InputEmail {form} field="email" label="Email address" autocomplete="email" cols={2} readonly={readonlyEmail} />
 
-            <Button class="col-span-2 flex gap-2" type="submit">
-              {#if $passkeyDelayed}
-                <Icons.spinner class="h-4 w-4 animate-spin" />
-              {:else}
-                <Icons.passkey class="h-4 w-4 fill-current" />
-              {/if}
-              Login with passkey
-            </Button>
+            <Forms.SubmitButton submitting={$submittingPasskey}>
+              <Icons.Passkey class="h-4 w-4 fill-current" slot="icon" /> 
+              Login with passkey 
+            </Forms.SubmitButton>
           </div>
         </form>
 
         {#if PUBLIC_GOOGLE_CLIENT_ID}
           <Forms.Divider />
-
-          <GoogleButton
-            operation="login"
-            on:principal={updateForm(form, true)}
-            delayed={googleDelayed} />
+          <Google.Button operation="login" submitting={$submittingGoogle} on:principal={updateForm(form, true)} />
         {/if}
 
         <div class="mt-2 text-center text-sm">

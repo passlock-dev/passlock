@@ -10,11 +10,11 @@
   import { valibotClient } from 'sveltekit-superforms/adapters'
   import type { PageData } from './$types'
 
-  import { Button } from '$lib/components/ui/button/index.js'
-  import * as Card from '$lib/components/ui/card/index.js'
-  import Logo from '$lib/components/ui/logo'
-  import { ThemeSelector } from '$lib/components/theme'
   import * as Icons from '$lib/components/icons'
+  import { ThemeSelector } from '$lib/components/theme'
+  import * as Card from '$lib/components/ui/card/index.js'
+  import * as Forms from '$lib/components/ui/forms'
+  import Logo from '$lib/components/ui/logo'
   import { onMount } from 'svelte'
 
   export let data: PageData
@@ -46,7 +46,7 @@
     }
   }
 
-  const { enhance, delayed, form: formData } = form
+  const { enhance, submitting } = form
 
   onMount(() => {
     passlock.autoVerifyEmail(form)
@@ -69,14 +69,11 @@
         </Card.Description>
       </Card.Header>
       <Card.Footer class="flex flex-col">
-        <Button variant="secondary" class="col-span-2 flex gap-2" type="submit">
-          {#if $delayed}
-            <Icons.spinner class="h-4 w-4 animate-spin" />
-          {:else}
-            <Icons.mail class="h-4 w-4" />
-          {/if}
+        <Forms.SubmitButton submitting={$submitting}>
+          <Icons.Mail class="h-4 w-4" slot="icon" />
           Verify email
-        </Button>
+        </Forms.SubmitButton>
+
         <div class="mt-4 text-center text-sm">
           {#if resendDisabled}
             Email sent

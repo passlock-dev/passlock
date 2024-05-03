@@ -1,9 +1,9 @@
-import { error } from '@sveltejs/kit'
-import {
-  PUBLIC_PASSLOCK_ENDPOINT,
-  PUBLIC_PASSLOCK_TENANCY_ID
-} from '$env/static/public'
 import { PASSLOCK_API_KEY } from '$env/static/private'
+import {
+    PUBLIC_PASSLOCK_ENDPOINT,
+    PUBLIC_PASSLOCK_TENANCY_ID
+} from '$env/static/public'
+import { error } from '@sveltejs/kit'
 
 // see https://docs.passlock.dev/docs/api/client#principal
 export type Principal = {

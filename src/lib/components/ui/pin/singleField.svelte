@@ -15,9 +15,9 @@
 
   import {
     formFieldProxy,
-    type SuperForm,
+    type FormFieldProxy,
     type FormPathLeaves,
-    type FormFieldProxy
+    type SuperForm
   } from 'sveltekit-superforms'
 
   export let form: SuperForm<T>

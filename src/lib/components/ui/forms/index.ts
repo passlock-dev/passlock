@@ -1,7 +1,9 @@
+import Checkbox from './checkbox.svelte'
+import Divider from './divider.svelte'
 import InputEmail from './inputEmail.svelte'
 import InputText from './inputText.svelte'
-import Checkbox from './checkbox.svelte'
 import PoweredBy from './poweredBy.svelte'
-import Divider from './divider.svelte'
+import SubmitButton from './submitButton.svelte'
 
-export { InputEmail, InputText, Checkbox, PoweredBy, Divider }
+export { Checkbox, Divider, InputEmail, InputText, PoweredBy, SubmitButton }
+

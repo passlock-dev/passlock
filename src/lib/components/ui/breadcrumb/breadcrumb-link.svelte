@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { HTMLAnchorAttributes } from 'svelte/elements'
   import { cn } from '$lib/utils.js'
+  import type { HTMLAnchorAttributes } from 'svelte/elements'
 
   type $$Props = HTMLAnchorAttributes & {
     el?: HTMLAnchorElement

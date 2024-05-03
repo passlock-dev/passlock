@@ -7,9 +7,9 @@
   import { SveltePasslock } from '$lib/passlock'
   import type { PageData } from './$types'
 
+  import { ThemeSelector } from '$lib/components/theme'
   import * as Card from '$lib/components/ui/card/index.js'
   import Logo from '$lib/components/ui/logo'
-  import { ThemeSelector } from '$lib/components/theme'
 
   export let data: PageData
 

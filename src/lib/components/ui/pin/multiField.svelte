@@ -19,9 +19,9 @@
 
   import {
     formFieldProxy,
-    type SuperForm,
+    type FormFieldProxy,
     type FormPathLeaves,
-    type FormFieldProxy
+    type SuperForm
   } from 'sveltekit-superforms'
 
   import { cn } from '$lib/utils.js'

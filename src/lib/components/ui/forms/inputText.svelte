@@ -32,8 +32,8 @@
 
   import {
     formFieldProxy,
-    type SuperForm,
-    type FormPathLeaves
+    type FormPathLeaves,
+    type SuperForm
   } from 'sveltekit-superforms'
 
   type $$Props = Omit<HTMLInputAttributes, 'form'> & {
@@ -85,7 +85,7 @@
     {#if $errors}
       <div
         class="absolute inset-y-0 end-0 flex items-center pointer-events-none pe-3">
-        <Icons.fieldError class="flex-shrink-0 size-5 text-red-600 dark:text-red-400" />
+        <Icons.FieldError class="flex-shrink-0 size-5 text-red-600 dark:text-red-400" />
       </div>
     {/if}
   </div>

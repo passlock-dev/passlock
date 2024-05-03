@@ -1,8 +1,8 @@
-import { fail, superValidate } from 'sveltekit-superforms'
-import type { Actions, PageServerLoad } from './$types'
-import { valibot } from 'sveltekit-superforms/adapters'
 import { verifyEmailSchema } from '$lib/schemas'
 import { redirect } from '@sveltejs/kit'
+import { fail, superValidate } from 'sveltekit-superforms'
+import { valibot } from 'sveltekit-superforms/adapters'
+import type { Actions, PageServerLoad } from './$types'
 
 export const load = (async () => {
   return {

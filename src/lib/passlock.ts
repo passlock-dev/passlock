@@ -4,11 +4,11 @@
  * You can ignore it, but feel free to take a look :)
  */
 import {
-  ErrorCode,
-  Passlock,
-  PasslockError,
-  type Principal,
-  type VerifyEmail
+    ErrorCode,
+    Passlock,
+    PasslockError,
+    type Principal,
+    type VerifyEmail
 } from '@passlock/client'
 import { get } from 'svelte/store'
 import { type SuperForm } from 'sveltekit-superforms'

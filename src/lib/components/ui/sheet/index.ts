@@ -1,40 +1,23 @@
 import { Dialog as SheetPrimitive } from 'bits-ui'
-import { type VariantProps, tv } from 'tailwind-variants'
+import { tv, type VariantProps } from 'tailwind-variants'
 
-import Portal from './sheet-portal.svelte'
-import Overlay from './sheet-overlay.svelte'
 import Content from './sheet-content.svelte'
-import Header from './sheet-header.svelte'
-import Footer from './sheet-footer.svelte'
-import Title from './sheet-title.svelte'
 import Description from './sheet-description.svelte'
+import Footer from './sheet-footer.svelte'
+import Header from './sheet-header.svelte'
+import Overlay from './sheet-overlay.svelte'
+import Portal from './sheet-portal.svelte'
+import Title from './sheet-title.svelte'
 
 const Root = SheetPrimitive.Root
 const Close = SheetPrimitive.Close
 const Trigger = SheetPrimitive.Trigger
 
 export {
-  Root,
-  Close,
-  Trigger,
-  Portal,
-  Overlay,
-  Content,
-  Header,
-  Footer,
-  Title,
-  Description,
-  //
-  Root as Sheet,
-  Close as SheetClose,
-  Trigger as SheetTrigger,
-  Portal as SheetPortal,
-  Overlay as SheetOverlay,
-  Content as SheetContent,
-  Header as SheetHeader,
-  Footer as SheetFooter,
-  Title as SheetTitle,
-  Description as SheetDescription
+    Close, Content, Description, Footer, Header, Overlay, Portal, Root,
+    //
+    Root as Sheet,
+    Close as SheetClose, Content as SheetContent, Description as SheetDescription, Footer as SheetFooter, Header as SheetHeader, Overlay as SheetOverlay, Portal as SheetPortal, Title as SheetTitle, Trigger as SheetTrigger, Title, Trigger
 }
 
 export const sheetVariants = tv({

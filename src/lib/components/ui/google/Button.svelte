@@ -36,18 +36,14 @@
   } from '$env/static/public'
   import { Button } from '$lib/components/ui/button'
 
-  import type { Readable } from 'svelte/store'
-  import Base from './Base.svelte'
   import * as Icons from '$lib/components/icons'
+  import Base from './Base.svelte'
 
   export let operation: 'register' | 'login' = 'login'
-  export let delayed: Readable<boolean>
+  export let submitting = false
   export let disabled = false
 
-  $: message =
-    options.operation === 'register'
-      ? 'Sign up with Google'
-      : 'Sign in with Google'
+  $: message = options.operation === 'register' ? 'Sign up with Google' : 'Sign in with Google'
 
   $: options = {
     tenancyId: PUBLIC_PASSLOCK_TENANCY_ID,
@@ -59,20 +55,21 @@
   }
 </script>
 
-<Base {options} let:click let:requestPending on:principal>
+<Base {options} let:click let:submitting={submittingToPasslock} on:principal>
   <!-- Note: 
-    requestPending = request to the passlock api.
-    $delayed = request to the +page.server.ts action -->
+    submittingToPasslock = request to the passlock api (create the Google user in Passlock and obtain a token)
+    submitting = request to the +page.server.ts action (create the user in this app) 
+  -->
   <Button
     variant="outline"
     class="flex gap-2"
     type="submit"
     on:click={click}
-    disabled={$delayed || requestPending || disabled}>
-    {#if $delayed || requestPending}
-      <Icons.spinner class="h-4 w-4 animate-spin" />
+    disabled={submitting || submittingToPasslock || disabled}>
+    {#if submitting || submittingToPasslock}
+      <Icons.Spinner class="h-4 w-4 animate-spin" />
     {:else}
-      <Icons.google class="h-4 w-4" />
+      <Icons.Google class="h-4 w-4" />
     {/if}
     {message}
   </Button>
