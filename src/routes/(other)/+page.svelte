@@ -1,9 +1,9 @@
 <script lang="ts">
   import {
+    PUBLIC_GOOGLE_CLIENT_ID,
     PUBLIC_PASSLOCK_CLIENT_ID,
     PUBLIC_PASSLOCK_ENDPOINT,
-    PUBLIC_PASSLOCK_TENANCY_ID,
-    PUBLIC_GOOGLE_CLIENT_ID
+    PUBLIC_PASSLOCK_TENANCY_ID
   } from '$env/static/public'
   import * as Icons from '$lib/components/icons'
   import Link from '$lib/components/layout/Link.svelte'
@@ -56,8 +56,20 @@
     await passlock.preConnect()
   })
 
-  const { enhance, delayed, form: superformData } = form
+  const { enhance, submitting, form: superformData } = form
+  
+  // We must have created a passkey or grabbed the data from google
   $: readonly = $superformData.token?.length > 0 ? true : undefined
+
+  // Unlike login, registration is a two step process:
+  // First the user clicks the Sign up with Google button which fetches their
+  // data and creates an account (and token) in Passlock.
+  // 
+  // Then they acccept the terms and submit the form.
+  //
+  // So we want to disable the Sign in with Google button 
+  // once the first step is complete.
+  $: disableGoogleBtn = $superformData.token.length > 1 && $superformData.authType === 'google'
 </script>
 
 <!-- Hero -->
@@ -300,7 +312,7 @@
 
         <div class="mt-5">
           {#if PUBLIC_GOOGLE_CLIENT_ID}
-            <Google.Button operation="register" on:principal={updateForm(form)} />
+            <Google.Button operation="register" disabled={disableGoogleBtn} on:principal={updateForm(form)} />
             <Forms.Divider />
           {/if}
 
@@ -316,13 +328,13 @@
                 </div>
               </Forms.Checkbox>
 
-              {#if $superformData.token}
-                <Forms.SubmitButton requestPending={$delayed}>
+              {#if $superformData.token && $superformData.authType === 'google'}
+                <Forms.SubmitButton submitting={$submitting}>
                   <Icons.Google class="size-4" slot="icon" />
                   Sign up with Google
                 </Forms.SubmitButton>
               {:else}
-                <Forms.SubmitButton requestPending={$delayed}>
+                <Forms.SubmitButton submitting={$submitting}>
                   <Icons.Passkey class="size-5 fill-current" slot="icon" />
                   Create passkey
                 </Forms.SubmitButton>

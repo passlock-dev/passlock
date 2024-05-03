@@ -3,8 +3,8 @@
   Displays the user's Gravatar, falling back to their initials
 -->
 <script lang="ts">
-  import type { User } from 'lucia'
   import { createAvatar, createDropdownMenu, melt } from '@melt-ui/svelte'
+  import type { User } from 'lucia'
 
   export let user: User
 

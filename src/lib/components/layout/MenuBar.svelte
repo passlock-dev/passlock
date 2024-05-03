@@ -6,7 +6,7 @@
   import * as Icons from '$lib/components/icons'
   import { createAvatar, createMenubar, melt } from '@melt-ui/svelte'
   import type { User } from 'lucia'
-  import { setMode, mode } from 'mode-watcher'
+  import { mode, setMode } from 'mode-watcher'
 
   export let user: User | undefined
 

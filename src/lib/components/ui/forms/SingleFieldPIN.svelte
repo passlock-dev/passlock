@@ -13,7 +13,7 @@
 <script lang="ts" generics="T extends Record<string, unknown>">
   import { createEventDispatcher } from 'svelte'
 
-  import { formFieldProxy, type SuperForm, type FormPathLeaves, type FormFieldProxy } from 'sveltekit-superforms'
+  import { formFieldProxy, type FormFieldProxy, type FormPathLeaves, type SuperForm } from 'sveltekit-superforms'
 
   export let form: SuperForm<T>
   export let field: FormPathLeaves<T, string>

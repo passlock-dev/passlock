@@ -13,12 +13,12 @@
   ```
 -->
 <script lang="ts" generics="T extends Record<string, unknown>">
-  import { createEventDispatcher, onDestroy } from 'svelte'
   import { createPinInput, melt } from '@melt-ui/svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
 
   const dispatch = createEventDispatcher<{ complete: void }>()
 
-  import { formFieldProxy, type SuperForm, type FormPathLeaves, type FormFieldProxy } from 'sveltekit-superforms'
+  import { formFieldProxy, type FormFieldProxy, type FormPathLeaves, type SuperForm } from 'sveltekit-superforms'
 
   export let form: SuperForm<T>
   export let field: FormPathLeaves<T, string>

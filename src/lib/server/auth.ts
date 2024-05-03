@@ -1,8 +1,8 @@
-import { Lucia } from 'lucia'
-import { BetterSqlite3Adapter } from '@lucia-auth/adapter-sqlite'
 import { dev } from '$app/environment'
-import { db } from './db'
+import { BetterSqlite3Adapter } from '@lucia-auth/adapter-sqlite'
 import { sha256 } from 'js-sha256'
+import { Lucia } from 'lucia'
+import { db } from './db'
 
 /*
  * Note: you can replace js-sha256 with node:crypto

@@ -1,22 +1,23 @@
 <script lang="ts">
   import Link from '$lib/components/layout/Link.svelte'
 
-  import { 
-    PUBLIC_PASSLOCK_CLIENT_ID, 
-    PUBLIC_PASSLOCK_ENDPOINT, 
-    PUBLIC_PASSLOCK_TENANCY_ID,
-    PUBLIC_GOOGLE_CLIENT_ID
+  import {
+    PUBLIC_GOOGLE_CLIENT_ID,
+    PUBLIC_PASSLOCK_CLIENT_ID,
+    PUBLIC_PASSLOCK_ENDPOINT,
+    PUBLIC_PASSLOCK_TENANCY_ID
   } from '$env/static/public'
 
+  import * as Icons from '$lib/components/icons'
   import * as Forms from '$lib/components/ui/forms'
   import * as Google from '$lib/components/ui/google'
-  import * as Icons from '$lib/components/icons'
 
-  import { SveltePasslock, updateForm, saveEmailLocally, getLocalEmail } from '$lib/passlock.js'
+  import { SveltePasslock, getLocalEmail, saveEmailLocally, updateForm } from '$lib/passlock.js'
   import { loginFormSchema } from '$lib/schemas'
-  import { superForm } from 'sveltekit-superforms/client'
-  import { valibotClient } from 'sveltekit-superforms/adapters'
   import { onMount } from 'svelte'
+  import { derived } from 'svelte/store'
+  import { valibotClient } from 'sveltekit-superforms/adapters'
+  import { superForm } from 'sveltekit-superforms/client'
 
   export let data
 
@@ -35,20 +36,31 @@
     },
 
     onResult: () => {
-      if ($formData.authType === 'passkey' && $formData.email) {
-        saveEmailLocally($formData.email)
+      if ($superformData.authType === 'passkey' && $superformData.email) {
+        saveEmailLocally($superformData.email)
       }
     }
   })
 
   onMount(async () => {
     const email = getLocalEmail()
-    if (email) $formData.email = email
+    if (email) $superformData.email = email
     await passlock.preConnect()
   })
 
-  const { enhance, delayed, form: formData } = form
-  $: readonly = $formData.token?.length > 0 ? true : undefined
+  const { enhance, submitting, form: superformData } = form
+
+  const submittingPasskey = derived(
+    submitting,
+    $submitting => $submitting && $superformData.authType === 'passkey'
+  )
+
+  const submittingGoogle = derived(
+    submitting,
+    $submitting => $submitting && $superformData.authType === 'google'
+  )
+
+  $:readonlyEmail = $submittingPasskey || undefined
 </script>
 
 <Forms.CenteredPanel>
@@ -62,25 +74,18 @@
 
   <div class="mt-5">
     {#if PUBLIC_GOOGLE_CLIENT_ID}
-      <Google.Button operation="login" on:principal={updateForm(form, true)} />
+      <Google.Button operation="login" submitting={$submittingGoogle} on:principal={updateForm(form, true)} />
       <Forms.Divider />
     {/if}
 
     <form method="POST" use:enhance>
       <div class="flex flex-col gap-4">
-        <Forms.InputEmail {form} field="email" label="Email address" autocomplete="email" {readonly} />
-
-        {#if $formData.token}
-          <Forms.SubmitButton requestPending={$delayed}>
-            <Icons.Google class="size-4" slot="icon" />
-            Sign in with Google
-          </Forms.SubmitButton>
-        {:else}
-          <Forms.SubmitButton requestPending={$delayed}>
-            <Icons.Passkey class="size-5 fill-current" slot="icon" />
-            Sign in with Passkey
-          </Forms.SubmitButton>
-        {/if}
+        <Forms.InputEmail {form} field="email" label="Email address" autocomplete="email" readonly={readonlyEmail} />
+        
+        <Forms.SubmitButton submitting={$submittingPasskey}>
+          <Icons.Passkey class="size-5 fill-current" slot="icon" />
+          Sign in with Passkey
+        </Forms.SubmitButton>
       </div>
 
       <Forms.PoweredBy />

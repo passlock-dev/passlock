@@ -6,9 +6,9 @@
   import { createPopover, melt } from '@melt-ui/svelte'
   import type { SvelteComponent } from 'svelte'
 
-  import EN from './EN.svelte'
   import DE from './DE.svelte'
   import DK from './DK.svelte'
+  import EN from './EN.svelte'
   import IT from './IT.svelte'
   import JP from './JP.svelte'
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Icons from '$lib/components/icons'
   import { createDropdownMenu, melt } from '@melt-ui/svelte'
-  import { setMode, mode } from 'mode-watcher'
+  import { mode, setMode } from 'mode-watcher'
 
   const {
     elements: { menu, item, trigger },

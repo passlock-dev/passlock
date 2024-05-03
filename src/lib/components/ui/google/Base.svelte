@@ -48,6 +48,7 @@
 
   let googleBtnWrapper: HTMLDivElement
   let googleBtn: HTMLButtonElement | null
+  let submitting = false
   let error = ''
 
   const passlock = new Passlock(options)
@@ -57,6 +58,7 @@
       client_id: options.googleClientId,
       ux_mode: 'popup',
       callback: async ({ credential }) => {
+        submitting = true
         const principal =
           options.operation === 'register'
             ? await passlock.registerOidc({
@@ -69,10 +71,13 @@
               })
 
         if (PasslockError.isError(principal) && principal.detail) {
+          submitting = false
           error = `${principal.message}. ${principal.detail}`.trim()
         } else if (PasslockError.isError(principal)) {
+          submitting = false
           error = principal.message
         } else {
+          submitting = false
           dispatch('principal', principal)
         }
       }
@@ -98,6 +103,6 @@
 
 <div bind:this={googleBtnWrapper} class="hidden" />
 
-<slot {click} />
+<slot {click} {submitting} />
 
 <slot name="error" {error} />

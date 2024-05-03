@@ -1,10 +1,10 @@
 <script lang="ts">
-  import '../../app.pcss'
+  import Banner from '$lib/components/layout/Banner.svelte'
   import Footer from '$lib/components/layout/Footer.svelte'
   import Header from '$lib/components/layout/Header.svelte'
-  import type { LayoutData } from './$types'
   import { ModeWatcher } from 'mode-watcher'
-  import Banner from '$lib/components/layout/Banner.svelte'
+  import '../../app.pcss'
+  import type { LayoutData } from './$types'
 
   export let data: LayoutData
 </script>

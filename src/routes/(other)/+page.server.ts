@@ -1,14 +1,14 @@
 // +page.server.ts
+import { registrationFormSchema } from '$lib/schemas'
 import { superValidate } from 'sveltekit-superforms'
 import { valibot } from 'sveltekit-superforms/adapters'
 import type { PageServerLoad } from './$types'
-import { registrationFormSchema } from '$lib/schemas'
 
-import { fail, redirect } from '@sveltejs/kit'
-import type { Actions } from './$types'
-import { exchangeToken } from '$lib/server/passlock'
 import { lucia } from '$lib/server/auth'
 import { createUser } from '$lib/server/db'
+import { exchangeToken } from '$lib/server/passlock'
+import { fail, redirect } from '@sveltejs/kit'
+import type { Actions } from './$types'
 
 export const load: PageServerLoad = async () => {
   return {

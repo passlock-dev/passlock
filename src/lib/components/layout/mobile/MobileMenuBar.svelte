@@ -4,9 +4,9 @@
 -->
 <script lang="ts">
   import type { User } from 'lucia'
+  import ThemeSelector from '../ThemeSelector.svelte'
   import MobileAvatar from './MobileAvatar.svelte'
   import MobileMenuToggle from './MobileMenuToggle.svelte'
-  import ThemeSelector from '../ThemeSelector.svelte'
 
   export let user: User | undefined
   export let menuOpen = false

@@ -1,10 +1,10 @@
-import { error, fail, redirect } from '@sveltejs/kit'
-import type { Actions, PageServerLoad } from './$types'
-import { exchangeToken } from '$lib/server/passlock'
+import { loginFormSchema } from '$lib/schemas'
 import { lucia } from '$lib/server/auth'
+import { exchangeToken } from '$lib/server/passlock'
+import { fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms'
 import { valibot } from 'sveltekit-superforms/adapters'
-import { loginFormSchema } from '$lib/schemas'
+import type { Actions, PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async () => {
   return {

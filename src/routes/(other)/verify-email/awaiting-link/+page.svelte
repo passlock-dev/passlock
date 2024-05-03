@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID, PUBLIC_PASSLOCK_CLIENT_ID } from '$env/static/public'
+  import { page } from '$app/stores'
+  import { PUBLIC_PASSLOCK_CLIENT_ID, PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public'
+  import * as Forms from '$lib/components/ui/forms'
   import { SveltePasslock } from '$lib/passlock'
   import type { PageData } from './$types'
-  import { page } from '$app/stores'
-  import * as Forms from '$lib/components/ui/forms'
 
   export let data: PageData
 

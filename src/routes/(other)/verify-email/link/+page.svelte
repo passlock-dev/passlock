@@ -1,13 +1,13 @@
 <script lang="ts">
   import { PUBLIC_PASSLOCK_CLIENT_ID, PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public'
-  import * as Forms from '$lib/components/ui/forms'
   import * as Icons from '$lib/components/icons'
+  import * as Forms from '$lib/components/ui/forms'
   import { SveltePasslock } from '$lib/passlock'
   import { verifyEmailSchema } from '$lib/schemas'
+  import { onMount } from 'svelte'
   import { superForm } from 'sveltekit-superforms'
   import { valibotClient } from 'sveltekit-superforms/adapters'
   import type { PageData } from './$types'
-  import { onMount } from 'svelte'
 
   export let data: PageData
 
@@ -26,8 +26,8 @@
     }
   })
 
-  const { enhance, delayed, form: formData, errors } = form
-  $: disabled = $formData.code.length < 6 || $delayed
+  const { enhance, submitting, form: formData, errors } = form
+  $: disabled = $formData.code.length < 6 || $submitting
 
   onMount(() => {
     passlock.autoVerifyEmail(form)
@@ -54,7 +54,7 @@
         </div>
       {/if}
 
-      <Forms.SubmitButton {disabled} requestPending={$delayed}>
+      <Forms.SubmitButton {disabled} submitting={$submitting}>
         <Icons.Passkey class="size-5 fill-current" slot="icon" />
         Verify email
       </Forms.SubmitButton>

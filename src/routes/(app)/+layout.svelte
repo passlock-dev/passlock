@@ -1,8 +1,8 @@
 <script lang="ts">
+  import MenuBar from '$lib/components/layout/MenuBar.svelte'
+  import { ModeWatcher } from 'mode-watcher'
   import '../../app.pcss'
   import type { LayoutData } from './$types'
-  import { ModeWatcher } from 'mode-watcher'
-  import MenuBar from '$lib/components/layout/MenuBar.svelte'
   export let data: LayoutData
 </script>
 

@@ -20,12 +20,12 @@
   ```
 -->
 <script lang="ts" generics="T extends Record<string, unknown>">
-  import type { HTMLInputAttributes } from 'svelte/elements'
   import * as Icons from '$lib/components/icons'
+  import type { HTMLInputAttributes } from 'svelte/elements'
 
   import { generateId } from './utils'
 
-  import { formFieldProxy, type SuperForm, type FormPathLeaves } from 'sveltekit-superforms'
+  import { formFieldProxy, type FormPathLeaves, type SuperForm } from 'sveltekit-superforms'
 
   type $$Props = Omit<HTMLInputAttributes, 'form'> & {
     form: SuperForm<T>

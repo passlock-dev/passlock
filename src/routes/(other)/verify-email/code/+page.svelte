@@ -6,8 +6,8 @@
   import { valibotClient } from 'sveltekit-superforms/adapters'
   import type { PageData } from './$types'
 
-  import * as Forms from '$lib/components/ui/forms'
   import * as Icons from '$lib/components/icons'
+  import * as Forms from '$lib/components/ui/forms'
 
   export let data: PageData
 
@@ -36,8 +36,9 @@
     }
   }
 
-  const { enhance, delayed, form: formData } = form
-  $: disabled = $formData.code.length < 6 || $delayed
+  const { enhance, submitting, form: formData } = form
+  $: disabled = $formData.code.length < 6 || $submitting
+  
   let resendDisabled = false
 </script>
 
@@ -58,7 +59,7 @@
         <button type="button" on:click={resend} disabled={resendDisabled} class="link-primary">Resend the code</button>
       </p>
 
-      <Forms.SubmitButton {disabled} requestPending={$delayed}>
+      <Forms.SubmitButton {disabled} submitting={$submitting}>
         <Icons.Passkey class="size-5 fill-current" slot="icon" />
         Verify email
       </Forms.SubmitButton>

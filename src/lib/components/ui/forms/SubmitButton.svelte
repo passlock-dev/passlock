@@ -14,14 +14,12 @@
 -->
 <script lang="ts">
   import * as Icons from '$lib/components/icons'
-
   export let disabled = false
-
-  export let requestPending = false
+  export let submitting = false
 </script>
 
-<button {disabled} type="submit" class="btn btn-primary w-full py-3 px-4">
-  {#if requestPending}
+<button disabled={disabled || submitting} type="submit" class="btn btn-primary w-full py-3 px-4">
+  {#if submitting}
     <Icons.Spinner class="size-4 animate-spin" />
   {:else}
     <slot name="icon" />
