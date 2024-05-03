@@ -33,11 +33,13 @@
 # Screenshots
 
 ![Register a passkey](./docs/preline.png)
+
 <p align="center">Creating a new account and passkey</p>
 
 <br />
 
 ![Shadcn/ui variant](./docs/shadcn.png)
+
 <p align="center">Shadcn/ui variant (dark mode)</p>
 
 # Frameworks used
@@ -63,9 +65,9 @@ Pretty much every web application requires authentication and authorization. The
 
 I've deployed 2 live versions of this project:
 
-* [Master demo](https://d1rl0ue18b0151.cloudfront.net) - A version of the master branch (uses Preline + Melt UI)
+- [Master demo](https://d1rl0ue18b0151.cloudfront.net) - A version of the master branch (uses Preline + Melt UI)
 
-* [Shadcn demo](https://dbr4qrmypnl85.cloudfront.net) - A version of the shadcn branch (uses shadcn-svelte)
+- [Shadcn demo](https://dbr4qrmypnl85.cloudfront.net) - A version of the shadcn branch (uses shadcn-svelte)
 
 # Getting started
 
@@ -97,7 +99,7 @@ You'll need to set four variables:
 
 Your Passlock tenancy id, client id and api key (token) can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Please see the section [Sign in with google](#sign-in-with-google) if using Google sign in.
 
-Create a `.env.local` file containing the relevant credentials. 
+Create a `.env.local` file containing the relevant credentials.
 
 Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]:
 
@@ -125,7 +127,7 @@ Logout then navigate to the [login](http://localhost:5174/login) page. You shoul
 
 > [!TIP]
 > Prompting for an email address during authentication is optional but **highly recommended**.
-> 
+>
 > Imagine the user hasn't created a passkey, or they signed up using Google. When they try to sign in using a passkey you might expect that they would receive an error telling them that no passkey can be found, but unfortunately that's not how browsers behave. Instead the browser/device will prompt them to use a passkey on another different device. In my experience this confuses 90% of users.
 >
 > By asking for an email address we can check if they have a passkey registered in the backed or they have a linked Google account. This allows us to display a helpful message telling them to either sign up or login using their Google credentials.
@@ -159,7 +161,7 @@ This starter project also supports mailbox verification emails (via Passlock):
 
 ![Verifying mailbox ownership](https://github.com/passlock-dev/svelte-passkeys/assets/208345/2f7c06d6-c2a9-40f2-a8db-0a44fa378281)
 
-You can choose to verify an email address during passkey registration. Take a look at [src/routes/(other)/+page.svelte](src/routes/(other)/+page.svelte):
+You can choose to verify an email address during passkey registration. Take a look at [src/routes/(other)/+page.svelte](<src/routes/(other)/+page.svelte>):
 
 ```typescript
 // Email a verification link
@@ -187,6 +189,7 @@ See the emails section of your [Passlock console][passlock-settings]
 # Shadcn/ui variant
 
 ![Shadcn/ui variant](./docs/shadcn.png)
+
 <p align="center">Shadcn/ui variant</p>
 
 The default (master) branch uses [Preline][preline], however a [shadcn-svelte] variant is also available:

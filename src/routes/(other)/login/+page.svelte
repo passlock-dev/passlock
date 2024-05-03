@@ -50,17 +50,11 @@
 
   const { enhance, submitting, form: superformData } = form
 
-  const submittingPasskey = derived(
-    submitting,
-    $submitting => $submitting && $superformData.authType === 'passkey'
-  )
+  const submittingPasskey = derived(submitting, $submitting => $submitting && $superformData.authType === 'passkey')
 
-  const submittingGoogle = derived(
-    submitting,
-    $submitting => $submitting && $superformData.authType === 'google'
-  )
+  const submittingGoogle = derived(submitting, $submitting => $submitting && $superformData.authType === 'google')
 
-  $:readonlyEmail = $submittingPasskey || undefined
+  $: readonlyEmail = $submittingPasskey || undefined
 </script>
 
 <Forms.CenteredPanel>
@@ -81,7 +75,7 @@
     <form method="POST" use:enhance>
       <div class="flex flex-col gap-4">
         <Forms.InputEmail {form} field="email" label="Email address" autocomplete="email" readonly={readonlyEmail} />
-        
+
         <Forms.SubmitButton submitting={$submittingPasskey}>
           <Icons.Passkey class="size-5 fill-current" slot="icon" />
           Sign in with Passkey

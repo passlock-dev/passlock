@@ -10,7 +10,7 @@
 
         <p class="text-white">
           <span class="font-bold">Demo app</span>
-           - Please try registration, email verification & login
+          - Please try registration, email verification & login
         </p>
 
         <!-- <div class="ps-3 ms-auto"> -->

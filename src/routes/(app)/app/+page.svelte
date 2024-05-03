@@ -1109,7 +1109,7 @@
           <div>
             <p class="text-sm text-base-600 dark:text-base-400">
               <span class="font-semibold text-base-800 dark:text-base-200">12</span>
-               results
+              results
             </p>
           </div>
 

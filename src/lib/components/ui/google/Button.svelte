@@ -11,7 +11,7 @@
 
   export let operation: 'register' | 'login' = 'login'
   export let submitting = false
-  export let disabled = false  
+  export let disabled = false
 
   $: message = options.operation === 'register' ? 'Sign up with Google' : 'Sign in with Google'
 
@@ -30,12 +30,16 @@
     submittingToPasslock = request to the passlock api (create the Google user in Passlock and obtain a token)
     submitting = request to the +page.server.ts action (create the user in this app) 
   -->
-  <button type="button" on:click={click} disabled={submitting || submittingToPasslock || disabled} class="btn btn-secondary w-full py-3 px-4">
+  <button
+    type="button"
+    on:click={click}
+    disabled={submitting || submittingToPasslock || disabled}
+    class="btn btn-secondary w-full py-3 px-4">
     {#if submitting || submittingToPasslock}
       <Icons.Spinner class="size-4 animate-spin" />
     {:else}
       <Icons.Google class="size-4" />
-    {/if}    
+    {/if}
     {message}
   </button>
 

@@ -6,12 +6,8 @@
   <!-- Grid -->
   <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-10">
     <div class="col-span-full hidden lg:col-span-1 lg:block">
-      <a class="flex-none text-xl font-semibold dark:text-white" href="#" aria-label="Brand">
-        Acme Inc.
-      </a>
-      <p class="mt-3 text-xs sm:text-sm text-base-600 dark:text-base-400">
-        © 2024 Acme Inc.
-      </p>
+      <a class="flex-none text-xl font-semibold dark:text-white" href="#" aria-label="Brand">Acme Inc.</a>
+      <p class="mt-3 text-xs sm:text-sm text-base-600 dark:text-base-400">© 2024 Acme Inc.</p>
     </div>
     <!-- End Col -->
 

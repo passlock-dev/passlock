@@ -19,9 +19,7 @@
 <header class="flex-none flex flex-wrap sm:justify-start sm:flex-nowrap w-full text-sm py-4">
   <nav class="relative w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between" aria-label="Global">
     <div class="flex items-center justify-between">
-      <a class="flex-none text-xl font-semibold text-base-800 dark:text-base-100" href="/">
-        Acme Inc.
-      </a>
+      <a class="flex-none text-xl font-semibold text-base-800 dark:text-base-100" href="/">Acme Inc.</a>
 
       <div class="flex items-center gap-4 sm:hidden">
         <MobileMenuBar {user} bind:menuOpen />

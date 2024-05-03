@@ -17,6 +17,9 @@ export {
   Heading,
   InputEmail,
   InputText,
-  MultiFieldPin, PoweredBy, SingleFieldPin, SubHeading, SubmitButton
+  MultiFieldPin,
+  PoweredBy,
+  SingleFieldPin,
+  SubHeading,
+  SubmitButton
 }
-

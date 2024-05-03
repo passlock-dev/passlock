@@ -8,4 +8,3 @@ import Google from './Google.svelte'
 import Passkey from './Passkey.svelte'
 
 export { FieldError, Google, Logout, Moon, Passkey, Spinner, Sun, User }
-

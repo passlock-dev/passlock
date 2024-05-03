@@ -19,7 +19,9 @@ const createTablesSql = dedent(`
   );
 `)
 
-export const initLucia = () => { db.exec(createTablesSql) }
+export const initLucia = () => {
+  db.exec(createTablesSql)
+}
 
 export type CreateUser = {
   id: string
@@ -30,8 +32,7 @@ export type CreateUser = {
 
 export const createUser = (user: CreateUser) => {
   const insert = db.prepare(
-    'INSERT INTO user (id, email, given_name, family_name) ' + 
-    'VALUES (@id, @email, @givenName, @familyName)'
+    'INSERT INTO user (id, email, given_name, family_name) ' + 'VALUES (@id, @email, @givenName, @familyName)'
   )
 
   insert.run(user)

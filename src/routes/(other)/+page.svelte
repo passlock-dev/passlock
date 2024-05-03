@@ -57,17 +57,17 @@
   })
 
   const { enhance, submitting, form: superformData } = form
-  
+
   // We must have created a passkey or grabbed the data from google
   $: readonly = $superformData.token?.length > 0 ? true : undefined
 
   // Unlike login, registration is a two step process:
   // First the user clicks the Sign up with Google button which fetches their
   // data and creates an account (and token) in Passlock.
-  // 
+  //
   // Then they acccept the terms and submit the form.
   //
-  // So we want to disable the Sign in with Google button 
+  // So we want to disable the Sign in with Google button
   // once the first step is complete.
   $: disableGoogleBtn = $superformData.token.length > 1 && $superformData.authType === 'google'
 </script>
@@ -78,9 +78,7 @@
   <div class="grid md:grid-cols-2 gap-4 md:gap-8 xl:gap-20 md:items-center">
     <div>
       <h1 class="block text-3xl font-bold text-base-800 sm:text-4xl lg:text-6xl lg:leading-tight dark:text-white">
-        Start your journey with <span class="text-primary-600">
-          Acme Inc.
-        </span>
+        Start your journey with <span class="text-primary-600">Acme Inc.</span>
       </h1>
       <p class="mt-3 text-lg text-base-800 dark:text-base-50">
         Hand-picked professionals and expertly crafted components, designed for any kind of entrepreneur.

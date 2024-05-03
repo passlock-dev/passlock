@@ -38,7 +38,7 @@
 
   const { enhance, submitting, form: formData } = form
   $: disabled = $formData.code.length < 6 || $submitting
-  
+
   let resendDisabled = false
 </script>
 

@@ -8,7 +8,7 @@ A quick overview of the frameworks and how they are used.
 
 ## Passlock
 
-[Passlock][passlock] handles passkey registration and authentication. 
+[Passlock][passlock] handles passkey registration and authentication.
 
 Passlock also handles social sign in, abstracting passkey and google authentication users into a common _"Principal"_. The abstraction allows this app to use the same code to handle both passkey and social authentication.
 
@@ -24,13 +24,13 @@ During registration and authentication, Passlock returns a token. We send this t
 
 ## Melt UI
 
-[Melt UI][meltui] is a headless component builder library for Svelte. It allows us to build accessible, interactive elements. 
+[Melt UI][meltui] is a headless component builder library for Svelte. It allows us to build accessible, interactive elements.
 
 ## Preline & Melt UI
 
-[Preline][preline] is an awesome Tailwind UI library. Unfortunately whilst the Preline JavaScript can be used with Svelte, it's a bit clunky and doesn't play too well with Svelte. 
+[Preline][preline] is an awesome Tailwind UI library. Unfortunately whilst the Preline JavaScript can be used with Svelte, it's a bit clunky and doesn't play too well with Svelte.
 
-However, Melt UI and Preline CSS classes are an awesome combination. We use **Preline for styling and Melt UI for behavior**. 
+However, Melt UI and Preline CSS classes are an awesome combination. We use **Preline for styling and Melt UI for behavior**.
 
 > [!NOTE]  
 > Unlike [shadcn-svelte][shadcn-svelte], I haven't ported the entire Preline framework across to Svelte. I've simply used Melt UI to build the components required by this app. However as you will see, it's really easy to build a component using Melt (or [bits-ui][bitsui])
@@ -47,27 +47,27 @@ The code is quite well commented so please check it out. I'll give a quite overv
 
 ## Passkey registration
 
-See [src/routes/(other)/+page.svelte](../src/routes/(other)/+page.svelte). The basic approach is to use Superforms events:
+See [src/routes/(other)/+page.svelte](<../src/routes/(other)/+page.svelte>). The basic approach is to use Superforms events:
 
 1. User completes and submits a form.
 2. Superforms intercepts the submission
 3. We ask the Passlock library to create a passkey
 4. This returns a token, representing the new passkey
 5. We attach this token to the form and submit it
-6. In the [src/routes/(other)/+page.server.ts](../src/routes/(other)/+page.server.ts) action we verify the token by exchanging it for a Principal
+6. In the [src/routes/(other)/+page.server.ts](<../src/routes/(other)/+page.server.ts>) action we verify the token by exchanging it for a Principal
 7. This principal includes a user id
 8. We create a new local user and link the user id
 
 ## Passkey authentication
 
-See [src/routes/(other)/login/+page.svelte](../src/routes/(other)/login/+page.svelte). Very similar to the registration:
+See [src/routes/(other)/login/+page.svelte](<../src/routes/(other)/login/+page.svelte>). Very similar to the registration:
 
 1. User completes and submits a form.
 2. Superforms intercepts the submission
 3. We ask the Passlock library to authenticate using a passkey
 4. This returns a token, representing the passkey authentication
 5. Attach this token to the form and submit it
-6. In the [src/routes/(other)/login/+page.server.ts](../src/routes/(other)/login/+page.server.ts) action we verify the token by exchanging it for a Principal
+6. In the [src/routes/(other)/login/+page.server.ts](<../src/routes/(other)/login/+page.server.ts>) action we verify the token by exchanging it for a Principal
 7. This principal includes a user id
 8. Lookup the local user by id and create a new Lucia session
 
@@ -106,7 +106,7 @@ const verifyEmail = {
 passlock.registerPasskey({ verifyEmail })
 ```
 
-Passlock will generate a secure code or link and email it to the user during the passkey registration. The [src/routes/(other)/+page.server.ts](../src/routes/(other)/+page.server.ts) action then redirects the user to one of two pages:
+Passlock will generate a secure code or link and email it to the user during the passkey registration. The [src/routes/(other)/+page.server.ts](<../src/routes/(other)/+page.server.ts>) action then redirects the user to one of two pages:
 
 1. /verify-email/awaiting-link - Prompts the user to check their emails
 2. /verify-email/code - Prompts the user to check their emails and enter the code
@@ -115,7 +115,7 @@ Passlock will generate a secure code or link and email it to the user during the
 
 If the `verifyEmail` method is `link` you must also provide a url to which the user will be sent when they click the link. You should use the route `/verify-email/link`.
 
-Passlock will send the user to this route, appending a `?code=xxx` query parameter. In the [src/routes/(other)/verify-email/link/+page.server.ts](src/routes/(other)/verify-email/link/+page.server.ts) load function we grab this code and feed it into [src/routes/(other)/verify-email/link/+page.svelte](src/routes/(other)/verify-email/link/+page.svelte). This page presents the user with a button. When the button is clicked we call Passlock to verify the code is authentic.
+Passlock will send the user to this route, appending a `?code=xxx` query parameter. In the [src/routes/(other)/verify-email/link/+page.server.ts](<src/routes/(other)/verify-email/link/+page.server.ts>) load function we grab this code and feed it into [src/routes/(other)/verify-email/link/+page.svelte](<src/routes/(other)/verify-email/link/+page.svelte>). This page presents the user with a button. When the button is clicked we call Passlock to verify the code is authentic.
 
 > [!TIP]
 > Why do it this way? Why not simply verify the code in the +page.server.ts load function? Because we may need to re-authenticate the user. For background please see the [passlock docs](https://docs.passlock.dev/docs/howto/verify-emails#re-authenticating-the-user)
