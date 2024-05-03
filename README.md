@@ -11,7 +11,7 @@
   <p align="center">
     SvelteKit template project featuring Passkey authentication, Google sign in and mailbox verification.
     <br />
-    <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Preline)</a> &nbsp; | &nbsp; <a href="https://dbr4qrmypnl85.cloudfront.net">Demo (Shadcn)</a>
+    <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Master/Preline)</a> &nbsp; | &nbsp; <a href="https://dbr4qrmypnl85.cloudfront.net">Demo (Shadcn branch)</a>
   </p>
 </div>
 
@@ -47,7 +47,7 @@
 3. [Lucia][lucia] - Robust session management
 4. [Tailwind][tailwind] - Utility-first CSS framework
 5. [Preline][preline] - Tailwind UI library <sup>1</sup>
-6. [shadcn-svelte][shadcn-svelte] - Awesome tailwind ui components for Svelte <sup>2</sup>
+6. [shadcn-svelte][shadcn-svelte] - Tailwind components for Svelte <sup>2</sup>
 7. [Melt UI][meltui] - Headless component library for Svelte
 
 <sup>[1]</sup> Uses native Svelte in place of Preline JavaScript  
@@ -96,7 +96,9 @@ These can be found in your [Passlock console][passlock-console] under [settings]
 
 Create a `.env.local` file containing the relevant credentials. 
 
-Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings] under `Tenancy information -> Vite .env -> Download`
+Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]:
+
+`Tenancy information -> Vite .env -> Download`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
