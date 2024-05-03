@@ -2,7 +2,8 @@
   import {
     PUBLIC_PASSLOCK_CLIENT_ID,
     PUBLIC_PASSLOCK_ENDPOINT,
-    PUBLIC_PASSLOCK_TENANCY_ID
+    PUBLIC_PASSLOCK_TENANCY_ID,
+    PUBLIC_GOOGLE_CLIENT_ID
   } from '$env/static/public'
   import Logo from '$lib/components/ui/logo'
   import * as Icons from '$lib/components/icons'
@@ -101,11 +102,14 @@
           </div>
         </form>
 
-        <Forms.Divider />
-        <GoogleButton
-          operation="login"
-          on:principal={updateForm(form, true)}
-          delayed={googleDelayed} />
+        {#if PUBLIC_GOOGLE_CLIENT_ID}
+          <Forms.Divider />
+
+          <GoogleButton
+            operation="login"
+            on:principal={updateForm(form, true)}
+            delayed={googleDelayed} />
+        {/if}
 
         <div class="mt-2 text-center text-sm">
           Don&apos;t have an account?

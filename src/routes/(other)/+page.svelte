@@ -1,10 +1,10 @@
 <script lang="ts">
   import * as Icons from '$lib/components/icons'
-  import { page } from '$app/stores'
   import {
     PUBLIC_PASSLOCK_CLIENT_ID,
     PUBLIC_PASSLOCK_ENDPOINT,
-    PUBLIC_PASSLOCK_TENANCY_ID
+    PUBLIC_PASSLOCK_TENANCY_ID,
+    PUBLIC_GOOGLE_CLIENT_ID
   } from '$env/static/public'
   import * as Forms from '$lib/components/ui/forms'
   import { GoogleButton } from '$lib/components/ui/google'
@@ -13,11 +13,11 @@
   import { registrationFormSchema } from '$lib/schemas.js'
   import type { VerifyEmail } from '@passlock/client'
   import { onMount } from 'svelte'
-  import { superForm, type SuperForm } from 'sveltekit-superforms'
+  import { superForm } from 'sveltekit-superforms'
   import { valibotClient } from 'sveltekit-superforms/adapters'
 
   import { Button } from '$lib/components/ui/button/index.js'
-  import { derived, writable } from 'svelte/store'
+  import { writable } from 'svelte/store'
   import Logo from '$lib/components/ui/logo'
 
   export let data
@@ -123,13 +123,15 @@
           </div>
         </form>
 
-        <Forms.Divider />
-        
-        <GoogleButton
-          operation="register"
-          on:principal={updateForm(form, false)}
-          delayed={googleDelayed}
-          disabled={googleDisabled} />
+        {#if PUBLIC_GOOGLE_CLIENT_ID}
+          <Forms.Divider />
+          
+          <GoogleButton
+            operation="register"
+            on:principal={updateForm(form, false)}
+            delayed={googleDelayed}
+            disabled={googleDisabled} />
+        {/if}
       </div>
 
       <p class="px-8 text-center text-sm text-muted-foreground">
