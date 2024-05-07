@@ -40,7 +40,7 @@
 
 <script lang="ts">
   import { Passlock, PasslockError, type Principal } from '@passlock/client'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
   const dispatch = createEventDispatcher<{ principal: Principal }>()
 
@@ -52,8 +52,14 @@
   let error = ''
 
   const passlock = new Passlock(options)
+  let timer: number
 
   onMount(() => {
+    if (typeof google === 'undefined' || google === null) {
+      timer = window.setTimeout(onMount, 1000);
+      return
+    }
+
     google.accounts.id.initialize({
       client_id: options.googleClientId,
       ux_mode: 'popup',
@@ -93,6 +99,10 @@
     })
 
     googleBtn = googleBtnWrapper.querySelector('div[role=button]')
+  })
+
+  onDestroy(() => {
+    if (timer) window.clearTimeout(timer)
   })
 
   const click = () => {
