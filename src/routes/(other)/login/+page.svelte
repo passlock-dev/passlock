@@ -109,6 +109,8 @@
             on:principal={updateForm(form, true)} />
         {/if}
 
+        <Forms.PoweredBy />
+
         <div class="mt-2 text-center text-sm">
           Don&apos;t have an account?
           <a href="/" class="underline">Sign up</a>

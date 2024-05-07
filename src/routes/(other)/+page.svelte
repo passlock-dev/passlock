@@ -151,6 +151,8 @@
             disabled={disableGoogleBtn}
             on:principal={updateForm(form)} />
         {/if}
+
+        <Forms.PoweredBy />
       </div>
 
       <p class="px-8 text-center text-sm text-muted-foreground">
