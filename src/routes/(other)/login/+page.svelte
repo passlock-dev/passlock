@@ -80,9 +80,9 @@
           <Icons.Passkey class="size-5 fill-current" slot="icon" />
           Sign in with Passkey
         </Forms.SubmitButton>
-      </div>
 
-      <Forms.PoweredBy />
+        <Forms.PoweredBy />
+      </div>
     </form>
   </div>
 </Forms.CenteredPanel>

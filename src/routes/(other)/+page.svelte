@@ -337,9 +337,9 @@
                   Create passkey
                 </Forms.SubmitButton>
               {/if}
-            </div>
 
-            <Forms.PoweredBy />
+              <Forms.PoweredBy />
+            </div>
           </form>
         </div>
       </Forms.CenteredPanel>
