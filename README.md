@@ -104,7 +104,9 @@ Your Passlock Tenancy ID, Client ID and Api Key (token) can be found in your [Pa
 Create a `.env.local` file containing the relevant credentials.
 
 > [!TIP]
-> Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings] (see Vite .env -> Download) 
+> Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings] 
+> 
+> `Tenancy information -> Vite .env -> Download`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
