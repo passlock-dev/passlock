@@ -59,7 +59,7 @@
 
 # About
 
-Pretty much every web application requires authentication and authorization. The future of web authenticaton lies in passkeys, and this starter app makes full use of them. Learn how to register and authenticate your users using passkeys, perform facial or fingerprint recognition and more. You'll also learn how to use some of SvelteKit's hottest libraries and implement Google's latest social sign in feature.
+The future of web authenticaton lies in [Passkeys][google-passkeys]. Learn how to add Passkey authentication to your SvelteKit app, perform facial or fingerprint recognition and more. You'll also learn how to use some of SvelteKit's hottest libraries and implement Google's latest social sign in feature.
 
 # Demos
 
@@ -73,7 +73,7 @@ I've deployed 2 live versions of this project:
 
 ## Prerequisites
 
-This example project uses the cloud based Passlock framework for passkey registration and authentication. Create a free account at [passlock.dev][passlock-signup]
+This example project uses the cloud based [Passlock][passlock] framework for passkey registration and authentication. **Passlock is free for personal and commercial use**. Create an account at [passlock.dev][passlock-signup]
 
 ## Clone this repo
 
@@ -92,18 +92,17 @@ You'll need to set four variables:
 
 1. PUBLIC_PASSLOCK_TENANCY_ID
 2. PUBLIC_PASSLOCK_CLIENT_ID
-3. PASSLOCK_API_KEY
-4. PUBLIC_GOOGLE_CLIENT_ID <sup>1</sup>
+3. PUBLIC_GOOGLE_CLIENT_ID <sup>1</sup>
+4. PASSLOCK_API_KEY
 
-<sup>[1]</sup> - If you don't wish to use Google sign in/One tap set this variable to an empty string
+<sup>[1]</sup> - If you don't wish to use Google sign in set this variable to an empty string
 
-Your Passlock tenancy id, client id and api key (token) can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Please see the section [Sign in with google](#sign-in-with-google) if using Google sign in.
+Your Passlock Tenancy ID, Client ID and Api Key (token) can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Please see the section [Sign in with google](#sign-in-with-google) if using Google sign in.
 
 Create a `.env.local` file containing the relevant credentials.
 
-Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]:
-
-`Tenancy information -> Vite .env -> Download`
+> [!TIP]
+> Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]: `Tenancy information -> Vite .env -> Download`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -230,3 +229,4 @@ Please file an [issue][issues] and I'll respond ASAP.
 [issues]: https://github.com/passlock-dev/svelte-passkeys/issues
 [superforms]: https://superforms.rocks
 [apple-verification-codes]: https://www.cultofmac.com/819421/ios-17-autofill-verification-codes-safari-mail-app/
+[google-passkeys]: https://safety.google/authentication/passkey/
