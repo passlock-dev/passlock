@@ -97,12 +97,15 @@ You'll need to set four variables:
 
 <sup>[1]</sup> - If you don't wish to use Google sign in set this variable to an empty string
 
+### Where to find these variables
+
 Your Passlock Tenancy ID, Client ID and Api Key (token) can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Please see the section [Sign in with google](#sign-in-with-google) if using Google sign in.
 
 Create a `.env.local` file containing the relevant credentials.
 
 > [!TIP]
-> Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]: `Tenancy information -> Vite .env -> Download`
+> Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]: 
+> `Tenancy information -> Vite .env -> Download`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
