@@ -17,9 +17,9 @@
     "@lucia-auth/adapter-sqlite": "^3.0.1",
     "@melt-ui/pp": "^0.3.2",
     "@melt-ui/svelte": "^0.79.1",
-    "@passlock/client": "0.9.12",
-    "@sveltejs/adapter-auto": "^3.2.0",
-    "@sveltejs/kit": "^2.5.8",
+    "@passlock/client": "0.9.13",
+    "@sveltejs/adapter-auto": "^3.2.1",
+    "@sveltejs/kit": "^2.5.10",
     "@sveltejs/vite-plugin-svelte": "^3.1.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.7",
@@ -30,16 +30,16 @@
     "dedent": "^1.5.3",
     "js-sha256": "^0.11.0",
     "lucia": "^3.2.0",
-    "lucide-svelte": "^0.378.0",
+    "lucide-svelte": "^0.379.0",
     "mode-watcher": "^0.3.0",
     "node-check-updates": "^0.1.9",
     "postcss": "^8.4.38",
     "postcss-load-config": "^5.1.0",
     "prettier": "^3.2.5",
     "prettier-plugin-svelte": "^3.2.3",
-    "svelte": "^4.2.16",
+    "svelte": "^4.2.17",
     "svelte-check": "^3.7.1",
-    "sveltekit-superforms": "^2.13.1",
+    "sveltekit-superforms": "^2.14.0",
     "tailwindcss": "^3.4.3",
     "tslib": "^2.6.2",
     "typescript": "^5.4.5",
@@ -47,5 +47,19 @@
     "vite": "^5.2.11"
   },
   "type": "module",
-  "packageManager": "pnpm@8.15.6+sha256.01c01eeb990e379b31ef19c03e9d06a14afa5250b82e81303f88721c99ff2e6f"
+  "packageManager": "pnpm@8.15.6+sha256.01c01eeb990e379b31ef19c03e9d06a14afa5250b82e81303f88721c99ff2e6f",
+  "overrides": {
+    "effect": "3.2.5",
+    "@effect/schema": "0.67.14",
+    "@effect/rpc": "0.30.36",
+    "@effect/platform": "0.55.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "effect": "3.2.5",
+      "@effect/schema": "0.67.14",
+      "@effect/rpc": "0.30.36",
+      "@effect/platform": "0.55.1"
+    }
+  }
 }
