@@ -298,7 +298,7 @@
     </div>
     <!-- End Col -->
 
-    <div class="relative ms-4">
+    <div class="relative">
       <Forms.CenteredPanel>
         <div class="text-center">
           <Forms.Heading>Sign up</Forms.Heading>

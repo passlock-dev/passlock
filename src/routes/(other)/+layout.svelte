@@ -20,7 +20,7 @@
 
   <Header user={data.user} />
 
-  <main class="pt-2 pb-8 px-8 grow">
+  <main class="pt-2 pb-8 md:px-8 grow">
     <slot />
   </main>
 
