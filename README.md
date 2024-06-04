@@ -22,6 +22,8 @@
   </picture>
 </div>
 
+<br />
+
 # Features
 
 1. Passkey registration and authentication
