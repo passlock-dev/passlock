@@ -10,16 +10,17 @@
 <h1 align="center">SvelteKit Passkey Template</h1>
 
 <div align="center">
+    <picture align="center">
+    <source srcset="static/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
+    <img align="center" width=550 height=50 src="static/repo-banner.svg" />
+  </picture>
   <p align="center">
+    <br />
     SvelteKit template project featuring Passkey authentication, Google sign in and mailbox verification.
   </p>
   <p align="center">
     <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Master/Preline)</a> &nbsp; | &nbsp; <a href="https://dbr4qrmypnl85.cloudfront.net">Demo (Shadcn branch)</a>
   </p>
-  <picture align="center">
-    <source srcset="static/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
-    <img align="center" width=550 height=50 src="static/repo-banner.svg" />
-  </picture>
 </div>
 
 # Features
