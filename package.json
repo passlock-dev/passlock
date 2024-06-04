@@ -17,7 +17,7 @@
     "@lucia-auth/adapter-sqlite": "^3.0.1",
     "@melt-ui/pp": "^0.3.2",
     "@melt-ui/svelte": "^0.79.1",
-    "@passlock/client": "0.9.13",
+    "@passlock/client": "0.9.15",
     "@sveltejs/adapter-auto": "^3.2.1",
     "@sveltejs/kit": "^2.5.10",
     "@sveltejs/vite-plugin-svelte": "^3.1.0",
