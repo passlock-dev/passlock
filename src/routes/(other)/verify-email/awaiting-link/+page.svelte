@@ -3,6 +3,7 @@
   import { PUBLIC_PASSLOCK_CLIENT_ID, PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public'
   import * as Forms from '$lib/components/ui/forms'
   import { SveltePasslock } from '$lib/passlock'
+  import { verifyEmailLink } from '$lib/routes'
   import type { PageData } from './$types'
 
   export let data: PageData
@@ -18,7 +19,7 @@
   const resend = async () => {
     if (data.user) {
       resendDisabled = true
-      const redirectUrl = new URL('/verify-email/link', $page.url).href
+      const redirectUrl = new URL(verifyEmailLink(), $page.url).href
       await passlock.resendEmail({ userId: data.user.id, method: 'link', redirectUrl })
       setTimeout(() => {
         resendDisabled = false

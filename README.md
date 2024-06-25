@@ -10,16 +10,17 @@
 <h1 align="center">SvelteKit Passkey Template</h1>
 
 <div align="center">
+    <picture align="center">
+    <source srcset="static/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
+    <img align="center" width=550 height=50 src="static/repo-banner.svg" />
+  </picture>
   <p align="center">
+    <br />
     SvelteKit template project featuring Passkey authentication, Google sign in and mailbox verification.
   </p>
   <p align="center">
     <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Master/Preline)</a> &nbsp; | &nbsp; <a href="https://dbr4qrmypnl85.cloudfront.net">Demo (Shadcn branch)</a>
   </p>
-  <picture align="center">
-    <source srcset="static/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
-    <img align="center" width=550 height=50 src="static/repo-banner.svg" />
-  </picture>
 </div>
 
 # Features
@@ -104,8 +105,8 @@ Your Passlock Tenancy ID, Client ID and Api Key (token) can be found in your [Pa
 Create a `.env.local` file containing the relevant credentials.
 
 > [!TIP]
-> Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]: 
-> 
+> Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]:
+>
 > `Tenancy information -> Vite .env -> Download`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

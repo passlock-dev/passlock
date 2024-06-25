@@ -56,7 +56,7 @@
 
   onMount(() => {
     if (typeof google === 'undefined' || google === null) {
-      timer = window.setTimeout(onMount, 1000);
+      timer = window.setTimeout(onMount, 1000)
       return
     }
 

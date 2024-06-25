@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
   import * as Icons from '$lib/components/icons'
+  import { login, logout } from '$lib/routes'
   import { createAvatar, createMenubar, melt } from '@melt-ui/svelte'
   import type { User } from 'lucia'
   import { mode, setMode } from 'mode-watcher'
@@ -81,11 +82,11 @@
       </button>
     </div>
 
-    <form class="hidden" bind:this={logoutForm} method="post" action="/logout">
+    <form class="hidden" bind:this={logoutForm} method="post" action={logout()}>
       <button type="submit" class="text-base font-medium">Logout</button>
     </form>
   {:else}
-    <a href="/login" class="link">
+    <a href={login()} class="link">
       <Icons.User class="size-4" />
       Login
     </a>

@@ -4,6 +4,7 @@ import { superValidate } from 'sveltekit-superforms'
 import { valibot } from 'sveltekit-superforms/adapters'
 import type { PageServerLoad } from './$types'
 
+import { app, verifyEmailAwaitLink, verifyEmailCode } from '$lib/routes'
 import { lucia } from '$lib/server/auth'
 import { createUser } from '$lib/server/db'
 import { exchangeToken } from '$lib/server/passlock'
@@ -38,11 +39,11 @@ export const actions = {
     const verifyEmail = form.data.verifyEmail
 
     if (authType === 'passkey' && verifyEmail === 'code') {
-      redirect(302, `/verify-email/code`)
+      redirect(302, verifyEmailCode())
     } else if (authType === 'passkey' && verifyEmail === 'link') {
-      redirect(302, `/verify-email/awaiting-link`)
+      redirect(302, verifyEmailAwaitLink())
     } else {
-      redirect(302, '/app')
+      redirect(302, app())
     }
   }
 } satisfies Actions

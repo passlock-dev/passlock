@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
   import * as Icons from '$lib/components/icons'
+  import { login, logout } from '$lib/routes'
   import type { User } from 'lucia'
 
   export let user: User | undefined
@@ -11,14 +12,14 @@
 
 <div class="flex flex-col gap-5 mt-5">
   {#if user}
-    <form method="post" action="/logout">
+    <form method="post" action={logout()}>
       <button type="submit" class="flex gap-2 items-center font-medium text-base-800 dark:text-base-200">
         <Icons.Logout class="size-4" />
         Logout
       </button>
     </form>
   {:else}
-    <a href="/login" class="link">
+    <a href={login()} class="link">
       <Icons.User class="size-4" />
       Login
     </a>

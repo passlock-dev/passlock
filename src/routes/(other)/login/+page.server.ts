@@ -1,3 +1,4 @@
+import { app } from '$lib/routes'
 import { loginFormSchema } from '$lib/schemas'
 import { lucia } from '$lib/server/auth'
 import { exchangeToken } from '$lib/server/passlock'
@@ -32,6 +33,6 @@ export const actions = {
       ...sessionCookie.attributes
     })
 
-    redirect(302, '/app')
+    redirect(302, app())
   }
 } satisfies Actions

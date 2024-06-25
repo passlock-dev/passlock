@@ -1,3 +1,4 @@
+import { login } from '$lib/routes'
 import { lucia } from '$lib/server/auth'
 import { initLucia } from '$lib/server/db'
 import { redirect, type Handle } from '@sveltejs/kit'
@@ -41,7 +42,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   if (isProtectedRoute(event.route.id) && event.locals.user) {
     return resolve(event)
   } else if (isProtectedRoute(event.route.id)) {
-    redirect(302, '/login')
+    redirect(302, login())
   } else {
     return resolve(event)
   }

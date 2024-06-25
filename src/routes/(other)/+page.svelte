@@ -10,6 +10,7 @@
   import * as Forms from '$lib/components/ui/forms'
   import * as Google from '$lib/components/ui/google'
   import { SveltePasslock, saveEmailLocally, updateForm } from '$lib/passlock'
+  import { login } from '$lib/routes.js'
   import { registrationFormSchema } from '$lib/schemas.js'
   import type { VerifyEmail } from '@passlock/client'
   import { onMount } from 'svelte'
@@ -103,7 +104,7 @@
           </svg>
         </a>
 
-        <a class="btn btn-secondary" href="/contact">Contact sales team</a>
+        <a class="btn btn-secondary" href="#">Contact sales team</a>
       </div>
       <!-- End Buttons -->
 
@@ -304,7 +305,7 @@
           <Forms.Heading>Sign up</Forms.Heading>
           <Forms.SubHeading>
             Already have an account?
-            <Link href="/login">Sign in here</Link>
+            <Link href={login()}>Sign in here</Link>
           </Forms.SubHeading>
         </div>
 
