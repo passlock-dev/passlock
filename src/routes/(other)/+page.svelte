@@ -17,6 +17,7 @@
   import { valibotClient } from 'sveltekit-superforms/adapters'
 
   import Logo from '$lib/components/ui/logo'
+  import { login } from '$lib/routes.js'
 
   export let data
 
@@ -79,7 +80,7 @@
   class="relative h-full w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
   <div class="absolute right-4 top-4 right-8 top-8 flex items-center gap-4">
     <ThemeSelector />
-    <a class="text-primary hover:underline" href="/login">Login</a>
+    <a class="text-primary hover:underline" href={login()}>Login</a>
   </div>
 
   <Logo class="text-white" />
@@ -158,13 +159,13 @@
       <p class="px-8 text-center text-sm text-muted-foreground">
         By creating an account, you agree to our
         <a
-          href="/terms"
+          href="#"
           class="underline underline-offset-4 hover:text-primary">
           Terms of Service
         </a>
         and
         <a
-          href="/privacy"
+          href="#"
           class="underline underline-offset-4 hover:text-primary">
           Privacy Policy
         </a>

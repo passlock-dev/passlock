@@ -11,7 +11,7 @@
   import CreditCard from 'lucide-svelte/icons/credit-card'
   import EllipsisVertical from 'lucide-svelte/icons/ellipsis-vertical'
   import File from 'lucide-svelte/icons/file'
-  import Home from 'lucide-svelte/icons/home'
+  import Home from 'lucide-svelte/icons/house'
   import LineChart from 'lucide-svelte/icons/line-chart'
   import ListFilter from 'lucide-svelte/icons/list-filter'
   import Package from 'lucide-svelte/icons/package'
@@ -36,6 +36,7 @@
   import * as Table from '$lib/components/ui/table/index.js'
   import * as Tabs from '$lib/components/ui/tabs/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
+  import { logout } from '$lib/routes'
   import type { PageData } from './$types'
 
   export let data: PageData
@@ -687,5 +688,5 @@
   </div>
 </div>
 
-<form bind:this={logoutForm} method="post" action="/logout" class="hidden">
+<form bind:this={logoutForm} method="post" action={logout()} class="hidden">
 </form>
