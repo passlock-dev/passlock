@@ -1,3 +1,8 @@
+/**
+ * Please see https://github.com/sveltejs/kit/issues/647#issuecomment-2136031840
+ * Credit to https://github.com/david-plugge
+ */
+
 import { resolveRoute } from '$app/paths'
 import type RouteMetadata from '../../.svelte-kit/types/route_meta_data.json'
 type RouteMetadata = typeof RouteMetadata;
@@ -22,6 +27,11 @@ export type Routes = {
 	[K in RouteId]: Prettify<ParseParams<K>>;
 };
 
+/**
+ * @param options routeId, optional params, query and hash
+ * @example route({ routeId: '/user/:id', params: { id: '1' } })
+ * @returns 
+ */
 export const route = <T extends keyof Routes>(
 	options: {
 		routeId: T;
