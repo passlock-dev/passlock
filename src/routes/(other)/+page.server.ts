@@ -39,11 +39,11 @@ export const actions = {
     const verifyEmail = form.data.verifyEmail
 
     if (authType === 'passkey' && verifyEmail === 'code') {
-      redirect(302, verifyEmailCode())
+      redirect(302, verifyEmailCode)
     } else if (authType === 'passkey' && verifyEmail === 'link') {
-      redirect(302, verifyEmailAwaitLink())
+      redirect(302, verifyEmailAwaitLink)
     } else {
-      redirect(302, app())
+      redirect(302, app)
     }
   }
 } satisfies Actions

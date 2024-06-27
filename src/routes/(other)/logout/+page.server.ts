@@ -11,6 +11,6 @@ export const actions = {
       lucia.invalidateSession(session.id)
     }
 
-    redirect(302, login())
+    redirect(302, login)
   }
 } satisfies Actions

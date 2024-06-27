@@ -19,7 +19,7 @@
   const resend = async () => {
     if (data.user) {
       resendDisabled = true
-      const redirectUrl = new URL(verifyEmailLink(), $page.url).href
+      const redirectUrl = new URL(verifyEmailLink, $page.url).href
       await passlock.resendEmail({ userId: data.user.id, method: 'link', redirectUrl })
       setTimeout(() => {
         resendDisabled = false

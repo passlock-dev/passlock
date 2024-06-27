@@ -305,7 +305,7 @@
           <Forms.Heading>Sign up</Forms.Heading>
           <Forms.SubHeading>
             Already have an account?
-            <Link href={login()}>Sign in here</Link>
+            <Link href={login}>Sign in here</Link>
           </Forms.SubHeading>
         </div>
 

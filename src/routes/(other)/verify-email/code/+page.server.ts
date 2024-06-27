@@ -19,6 +19,6 @@ export const actions = {
       return fail(400, { form })
     }
 
-    redirect(302, app())
+    redirect(302, app)
   }
 } satisfies Actions

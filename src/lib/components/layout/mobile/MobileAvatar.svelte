@@ -46,4 +46,4 @@
   </button>
 </div>
 
-<form bind:this={form} method="post" action={logout()}></form>
+<form bind:this={form} method="post" action={logout}></form>

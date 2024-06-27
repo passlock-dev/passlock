@@ -44,10 +44,10 @@ export const route = <T extends keyof Routes>(
   return path + (search ? `?${search}` : '') + (options.hash ? `#${options.hash}` : '')
 }
 
-export const app = () => route({ routeId: '/(app)/app' })
-export const login = () => route({ routeId: '/(other)/login' })
-export const logout = () => route({ routeId: '/(other)/logout' })
+export const app = route({ routeId: '/(app)/app' })
+export const login = route({ routeId: '/(other)/login' })
+export const logout = route({ routeId: '/(other)/logout' })
 
-export const verifyEmailLink = () => route({ routeId: '/(other)/verify-email/link' })
-export const verifyEmailCode = () => route({ routeId: '/(other)/verify-email/code' })
-export const verifyEmailAwaitLink = () => route({ routeId: '/(other)/verify-email/awaiting-link' })
+export const verifyEmailLink = route({ routeId: '/(other)/verify-email/link' })
+export const verifyEmailCode = route({ routeId: '/(other)/verify-email/code' })
+export const verifyEmailAwaitLink = route({ routeId: '/(other)/verify-email/awaiting-link' })
