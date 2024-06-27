@@ -80,7 +80,7 @@
   class="relative h-full w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
   <div class="absolute right-4 top-4 right-8 top-8 flex items-center gap-4">
     <ThemeSelector />
-    <a class="text-primary hover:underline" href={login()}>Login</a>
+    <a class="text-primary hover:underline" href={login}>Login</a>
   </div>
 
   <Logo class="text-white" />

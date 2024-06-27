@@ -9,7 +9,7 @@ import type { Actions, PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ locals }) => {
   if (locals.user) {
-    redirect(302, app())
+    redirect(302, app)
   }
 
   return {
@@ -37,6 +37,6 @@ export const actions = {
       ...sessionCookie.attributes
     })
 
-    redirect(302, app())
+    redirect(302, app)
   }
 } satisfies Actions

@@ -688,5 +688,5 @@
   </div>
 </div>
 
-<form bind:this={logoutForm} method="post" action={logout()} class="hidden">
+<form bind:this={logoutForm} method="post" action={logout} class="hidden">
 </form>
