@@ -31,6 +31,10 @@
 4. Dark mode with theme selection (light/dark/system)
 5. [Preline][preline] and [Shadcn][shadcn-svelte] variants
 
+# Demo recording
+
+https://github.com/passlock-dev/svelte-passkeys/assets/208345/69d21e77-6630-4d43-afa7-197889e289ce
+
 # Screenshots
 
 ![Register a passkey](./docs/preline.png)
