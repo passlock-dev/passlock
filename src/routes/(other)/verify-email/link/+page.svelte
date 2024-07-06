@@ -2,8 +2,8 @@
   import { PUBLIC_PASSLOCK_CLIENT_ID, PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public'
   import * as Icons from '$lib/components/icons'
   import * as Forms from '$lib/components/ui/forms'
-  import { SveltePasslock } from '$lib/passlock'
   import { verifyEmailSchema } from '$lib/schemas'
+  import { Passlock } from '@passlock/sveltekit/superforms'
   import { onMount } from 'svelte'
   import { superForm } from 'sveltekit-superforms'
   import { valibotClient } from 'sveltekit-superforms/adapters'
@@ -15,7 +15,7 @@
   const tenancyId = PUBLIC_PASSLOCK_TENANCY_ID
   const clientId = PUBLIC_PASSLOCK_CLIENT_ID
 
-  const passlock = new SveltePasslock({ tenancyId, clientId, endpoint })
+  const passlock = new Passlock({ tenancyId, clientId, endpoint })
 
   const form = superForm(data.form, {
     validators: valibotClient(verifyEmailSchema),

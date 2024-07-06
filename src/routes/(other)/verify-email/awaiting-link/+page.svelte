@@ -2,8 +2,8 @@
   import { page } from '$app/stores'
   import { PUBLIC_PASSLOCK_CLIENT_ID, PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public'
   import * as Forms from '$lib/components/ui/forms'
-  import { SveltePasslock } from '$lib/passlock'
   import { verifyEmailLink } from '$lib/routes'
+  import { Passlock } from '@passlock/sveltekit/superforms'
   import type { PageData } from './$types'
 
   export let data: PageData
@@ -12,7 +12,7 @@
   const tenancyId = PUBLIC_PASSLOCK_TENANCY_ID
   const clientId = PUBLIC_PASSLOCK_CLIENT_ID
 
-  const passlock = new SveltePasslock({ tenancyId, clientId, endpoint })
+  const passlock = new Passlock({ tenancyId, clientId, endpoint })
 
   let resendDisabled = false
 

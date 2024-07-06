@@ -8,11 +8,12 @@
   import * as Icons from '$lib/components/icons'
   import Link from '$lib/components/layout/Link.svelte'
   import * as Forms from '$lib/components/ui/forms'
+  import FormError from '$lib/components/ui/forms/FormErrors.svelte'
   import * as Google from '$lib/components/ui/google'
-  import { SveltePasslock, saveEmailLocally, updateForm } from '$lib/passlock'
   import { login } from '$lib/routes.js'
   import { registrationFormSchema } from '$lib/schemas.js'
-  import type { VerifyEmail } from '@passlock/client'
+  import type { VerifyEmail } from '@passlock/sveltekit'
+  import { Passlock, saveEmailLocally, updateForm } from '@passlock/sveltekit/superforms'
   import { onMount } from 'svelte'
   import { superForm } from 'sveltekit-superforms'
   import { valibotClient } from 'sveltekit-superforms/adapters'
@@ -23,7 +24,7 @@
   const tenancyId = PUBLIC_PASSLOCK_TENANCY_ID
   const clientId = PUBLIC_PASSLOCK_CLIENT_ID
 
-  const passlock = new SveltePasslock({ tenancyId, clientId, endpoint })
+  const passlock = new Passlock({ tenancyId, clientId, endpoint })
 
   // During the passkey registration process
   // Passlock can send a mailbox verification email.
@@ -42,35 +43,51 @@
     delayMs: 0,
 
     onSubmit: async ({ formData, cancel }) => {
-      // we don't yet have a token so register a passkey to obtain one
+      // We don't yet have a token so register a passkey to obtain one.
+      // This will attempt to register a passkey and set the token field
+      // on the form. If it fails for some reason the form submission will
+      // be cancelled and the error will be recorded in the either the
+      // form.errors.email if it's an account level error e.g. duplicate user
+      // or form.message if it's a general error.
       await passlock.register({ form, formData, cancel, verifyEmail })
     },
 
     onResult: () => {
-      if ($superformData.authType === 'passkey') {
-        saveEmailLocally($superformData.email)
+      // Edge case optimization, feel free to remove :)
+      // The form could have been submitted with a passkey registration
+      // request or a social login request. We example the authType field
+      // and if we registered a passkey we store the associated email in 
+      // local storage. This is effectively a 'remember my username' so if
+      // a user registered more than one passkey on this site the browser
+      // will default to using the last one registered.
+      if ($formData.authType === 'passkey') {
+        saveEmailLocally($formData.email)
       }
     }
   })
 
   onMount(async () => {
-    await passlock.preConnect()
+    // await passlock.preConnect()
   })
 
-  const { enhance, submitting, form: superformData } = form
+  const { enhance, submitting, form: formData } = form
+
+  $:console.log({ $submitting })
 
   // We must have created a passkey or grabbed the data from google
-  $: readonly = $superformData.token?.length > 0 ? true : undefined
+  // so at this point we want to lock the form before submitting it
+  $: readonly = $formData.token.length > 0 ? true : undefined
 
   // Unlike login, registration is a two step process:
-  // First the user clicks the Sign up with Google button which fetches their
-  // data and creates an account (and token) in Passlock.
+  // First the user clicks the Sign up with Google button which fetches 
+  // their data from Google, registers an account in Passlock and returns 
+  // a token.
   //
-  // Then they acccept the terms and submit the form.
+  // Next they acccept the terms and submit the form.
   //
-  // So we want to disable the Sign in with Google button
-  // once the first step is complete.
-  $: disableGoogleBtn = $superformData.token.length > 1 && $superformData.authType === 'google'
+  // So we want to disable the Sign in with Google button once the first 
+  // step is complete and we've obtained the token
+  $: disableGoogleBtn = $formData.token.length > 1 && $formData.authType === 'google'
 </script>
 
 <!-- Hero -->
@@ -327,7 +344,7 @@
                 </div>
               </Forms.Checkbox>
 
-              {#if $superformData.token && $superformData.authType === 'google'}
+              {#if $formData.token && $formData.authType === 'google'}
                 <Forms.SubmitButton submitting={$submitting}>
                   <Icons.Google class="size-4" slot="icon" />
                   Sign up with Google
@@ -338,6 +355,9 @@
                   Create passkey
                 </Forms.SubmitButton>
               {/if}
+              
+              <!-- form level errors-->
+              <FormError {form} />
 
               <Forms.PoweredBy />
             </div>

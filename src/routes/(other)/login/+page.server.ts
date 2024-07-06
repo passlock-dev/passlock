@@ -1,11 +1,19 @@
+import { PASSLOCK_API_KEY } from '$env/static/private'
+import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public'
 import { app } from '$lib/routes'
 import { loginFormSchema } from '$lib/schemas'
 import { lucia } from '$lib/server/auth'
-import { exchangeToken } from '$lib/server/passlock'
+import { TokenVerifier } from '@passlock/sveltekit'
 import { fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms'
 import { valibot } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
+
+const tokenVerifier = new TokenVerifier({ 
+  tenancyId: PUBLIC_PASSLOCK_TENANCY_ID, 
+  apiKey: PASSLOCK_API_KEY, 
+  endpoint: PUBLIC_PASSLOCK_ENDPOINT 
+})
 
 export const load: PageServerLoad = async () => {
   return {
@@ -22,7 +30,7 @@ export const actions = {
     }
 
     // Verify the Passlock token is genuine
-    const principal = await exchangeToken(form.data.token)
+    const principal = await tokenVerifier.exchangeToken(form.data.token)
 
     const session = await lucia.createSession(principal.user.id, {})
 
