@@ -67,12 +67,10 @@
   })
 
   onMount(async () => {
-    // await passlock.preConnect()
+    await passlock.preConnect()
   })
 
   const { enhance, submitting, form: formData } = form
-
-  $:console.log({ $submitting })
 
   // We must have created a passkey or grabbed the data from google
   // so at this point we want to lock the form before submitting it
