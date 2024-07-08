@@ -4,7 +4,7 @@
     PUBLIC_PASSLOCK_ENDPOINT,
     PUBLIC_PASSLOCK_TENANCY_ID
   } from '$env/static/public'
-  import { SveltePasslock } from '$lib/passlock'
+  import { Passlock } from '@passlock/sveltekit/superforms'
   import type { PageData } from './$types'
 
   import { ThemeSelector } from '$lib/components/theme'
@@ -13,11 +13,11 @@
 
   export let data: PageData
 
-  const endpoint = PUBLIC_PASSLOCK_ENDPOINT
-  const tenancyId = PUBLIC_PASSLOCK_TENANCY_ID
-  const clientId = PUBLIC_PASSLOCK_CLIENT_ID
-
-  const passlock = new SveltePasslock({ tenancyId, clientId, endpoint })
+  const passlock = new Passlock({ 
+    tenancyId: PUBLIC_PASSLOCK_TENANCY_ID, 
+    clientId: PUBLIC_PASSLOCK_CLIENT_ID, 
+    endpoint: PUBLIC_PASSLOCK_ENDPOINT 
+  })
 
   const resend = async () => {
     if (data.user) {
@@ -28,9 +28,6 @@
       }, 1000)
     }
   }
-
-  const pinClass =
-    'block text-center border border-gray-200 rounded-md text-sm font-mono font-semibold [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-base-900 dark:border-gray-700 dark:text-base-400 dark:focus:ring-gray-600 size-[46px]'
 
   let resendDisabled = false
 </script>
@@ -53,7 +50,7 @@
     <Card.Footer>
       <div class="w-full text-sm text-center">
         Still waiting?
-        <a href="/" class="underline">Resend code</a>
+        <a href="#" on:click={resend} class="underline">Resend code</a>
       </div>
     </Card.Footer>
   </Card.Root>

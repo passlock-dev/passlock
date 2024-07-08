@@ -17,9 +17,9 @@ importers:
       '@melt-ui/svelte':
         specifier: ^0.83.0
         version: 0.83.0(svelte@4.2.18)
-      '@passlock/client':
-        specifier: 0.9.16
-        version: 0.9.16
+      '@passlock/sveltekit':
+        specifier: 0.9.17
+        version: 0.9.17(svelte@4.2.18)(sveltekit-superforms@2.15.2(@sveltejs/kit@2.5.18(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9)))(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9)))(svelte@4.2.18))
       '@sveltejs/adapter-auto':
         specifier: ^3.2.2
         version: 3.2.2(@sveltejs/kit@2.5.18(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9)))(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9)))
@@ -134,23 +134,23 @@ packages:
     resolution: {integrity: sha512-UwgBRMjJP+xv857DCngvqXI3Iq6J4v0wXmwc6sapg+zyhbwmQX67LUEFrkK5tbyJ30jGuG3ZvWpBiB9LCy1kWw==}
     engines: {node: '>=6.9.0'}
 
-  '@effect/platform@0.58.16':
-    resolution: {integrity: sha512-8F7Vs8BhmgNrBxkug5Co/ncmmy7jnFrvOL30j78LsTmFRLJVCGZ+3Da9IAYFJejFE+vUhVMNd6hXSObAd9NqcQ==}
+  '@effect/platform@0.58.21':
+    resolution: {integrity: sha512-q6NSWisGbQO/qcP+ce4axnuaYOgZPrzG7V3joaNGZqxuF55A0dRpErmpzrlOq/7qsMV5G5/2zBGxN9abK5Z4VA==}
     peerDependencies:
-      '@effect/schema': 0.68.14
-      effect: 3.4.5
+      '@effect/schema': ^0.68.18
+      effect: ^3.4.8
 
-  '@effect/rpc@0.31.16':
-    resolution: {integrity: sha512-+EX+piiLfMeSCBREIw/rjIwQc71jlbdnORQwJv4Q7Wqh1+ywwRcXvRytgxryMEKhXfb96UVTJEzyIdOBGrnKfw==}
+  '@effect/rpc@0.31.21':
+    resolution: {integrity: sha512-rwnR+/TUuffGykvOBrhkcMTSpjUTypEXPp3u9n6W4RcgVX3cmr623wAGsQe4c1Xt7KGFqd5FCIJ/NzxWhoEhEQ==}
     peerDependencies:
-      '@effect/platform': ^0.58.16
-      '@effect/schema': ^0.68.14
-      effect: ^3.4.5
+      '@effect/platform': ^0.58.21
+      '@effect/schema': ^0.68.18
+      effect: ^3.4.8
 
-  '@effect/schema@0.68.14':
-    resolution: {integrity: sha512-NnsT3INeoGkWm9IDpjBnBFXI20SvNzrIiG0Wgzsk04yQWZzMP3PX05SSjVljkIOHD9UaBvm8YQP9AWKW2K7DYw==}
+  '@effect/schema@0.68.18':
+    resolution: {integrity: sha512-+knLs36muKsyqIvQTB0itGp5Lwy+5jgEC0G5P8wSsrB6EWGFirS87QjbaFYGbg32l/P51RM+9cPMiAEyICwN6g==}
     peerDependencies:
-      effect: 3.4.5
+      effect: ^3.4.8
 
   '@emnapi/core@0.45.0':
     resolution: {integrity: sha512-DPWjcUDQkCeEM4VnljEOEcXdAD7pp8zSZsgOujk/LGIwCXWbXJngin+MO4zbH429lzeC3WbYLGjE2MaUOwzpyw==}
@@ -561,16 +561,20 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@passlock/client@0.9.16':
-    resolution: {integrity: sha512-ay9I6UvwME3cXPblTyloKxTVSGe7VSOO8kkh9b4tMjaIoO2ibC5WUYIbdkj4wQjv2NFfTNwTk3NIEhCSTqJ4xQ==}
+  '@passlock/client@0.9.17':
+    resolution: {integrity: sha512-3AbLJgFbOh2nqXj/hXo3XYF2xvqxAizgZNnDIiUQENTuyevInDsEvcX9MMikr28fdqPnzA7h71lD6MgHNssxTw==}
 
-  '@passlock/shared@0.9.16':
-    resolution: {integrity: sha512-SLrRwQ5vSb1n7A5+Goo+SiGffFB3+ZjmnPn91HXJfiT/0hOWeCmveoRWBoCpJRCtfVIouhwyrJS1YIlR1nfhXA==}
+  '@passlock/shared@0.9.17':
+    resolution: {integrity: sha512-s+ne6AK2q2wT8iKzzO09v/SvSA5x63IaZZx+hcv7zfuKiqj0ua8gY4JNNYn0uf98Qof3VeIn2DfdUFkvi/fYUg==}
+
+  '@passlock/sveltekit@0.9.17':
+    resolution: {integrity: sha512-z0yf92sA8hGIXZdctRe/HA7pVqyvFDO20Y0uo/g4pVF3a9HI2SKpoBB/glgz9mbEHfWbDYeaGg9Iwgh6U7NF/A==}
     peerDependencies:
-      '@effect/platform': 0.58.16
-      '@effect/rpc': 0.31.16
-      '@effect/schema': 0.68.14
-      effect: 3.4.5
+      svelte: ^4.2.17
+      sveltekit-superforms: ^2.15.2
+    peerDependenciesMeta:
+      sveltekit-superforms:
+        optional: true
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -967,8 +971,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  effect@3.4.5:
-    resolution: {integrity: sha512-aTonOH68tUttSdYwMkiuky3hjgn3pu7yInNaE8rU2EDKQ8zr9Me78WcvWBQKe4u1gvbBH77y9dAKqn98lNIfNQ==}
+  effect@3.4.8:
+    resolution: {integrity: sha512-qOQNrSSN3ITuAtARtN2Ldq6E5f42splY9VV18LqpKOXMwQCCEWkXdns4by3D2CJnDXQD2KCE0iGcRR2KowiQIA==}
 
   electron-to-chromium@1.4.815:
     resolution: {integrity: sha512-OvpTT2ItpOXJL7IGcYakRjHCt8L5GrrN/wHCQsRB4PQa1X9fe+X9oen245mIId7s14xvArCGSTIq644yPUKKLg==}
@@ -1846,23 +1850,23 @@ snapshots:
     dependencies:
       regenerator-runtime: 0.14.1
 
-  '@effect/platform@0.58.16(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5)':
+  '@effect/platform@0.58.21(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8)':
     dependencies:
-      '@effect/schema': 0.68.14(effect@3.4.5)
-      effect: 3.4.5
+      '@effect/schema': 0.68.18(effect@3.4.8)
+      effect: 3.4.8
       find-my-way-ts: 0.1.4
       multipasta: 0.2.2
       path-browserify: 1.0.1
 
-  '@effect/rpc@0.31.16(@effect/platform@0.58.16(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5))(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5)':
+  '@effect/rpc@0.31.21(@effect/platform@0.58.21(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8))(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8)':
     dependencies:
-      '@effect/platform': 0.58.16(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5)
-      '@effect/schema': 0.68.14(effect@3.4.5)
-      effect: 3.4.5
+      '@effect/platform': 0.58.21(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8)
+      '@effect/schema': 0.68.18(effect@3.4.8)
+      effect: 3.4.8
 
-  '@effect/schema@0.68.14(effect@3.4.5)':
+  '@effect/schema@0.68.18(effect@3.4.8)':
     dependencies:
-      effect: 3.4.5
+      effect: 3.4.8
       fast-check: 3.19.0
 
   '@emnapi/core@0.45.0':
@@ -2180,21 +2184,25 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
 
-  '@passlock/client@0.9.16':
+  '@passlock/client@0.9.17':
     dependencies:
-      '@effect/platform': 0.58.16(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5)
-      '@effect/rpc': 0.31.16(@effect/platform@0.58.16(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5))(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5)
-      '@effect/schema': 0.68.14(effect@3.4.5)
       '@github/webauthn-json': 2.1.1
-      '@passlock/shared': 0.9.16(@effect/platform@0.58.16(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5))(@effect/rpc@0.31.16(@effect/platform@0.58.16(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5))(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5))(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5)
-      effect: 3.4.5
+      '@passlock/shared': 0.9.17
+      effect: 3.4.8
 
-  '@passlock/shared@0.9.16(@effect/platform@0.58.16(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5))(@effect/rpc@0.31.16(@effect/platform@0.58.16(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5))(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5))(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5)':
+  '@passlock/shared@0.9.17':
     dependencies:
-      '@effect/platform': 0.58.16(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5)
-      '@effect/rpc': 0.31.16(@effect/platform@0.58.16(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5))(@effect/schema@0.68.14(effect@3.4.5))(effect@3.4.5)
-      '@effect/schema': 0.68.14(effect@3.4.5)
-      effect: 3.4.5
+      '@effect/platform': 0.58.21(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8)
+      '@effect/rpc': 0.31.21(@effect/platform@0.58.21(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8))(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8)
+      '@effect/schema': 0.68.18(effect@3.4.8)
+      effect: 3.4.8
+
+  '@passlock/sveltekit@0.9.17(svelte@4.2.18)(sveltekit-superforms@2.15.2(@sveltejs/kit@2.5.18(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9)))(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9)))(svelte@4.2.18))':
+    dependencies:
+      '@passlock/client': 0.9.17
+      svelte: 4.2.18
+    optionalDependencies:
+      sveltekit-superforms: 2.15.2(@sveltejs/kit@2.5.18(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9)))(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9)))(svelte@4.2.18)
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -2565,7 +2573,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  effect@3.4.5: {}
+  effect@3.4.8: {}
 
   electron-to-chromium@1.4.815: {}
 

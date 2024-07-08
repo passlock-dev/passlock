@@ -10,13 +10,13 @@
   import * as Forms from '$lib/components/ui/forms'
   import * as Google from '$lib/components/ui/google'
   import Logo from '$lib/components/ui/logo'
+  import { loginFormSchema } from '$lib/schemas'
   import {
-    SveltePasslock,
+    Passlock,
     getLocalEmail,
     saveEmailLocally,
     updateForm
-  } from '$lib/passlock.js'
-  import { loginFormSchema } from '$lib/schemas'
+  } from '@passlock/sveltekit/superforms'
   import { onMount } from 'svelte'
   import { derived } from 'svelte/store'
   import { valibotClient } from 'sveltekit-superforms/adapters'
@@ -24,11 +24,11 @@
 
   export let data
 
-  const endpoint = PUBLIC_PASSLOCK_ENDPOINT
-  const tenancyId = PUBLIC_PASSLOCK_TENANCY_ID
-  const clientId = PUBLIC_PASSLOCK_CLIENT_ID
-
-  const passlock = new SveltePasslock({ tenancyId, clientId, endpoint })
+  const passlock = new Passlock({ 
+    tenancyId: PUBLIC_PASSLOCK_TENANCY_ID, 
+    clientId: PUBLIC_PASSLOCK_CLIENT_ID, 
+    endpoint: PUBLIC_PASSLOCK_ENDPOINT 
+  })
 
   const form = superForm(data.form, {
     validators: valibotClient(loginFormSchema),

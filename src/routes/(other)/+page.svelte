@@ -5,13 +5,14 @@
     PUBLIC_PASSLOCK_ENDPOINT,
     PUBLIC_PASSLOCK_TENANCY_ID
   } from '$env/static/public'
+  
   import * as Icons from '$lib/components/icons'
   import { ThemeSelector } from '$lib/components/theme'
   import * as Forms from '$lib/components/ui/forms'
   import * as Google from '$lib/components/ui/google'
-  import { SveltePasslock, saveEmailLocally, updateForm } from '$lib/passlock'
   import { registrationFormSchema } from '$lib/schemas.js'
-  import type { VerifyEmail } from '@passlock/client'
+  import type { VerifyEmail } from '@passlock/sveltekit'
+  import { Passlock, saveEmailLocally, updateForm } from '@passlock/sveltekit/superforms'
   import { onMount } from 'svelte'
   import { superForm } from 'sveltekit-superforms'
   import { valibotClient } from 'sveltekit-superforms/adapters'
@@ -21,11 +22,11 @@
 
   export let data
 
-  const endpoint = PUBLIC_PASSLOCK_ENDPOINT
-  const tenancyId = PUBLIC_PASSLOCK_TENANCY_ID
-  const clientId = PUBLIC_PASSLOCK_CLIENT_ID
-
-  const passlock = new SveltePasslock({ tenancyId, clientId, endpoint })
+  const passlock = new Passlock({ 
+    tenancyId: PUBLIC_PASSLOCK_TENANCY_ID, 
+    clientId: PUBLIC_PASSLOCK_CLIENT_ID, 
+    endpoint: PUBLIC_PASSLOCK_ENDPOINT 
+  })
 
   // During the passkey registration process
   // Passlock can send a mailbox verification email.

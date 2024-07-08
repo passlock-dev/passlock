@@ -39,7 +39,7 @@
 </script>
 
 <script lang="ts">
-  import { Passlock, PasslockError, type Principal } from '@passlock/client'
+  import { Passlock, PasslockError, type Principal } from '@passlock/sveltekit'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
   const dispatch = createEventDispatcher<{ principal: Principal }>()
