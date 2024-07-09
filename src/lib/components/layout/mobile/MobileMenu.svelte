@@ -24,6 +24,6 @@
       Login
     </a>
 
-    <a href="/" class="btn btn-primary">Sign up</a>
+    <a href="/#signupForm" class="btn btn-primary">Sign up</a>
   {/if}
 </div>

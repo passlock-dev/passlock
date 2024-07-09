@@ -88,9 +88,7 @@
   $: disableGoogleBtn = $formData.token.length > 1 && $formData.authType === 'google'
 </script>
 
-<!-- Hero -->
 <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 lg:py-12">
-  <!-- Grid -->
   <div class="grid md:grid-cols-2 gap-4 md:gap-8 xl:gap-20 md:items-center">
     <div>
       <h1 class="block text-3xl font-bold text-base-800 sm:text-4xl lg:text-6xl lg:leading-tight dark:text-white">
@@ -102,7 +100,7 @@
 
       <!-- Buttons -->
       <div class="mt-7 grid gap-3 w-full sm:inline-flex">
-        <a href="/" class="btn btn-primary py-3 px-4">
+        <a href="/#signupForm" class="btn btn-primary py-3 px-4">
           Get started
           <svg
             class="flex-shrink-0 size-4"
@@ -312,9 +310,8 @@
       </div>
       <!-- End Review -->
     </div>
-    <!-- End Col -->
 
-    <div class="relative">
+    <div id="signupForm" class="relative scroll-mt-6">
       <Forms.CenteredPanel>
         <div class="text-center">
           <Forms.Heading>Sign up</Forms.Heading>
@@ -363,8 +360,5 @@
         </div>
       </Forms.CenteredPanel>
     </div>
-    <!-- End Col -->
   </div>
-  <!-- End Grid -->
 </div>
-<!-- End Hero -->
