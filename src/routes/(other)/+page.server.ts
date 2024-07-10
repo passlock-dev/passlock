@@ -13,10 +13,10 @@ import { createUser } from '$lib/server/db'
 import { fail, redirect } from '@sveltejs/kit'
 import type { Actions } from './$types'
 
-const tokenVerifier = new TokenVerifier({ 
-  tenancyId: PUBLIC_PASSLOCK_TENANCY_ID, 
-  apiKey: PASSLOCK_API_KEY, 
-  endpoint: PUBLIC_PASSLOCK_ENDPOINT 
+const tokenVerifier = new TokenVerifier({
+  tenancyId: PUBLIC_PASSLOCK_TENANCY_ID,
+  apiKey: PASSLOCK_API_KEY,
+  endpoint: PUBLIC_PASSLOCK_ENDPOINT
 })
 
 export const load: PageServerLoad = async () => {
@@ -34,7 +34,7 @@ export const actions = {
     }
 
     const principal = await tokenVerifier.exchangeToken(form.data.token)
-    const user = createUser(principal.user)
+    const user = await createUser(principal.user)
     const session = await lucia.createSession(user.id, {})
     const sessionCookie = lucia.createSessionCookie(session.id)
 

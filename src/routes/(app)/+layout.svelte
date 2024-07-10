@@ -8,6 +8,7 @@
 
 <svelte:head>
   <script src="https://accounts.google.com/gsi/client" async></script>
+  <script src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js" async></script>
 </svelte:head>
 
 <ModeWatcher />

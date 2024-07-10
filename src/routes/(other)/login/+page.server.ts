@@ -9,10 +9,10 @@ import { superValidate } from 'sveltekit-superforms'
 import { valibot } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
 
-const tokenVerifier = new TokenVerifier({ 
-  tenancyId: PUBLIC_PASSLOCK_TENANCY_ID, 
-  apiKey: PASSLOCK_API_KEY, 
-  endpoint: PUBLIC_PASSLOCK_ENDPOINT 
+const tokenVerifier = new TokenVerifier({
+  tenancyId: PUBLIC_PASSLOCK_TENANCY_ID,
+  apiKey: PASSLOCK_API_KEY,
+  endpoint: PUBLIC_PASSLOCK_ENDPOINT
 })
 
 export const load: PageServerLoad = async () => {

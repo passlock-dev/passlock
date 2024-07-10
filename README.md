@@ -11,8 +11,8 @@
 
 <div align="center">
     <picture align="center">
-    <source srcset="static/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
-    <img align="center" width=550 height=50 src="static/repo-banner.svg" />
+    <source srcset="docs/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
+    <img align="center" width=550 height=50 src="docs/repo-banner.svg" />
   </picture>
   <p align="center">
     <br />
@@ -26,10 +26,11 @@
 # Features
 
 1. Passkey registration and authentication
-2. Google sign in / one-tap
-3. Mailbox verification (via a one time code or link)
-4. Dark mode with theme selection (light/dark/system)
-5. [Preline][preline] and [Shadcn][shadcn-svelte] variants
+2. Apple sign in
+3. Google sign in / one-tap
+4. Mailbox verification (via a one time code or link)
+5. Dark mode with theme selection (light/dark/system)
+6. [Preline][preline] and [Shadcn][shadcn-svelte] variants
 
 # Screen recording
 
@@ -97,10 +98,12 @@ You'll need to set four variables:
 
 1. PUBLIC_PASSLOCK_TENANCY_ID
 2. PUBLIC_PASSLOCK_CLIENT_ID
-3. PUBLIC_GOOGLE_CLIENT_ID <sup>1</sup>
-4. PASSLOCK_API_KEY
+3. PUBLIC_APPLE_CLIENT_ID <sup>1</sup>
+4. PUBLIC_APPLE_REDIRECT_URL <sup>1</sup>
+5. PUBLIC_GOOGLE_CLIENT_ID <sup>1</sup>
+6. PASSLOCK_API_KEY
 
-<sup>[1]</sup> - If you don't wish to use Google sign in set this variable to an empty string
+<sup>[1]</sup> Optional - If not using Apple/Google set to an empty string
 
 ### Where to find these variables
 
@@ -159,7 +162,29 @@ This app also allows users to register/sign in using a Google account. It uses t
 
 If all went well you should be able to register an account and then sign in using your Google credentials.
 
-**IMPORTANT!** If you previously registered a passkey using the same email address that you wish to use for Google, you'll need to first delete the user in your Passlock console. This starter project doesn't support account linking although we may update it in the future to illustrate this.
+**IMPORTANT!** If you previously used the same email address with another authenticator (i.e. passkey or apple), you'll need to first delete the user in your Passlock console. We don't yet support account linking in this template but it's being developed now.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+# Sign in with Apple
+
+Similar to Google, users can sign in using an Apple account, also without redirects, however that there are a few more steps and gotchas to be aware of...
+
+**GOTCHAS**
+
+1. You need a (paid) Apple developer account
+2. You can't use _Sign in with Apple_ without an App ID, however **you don't need an app**, just a registered App ID.
+3. You can't test using localhost, you'll need to tunnel a public, HTTPS url to your local server using something like ngrok.
+4. We still need to pass a redirect URL to Apple during the authentication call, even though we tell them to use a popup 🤯. In practice this means registering `https://mysite.com` with Apple and using it for `PUBLIC_APPLE_REDIRECT_URL`. Everything will still work even on `https://mysite.com/login`.
+5. Apple only returns the user data (first & last name) during the first call. In normal use this isn't an issue, but if during testing you delete your account and register again, you will also need to break the link in your apple account. Go to https://appleid.apple.com -> Sign in with Apple -> Passlock Demo -> Stop using Sign in with Apple.
+
+## Adding Apple sign in
+
+1. Create an Apple App ID with "Sign in with Apple" enabled
+2. Create an Apple Service ID with "Sign in with Apple" enabled
+3. Register the relevant website domains and redirect URLs with the service account
+4. Update your `.env` or `.env.local` to include the `PUBLIC_APPLE_CLIENT_ID` and `PUBLIC_APPLE_REDIRECT_URL` variables.
+5. Record your Apple Client ID in your [Passlock settings][passlock-settings]: Social Login -> Apple Client ID
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

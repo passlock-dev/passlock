@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    PUBLIC_APPLE_CLIENT_ID,
     PUBLIC_GOOGLE_CLIENT_ID,
     PUBLIC_PASSLOCK_CLIENT_ID,
     PUBLIC_PASSLOCK_ENDPOINT,
@@ -9,7 +10,7 @@
   import Link from '$lib/components/layout/Link.svelte'
   import * as Forms from '$lib/components/ui/forms'
   import FormError from '$lib/components/ui/forms/FormErrors.svelte'
-  import * as Google from '$lib/components/ui/google'
+  import * as Social from '$lib/components/ui/social'
   import { login } from '$lib/routes.js'
   import { registrationFormSchema } from '$lib/schemas.js'
   import type { VerifyEmail } from '@passlock/sveltekit'
@@ -56,7 +57,7 @@
       // Edge case optimization, feel free to remove :)
       // The form could have been submitted with a passkey registration
       // request or a social login request. We example the authType field
-      // and if we registered a passkey we store the associated email in 
+      // and if we registered a passkey we store the associated email in
       // local storage. This is effectively a 'remember my username' so if
       // a user registered more than one passkey on this site the browser
       // will default to using the last one registered.
@@ -77,13 +78,13 @@
   $: readonly = $formData.token.length > 0 ? true : undefined
 
   // Unlike login, registration is a two step process:
-  // First the user clicks the Sign up with Google button which fetches 
-  // their data from Google, registers an account in Passlock and returns 
+  // First the user clicks the Sign up with Google button which fetches
+  // their data from Google, registers an account in Passlock and returns
   // a token.
   //
   // Next they acccept the terms and submit the form.
   //
-  // So we want to disable the Sign in with Google button once the first 
+  // So we want to disable the Sign in with Google button once the first
   // step is complete and we've obtained the token
   $: disableGoogleBtn = $formData.token.length > 1 && $formData.authType === 'google'
 </script>
@@ -322,8 +323,13 @@
         </div>
 
         <div class="mt-5">
+          {#if PUBLIC_APPLE_CLIENT_ID}
+            <Social.Apple context="signup" disabled={disableGoogleBtn} on:principal={updateForm(form)} />
+          {/if}
           {#if PUBLIC_GOOGLE_CLIENT_ID}
-            <Google.Button operation="register" disabled={disableGoogleBtn} on:principal={updateForm(form)} />
+            <Social.Google context="signup" disabled={disableGoogleBtn} on:principal={updateForm(form)} />
+          {/if}
+          {#if PUBLIC_APPLE_CLIENT_ID || PUBLIC_GOOGLE_CLIENT_ID}
             <Forms.Divider />
           {/if}
 
@@ -339,7 +345,12 @@
                 </div>
               </Forms.Checkbox>
 
-              {#if $formData.token && $formData.authType === 'google'}
+              {#if $formData.token && $formData.authType === 'apple'}
+                <Forms.SubmitButton submitting={$submitting}>
+                  <Icons.Apple class="size-5 fill-current" slot="icon" />
+                  Sign up with Apple
+                </Forms.SubmitButton>
+              {:else if $formData.token && $formData.authType === 'google'}
                 <Forms.SubmitButton submitting={$submitting}>
                   <Icons.Google class="size-4" slot="icon" />
                   Sign up with Google
@@ -350,7 +361,7 @@
                   Create passkey
                 </Forms.SubmitButton>
               {/if}
-              
+
               <!-- form level errors-->
               <FormError {form} />
 

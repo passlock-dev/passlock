@@ -20,7 +20,7 @@
 
 <button disabled={disabled || submitting} type="submit" class="btn btn-primary w-full py-3 px-4">
   {#if submitting}
-    <Icons.Spinner class="size-4 animate-spin" />
+    <Icons.Spinner class="size-4 animate-spin-slow" />
   {:else}
     <slot name="icon" />
   {/if}

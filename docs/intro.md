@@ -71,15 +71,15 @@ See [src/routes/(other)/login/+page.svelte](<../src/routes/(other)/login/+page.s
 7. This principal includes a user id
 8. Lookup the local user by id and create a new Lucia session
 
-## Google sign in
+## Social sign in
 
-Again it's very similar.
+Similar conceptually, the heaby lifting is offloaded to Passlock. We just need to deal with the token (and some UX stuff)
 
-1. User clicks a Google button (or one tap)
-2. Google authenticates the user
-3. We ask the Passlock library to process Google's response
+1. User clicks the Apple/Google button (or one tap)
+2. Apple/Google authenticates the user
+3. We ask the Passlock library to process their response
 4. This call returns a token, representing the user
-5. As above
+5. As for passkey registration/authentication
 
 ## Hooks
 
@@ -87,7 +87,7 @@ We want to protect the `/app` route. We do this in [src/hooks.server.ts](../src/
 
 ## Mailbox verification
 
-During the `registerPasslock()` call you can pass a `verifyEmail` option:
+During the `registerPasskey()` call you can pass a `verifyEmail` option:
 
 ```typescript
 // email a code

@@ -12,6 +12,9 @@ const config = {
       colors: {
         base: colors.slate,
         primary: colors.blue
+      },
+      animation: {
+        'spin-slow': 'spin 2s linear infinite'
       }
     }
   },

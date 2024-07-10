@@ -30,7 +30,7 @@ export type Routes = {
 /**
  * @param options routeId, optional params, query and hash
  * @example route({ routeId: '/user/:id', params: { id: '1' } })
- * @returns 
+ * @returns
  */
 export const route = <T extends keyof Routes>(
   options: {

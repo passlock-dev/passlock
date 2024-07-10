@@ -30,7 +30,7 @@ export type CreateUser = {
   familyName: string
 }
 
-export const createUser = (user: CreateUser) => {
+export const createUser = async (user: CreateUser) => {
   const insert = db.prepare(
     'INSERT INTO user (id, email, given_name, family_name) ' + 'VALUES (@id, @email, @givenName, @familyName)'
   )
