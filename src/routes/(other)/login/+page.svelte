@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    PUBLIC_APPLE_CLIENT_ID,
     PUBLIC_GOOGLE_CLIENT_ID,
     PUBLIC_PASSLOCK_CLIENT_ID,
     PUBLIC_PASSLOCK_ENDPOINT,
@@ -8,8 +9,8 @@
   import * as Icons from '$lib/components/icons'
   import { ThemeSelector } from '$lib/components/theme'
   import * as Forms from '$lib/components/ui/forms'
-  import * as Google from '$lib/components/ui/google'
   import Logo from '$lib/components/ui/logo'
+  import * as Social from '$lib/components/ui/social'
   import { loginFormSchema } from '$lib/schemas'
   import {
     Passlock,
@@ -24,10 +25,10 @@
 
   export let data
 
-  const passlock = new Passlock({ 
-    tenancyId: PUBLIC_PASSLOCK_TENANCY_ID, 
-    clientId: PUBLIC_PASSLOCK_CLIENT_ID, 
-    endpoint: PUBLIC_PASSLOCK_ENDPOINT 
+  const passlock = new Passlock({
+    tenancyId: PUBLIC_PASSLOCK_TENANCY_ID,
+    clientId: PUBLIC_PASSLOCK_CLIENT_ID,
+    endpoint: PUBLIC_PASSLOCK_ENDPOINT
   })
 
   const form = superForm(data.form, {
@@ -56,6 +57,11 @@
   const submittingPasskey = derived(
     submitting,
     $submitting => $submitting && $superformData.authType === 'passkey'
+  )
+
+  const submittingApple = derived(
+    submitting,
+    $submitting => $submitting && $superformData.authType === 'apple'
   )
 
   const submittingGoogle = derived(
@@ -101,13 +107,29 @@
           </div>
         </form>
 
-        {#if PUBLIC_GOOGLE_CLIENT_ID}
+        {#if PUBLIC_APPLE_CLIENT_ID || PUBLIC_GOOGLE_CLIENT_ID}
           <Forms.Divider />
-          <Google.Button
-            operation="login"
-            submitting={$submittingGoogle}
-            on:principal={updateForm(form, true)} />
         {/if}
+
+        <div class="grid">
+          {#if PUBLIC_APPLE_CLIENT_ID}
+            <Social.Apple
+              context="signin"
+              submitting={$submittingApple}
+              on:principal={updateForm(form, async () => {
+                form.submit()
+              })} />
+          {/if}
+
+          {#if PUBLIC_GOOGLE_CLIENT_ID}
+            <Social.Google
+              context="signin"
+              submitting={$submittingGoogle}
+              on:principal={updateForm(form, async () => {
+                form.submit()
+              })} />
+          {/if}
+        </div>
 
         <Forms.PoweredBy />
 

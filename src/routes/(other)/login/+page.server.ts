@@ -1,5 +1,8 @@
 import { PASSLOCK_API_KEY } from '$env/static/private'
-import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public'
+import {
+  PUBLIC_PASSLOCK_ENDPOINT,
+  PUBLIC_PASSLOCK_TENANCY_ID
+} from '$env/static/public'
 import { app } from '$lib/routes'
 import { loginFormSchema } from '$lib/schemas'
 import { lucia } from '$lib/server/auth'

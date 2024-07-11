@@ -1,6 +1,6 @@
 <script lang="ts">
   import { cn } from '$lib/utils.js'
-  import type { SvelteHTMLElements } from "svelte/elements"
+  import type { SvelteHTMLElements } from 'svelte/elements'
 
   type $$Props = SvelteHTMLElements['div']
 

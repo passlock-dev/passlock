@@ -11,7 +11,7 @@ import File from 'lucide-svelte/icons/file'
 import FileText from 'lucide-svelte/icons/file-text'
 import Image from 'lucide-svelte/icons/image'
 import Laptop from 'lucide-svelte/icons/laptop'
-import LoaderCircle from 'lucide-svelte/icons/loader-circle'
+import Loader from 'lucide-svelte/icons/loader'
 import Mail from 'lucide-svelte/icons/mail'
 import Moon from 'lucide-svelte/icons/moon'
 import Pizza from 'lucide-svelte/icons/pizza'
@@ -64,7 +64,7 @@ export {
   Hamburger,
   Image,
   Laptop,
-  LoaderCircle,
+  Loader,
   Logo,
   Mail,
   Moon,
@@ -76,7 +76,7 @@ export {
   Pnpm,
   RadixSvelte,
   Settings,
-  LoaderCircle as Spinner,
+  Loader as Spinner,
   SunMedium,
   Tailwind,
   Trash,

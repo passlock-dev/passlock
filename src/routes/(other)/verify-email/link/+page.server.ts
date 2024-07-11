@@ -1,3 +1,4 @@
+import { app } from '$lib/routes'
 import { verifyEmailSchema } from '$lib/schemas'
 import { error, redirect } from '@sveltejs/kit'
 import { fail, superValidate } from 'sveltekit-superforms'
@@ -21,6 +22,6 @@ export const actions = {
       return fail(400, { form })
     }
 
-    redirect(302, '/')
+    redirect(302, app)
   }
 } satisfies Actions

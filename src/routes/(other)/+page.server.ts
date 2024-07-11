@@ -5,7 +5,10 @@ import { valibot } from 'sveltekit-superforms/adapters'
 import type { PageServerLoad } from './$types'
 
 import { PASSLOCK_API_KEY } from '$env/static/private'
-import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public'
+import {
+  PUBLIC_PASSLOCK_ENDPOINT,
+  PUBLIC_PASSLOCK_TENANCY_ID
+} from '$env/static/public'
 import { app, verifyEmailAwaitLink, verifyEmailCode } from '$lib/routes'
 import { lucia } from '$lib/server/auth'
 import { createUser } from '$lib/server/db'
@@ -38,7 +41,7 @@ export const actions = {
     }
 
     const principal = await tokenVerifier.exchangeToken(form.data.token)
-    const user = createUser(principal.user)
+    const user = await createUser(principal.user)
     const session = await lucia.createSession(user.id, {})
     const sessionCookie = lucia.createSessionCookie(session.id)
 

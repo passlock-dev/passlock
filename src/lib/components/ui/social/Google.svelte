@@ -3,9 +3,10 @@
   
   Displays a `Sign in with Google` button and an (optional) one-tap prompt.
 
+  ## Google Client ID
   **IMPORTANT**: You will need to enter your Google Client ID in your Passlock
   settings - https://console.passlock.dev/settings (near the bottom under 
-  'Social Login')
+  'Social Login'). Also please ensure PUBLIC_GOOGLE_CLIENT_ID is set in your .env file. 
 
   ## Passlock integration
   When the user signs in, this component interacts with the Passlock backend 
@@ -13,9 +14,6 @@
   verification. Following a successful sign up event you should see a new 
   user in your Passlock console. 
   
-  Ultimately the component fires a custom 'principal' event, containing the 
-  Passlock Principal. 
-
   ## Duplicate accounts warnings
   If the user tries to register or sign in with their Google account but they 
   already registered a passkey (to the same email address) they will be prompted 
@@ -37,31 +35,44 @@
   import { Button } from '$lib/components/ui/button'
 
   import * as Icons from '$lib/components/icons'
-  import Base from './Base.svelte'
+  import {
+    Google,
+    type Context,
+    type GoogleOptions
+  } from '@passlock/sveltekit/components/social'
 
-  export let operation: 'register' | 'login' = 'login'
+  export let context: Context = 'signin'
+
+  // The parent component renders a spinner when it's calling out
+  // to Google or Passlock. This can also be used during form submission
+  // to a backend +page.server.ts by flipping the submitting flag
   export let submitting = false
   export let disabled = false
 
   $: message =
-    options.operation === 'register'
-      ? 'Sign up with Google'
-      : 'Sign in with Google'
+    options.context === 'signup' ? 'Sign up with Google' : 'Sign in with Google'
 
+  let options: GoogleOptions
   $: options = {
     tenancyId: PUBLIC_PASSLOCK_TENANCY_ID,
     clientId: PUBLIC_PASSLOCK_CLIENT_ID,
-    googleClientId: PUBLIC_GOOGLE_CLIENT_ID,
     endpoint: PUBLIC_PASSLOCK_ENDPOINT,
-    operation: operation,
-    oneTap: false
+    context: context,
+    google: {
+      clientId: PUBLIC_GOOGLE_CLIENT_ID,
+      useOneTap: false
+    }
   }
 </script>
 
-<Base {options} let:click let:submitting={submittingToPasslock} on:principal>
-  <!-- Note: 
-    submittingToPasslock = request to the passlock api (create the Google user in Passlock and obtain a token)
-    submitting = request to the +page.server.ts action (create the user in this app) 
+<!-- Note: let syntax is a way of passing stuff from the base component down to this one -->
+<!-- We're binding the parents 'submitting' variable to our 'submittingToPasslock' one -->
+<Google {options} let:click let:submitting={submittingToPasslock} on:principal>
+  <!-- 
+    Note: 
+    submittingToPasslock = Base component is making a request to the Passlock API
+    submitting = The page that uses THIS component is making a request to the 
+    +page.server.ts action
   -->
   <Button
     variant="outline"
@@ -70,9 +81,9 @@
     on:click={click}
     disabled={submitting || submittingToPasslock || disabled}>
     {#if submitting || submittingToPasslock}
-      <Icons.Spinner class="h-4 w-4 animate-spin" />
+      <Icons.Spinner class="size-4 animate-spin-slow" />
     {:else}
-      <Icons.Google class="h-4 w-4" />
+      <Icons.Google class="size-4" />
     {/if}
     {message}
   </Button>
@@ -83,4 +94,4 @@
     class="mt-2 text-sm text-center text-red-600 dark:text-red-400">
     {error}
   </div>
-</Base>
+</Google>

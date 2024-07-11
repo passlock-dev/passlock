@@ -19,10 +19,10 @@
 
   export let data: PageData
 
-  const passlock = new Passlock({ 
-    tenancyId: PUBLIC_PASSLOCK_TENANCY_ID, 
-    clientId: PUBLIC_PASSLOCK_CLIENT_ID, 
-    endpoint: PUBLIC_PASSLOCK_ENDPOINT 
+  const passlock = new Passlock({
+    tenancyId: PUBLIC_PASSLOCK_TENANCY_ID,
+    clientId: PUBLIC_PASSLOCK_CLIENT_ID,
+    endpoint: PUBLIC_PASSLOCK_ENDPOINT
   })
 
   const form = superForm(data.form, {

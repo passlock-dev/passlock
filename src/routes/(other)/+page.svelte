@@ -1,31 +1,38 @@
 <script lang="ts">
   import {
+    PUBLIC_APPLE_CLIENT_ID,
     PUBLIC_GOOGLE_CLIENT_ID,
     PUBLIC_PASSLOCK_CLIENT_ID,
     PUBLIC_PASSLOCK_ENDPOINT,
     PUBLIC_PASSLOCK_TENANCY_ID
   } from '$env/static/public'
-  
+
   import * as Icons from '$lib/components/icons'
   import { ThemeSelector } from '$lib/components/theme'
   import * as Forms from '$lib/components/ui/forms'
-  import * as Google from '$lib/components/ui/google'
+  import * as Social from '$lib/components/ui/social'
   import { registrationFormSchema } from '$lib/schemas.js'
   import type { VerifyEmail } from '@passlock/sveltekit'
-  import { Passlock, saveEmailLocally, updateForm } from '@passlock/sveltekit/superforms'
+  import {
+    Passlock,
+    saveEmailLocally,
+    updateForm
+  } from '@passlock/sveltekit/superforms'
   import { onMount } from 'svelte'
   import { superForm } from 'sveltekit-superforms'
   import { valibotClient } from 'sveltekit-superforms/adapters'
 
   import Logo from '$lib/components/ui/logo'
   import { login } from '$lib/routes.js'
+  import { tick } from 'svelte'
+  import { derived } from 'svelte/store'
 
   export let data
 
-  const passlock = new Passlock({ 
-    tenancyId: PUBLIC_PASSLOCK_TENANCY_ID, 
-    clientId: PUBLIC_PASSLOCK_CLIENT_ID, 
-    endpoint: PUBLIC_PASSLOCK_ENDPOINT 
+  const passlock = new Passlock({
+    tenancyId: PUBLIC_PASSLOCK_TENANCY_ID,
+    clientId: PUBLIC_PASSLOCK_CLIENT_ID,
+    endpoint: PUBLIC_PASSLOCK_ENDPOINT
   })
 
   // During the passkey registration process
@@ -73,8 +80,14 @@
   //
   // So we want to disable the Sign in with Google button
   // once the first step is complete.
-  $: disableGoogleBtn =
-    $superformData.token.length > 1 && $superformData.authType === 'google'
+  $: disableSocialBtns =
+    ($superformData.token.length > 1 && $superformData.authType === 'apple') ||
+    $superformData.authType === 'google'
+
+  const submittingGoogle = derived(
+    submitting,
+    $submitting => $submitting && $superformData.authType === 'google'
+  )
 </script>
 
 <div
@@ -132,7 +145,12 @@
               autocomplete="email"
               {readonly} />
 
-            {#if $superformData.token && $superformData.authType === 'google'}
+            {#if $superformData.token && $superformData.authType === 'apple'}
+              <Forms.SubmitButton submitting={$submitting}>
+                <Icons.Apple class="size-5" slot="icon" />
+                Sign up with Apple
+              </Forms.SubmitButton>
+            {:else if $superformData.token && $superformData.authType === 'google'}
               <Forms.SubmitButton submitting={$submitting}>
                 <Icons.Google class="size-4" slot="icon" />
                 Sign up with Google
@@ -146,28 +164,42 @@
           </div>
         </form>
 
-        {#if PUBLIC_GOOGLE_CLIENT_ID}
+        {#if PUBLIC_APPLE_CLIENT_ID || PUBLIC_GOOGLE_CLIENT_ID}
           <Forms.Divider />
-          <Google.Button
-            operation="register"
-            disabled={disableGoogleBtn}
-            on:principal={updateForm(form)} />
         {/if}
+
+        <div class="grid">
+          {#if PUBLIC_APPLE_CLIENT_ID}
+            <Social.Apple
+              context="signup"
+              disabled={disableSocialBtns}
+              on:principal={updateForm(form, async () => {
+                await tick()
+                form.submit()
+              })} />
+          {/if}
+
+          {#if PUBLIC_GOOGLE_CLIENT_ID}
+            <Social.Google
+              context="signup"
+              disabled={disableSocialBtns}
+              on:principal={updateForm(form, async () => {
+                await tick()
+                form.submit()
+              })} />
+          {/if}
+        </div>
 
         <Forms.PoweredBy />
       </div>
 
       <p class="px-8 text-center text-sm text-muted-foreground">
         By creating an account, you agree to our
-        <a
-          href="#"
-          class="underline underline-offset-4 hover:text-primary">
+        <a href="#" class="underline underline-offset-4 hover:text-primary">
           Terms of Service
         </a>
         and
-        <a
-          href="#"
-          class="underline underline-offset-4 hover:text-primary">
+        <a href="#" class="underline underline-offset-4 hover:text-primary">
           Privacy Policy
         </a>
         .
