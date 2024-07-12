@@ -170,8 +170,6 @@ If all went well you should be able to register an account and then sign in usin
 
 Similar to Google, users can sign in using an Apple account, also without redirects, however that there are a few more steps and gotchas to be aware of...
 
-**GOTCHAS**
-
 1. You need a (paid) Apple developer account
 2. You can't use _Sign in with Apple_ without an App ID, however **you don't need an app**, just a registered App ID.
 3. You can't test using localhost, you'll need to tunnel a public, HTTPS url to your local server using something like ngrok.
