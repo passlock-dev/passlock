@@ -7,7 +7,7 @@
 
 <a name="readme-top"></a>
 
-<h1 align="center">SvelteKit Passkey Template</h1>
+<h1 align="center">SvelteKit Authentication Template</h1>
 
 <div align="center">
     <picture align="center">
@@ -16,10 +16,10 @@
   </picture>
   <p align="center">
     <br />
-    SvelteKit template project featuring Passkey authentication, Google sign in and mailbox verification.
+    SvelteKit authentication template project featuring Passkeys, social login (Apple and Google), mailbox verification and much more. Preline and Shadcn variants.
   </p>
   <p align="center">
-    <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Master/Preline)</a> &nbsp; | &nbsp; <a href="https://dbr4qrmypnl85.cloudfront.net">Demo (Shadcn branch)</a>
+    <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Preline)</a> &nbsp; | &nbsp; <a href="https://dbr4qrmypnl85.cloudfront.net">Demo (Shadcn)</a>
   </p>
 </div>
 
