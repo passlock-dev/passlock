@@ -84,9 +84,9 @@
   //
   // Next they acccept the terms and submit the form.
   //
-  // So we want to disable the Sign in with Google button once the first
+  // So we want to disable the social buttons once the first
   // step is complete and we've obtained the token
-  $: disableGoogleBtn = $formData.token.length > 1 && $formData.authType === 'google'
+  $: disableSocialBtns = $formData.token.length > 0
 </script>
 
 <div class="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 lg:py-12">
@@ -323,14 +323,16 @@
         </div>
 
         <div class="mt-5">
-          {#if PUBLIC_APPLE_CLIENT_ID}
-            <Social.Apple context="signup" disabled={disableGoogleBtn} on:principal={updateForm(form)} />
-          {/if}
-          {#if PUBLIC_GOOGLE_CLIENT_ID}
-            <Social.Google context="signup" disabled={disableGoogleBtn} on:principal={updateForm(form)} />
-          {/if}
           {#if PUBLIC_APPLE_CLIENT_ID || PUBLIC_GOOGLE_CLIENT_ID}
-            <Forms.Divider />
+            <div class="grid gap-2">
+              {#if PUBLIC_APPLE_CLIENT_ID}
+                <Social.Apple context="signup" disabled={disableSocialBtns} on:principal={updateForm(form)} />
+              {/if}
+              {#if PUBLIC_GOOGLE_CLIENT_ID}
+                <Social.Google context="signup" disabled={disableSocialBtns} on:principal={updateForm(form)} />
+              {/if}
+              <Forms.Divider />
+            </div>
           {/if}
 
           <form method="POST" use:enhance>

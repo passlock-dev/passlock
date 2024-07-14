@@ -62,19 +62,19 @@
 
 <!-- Note: let syntax is a way of passing stuff from the base component down to this one -->
 <!-- We're binding the parents 'submitting' variable to our 'submittingToPasslock' one -->
-<Google {options} let:click let:submitting={submittingToPasslock} on:principal>
+<Google {options} let:click let:submitting={parentSubmitting} on:principal>
   <!-- 
     Note: 
-    submittingToPasslock = Base component is making a request to the Passlock API
-    submitting = The page that uses THIS component is making a request to the 
+    parentSubmitting - Base component is making a request to the Google or Passlock APIs
+    submitting - The page that uses THIS component is making a request to the 
     +page.server.ts action
   -->
   <button
     type="button"
     on:click={click}
-    disabled={submitting || submittingToPasslock || disabled}
+    disabled={submitting || parentSubmitting || disabled}
     class="btn btn-secondary w-full py-3 px-4">
-    {#if submitting || submittingToPasslock}
+    {#if submitting || parentSubmitting}
       <Icons.Spinner class="size-4 animate-spin-slow" />
     {:else}
       <Icons.Google class="size-4" />
@@ -82,7 +82,11 @@
     {message}
   </button>
 
-  <div slot="error" let:error class="error mt-2">
-    {error}
-  </div>
+  <svelte:fragment slot="error" let:error>
+    {#if error}
+      <div class="error">
+        {error}
+      </div>
+    {/if}
+  </svelte:fragment>
 </Google>

@@ -51,11 +51,16 @@
 
   const { enhance, submitting, form: superformData } = form
 
+  // passlock has verified the passkey, now we're submitting the principal to +page.server.ts
   const submittingPasskey = derived(submitting, $submitting => $submitting && $superformData.authType === 'passkey')
 
+  // passlock has verified apple's response, now we're submitting the principal to +page.server.ts
   const submittingApple = derived(submitting, $submitting => $submitting && $superformData.authType === 'apple')
 
+  // passlock has verified google's response, now we're submitting the principal to +page.server.ts
   const submittingGoogle = derived(submitting, $submitting => $submitting && $superformData.authType === 'google')
+
+  const submitForm = async () => form.submit()
 
   $: readonlyEmail = $submittingPasskey || undefined
 </script>
@@ -70,20 +75,16 @@
   </div>
 
   <div class="mt-5">
-    {#if PUBLIC_APPLE_CLIENT_ID}
-      <Social.Apple
-        context="signin"
-        submitting={$submittingApple}
-        on:principal={updateForm(form, async () => form.submit())} />
-    {/if}
-    {#if PUBLIC_GOOGLE_CLIENT_ID}
-      <Social.Google
-        context="signin"
-        submitting={$submittingGoogle}
-        on:principal={updateForm(form, async () => form.submit())} />
-    {/if}
     {#if PUBLIC_APPLE_CLIENT_ID || PUBLIC_GOOGLE_CLIENT_ID}
-      <Forms.Divider />
+      <div class="grid gap-2">
+        {#if PUBLIC_APPLE_CLIENT_ID}
+          <Social.Apple context="signin" submitting={$submittingApple} on:principal={updateForm(form, submitForm)} />
+        {/if}
+        {#if PUBLIC_GOOGLE_CLIENT_ID}
+          <Social.Google context="signin" submitting={$submittingGoogle} on:principal={updateForm(form, submitForm)} />
+        {/if}
+        <Forms.Divider />
+      </div>
     {/if}
 
     <form method="POST" use:enhance>
