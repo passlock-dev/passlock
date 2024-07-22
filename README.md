@@ -1,264 +1,138 @@
-<!-- PROJECT LOGO -->
 <div align="center">
   <a href="https://github.com/passlock-dev/passkeys-frontend">
     <img src="https://github.com/passlock-dev/passkeys-frontend/assets/208345/53ee00d3-8e6c-49ea-b43c-3f901450c73b" alt="Passlock logo" width="80" height="80">
   </a>
 </div>
 
+<h1 align="center">Passkeys, Social Login & More</h1>
+
 <a name="readme-top"></a>
-
-<h1 align="center">SvelteKit Authentication Template</h1>
-
 <div align="center">
-    <picture align="center">
-    <source srcset="docs/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
-    <img align="center" width=550 height=50 src="docs/repo-banner.svg" />
+  <picture align="center">
+    <source srcset="README_assets/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
+    <img align="center" width=550 height=50 src="README_assets/repo-banner.svg" />
   </picture>
   <p align="center">
+    Typescript library for next generation authentication. Passkeys, Apple login, Google one-tap and more..
     <br />
-    SvelteKit authentication template project featuring Passkeys, social login (Apple and Google), mailbox verification and much more. Preline and Shadcn variants.
-  </p>
-  <p align="center">
-    <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Preline)</a> &nbsp; | &nbsp; <a href="https://dbr4qrmypnl85.cloudfront.net">Demo (Shadcn)</a>
+    <a href="https://passlock.dev"><strong>Project website »</strong></a>
+    <br />
+    <a href="https://d1rl0ue18b0151.cloudfront.net">Demo</a>
+    ·
+    <a href="https://docs.passlock.dev">Documentation</a>
+    ·
+    <a href="https://docs.passlock.dev/docs/tutorial/introduction">Tutorial</a>
   </p>
 </div>
 
-# Features
-
-1. Passkey registration and authentication
-2. Apple sign in
-3. Google sign in / one-tap
-4. Mailbox verification (via a one time code or link)
-5. Dark mode with theme selection (light/dark/system)
-6. [Preline][preline] and [Shadcn][shadcn-svelte] variants
-
-# Screen recording
-
-https://github.com/passlock-dev/svelte-passkeys/assets/208345/9d3fa5cf-cacb-40c3-a388-430b27a4ae76
-
-# Screenshots
-
-![Register a passkey](./docs/preline.png)
-
-<p align="center">Creating a new account and passkey</p>
-
 <br />
-
-![Shadcn/ui variant](./docs/shadcn.png)
-
-<p align="center">Shadcn/ui variant (dark mode)</p>
-
-# Frameworks used
-
-1. [Passlock][passlock] - Serverless passkey platform
-2. [Superforms][superforms] - Makes form handling a breeze
-3. [Lucia][lucia] - Robust session management
-4. [Tailwind][tailwind] - Utility-first CSS framework
-5. [Preline][preline] - Tailwind UI library <sup>1</sup>
-6. [shadcn-svelte][shadcn-svelte] - Tailwind components for Svelte <sup>2</sup>
-7. [Melt UI][meltui] - Headless component library for Svelte
-
-<sup>[1]</sup> Uses native Svelte in place of Preline JavaScript  
-<sup>[2]</sup> See the [shadcn branch](#shadcnui-variant)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-# About
-
-The future of web authenticaton lies in [Passkeys][google-passkeys]. Learn how to add Passkey authentication to your SvelteKit app, perform facial or fingerprint recognition and more. You'll also learn how to use some of SvelteKit's hottest libraries and implement Google's latest social sign in feature.
-
-# Demos
-
-I've deployed 2 live versions of this project:
-
-- [Master demo](https://d1rl0ue18b0151.cloudfront.net) - A version of the master branch (uses Preline + Melt UI)
-
-- [Shadcn demo](https://dbr4qrmypnl85.cloudfront.net) - A version of the shadcn branch (uses shadcn-svelte)
-
-# Getting started
-
-## Prerequisites
-
-This example project uses the cloud based [Passlock][passlock] framework for passkey registration and authentication. **Passlock is free for personal and commercial use**. Create an account at [passlock.dev][passlock-signup]
-
-## Clone this repo
-
-`git clone git@github.com:passlock-dev/svelte-passkeys.git`
-
-## Install the dependencies
-
-```
-cd svelte-passkeys
-npm install
-```
-
-## Set the environment variables
-
-You'll need to set four variables:
-
-1. PUBLIC_PASSLOCK_TENANCY_ID
-2. PUBLIC_PASSLOCK_CLIENT_ID
-3. PUBLIC_APPLE_CLIENT_ID <sup>1</sup>
-4. PUBLIC_APPLE_REDIRECT_URL <sup>1</sup>
-5. PUBLIC_GOOGLE_CLIENT_ID <sup>1</sup>
-6. PASSLOCK_API_KEY
-
-<sup>[1]</sup> Optional - If not using Apple/Google set to an empty string
-
-### Where to find these variables
-
-Your Passlock Tenancy ID, Client ID and Api Key (token) can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Please see the section [Sign in with google](#sign-in-with-google) if using Google sign in.
-
-Create a `.env.local` file containing the relevant credentials.
-
-> [!TIP]
-> Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]:
->
-> `Tenancy information -> Vite .env -> Download`
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-# Usage
-
-Start the dev server
-
-`npm run dev`
-
-**Note:** by default this app runs on port 5174 when in dev mode (see [vite.config.ts](vite.config.ts))
-
-## Register a passkey
-
-Navigate to the [home page](http://localhost:5174/) page and complete the form. Assuming your browser supports passkeys (most do), you should be prompted to create a passkey.
-
-## Authenticate
-
-Logout then navigate to the [login](http://localhost:5174/login) page. You should be prompted to authenticate using your newly created passkey.
-
-<br />
-
-> [!TIP]
-> Prompting for an email address during authentication is optional but **highly recommended**.
->
-> Imagine the user hasn't created a passkey, or they signed up using Google. When they try to sign in using a passkey you might expect that they would receive an error telling them that no passkey can be found, but unfortunately that's not how browsers behave. Instead the browser/device will prompt them to use a passkey on another different device. In my experience this confuses 90% of users.
->
-> By asking for an email address we can check if they have a passkey registered in the backed or they have a linked Google account. This allows us to display a helpful message telling them to either sign up or login using their Google credentials.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-# Sign in with Google
-
-This app also allows users to register/sign in using a Google account. It uses the latest [sign in with google][google-signin] code, avoiding redirects.
-
-## Adding Google sign in
-
-1. Obtain your [Google API Client ID][google-client-id]
-2. Update your `.env` or `.env.local` to include a `PUBLIC_GOOGLE_CLIENT_ID` variable.
-3. Record your Google Client ID in your [Passlock settings][passlock-settings]: Social Login -> Google Client ID
 
 > [!IMPORTANT]  
-> Don't forget the last step!
+> **Looking for the SvelteKit templates?** You'll find the SvelteKit app templates in [apps/sveltekit](./apps/sveltekit/)
 
-## Testing Google sign in
+## Features
 
-If all went well you should be able to register an account and then sign in using your Google credentials.
+Passkeys and the WebAuthn API are quite complex. I've taken an opinionated approach to simplify things for you. Following the 80/20 principle, I've tried to focus on the features most valuable to developers and users.
 
-**IMPORTANT!** If you previously used the same email address with another authenticator (i.e. passkey or apple), you'll need to first delete the user in your Passlock console. We don't yet support account linking in this template but it's being developed now.
+1. **🔐 Primary or secondary authentication** - 2FA or a complete replacement for passwords
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+2. **🚀 Social login** - Supporting Apple & Google. GitHub coming soon..
 
-# Sign in with Apple
+3. **☝🏻 Biometrics** - Frictionless facial or fingerprint recognition for your webapps
 
-Similar to Google, users can sign in using an Apple account, also without redirects, however that there are a few more steps and gotchas to be aware of...
+4. **🖥️ Management console** - Suspend users, disable or revoke passkeys and more..
 
-1. You need a (paid) Apple developer account
-2. You can't use _Sign in with Apple_ without an App ID, however **you don't need an app**, just a registered App ID.
-3. You can't test using localhost, you'll need to tunnel a public, HTTPS url to your local server using something like ngrok.
-4. We still need to pass a redirect URL to Apple during the authentication call, even though we tell them to use a popup 🤯. In practice this means registering `https://mysite.com` with Apple and using it for `PUBLIC_APPLE_REDIRECT_URL`. Everything will still work even on `https://mysite.com/login`.
-5. Apple only returns the user data (first & last name) during the first call. In normal use this isn't an issue, but if during testing you delete your account and register again, you will also need to break the link in your apple account. Go to https://appleid.apple.com -> Sign in with Apple -> Passlock Demo -> Stop using Sign in with Apple.
+5. **🕵️ Audit trail** - View a full audit trail for each user
 
-## Adding Apple sign in
+6. **🖥️ Dev console** - Something not working? check the web console for details
 
-1. Create an Apple App ID with "Sign in with Apple" enabled
-2. Create an Apple Service ID with "Sign in with Apple" enabled
-3. Register the relevant website domains and redirect URLs with the service account
-4. Update your `.env` or `.env.local` to include the `PUBLIC_APPLE_CLIENT_ID` and `PUBLIC_APPLE_REDIRECT_URL` variables.
-5. Record your Apple Client ID in your [Passlock settings][passlock-settings]: Social Login -> Apple Client ID
+7. **👌 Headless components** - You have 100% control over the UI
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+## Screen recording
 
-# Mailbox verification
+https://github.com/user-attachments/assets/f1c21242-74cb-4739-8eff-fddb19cb3256
 
-This starter project also supports mailbox verification emails (via Passlock):
+## Screenshots
 
-![Verifying mailbox ownership](https://github.com/passlock-dev/svelte-passkeys/assets/208345/2f7c06d6-c2a9-40f2-a8db-0a44fa378281)
+![SvelteKit template using this library](./README_assets/preline.dark.png)
+<p align="center">Demo app using this library for passkey and social login</p>
 
-You can choose to verify an email address during passkey registration. Take a look at [src/routes/(other)/+page.svelte](<src/routes/(other)/+page.svelte>):
+![Passlock user profile](./README_assets/console.png)
+<p align="center">Viewing a user's authentication activity on their profile page</p>
+
+## Usage
+
+> [!TIP]
+> **SvelteKit users** - Whilst this library is framework agnostic, SvelteKit users may want to check out the [@passlock/sveltekit](./packages/sveltekit/) wrapper This offers several enhancements, including UI components, form action helpers and Superforms support.
+
+Use this library to generate a secure token, representing passkey registration or authentication. Send the token to your backend for verification (see below)
+
+### Register a passkey
 
 ```typescript
-// Email a verification link
-const verifyEmailLink: VerifyEmail = {
-  method: 'link',
-  redirectUrl: String(new URL('/verify-email', $page.url))
+import { Passlock, PasslockError } from '@passlock/client'
+
+// you can find these details in the settings area of your Passlock console
+const tenancyId = '...'
+const clientId = '...'
+
+const passlock = new Passlock({ tenancyId, clientId })
+
+// to register a new passkey, call registerPasskey(). We're using placeholders for 
+// the user data. You should grab this from an HTML form, React store, Redux etc.
+const [email, givenName, familyName] = ["jdoe@gmail.com", "John", "Doe"]
+
+// Passlock doesn't throw but instead returns a union: result | error
+const result = await passlock.registerPasskey({ email, givenName, familyName })
+
+// ensure we're error free
+if (!PasslockError.isError(result)) {
+  // send the token to your backend (json/fetch or hidden form field etc)
+  console.log('Token: %s', result.token)
 }
+```
 
-// Email a verification code
-const verifyEmailCode: VerifyEmail = {
-  method: 'code'
+### Authenticate using a passkey
+
+```typescript
+import { Passlock, PasslockError } from '@passlock/client'
+
+const tenancyId = '...'
+const clientId = '...'
+
+const passlock = new Passlock({ tenancyId, clientId })
+const result = await passlock.authenticatePasskey()
+
+if (!PasslockError.isError(result)) {
+  // send the token to your backend for verification
+  console.log('Token: %s', result.token)
 }
-
-// If you want to verify the user's email during registration
-// choose one of the options above and take a look at /verify/email/+page.svelte
-let verifyEmail: VerifyEmail | undefined = verifyEmailCode
 ```
 
-## Customizing the verification emails
+### Backend verification
 
-See the emails section of your [Passlock console][passlock-settings]
+Verify the token and obtain the passkey registration or authentication details. You can make a simple GET request to `https://api.passlock.dev/{tenancyId}/token/{token}` or use the [@passlock/node][node] library:
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+```typescript
+import { Passlock } from '@passlock/node'
 
-# Shadcn/ui variant
+// API Keys can be found in your passlock console
+const passlock = new Passlock({ tenancyId, apiKey })
 
-![Shadcn/ui variant](./docs/shadcn.png)
+// token comes from your frontend
+const principal = await passlock.fetchPrincipal({ token })
 
-<p align="center">Shadcn/ui variant</p>
-
-The default (master) branch uses [Preline][preline], however a [shadcn-svelte] variant is also available:
-
-```bash
-git checkout -b shadcn origin/shadcn
+// get the user id
+console.log(principal.user.id)
 ```
 
-**IMPORTANT**: When switching between branches please re-install the NPM dependencies:
+## More information
 
-```bash
-rm -r node_modules pnpm-lock.yaml
-pnpm install
-```
+Please see the [tutorial][tutorial] and [documentation][docs]
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-# Documentation
-
-Please see the [developer docs](./docs/intro.md)
-
-# Questions? Problems
-
-Please file an [issue][issues] and I'll respond ASAP.
-
-[passlock]: https://passlock.dev
-[lucia]: https://lucia-auth.com
-[tailwind]: https://tailwindcss.com
-[preline]: https://preline.co
-[meltui]: https://melt-ui.com
-[shadcn-svelte]: https://www.shadcn-svelte.com
-[passlock-signup]: https://console.passlock.dev/register
-[passlock-console]: https://console.passlock.dev
-[passlock-settings]: https://console.passlock.dev/settings
-[passlock-apikeys]: https://console.passlock.dev/apikeys
-[google-signin]: https://developers.google.com/identity/gsi/web/guides/overview
-[google-client-id]: https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#get_your_google_api_client_id
-[issues]: https://github.com/passlock-dev/svelte-passkeys/issues
-[superforms]: https://superforms.rocks
-[apple-verification-codes]: https://www.cultofmac.com/819421/ios-17-autofill-verification-codes-safari-mail-app/
-[google-passkeys]: https://safety.google/authentication/passkey/
+[contact]: https://passlock.dev/contact
+[tutorial]: https://docs.passlock.dev/docs/tutorial/introduction
+[docs]: https://docs.passlock.dev
+[node]: https://www.npmjs.com/package/@passlock/node
+[melt]: https://melt-ui.com
+[shadcn]: https://www.shadcn-svelte.com

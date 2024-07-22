@@ -1,0 +1,73 @@
+{
+  "name": "@passlock/node",
+  "type": "module",
+  "version": "0.9.19",
+  "description": "Server side passkey library for node/express",
+  "keywords": [
+    "passkey",
+    "passkeys",
+    "webauthn",
+    "node",
+    "express"
+  ],
+  "author": {
+    "name": "Toby Hobson",
+    "email": "toby@passlock.dev"
+  },
+  "license": "MIT",
+  "homepage": "https://passlock.dev",
+  "repository": "github.com/passlock-dev/node",
+  "bugs": {
+    "url": "https://github.com/passlock-dev/node/issues",
+    "email": "team@passlock.dev"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "clean": "tsc --build --clean",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest dev",
+    "test:ui": "vitest --coverage.enabled=true --ui",
+    "test:coverage": "vitest run --coverage",
+    "build": "tsc --build",
+    "build:clean": "pnpm run clean && pnpm run build",
+    "build:watch": "tsc --build --watch",
+    "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
+    "lint": "eslint --ext .ts src",
+    "lint:fix": "pnpm run lint --fix",
+    "prepublishOnly": "pnpm run clean && pnpm run build",
+    "ncu": "ncu --peer -x @effect/* -x effect",
+    "ncu:save": "ncu --peer -x @effect/* -x effect -u"
+  },
+  "dependencies": {
+    "@passlock/shared": "workspace:^",
+    "effect": "^3.4.8"
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^18.2.4",
+    "@types/node": "^20.14.10",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "@vitest/coverage-v8": "^2.0.3",
+    "@vitest/ui": "^2.0.3",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
+    "prettier": "^3.3.2",
+    "rimraf": "^5.0.8",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.3",
+    "vitest": "^2.0.3"
+  }
+}

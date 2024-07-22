@@ -1,0 +1,85 @@
+{
+  "name": "@passlock/client",
+  "version": "0.9.19",
+  "description": "Easy WebAuthn/FIDO Passkey authentication and social login for web apps. This library works with pretty much any frontend/backend stack including React/Next.js, Vue etc.",
+  "keywords": [
+    "passkey",
+    "passkeys",
+    "webauthn",
+    "google one tap",
+    "sign in with google",
+    "sign in with apple",
+    "react",
+    "next",
+    "vue",
+    "nuxt"
+  ],
+  "author": {
+    "name": "Toby Hobson",
+    "email": "toby@passlock.dev"
+  },
+  "license": "MIT",
+  "homepage": "https://passlock.dev",
+  "repository": "github.com/passlock-dev/passkeys",
+  "bugs": {
+    "url": "https://github.com/passlock-dev/passkeys/issues",
+    "email": "team@passlock.dev"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./effect": {
+      "import": "./dist/effect.js",
+      "types": "./dist/effect.d.ts"
+    }
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "clean": "tsc --build --clean",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest dev",
+    "test:ui": "vitest --coverage.enabled=true --ui",
+    "test:coverage": "vitest run --coverage",
+    "build": "tsc --build",
+    "build:clean": "pnpm run clean && pnpm run build",
+    "build:watch": "tsc --build --watch",
+    "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
+    "lint": "eslint --ext .ts src",
+    "lint:fix": "pnpm run lint --fix",
+    "prepublishOnly": "pnpm run clean && pnpm run build",
+    "ncu": "ncu --peer -x @effect/* -x effect",
+    "ncu:save": "ncu --peer -x @effect/* -x effect -u"
+  },
+  "dependencies": {
+    "@passlock/shared": "workspace:*",
+    "@github/webauthn-json": "^2.1.1",
+    "effect": "^3.4.8"
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^18.2.4",
+    "@types/node": "^20.14.10",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "@vitest/coverage-v8": "^2.0.3",
+    "@vitest/ui": "^2.0.3",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
+    "jsdom": "^24.1.0",
+    "prettier": "^3.3.2",
+    "rimraf": "^5.0.8",
+    "tslib": "^2.6.3",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.3",
+    "vitest": "^2.0.3",
+    "vitest-mock-extended": "^1.3.1"
+  }
+}

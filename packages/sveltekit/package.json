@@ -1,0 +1,112 @@
+{
+	"name": "@passlock/sveltekit",
+	"version": "0.9.20",
+	"description": "Easy passkey authentication and social login for SvelteKit apps. Works with Superforms and regular form actions.",
+	"keywords": [
+		"passkey",
+		"passkeys",
+		"webauthn",
+		"google one tap",
+		"sign in with google",
+		"sign in with apple",
+		"react",
+		"next",
+		"vue",
+		"nuxt",
+		"svelte"
+	],
+	"author": {
+		"name": "Toby Hobson",
+		"email": "toby@passlock.dev"
+	},
+	"license": "MIT",
+	"homepage": "https://passlock.dev",
+	"repository": "github.com/passlock-dev/svelte-passkeys",
+	"bugs": {
+		"url": "https://github.com/passlock-dev/svelte-passkeys/issues",
+		"email": "team@passlock.dev"
+	},
+	"scripts": {
+    "dev": "vite dev",
+    "clean": "rimraf ./dist",
+    "typecheck": "pnpm run check:errors",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:errors": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold error",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "test": "vitest run",
+    "test:watch": "vitest dev",
+    "test:ui": "vitest --coverage.enabled=true --ui",
+    "test:coverage": "vitest run --coverage",
+    "format": "prettier --write \"src/**/*.+(js|ts|json|svelte)\"",
+    "lint": "eslint --ext .ts --ext .svelte src",
+    "lint:fix": "pnpm run lint --fix",
+    "build": "svelte-kit sync && svelte-package && publint",
+    "build:clean": "pnpm run clean && pnpm run build",
+		"prepublishOnly": "pnpm run build:clean",
+    "ncu": "ncu --peer -x @effect/* -x effect",
+    "ncu:save": "ncu --peer -x @effect/* -x effect -u"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"svelte": "./dist/index.js"
+		},
+		"./superforms": {
+			"types": "./dist/superforms/index.d.ts",
+			"import": "./dist/superforms/index.js",
+			"svelte": "./dist/superforms/index.js"
+		},
+		"./components/social": {
+			"types": "./dist/components/social/index.d.ts",
+			"import": "./dist/components/social/index.js",
+			"svelte": "./dist/components/social/index.js"
+		}
+	},
+	"files": [
+		"src",
+		"dist",
+		"!dist/**/*.test.*",
+		"!dist/**/*.spec.*"
+	],
+	"peerDependencies": {
+		"svelte": "^4.0.0",
+		"sveltekit-superforms": "^2.15.2"
+	},
+	"peerDependenciesMeta": {
+		"sveltekit-superforms": {
+			"optional": true
+		}
+	},
+	"dependencies": {
+		"@passlock/client": "workspace:*"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/kit": "^2.0.0",
+		"@sveltejs/package": "^2.0.0",
+		"@sveltejs/vite-plugin-svelte": "^3.0.0",
+		"@types/apple-signin-api": "^1.5.3",
+		"@types/eslint": "^8.56.7",
+		"@types/google-one-tap": "^1.2.6",
+		"eslint": "^9.0.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-svelte": "^2.36.0",
+		"globals": "^15.0.0",
+		"prettier": "^3.1.1",
+		"prettier-plugin-svelte": "^3.1.2",
+		"publint": "^0.1.9",
+		"rimraf": "^5.0.8",
+		"svelte": "^4.2.7",
+		"svelte-check": "^3.6.0",
+		"sveltekit-superforms": "^2.15.2",
+		"tslib": "^2.4.1",
+		"typescript": "^5.0.0",
+		"typescript-eslint": "^8.0.0-alpha.20",
+		"vite": "^5.0.11",
+		"vitest": "^2.0.3"
+	},
+	"svelte": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"type": "module"
+}

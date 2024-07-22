@@ -1,0 +1,55 @@
+{
+  "name": "@passlock/shared",
+  "version": "0.9.19",
+  "type": "module",
+  "description": "Shared code use by Passlock frontend libraries & backend SDKs",
+  "keywords": [
+    "passlock"
+  ],
+  "author": {
+    "name": "Toby Hobson",
+    "email": "toby@passlock.dev"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/passlock-dev/shared",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --build",
+    "build:clean": "pnpm run clean && pnpm run build",
+    "build:watch": "tsc --build --watch",
+    "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
+    "lint": "eslint --ext .ts src",
+    "lint:fix": "pnpm run lint --fix",
+    "prepublishOnly": "pnpm run clean && pnpm run build",
+    "ncu": "ncu --peer -x @effect/* -x effect",
+    "ncu:save": "ncu --peer -x @effect/* -x effect -u"
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^18.2.4",
+    "@types/node": "^20.14.10",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "@vitest/coverage-v8": "^2.0.3",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-prettier": "^5.1.3",
+    "fast-check": "^3.19.0",
+    "prettier": "^3.3.2",
+    "rimraf": "^5.0.8",
+    "typescript": "^5.5.3",
+    "vitest": "^2.0.3"
+  },
+  "dependencies": {
+    "effect": "^3.4.8",
+    "@effect/rpc": "^0.31.21",
+    "@effect/schema": "^0.68.18",
+    "@effect/platform": "^0.58.21"
+  }
+}
