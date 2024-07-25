@@ -1,12 +1,12 @@
-import type { Principal } from '@passlock/shared/dist/schema/schema.js'
+import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer as L, LogLevel, Logger, Ref, Stream, pipe } from 'effect'
 import type { RequestOptions } from 'https'
 import { Config } from '../config/config.js'
 import {
-    PrincipalServiceLive,
-    StreamResponse,
-    buildError,
-    type PrincipalService,
+  PrincipalServiceLive,
+  StreamResponse,
+  buildError,
+  type PrincipalService,
 } from './principal.js'
 
 export const principal: Principal = {

@@ -17,7 +17,7 @@ import {
   type Unauthorized,
 } from '@passlock/shared/dist/error/error.js'
 
-import type { Principal } from '@passlock/shared/dist/schema/schema.js'
+import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 
 import { Context, Effect as E, Layer as L, Layer, Schedule, pipe } from 'effect'
 import type { NoSuchElementException } from 'effect/Cause'

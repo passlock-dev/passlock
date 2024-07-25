@@ -2,13 +2,16 @@ import * as S from '@effect/schema/Schema'
 import { Context, Effect as E, Layer } from 'effect'
 
 import { BadRequest, Duplicate, Forbidden, Unauthorized } from '../error/error.js'
+
 import {
-  Principal,
   RegistrationCredential,
   RegistrationOptions,
   UserVerification,
-  VerifyEmail,
-} from '../schema/schema.js'
+} from '../schema/passkey.js'
+
+import { VerifyEmail } from '../schema/email.js'
+import { Principal } from '../schema/principal.js'
+
 import { makePostRequest } from './client.js'
 import { Dispatcher } from './dispatcher.js'
 

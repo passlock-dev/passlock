@@ -4,7 +4,7 @@ import { Context, Effect as E, Layer } from 'effect'
 import { BadRequest, Disabled, Duplicate, Forbidden, NotFound, Unauthorized } from '../error/error.js'
 import {
   Principal
-} from '../schema/schema.js'
+} from '../schema/principal.js'
 import { makePostRequest } from './client.js'
 import { Dispatcher } from './dispatcher.js'
 

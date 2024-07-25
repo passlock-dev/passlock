@@ -2,7 +2,7 @@
  * Wrapper around local storage that allows us to store
  * authentication tokens in local storage for a short period.
  */
-import type { Principal } from '@passlock/shared/dist/schema/schema.js'
+import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer, Option as O, flow, pipe } from 'effect'
 import type { NoSuchElementException } from 'effect/Cause'
 

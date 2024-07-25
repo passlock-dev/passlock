@@ -6,9 +6,11 @@ import { BadRequest, Disabled, Forbidden, NotFound, Unauthorized } from '../erro
 import {
   AuthenticationCredential,
   AuthenticationOptions,
-  Principal,
   UserVerification,
-} from '../schema/schema.js'
+} from '../schema/passkey.js'
+
+import { Principal } from '../schema/principal.js'
+
 import { makePostRequest } from './client.js'
 import { Dispatcher } from './dispatcher.js'
 

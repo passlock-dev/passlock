@@ -13,9 +13,9 @@ import type { OptionsErrors, VerificationErrors } from '@passlock/shared/dist/rp
 import { AuthenticationClient, OptionsReq, VerificationReq } from '@passlock/shared/dist/rpc/authentication.js'
 import type {
   AuthenticationCredential,
-  Principal,
   UserVerification,
-} from '@passlock/shared/dist/schema/schema.js'
+} from '@passlock/shared/dist/schema/passkey.js'
+import { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer, flow, pipe } from 'effect'
 import { Capabilities } from '../capabilities/capabilities.js'
 import { StorageService } from '../storage/storage.js'
