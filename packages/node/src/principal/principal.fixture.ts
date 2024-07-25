@@ -18,11 +18,12 @@ export const principal: Principal = {
     familyName: 'doe',
     emailVerified: false,
   },
-  authStatement: {
-    authType: 'email',
+  authenticator: {
+    id: 'passkeyId',
+    type: 'passkey',
     userVerified: false,
-    authTimestamp: new Date(0),
   },
+  authTimestamp: new Date(0),
   expireAt: new Date(0),
 }
 

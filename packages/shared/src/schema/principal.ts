@@ -19,13 +19,16 @@ export const Principal = S.Struct({
     email: S.String,
     emailVerified: S.Boolean,
   }),
-  authStatement: S.Struct({
-    authType: AuthType,
+  authenticator: S.Struct({
+    id: S.String,
+    type: AuthType,
     userVerified: S.Boolean,
-    authTimestamp: S.Date,
   }),
+  authTimestamp: S.Date,
   expireAt: S.Date,
 })
+
+
 
 export type Principal = S.Schema.Type<typeof Principal>
 

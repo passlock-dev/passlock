@@ -1,19 +1,19 @@
 import {
-	Passlock as Client,
-	ErrorCode,
-	PasslockError,
-	type PasslockProps,
-	type Principal,
-	type VerifyEmail
-} from '@passlock/client';
-import { get } from 'svelte/store';
-import type { SuperForm } from 'sveltekit-superforms';
+  Passlock as Client,
+  ErrorCode,
+  PasslockError,
+  type PasslockProps,
+  type Principal,
+  type VerifyEmail
+} from '@passlock/client'
+import { get } from 'svelte/store'
+import type { SuperForm } from 'sveltekit-superforms'
 import {
-	getLocalEmail,
-	saveEmailLocally,
-	type ResendEmail,
-	type VerifyEmailData
-} from '../index.js';
+  getLocalEmail,
+  saveEmailLocally,
+  type ResendEmail,
+  type VerifyEmailData
+} from '../index.js'
 
 export type RegistrationData = {
 	email: string;
@@ -87,7 +87,7 @@ export class Passlock {
 				cancel();
 			} else {
 				// append the passlock token to the form request
-				formData.set('authType', principal.authStatement.authType);
+				formData.set('authType', principal.authenticator.type);
 				formData.set('token', principal.token);
 				if (verifyEmail) formData.set('verifyEmail', verifyEmail.method);
 			}
@@ -120,7 +120,7 @@ export class Passlock {
 			} else {
 				form.form.update((old) => ({ ...old, email: principal.user.email }));
 				// append the passlock token to the form request
-				formData.set('authType', principal.authStatement.authType);
+				formData.set('authType', principal.authenticator.type);
 				formData.set('token', principal.token);
 			}
 		}
@@ -163,7 +163,7 @@ export const updateForm =
 			...old,
 			...event.detail.user,
 			token: event.detail.token,
-			authType: event.detail.authStatement.authType
+			authType: event.detail.authenticator.type
 		}));
 
 		if (typeof onComplete === 'function') {
@@ -171,4 +171,5 @@ export const updateForm =
 		}
 	};
 
-export { getLocalEmail, saveEmailLocally };
+export { getLocalEmail, saveEmailLocally }
+

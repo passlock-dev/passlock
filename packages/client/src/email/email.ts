@@ -59,7 +59,7 @@ const getToken = () => {
           authenticationService.authenticatePasskey({ userVerification: 'preferred' }),
           E.map(principal => ({
             token: principal.token,
-            authType: principal.authStatement.authType,
+            authType: principal.authenticator.type,
             expiresAt: principal.expireAt.getTime(),
           })),
         ),
