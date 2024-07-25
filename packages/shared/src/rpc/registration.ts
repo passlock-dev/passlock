@@ -2,13 +2,16 @@ import * as S from '@effect/schema/Schema'
 import { Context, Effect as E, Layer } from 'effect'
 
 import { BadRequest, Duplicate, Forbidden, Unauthorized } from '../error/error.js'
+
 import {
-  Principal,
   RegistrationCredential,
   RegistrationOptions,
   UserVerification,
-  VerifyEmail,
-} from '../schema/schema.js'
+} from '../schema/passkey.js'
+
+import { VerifyEmail } from '../schema/email.js'
+import { Principal } from '../schema/principal.js'
+
 import { makePostRequest } from './client.js'
 import { Dispatcher } from './dispatcher.js'
 
@@ -18,9 +21,9 @@ export class OptionsReq extends S.Class<OptionsReq>('@passkey/register/optionsRe
   email: S.String,
   givenName: S.String,
   familyName: S.String,
-  userVerification: S.optional(UserVerification),
-  verifyEmail: S.optional(VerifyEmail),
-  redirectUrl: S.optional(S.String),
+  userVerification: S.optional(UserVerification, { exact: true }),
+  verifyEmail: S.optional(VerifyEmail, { exact: true }),
+  redirectUrl: S.optional(S.String, { exact: true }),
 }) {}
 
 export class OptionsRes extends S.Class<OptionsRes>('@passkey/register/optionsRes')({
@@ -37,8 +40,8 @@ export type OptionsErrors = S.Schema.Type<typeof OptionsErrors>
 export class VerificationReq extends S.Class<VerificationReq>('@passkey/register/verificationReq')({
   session: S.String,
   credential: RegistrationCredential,
-  verifyEmail: S.optional(VerifyEmail),
-  redirectUrl: S.optional(S.String),
+  verifyEmail: S.optional(VerifyEmail, { exact: true }),
+  redirectUrl: S.optional(S.String, { exact: true }),
 }) {}
 
 export class VerificationRes extends S.Class<VerificationRes>('@passkey/register/verificationRes')({

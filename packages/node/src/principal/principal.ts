@@ -1,10 +1,11 @@
 import {
-    Forbidden,
-    InternalServerError,
-    NotFound,
-    Unauthorized,
+  Forbidden,
+  InternalServerError,
+  NotFound,
+  Unauthorized,
 } from '@passlock/shared/dist/error/error.js'
-import { Principal, createParser } from '@passlock/shared/dist/schema/schema.js'
+import { Principal, } from '@passlock/shared/dist/schema/principal.js'
+import { createParser } from '@passlock/shared/dist/schema/utils.js'
 import type { StreamEmit } from 'effect'
 import { Chunk, Console, Context, Effect as E, Layer, Option, Stream, flow, pipe } from 'effect'
 import * as https from 'https'

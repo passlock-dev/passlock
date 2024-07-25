@@ -10,7 +10,7 @@ import type {
 
 import { ErrorCode } from '@passlock/shared/dist/error/error.js'
 import { RpcConfig } from '@passlock/shared/dist/rpc/config.js'
-import type { Principal } from '@passlock/shared/dist/schema/schema.js'
+import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Effect as E, Layer as L, Layer, Option, Runtime, Scope, pipe } from 'effect'
 import { AuthenticationService, type AuthenticationRequest } from './authentication/authenticate.js'
 import { Capabilities } from './capabilities/capabilities.js'
@@ -25,7 +25,10 @@ import { UserService, type Email, type ResendEmail } from './user/user.js'
 /* Exports */
 
 export type Options = { signal?: AbortSignal }
-export type { Principal, UserVerification, VerifyEmail } from '@passlock/shared/dist/schema/schema.js'
+export type { VerifyEmail } from '@passlock/shared/dist/schema/email.js'
+export type { UserVerification } from '@passlock/shared/dist/schema/passkey.js'
+export type { Principal } from '@passlock/shared/dist/schema/principal.js'
+
 export type { AuthenticationRequest } from './authentication/authenticate.js'
 export type { VerifyRequest } from './email/email.js'
 export type { RegistrationRequest } from './registration/register.js'

@@ -1,32 +1,7 @@
 import * as S from '@effect/schema/Schema'
-import { formatError } from '@effect/schema/TreeFormatter'
-import { Effect as E, pipe } from 'effect'
-
-const optional = <A>(s: S.Schema<A>) => S.optional(s, { exact: true })
-
-export class ParsingError extends S.TaggedError<ParsingError>()('ParsingError', {
-  message: S.String,
-  detail: S.String,
-}) {}
+import { optional } from './utils.js'
 
 /* Components */
-
-export const VerifyEmailLink = S.Struct({
-  method: S.Literal('link'),
-  redirectUrl: S.String
-})
-
-export type VerifyEmailLink = S.Schema.Type<typeof VerifyEmailLink>
-
-export const VerifyEmailCode = S.Struct({
-  method: S.Literal('code'),
-})
-
-export type VerifyEmailCode = S.Schema.Type<typeof VerifyEmailCode>
-
-export const VerifyEmail = S.Union(VerifyEmailLink, VerifyEmailCode)
-
-export type VerifyEmail = S.Schema.Type<typeof VerifyEmail>
 
 const PublicKey = S.Literal('public-key')
 
@@ -35,7 +10,10 @@ const PubKeyCredParams = S.Struct({
   type: PublicKey,
 })
 
-const AuthenticatorAttachment = S.Union(S.Literal('cross-platform'), S.Literal('platform'))
+const AuthenticatorAttachment = S.Union(
+  S.Literal('cross-platform'), 
+  S.Literal('platform')
+)
 
 const base64url = S.String
 
@@ -61,7 +39,11 @@ export const UserVerification = S.Union(
 
 export type UserVerification = S.Schema.Type<typeof UserVerification>
 
-const ResidentKey = S.Union(S.Literal('discouraged'), S.Literal('preferred'), S.Literal('required'))
+const ResidentKey = S.Union(
+  S.Literal('discouraged'), 
+  S.Literal('preferred'),
+  S.Literal('required')
+)
 
 const AuthenticatorSelection = S.Struct({
   authenticatorAttachment: optional(AuthenticatorAttachment),
@@ -69,10 +51,6 @@ const AuthenticatorSelection = S.Struct({
   residentKey: optional(ResidentKey),
   userVerification: optional(UserVerification),
 })
-
-export const AuthType = S.Literal('email', 'apple', 'google', 'passkey')
-
-export type AuthType = S.Schema.Type<typeof AuthType>
 
 /* Registration */
 
@@ -132,6 +110,9 @@ export type RegistrationCredential = S.Schema.Type<typeof RegistrationCredential
 
 /* Authentication */
 
+/**
+ * Required by the browser to authenticate a passkey.
+ */
 export const AuthenticationOptions = S.Struct({
   challenge: S.String,
   timeout: optional(S.Number),
@@ -173,40 +154,3 @@ export const AuthenticationCredential = S.Struct({
 })
 
 export type AuthenticationCredential = S.Schema.Type<typeof AuthenticationCredential>
-
-/** Represents a successful registration/authentication */
-export const Principal = S.Struct({
-  token: S.String,
-  user: S.Struct({
-    id: S.String,
-    givenName: S.String,
-    familyName: S.String,
-    email: S.String,
-    emailVerified: S.Boolean,
-  }),
-  authStatement: S.Struct({
-    authType: AuthType,
-    userVerified: S.Boolean,
-    authTimestamp: S.Date,
-  }),
-  expireAt: S.Date,
-})
-
-export type Principal = S.Schema.Type<typeof Principal>
-
-export const AuthenticationRequired = S.Struct({
-  requiredAuthType: AuthType,
-})
-
-/* Utils */
-
-export const createParser =
-  <A, E, R>(schema: S.Schema<A, E, R>) =>
-  (input: unknown) =>
-    pipe(
-      S.decodeUnknown(schema)(input),
-      E.flip,
-      E.flatMap(formatError),
-      E.map(detail => new ParsingError({ message: 'Unable to parse input', detail })),
-      E.flip
-    )

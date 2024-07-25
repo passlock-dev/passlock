@@ -9,8 +9,8 @@ import * as Shared from '@passlock/shared/dist/rpc/social.js'
 import { SocialClient } from '@passlock/shared/dist/rpc/social.js'
 import type {
   Principal
-} from '@passlock/shared/dist/schema/schema.js'
-import { Context, Effect as E, Layer, Option as O, flow } from 'effect'
+} from '@passlock/shared/dist/schema/principal.js'
+import { Context, Effect as E, Layer, flow } from 'effect'
 
 /* Requests */
 
@@ -61,8 +61,8 @@ export const registerOidc = (
 
     const rpcRequest = new Shared.RegisterOidcReq({
       ...request,
-      givenName: O.fromNullable(request.givenName),
-      familyName: O.fromNullable(request.familyName),
+      ...(request.givenName ? { givenName: request.givenName } : {}),
+      ...(request.familyName ? { familyName: request.familyName } : {})
     })
 
     const { principal } = yield* _(

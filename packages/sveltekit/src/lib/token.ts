@@ -1,5 +1,5 @@
-import type { Principal } from '@passlock/client';
-import { error } from '@sveltejs/kit';
+import type { Principal } from '@passlock/client'
+import { error } from '@sveltejs/kit'
 
 export type TokenVerifierProps = {
 	readonly tenancyId: string;
@@ -21,7 +21,9 @@ export class TokenVerifier {
 	constructor(props: TokenVerifierProps) {
 		this.tenancyId = props.tenancyId;
 		this.apiKey = props.apiKey;
-		this.endpoint = props.endpoint;
+    if (props.endpoint) {
+      this.endpoint = props.endpoint
+    }
 	}
 
 	private readonly _exchangeToken = async (token: string, retryCount = 0): Promise<Principal> => {

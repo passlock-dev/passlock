@@ -1,7 +1,7 @@
 {
   "name": "public",
   "description": "Monorepo containing the JS/TS client libraries",
-  "version": "0.0.0",
+  "version": "0.9.21",
   "private": true,
   "type": "module",
   "scripts": {

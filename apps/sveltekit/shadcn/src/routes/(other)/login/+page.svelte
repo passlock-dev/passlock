@@ -111,7 +111,7 @@
           <Forms.Divider />
         {/if}
 
-        <div class="grid">
+        <div class="grid gap-2">
           {#if PUBLIC_APPLE_CLIENT_ID}
             <Social.Apple
               context="signin"

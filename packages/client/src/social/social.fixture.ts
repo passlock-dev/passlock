@@ -1,6 +1,6 @@
 import * as Shared from '@passlock/shared/dist/rpc/social.js'
 import { SocialClient } from '@passlock/shared/dist/rpc/social.js'
-import { Effect as E, Layer as L, Option as O } from 'effect'
+import { Effect as E, Layer as L } from 'effect'
 import * as Fixtures from '../test/fixtures.js'
 import type { AuthenticateOidcReq, RegisterOidcReq } from './social.js'
 
@@ -26,8 +26,8 @@ export const authOidcReq: AuthenticateOidcReq = {
 
 export const rpcRegisterReq = new Shared.RegisterOidcReq({ 
   ...registerOidcReq, 
-  givenName: O.fromNullable(registerOidcReq.givenName), 
-  familyName: O.fromNullable(registerOidcReq.familyName) 
+  ...(registerOidcReq.givenName ? { givenName: registerOidcReq.givenName } : {}),
+  ...(registerOidcReq.familyName ? { familyName: registerOidcReq.familyName } : {})
 })
 
 export const rpcRegisterRes = new Shared.PrincipalRes({ principal: Fixtures.principal })

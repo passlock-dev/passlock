@@ -1,19 +1,19 @@
 import {
-	Passlock as Client,
-	ErrorCode,
-	PasslockError,
-	type PasslockProps,
-	type Principal,
-	type VerifyEmail
-} from '@passlock/client';
-import { get } from 'svelte/store';
-import type { SuperForm } from 'sveltekit-superforms';
+  Passlock as Client,
+  ErrorCode,
+  PasslockError,
+  type PasslockProps,
+  type Principal,
+  type VerifyEmail
+} from '@passlock/client'
+import { get } from 'svelte/store'
+import type { SuperForm } from 'sveltekit-superforms'
 import {
-	getLocalEmail,
-	saveEmailLocally,
-	type ResendEmail,
-	type VerifyEmailData
-} from '../index.js';
+  getLocalEmail,
+  saveEmailLocally,
+  type ResendEmail,
+  type VerifyEmailData
+} from '../index.js'
 
 export type RegistrationData = {
 	email: string;
@@ -64,7 +64,7 @@ export class Passlock {
 				email,
 				givenName,
 				familyName,
-				verifyEmail
+				...(verifyEmail ? { verifyEmail } : { })
 			});
 
 			if (PasslockError.isError(principal) && principal.code === ErrorCode.Duplicate) {
@@ -103,8 +103,8 @@ export class Passlock {
 			formData.set('authType', authType);
 		} else if (!token && authType === 'passkey') {
 			const principal = await this.passlock.authenticatePasskey({
-				email,
-				userVerification: 'discouraged'
+				userVerification: 'discouraged',
+        ...(email ? { email } : { })
 			});
 
 			if (PasslockError.isError(principal) && principal.code === ErrorCode.NotFound) {
@@ -171,4 +171,5 @@ export const updateForm =
 		}
 	};
 
-export { getLocalEmail, saveEmailLocally };
+export { getLocalEmail, saveEmailLocally }
+

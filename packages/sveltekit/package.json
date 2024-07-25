@@ -1,6 +1,6 @@
 {
 	"name": "@passlock/sveltekit",
-	"version": "0.9.20",
+	"version": "0.9.21",
 	"description": "Easy passkey authentication and social login for SvelteKit apps. Works with Superforms and regular form actions.",
 	"keywords": [
 		"passkey",

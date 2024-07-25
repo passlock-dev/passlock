@@ -1,7 +1,7 @@
 {
   "name": "@passlock/node",
   "type": "module",
-  "version": "0.9.19",
+  "version": "0.9.21",
   "description": "Server side passkey library for node/express",
   "keywords": [
     "passkey",

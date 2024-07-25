@@ -4,7 +4,7 @@ import { Context, Effect as E, Layer } from 'effect'
 import { BadRequest, Disabled, Duplicate, Forbidden, NotFound, Unauthorized } from '../error/error.js'
 import {
   Principal
-} from '../schema/schema.js'
+} from '../schema/principal.js'
 import { makePostRequest } from './client.js'
 import { Dispatcher } from './dispatcher.js'
 
@@ -17,8 +17,8 @@ export class PrincipalRes extends S.Class<PrincipalRes>('@social/principalRes')(
 export class RegisterOidcReq extends S.Class<RegisterOidcReq>('@social/oidc/registerReq')({
   provider: Provider,
   idToken: S.String,
-  givenName: S.Option(S.String),
-  familyName: S.Option(S.String),
+  givenName: S.optional(S.String, { exact: true }),
+  familyName: S.optional(S.String, { exact: true }),
   nonce: S.String,
 }) {}
 
