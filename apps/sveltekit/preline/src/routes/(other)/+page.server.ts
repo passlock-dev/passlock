@@ -1,6 +1,6 @@
 // +page.server.ts
 import { registrationFormSchema } from '$lib/schemas'
-import { TokenVerifier } from '@passlock/sveltekit'
+import { Passlock, TokenVerifier } from '@passlock/sveltekit'
 import { superValidate } from 'sveltekit-superforms'
 import { valibot } from 'sveltekit-superforms/adapters'
 import type { PageServerLoad } from './$types'
@@ -10,7 +10,7 @@ import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/stati
 import { app, verifyEmailAwaitLink, verifyEmailCode } from '$lib/routes'
 import { lucia } from '$lib/server/auth'
 import { createUser } from '$lib/server/db'
-import { fail, redirect } from '@sveltejs/kit'
+import { error, fail, redirect } from '@sveltejs/kit'
 import type { Actions } from './$types'
 
 const tokenVerifier = new TokenVerifier({
@@ -34,6 +34,8 @@ export const actions = {
     }
 
     const principal = await tokenVerifier.exchangeToken(form.data.token)
+    if (!Passlock.isUserPrincipal(principal)) error(500, "No user returned from Passlock")
+      
     const user = await createUser(principal.user)
     const session = await lucia.createSession(user.id, {})
     const sessionCookie = lucia.createSessionCookie(session.id)

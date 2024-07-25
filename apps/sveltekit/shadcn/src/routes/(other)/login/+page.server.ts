@@ -6,8 +6,8 @@ import {
 import { app } from '$lib/routes'
 import { loginFormSchema } from '$lib/schemas'
 import { lucia } from '$lib/server/auth'
-import { TokenVerifier } from '@passlock/sveltekit'
-import { fail, redirect } from '@sveltejs/kit'
+import { Passlock, TokenVerifier } from '@passlock/sveltekit'
+import { error, fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms'
 import { valibot } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
@@ -38,6 +38,7 @@ export const actions = {
 
     // Verify the Passlock token is genuine
     const principal = await tokenVerifier.exchangeToken(form.data.token)
+    if (!Passlock.isUserPrincipal(principal)) error(500, "No user returned from Passlock")
 
     const session = await lucia.createSession(principal.user.id, {})
 

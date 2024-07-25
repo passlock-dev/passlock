@@ -85,7 +85,17 @@ export class Passlock {
 				});
 
 				cancel();
-			} else {
+			} else if (!Client.isUserPrincipal(principal)) {
+        console.error("No user returned by Passlock");
+
+				// set a form level error
+				form.errors.update((errors) => {
+					const _errors = [...(errors._errors ?? []), 'Sorry something went wrong'];
+					return { ..._errors, _errors };
+				});
+
+				cancel();
+      } else {
 				// append the passlock token to the form request
 				formData.set('authType', principal.authenticator.type);
 				formData.set('token', principal.token);
@@ -117,11 +127,15 @@ export class Passlock {
 			} else if (PasslockError.isError(principal)) {
 				form.message.set(principal.message);
 				cancel();
-			} else {
-				form.form.update((old) => ({ ...old, email: principal.user.email }));
-				// append the passlock token to the form request
-				formData.set('authType', principal.authenticator.type);
-				formData.set('token', principal.token);
+			} else if (! Client.isUserPrincipal(principal)) {
+        console.error("No user returned from Passlock");
+        form.message.set("Sorry, something went wrong");
+				cancel();
+      } else {
+        form.form.update((old) => ({ ...old, email: principal.user.email }));
+        // append the passlock token to the form request
+        formData.set('authType', principal.authenticator.type);
+        formData.set('token', principal.token);
 			}
 		}
 	};

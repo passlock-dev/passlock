@@ -12,8 +12,8 @@ import {
 import { app, verifyEmailAwaitLink, verifyEmailCode } from '$lib/routes'
 import { lucia } from '$lib/server/auth'
 import { createUser } from '$lib/server/db'
-import { TokenVerifier } from '@passlock/sveltekit'
-import { fail, redirect } from '@sveltejs/kit'
+import { Passlock, TokenVerifier } from '@passlock/sveltekit'
+import { error, fail, redirect } from '@sveltejs/kit'
 import type { Actions } from './$types'
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -41,6 +41,8 @@ export const actions = {
     }
 
     const principal = await tokenVerifier.exchangeToken(form.data.token)
+    if (!Passlock.isUserPrincipal(principal)) error(500, "No user returned from Passlock")
+
     const user = await createUser(principal.user)
     const session = await lucia.createSession(user.id, {})
     const sessionCookie = lucia.createSessionCookie(session.id)

@@ -10,7 +10,7 @@ import type {
 
 import { ErrorCode } from '@passlock/shared/dist/error/error.js'
 import { RpcConfig } from '@passlock/shared/dist/rpc/config.js'
-import type { Principal } from '@passlock/shared/dist/schema/principal.js'
+import { UserPrincipal, type Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Effect as E, Layer as L, Layer, Option, Runtime, Scope, pipe } from 'effect'
 import { AuthenticationService, type AuthenticationRequest } from './authentication/authenticate.js'
 import { Capabilities } from './capabilities/capabilities.js'
@@ -147,6 +147,10 @@ export class PasslockUnsafe {
     this.runtime = E.runSync(Layer.toRuntime(allLayers).pipe(Scope.extend(scope)))
   }
 
+  static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {
+    return principal.user !== undefined
+  }
+
   private readonly runPromise = <A, R extends Requirements>(
     effect: E.Effect<A, PasslockErrors, R>,
     options: Options | undefined = undefined
@@ -253,6 +257,10 @@ export class Passlock {
     const allLayers = pipe(allRequirements, L.provide(rpcConfig), L.provide(storage))
     const scope = E.runSync(Scope.make())
     this.runtime = E.runSync(Layer.toRuntime(allLayers).pipe(Scope.extend(scope)))
+  }
+
+  static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {
+    return principal.user !== undefined
   }
 
   private readonly runPromise = <A, R extends Requirements>(
