@@ -8,8 +8,8 @@ overrides:
   '@passlock/sveltekit': workspace:*
   '@passlock/client': workspace:*
   '@passlock/shared': workspace:*
-  effect: ^3.4.8
-  '@effect/schema': ^0.68.18
+  effect: 3.4.8
+  '@effect/schema': 0.68.18
   '@aws-sdk/lib-dynamodb': 3.395.0
   '@aws-sdk/client-dynamodb': 3.395.0
   '@aws-sdk/client-sts': 3.606.0
@@ -479,8 +479,8 @@ importers:
         specifier: workspace:*
         version: link:../shared
       effect:
-        specifier: ^3.4.8
-        version: 3.5.6
+        specifier: 3.4.8
+        version: 3.4.8
     devDependencies:
       '@tsconfig/node18':
         specifier: ^18.2.4
@@ -543,8 +543,8 @@ importers:
         specifier: workspace:*
         version: link:../shared
       effect:
-        specifier: ^3.4.8
-        version: 3.5.6
+        specifier: 3.4.8
+        version: 3.4.8
     devDependencies:
       '@tsconfig/node18':
         specifier: ^18.2.4
@@ -599,16 +599,16 @@ importers:
     dependencies:
       '@effect/platform':
         specifier: ^0.58.21
-        version: 0.58.27(@effect/schema@0.68.26(effect@3.5.6))(effect@3.5.6)
+        version: 0.58.27(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8)
       '@effect/rpc':
         specifier: ^0.31.21
-        version: 0.31.27(@effect/platform@0.58.27(@effect/schema@0.68.26(effect@3.5.6))(effect@3.5.6))(@effect/schema@0.68.26(effect@3.5.6))(effect@3.5.6)
+        version: 0.31.27(@effect/platform@0.58.27(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8))(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8)
       '@effect/schema':
-        specifier: ^0.68.18
-        version: 0.68.26(effect@3.5.6)
+        specifier: 0.68.18
+        version: 0.68.18(effect@3.4.8)
       effect:
-        specifier: ^3.4.8
-        version: 3.5.6
+        specifier: 3.4.8
+        version: 3.4.8
     devDependencies:
       '@tsconfig/node18':
         specifier: ^18.2.4
@@ -1338,20 +1338,20 @@ packages:
   '@effect/platform@0.58.27':
     resolution: {integrity: sha512-J/5ykWaFNo7rYC0b5/f/v8IC8i6QaOHM+eyUm7YnI01TeamHNvsVd9MB6YFjLBlgkogrKpOvcYDI+2jwyr0Mrw==}
     peerDependencies:
-      '@effect/schema': ^0.68.18
-      effect: ^3.4.8
+      '@effect/schema': 0.68.18
+      effect: 3.4.8
 
   '@effect/rpc@0.31.27':
     resolution: {integrity: sha512-JifyBBF8dhykNtJlTGteh1g+z+E4n6J4QEPVAZrsESlelIuvFJPZ67JGzRnISUzNhyXuLW9G1rkcUScf4Zp8wg==}
     peerDependencies:
       '@effect/platform': ^0.58.27
-      '@effect/schema': ^0.68.18
-      effect: ^3.4.8
+      '@effect/schema': 0.68.18
+      effect: 3.4.8
 
-  '@effect/schema@0.68.26':
-    resolution: {integrity: sha512-o1O/ZmlHXRe9t548YrQ9sudjRWJqCtsU9KnQHzvZm5pHSc4reuZVQufCXctcR0aETf9OFOYUuETrxjEQehq/Lg==}
+  '@effect/schema@0.68.18':
+    resolution: {integrity: sha512-+knLs36muKsyqIvQTB0itGp5Lwy+5jgEC0G5P8wSsrB6EWGFirS87QjbaFYGbg32l/P51RM+9cPMiAEyICwN6g==}
     peerDependencies:
-      effect: ^3.4.8
+      effect: 3.4.8
 
   '@emnapi/core@0.45.0':
     resolution: {integrity: sha512-DPWjcUDQkCeEM4VnljEOEcXdAD7pp8zSZsgOujk/LGIwCXWbXJngin+MO4zbH429lzeC3WbYLGjE2MaUOwzpyw==}
@@ -3647,8 +3647,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  effect@3.5.6:
-    resolution: {integrity: sha512-3PMiC+XMaLkHx9Nlxfr6ot/8/gVq9aEjMlBvyKzJx0p4h1ZyNEjPxvAZQ9tlxAtXBvmfRpmIwHxG99hi8qhEtQ==}
+  effect@3.4.8:
+    resolution: {integrity: sha512-qOQNrSSN3ITuAtARtN2Ldq6E5f42splY9VV18LqpKOXMwQCCEWkXdns4by3D2CJnDXQD2KCE0iGcRR2KowiQIA==}
 
   electrodb@2.14.2:
     resolution: {integrity: sha512-KaFdoSzPK+iOgRSNSZN/PKYJqtXbqeJE52BK90WRluNBpuzNuBBKmv7tITDTvs1T16PUlOwv4/DIMEbVBdALzw==}
@@ -8013,23 +8013,23 @@ snapshots:
 
   '@cdklabs/tskb@0.0.3': {}
 
-  '@effect/platform@0.58.27(@effect/schema@0.68.26(effect@3.5.6))(effect@3.5.6)':
+  '@effect/platform@0.58.27(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8)':
     dependencies:
-      '@effect/schema': 0.68.26(effect@3.5.6)
-      effect: 3.5.6
+      '@effect/schema': 0.68.18(effect@3.4.8)
+      effect: 3.4.8
       find-my-way-ts: 0.1.5
       multipasta: 0.2.2
       path-browserify: 1.0.1
 
-  '@effect/rpc@0.31.27(@effect/platform@0.58.27(@effect/schema@0.68.26(effect@3.5.6))(effect@3.5.6))(@effect/schema@0.68.26(effect@3.5.6))(effect@3.5.6)':
+  '@effect/rpc@0.31.27(@effect/platform@0.58.27(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8))(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8)':
     dependencies:
-      '@effect/platform': 0.58.27(@effect/schema@0.68.26(effect@3.5.6))(effect@3.5.6)
-      '@effect/schema': 0.68.26(effect@3.5.6)
-      effect: 3.5.6
+      '@effect/platform': 0.58.27(@effect/schema@0.68.18(effect@3.4.8))(effect@3.4.8)
+      '@effect/schema': 0.68.18(effect@3.4.8)
+      effect: 3.4.8
 
-  '@effect/schema@0.68.26(effect@3.5.6)':
+  '@effect/schema@0.68.18(effect@3.4.8)':
     dependencies:
-      effect: 3.5.6
+      effect: 3.4.8
       fast-check: 3.20.0
 
   '@emnapi/core@0.45.0':
@@ -10526,7 +10526,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  effect@3.5.6: {}
+  effect@3.4.8: {}
 
   electrodb@2.14.2(@aws-sdk/client-dynamodb@3.395.0(aws-crt@1.21.3)):
     dependencies:

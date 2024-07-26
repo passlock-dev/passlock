@@ -20,30 +20,43 @@ export const User = S.Struct({
 
 export type User = S.Schema.Type<typeof User>
 
-/** Represents a successful registration/authentication */
+export const AuthenticationRequired = S.Struct({
+  requiredAuthType: AuthType,
+})
+
+const DateFromSeconds = S.transform(S.Number, S.DateFromSelf, {
+  encode: (date) => Math.round(date.getTime() / 1000),
+  decode: (dateNum) => new Date(dateNum * 1000),
+ })
+
+const BasePrincipal = S.Struct({
+  iss: S.String,
+  aud: S.String,
+  sub: S.String,
+  iat: DateFromSeconds,
+  nbf: DateFromSeconds,
+  exp: DateFromSeconds,
+  jti: S.String,
+  user_verified: S.Boolean,
+  auth_type: AuthType
+})
+
 export const Principal = S.Struct({
-  token: S.String,
-  user: optional(User),
-  authenticator: S.Struct({
-    id: S.String,
-    type: AuthType,
-    userVerified: S.Boolean,
-  }),
-  authTimestamp: S.Date,
-  expireAt: S.Date,
+  ...BasePrincipal.fields,
+  given_name: optional(S.String),
+  family_name: optional(S.String),
+  email: optional(S.String),
+  email_verified: optional(S.Boolean),
 })
 
 export type Principal = S.Schema.Type<typeof Principal>
 
-const { user, ...rest } = Principal.fields
-
 export const UserPrincipal = S.Struct({
-  ...rest,
-  user: User
+  ...BasePrincipal.fields,
+  given_name: S.String,
+  family_name: S.String,
+  email: S.String,
+  email_verified: S.Boolean,
 })
 
 export type UserPrincipal = S.Schema.Type<typeof UserPrincipal>
-
-export const AuthenticationRequired = S.Struct({
-  requiredAuthType: AuthType,
-})

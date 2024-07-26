@@ -33,7 +33,7 @@ export const actions = {
     const principal = await tokenVerifier.exchangeToken(form.data.token)
     if (!Passlock.isUserPrincipal(principal)) error(500, "No user returned from Passlock")
 
-    const session = await lucia.createSession(principal.user.id, {})
+    const session = await lucia.createSession(principal.sub, {})
 
     const sessionCookie = lucia.createSessionCookie(session.id)
 

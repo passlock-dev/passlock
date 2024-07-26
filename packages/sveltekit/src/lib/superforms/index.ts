@@ -97,8 +97,8 @@ export class Passlock {
 				cancel();
       } else {
 				// append the passlock token to the form request
-				formData.set('authType', principal.authenticator.type);
-				formData.set('token', principal.token);
+				formData.set('authType', principal.auth_type);
+				formData.set('token', principal.jti);
 				if (verifyEmail) formData.set('verifyEmail', verifyEmail.method);
 			}
 		}
@@ -132,10 +132,10 @@ export class Passlock {
         form.message.set("Sorry, something went wrong");
 				cancel();
       } else {
-        form.form.update((old) => ({ ...old, email: principal.user.email }));
+        form.form.update((old) => ({ ...old, email: principal.email }));
         // append the passlock token to the form request
-        formData.set('authType', principal.authenticator.type);
-        formData.set('token', principal.token);
+        formData.set('authType', principal.auth_type);
+        formData.set('token', principal.jti);
 			}
 		}
 	};
@@ -151,7 +151,7 @@ export class Passlock {
 				form.errors.update((old) => ({ ...old, code: [principal.message] }));
 				cancel();
 			} else {
-				formData.set('token', principal.token);
+				formData.set('token', principal.jti);
 			}
 		} else {
 			form.errors.update((old) => ({ ...old, code: ['Please enter your code'] }));
@@ -175,9 +175,11 @@ export const updateForm =
 	(event: CustomEvent<Principal>) => {
 		form.form.update((old) => ({
 			...old,
-			...event.detail.user,
-			token: event.detail.token,
-			authType: event.detail.authenticator.type
+      email: event.detail.email,
+      givenName: event.detail.given_name,
+      familyName: event.detail.family_name,
+			token: event.detail.jti,
+			authType: event.detail.auth_type
 		}));
 
 		if (typeof onComplete === 'function') {

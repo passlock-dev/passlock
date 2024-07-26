@@ -148,7 +148,10 @@ export class PasslockUnsafe {
   }
 
   static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {
-    return principal.user !== undefined
+    return principal.given_name !== undefined && 
+    principal.family_name !== undefined && 
+    principal.email !== undefined && 
+    principal.email_verified !== undefined
   }
 
   private readonly runPromise = <A, R extends Requirements>(
@@ -260,7 +263,10 @@ export class Passlock {
   }
 
   static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {
-    return principal.user !== undefined
+    return principal.given_name !== undefined && 
+    principal.family_name !== undefined && 
+    principal.email !== undefined && 
+    principal.email_verified !== undefined
   }
 
   private readonly runPromise = <A, R extends Requirements>(

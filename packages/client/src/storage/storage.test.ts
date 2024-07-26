@@ -48,8 +48,8 @@ describe('storeToken should', () => {
       yield* _(service.storeToken(principal))
 
       const storage = yield* _(Storage)
-      const token = principal.token
-      const expiry = principal.expireAt.getTime()
+      const token = principal.jti
+      const expiry = principal.exp.getTime()
       expect(storage.setItem).toHaveBeenCalledWith('passlock:passkey:token', `${token}:${expiry}`)
     })
 

@@ -37,8 +37,8 @@ export const buildKey = (authType: AuthType) => `passlock:${authType}:token`
 
 // principal => token:expireAt
 export const compressToken = (principal: Principal): string => {
-  const expireAt = principal.expireAt.getTime()
-  const token = principal.token
+  const expireAt = principal.exp.getTime()
+  const token = principal.jti
   return `${token}:${expireAt}`
 }
 
@@ -69,7 +69,7 @@ export const storeToken = (principal: Principal): E.Effect<void, never, Storage>
 
     const storeEffect = E.try(() => {
       const compressed = compressToken(principal)
-      const key = buildKey(principal.authenticator.type)
+      const key = buildKey(principal.auth_type)
       localStorage.setItem(key, compressed)
     }).pipe(E.orElse(() => E.void)) // We dont care if it fails
 

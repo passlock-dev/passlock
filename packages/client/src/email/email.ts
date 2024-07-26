@@ -58,9 +58,9 @@ const getToken = () => {
         pipe(
           authenticationService.authenticatePasskey({ userVerification: 'preferred' }),
           E.map(principal => ({
-            token: principal.token,
-            authType: principal.authenticator.type,
-            expiresAt: principal.expireAt.getTime(),
+            token: principal.jti,
+            authType: principal.auth_type,
+            expiresAt: principal.exp.getTime(),
           })),
         ),
     })

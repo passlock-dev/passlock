@@ -11,21 +11,19 @@ export const authType = 'passkey'
 export const expireAt = Date.now() + 10000
 
 export const principal: Principal = {
-  token: 'token',
-  user: {
-    id: '1',
-    email: 'john.doe@gmail.com',
-    givenName: 'john',
-    familyName: 'doe',
-    emailVerified: false,
-  },
-  authenticator: {
-    id: 'passkeyId',
-    type: 'passkey',
-    userVerified: false,
-  },
-  authTimestamp: new Date(0),
-  expireAt: new Date(0),
+  jti: 'token',
+  sub: '1',
+  iss: 'idp.passlock.dev',
+  aud: 'tenancy_id',
+  iat: new Date(),
+  nbf: new Date(),
+  exp: new Date(Date.now() + 5 * 60 * 1000),
+  email: 'john.doe@gmail.com',
+  given_name: 'john',
+  family_name: 'doe',
+  email_verified: false,
+  auth_type: 'passkey',
+  user_verified: true
 }
 
 export const capabilitiesTest = L.succeed(
