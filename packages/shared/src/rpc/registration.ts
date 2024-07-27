@@ -9,9 +9,7 @@ import {
   UserVerification,
 } from '../schema/passkey.js'
 
-import { VerifyEmail } from '../schema/email.js'
 import { Principal } from '../schema/principal.js'
-
 import { makePostRequest } from './client.js'
 import { Dispatcher } from './dispatcher.js'
 
@@ -19,11 +17,9 @@ import { Dispatcher } from './dispatcher.js'
 
 export class OptionsReq extends S.Class<OptionsReq>('@passkey/register/optionsReq')({
   email: S.String,
-  givenName: S.String,
-  familyName: S.String,
-  userVerification: S.optional(UserVerification),
-  verifyEmail: S.optional(VerifyEmail),
-  redirectUrl: S.optional(S.String),
+  givenName: S.optional(S.String, { exact: true }),
+  familyName: S.optional(S.String, { exact: true }),
+  userVerification: S.optional(UserVerification, { exact: true }),
 }) {}
 
 export class OptionsRes extends S.Class<OptionsRes>('@passkey/register/optionsRes')({
@@ -40,8 +36,6 @@ export type OptionsErrors = S.Schema.Type<typeof OptionsErrors>
 export class VerificationReq extends S.Class<VerificationReq>('@passkey/register/verificationReq')({
   session: S.String,
   credential: RegistrationCredential,
-  verifyEmail: S.optional(VerifyEmail),
-  redirectUrl: S.optional(S.String),
 }) {}
 
 export class VerificationRes extends S.Class<VerificationRes>('@passkey/register/verificationRes')({
