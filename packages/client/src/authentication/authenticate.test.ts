@@ -1,5 +1,5 @@
 import { AuthenticationClient } from '@passlock/shared/dist/rpc/authentication.js'
-import { Effect as E, Layer as L, Layer, LogLevel, Logger, pipe } from 'effect'
+import { Effect as E, Layer as L, Layer, LogLevel, Logger, Option as O, pipe } from 'effect'
 import { describe, expect, test, vi } from 'vitest'
 import { mock } from 'vitest-mock-extended'
 import { StorageService } from '../storage/storage.js'
@@ -10,7 +10,11 @@ describe('authenticate should', () => {
   test('return a valid principal', async () => {
     const assertions = E.gen(function* (_) {
       const service = yield* _(AuthenticationService)
-      const result = yield* _(service.authenticatePasskey({ userVerification: 'preferred' }))
+
+      const result = yield* _(service.authenticatePasskey({ 
+        email: O.none(), 
+        userVerification: O.some('preferred') 
+      }))
 
       expect(result).toEqual(Fixture.principal)
     })
@@ -31,7 +35,11 @@ describe('authenticate should', () => {
   test('pass the authentication request to the backend', async () => {
     const assertions = E.gen(function* (_) {
       const service = yield* _(AuthenticationService)
-      yield* _(service.authenticatePasskey({ userVerification: 'preferred' }))
+
+      yield* _(service.authenticatePasskey({ 
+        email: O.none(), 
+        userVerification: O.some('preferred') 
+      }))
 
       const rpcClient = yield* _(AuthenticationClient)
       expect(rpcClient.getAuthenticationOptions).toHaveBeenCalledOnce()
@@ -67,7 +75,11 @@ describe('authenticate should', () => {
   test('send the credential to the backend', async () => {
     const assertions = E.gen(function* (_) {
       const service = yield* _(AuthenticationService)
-      yield* _(service.authenticatePasskey({ userVerification: 'preferred' }))
+      
+      yield* _(service.authenticatePasskey({ 
+        email: O.none(), 
+        userVerification: O.some('preferred') 
+      }))
 
       const rpcClient = yield* _(AuthenticationClient)
       expect(rpcClient.getAuthenticationOptions).toHaveBeenCalledOnce()
@@ -103,7 +115,11 @@ describe('authenticate should', () => {
   test('store the credential in local storage', async () => {
     const assertions = E.gen(function* (_) {
       const service = yield* _(AuthenticationService)
-      yield* _(service.authenticatePasskey({ userVerification: 'preferred' }))
+      
+      yield* _(service.authenticatePasskey({ 
+        email: O.none(), 
+        userVerification: O.some('preferred') 
+      }))
 
       const storageService = yield* _(StorageService)
       expect(storageService.storeToken).toHaveBeenCalledWith(Fixture.principal)
@@ -138,7 +154,11 @@ describe('authenticate should', () => {
   test('schedule deletion of the local token', async () => {
     const assertions = E.gen(function* (_) {
       const service = yield* _(AuthenticationService)
-      yield* _(service.authenticatePasskey({ userVerification: 'preferred' }))
+      
+      yield* _(service.authenticatePasskey({ 
+        email: O.none(), 
+        userVerification: O.some('preferred') 
+      }))
 
       const storageService = yield* _(StorageService)
       expect(storageService.clearExpiredToken).toHaveBeenCalledWith('passkey')
@@ -173,7 +193,11 @@ describe('authenticate should', () => {
   test("return an error if the browser can't create a credential", async () => {
     const assertions = E.gen(function* (_) {
       const service = yield* _(AuthenticationService)
-      yield* _(service.authenticatePasskey({ userVerification: 'preferred' }))
+      
+      yield* _(service.authenticatePasskey({ 
+        email: O.none(), 
+        userVerification: O.some('preferred') 
+      }))
 
       const getCredential = yield* _(GetCredential)
       expect(getCredential).toHaveBeenCalledOnce()

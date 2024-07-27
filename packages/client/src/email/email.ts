@@ -56,7 +56,10 @@ const getToken = () => {
       onFailure: () =>
         // No token, need to authenticate the user
         pipe(
-          authenticationService.authenticatePasskey({ userVerification: 'preferred' }),
+          authenticationService.authenticatePasskey({ 
+            userVerification: O.some('preferred'), 
+            email: O.none()
+          }),
           E.map(principal => ({
             token: principal.jti,
             authType: principal.auth_type,

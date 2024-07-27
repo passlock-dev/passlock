@@ -9,10 +9,8 @@ import type { NotSupported } from '@passlock/shared/dist/error/error.js'
 import { Duplicate, InternalBrowserError } from '@passlock/shared/dist/error/error.js'
 import type { OptionsErrors, VerificationErrors } from '@passlock/shared/dist/rpc/registration.js'
 import { OptionsReq, RegistrationClient, VerificationReq } from '@passlock/shared/dist/rpc/registration.js'
-import { VerifyEmail } from '@passlock/shared/dist/schema/email.js'
 import type {
-  RegistrationCredential,
-  UserVerification,
+  RegistrationCredential
 } from '@passlock/shared/dist/schema/passkey.js'
 import { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer, flow, pipe } from 'effect'
@@ -22,13 +20,7 @@ import { UserService } from '../user/user.js'
 
 /* Requests */
 
-export type RegistrationRequest = {
-  email: string
-  givenName: string
-  familyName: string
-  userVerification?: UserVerification
-  verifyEmail?: VerifyEmail
-}
+export type RegistrationRequest = OptionsReq
 
 /* Dependencies */
 
@@ -105,7 +97,7 @@ export const registerPasskey = (
     yield* _(capabilities.passkeySupport)
 
     yield* _(E.logInfo('Fetching registration options from Passlock'))
-    const { options, session } = yield* _(fetchOptions(new OptionsReq(request)))
+    const { options, session } = yield* fetchOptions(new OptionsReq(request))
 
     yield* _(E.logInfo('Building new credential'))
     const createCredential = yield* _(CreateCredential)

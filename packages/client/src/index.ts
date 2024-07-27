@@ -10,15 +10,17 @@ import type {
 
 import { ErrorCode } from '@passlock/shared/dist/error/error.js'
 import { RpcConfig } from '@passlock/shared/dist/rpc/config.js'
+import type { VerifyEmail } from '@passlock/shared/dist/schema/email.js'
+import type { UserVerification } from '@passlock/shared/dist/schema/passkey.js'
 import { UserPrincipal, type Principal } from '@passlock/shared/dist/schema/principal.js'
-import { Effect as E, Layer as L, Layer, Option, Runtime, Scope, pipe } from 'effect'
-import { AuthenticationService, type AuthenticationRequest } from './authentication/authenticate.js'
+import { Effect as E, Layer as L, Layer, Option as O, Runtime, Scope, pipe } from 'effect'
+import { AuthenticationService } from './authentication/authenticate.js'
 import { Capabilities } from './capabilities/capabilities.js'
 import { ConnectionService } from './connection/connection.js'
 import { allRequirements } from './effect.js'
 import { EmailService, type VerifyRequest } from './email/email.js'
-import { RegistrationService, type RegistrationRequest } from './registration/register.js'
-import { SocialService, type AuthenticateOidcReq, type RegisterOidcReq } from './social/social.js'
+import { RegistrationService } from './registration/register.js'
+import { SocialService, type Provider } from './social/social.js'
 import { Storage, StorageService, type AuthType, type StoredToken } from './storage/storage.js'
 import { UserService, type Email, type ResendEmail } from './user/user.js'
 
@@ -29,9 +31,7 @@ export type { VerifyEmail } from '@passlock/shared/dist/schema/email.js'
 export type { UserVerification } from '@passlock/shared/dist/schema/passkey.js'
 export type { Principal } from '@passlock/shared/dist/schema/principal.js'
 
-export type { AuthenticationRequest } from './authentication/authenticate.js'
 export type { VerifyRequest } from './email/email.js'
-export type { RegistrationRequest } from './registration/register.js'
 export type { AuthType, StoredToken } from './storage/storage.js'
 export type { Email } from './user/user.js'
 
@@ -39,6 +39,69 @@ export type PasslockProps = {
   tenancyId: string; 
   clientId: string; 
   endpoint?: string
+}
+
+export type RegistrationRequest = {
+  email: string
+  givenName?: string
+  familyName?: string
+  userVerification?: UserVerification
+  verifyEmail?: VerifyEmail
+}
+
+const toRpcRegistrationRequest = (request: RegistrationRequest) => {
+  return {
+    email: request.email,
+    givenName: O.fromNullable(request.givenName),
+    familyName: O.fromNullable(request.familyName),
+    userVerification: O.fromNullable(request.userVerification),
+    verifyEmail: O.fromNullable(request.verifyEmail)
+  }
+}
+
+export type AuthenticationRequest = {
+  email?: string
+  userVerification?: UserVerification
+}
+
+const toRpcAuthenticationRequest = (request: AuthenticationRequest) => {
+  return {
+    email: O.fromNullable(request.email),
+    userVerification: O.fromNullable(request.userVerification),
+  }
+}
+
+export type RegisterOidcReq = {
+  provider: Provider,
+  idToken: string,
+  givenName?: string,
+  familyName?: string,
+  nonce: string,
+}
+
+const toRpcRegisterOidcReq = (request: RegisterOidcReq) => {
+  return {
+    provider: request.provider,
+    idToken: request.idToken,
+    givenName: O.fromNullable(request.givenName),
+    familyName: O.fromNullable(request.familyName),
+    nonce: request.nonce
+  }
+}
+
+export type AuthenticateOidcReq = {
+  provider: Provider,
+  idToken: string,
+  nonce: string,
+}
+
+
+const toRpcAuthenticateOidcReq = (request: AuthenticateOidcReq) => {
+  return {
+    provider: request.provider,
+    idToken: request.idToken,
+    nonce: request.nonce
+  }
 }
 
 export { ErrorCode } from '@passlock/shared/dist/error/error.js'
@@ -189,28 +252,28 @@ export class PasslockUnsafe {
   registerPasskey = (request: RegistrationRequest, options?: Options): Promise<Principal> =>
     pipe(
       RegistrationService,
-      E.flatMap(service => service.registerPasskey(request)),
+      E.flatMap(service => service.registerPasskey(toRpcRegistrationRequest(request))),
       effect => this.runPromise(effect, options),
     )
 
   authenticatePasskey = (request: AuthenticationRequest, options?: Options): Promise<Principal> =>
     pipe(
       AuthenticationService,
-      E.flatMap(service => service.authenticatePasskey(request)),
+      E.flatMap(service => service.authenticatePasskey(toRpcAuthenticationRequest(request))),
       effect => this.runPromise(effect, options),
     )
 
   registerOidc = (request: RegisterOidcReq, options?: Options) => 
     pipe(
       SocialService,
-      E.flatMap(service => service.registerOidc(request)),
+      E.flatMap(service => service.registerOidc(toRpcRegisterOidcReq(request))),
       effect => this.runPromise(effect, options),
     )   
     
   authenticateOidc = (request: AuthenticateOidcReq, options?: Options) => 
     pipe(
       SocialService,
-      E.flatMap(service => service.authenticateOidc(request)),
+      E.flatMap(service => service.authenticateOidc(toRpcAuthenticateOidcReq(request))),
       effect => this.runPromise(effect, options),
     )      
 
@@ -239,7 +302,7 @@ export class PasslockUnsafe {
     pipe(
       StorageService,
       E.flatMap(service => service.getToken(authType).pipe(effect => E.option(effect))),
-      E.map(Option.getOrUndefined),
+      E.map(O.getOrUndefined),
       effect => Runtime.runSync(this.runtime)(effect),
     )
 
@@ -303,21 +366,21 @@ export class Passlock {
   registerPasskey = (request: RegistrationRequest, options?: Options): Promise<Principal | PasslockError> =>
     pipe(
       RegistrationService,
-      E.flatMap(service => service.registerPasskey(request)),
+      E.flatMap(service => service.registerPasskey(toRpcRegistrationRequest(request))),
       effect => this.runPromise(effect, options),
     )
 
   authenticatePasskey = (request: AuthenticationRequest = {}, options?: Options): Promise<Principal | PasslockError> =>
     pipe(
       AuthenticationService,
-      E.flatMap(service => service.authenticatePasskey(request)),
+      E.flatMap(service => service.authenticatePasskey(toRpcAuthenticationRequest(request))),
       effect => this.runPromise(effect, options),
     )
 
   registerOidc = (request: RegisterOidcReq, options?: Options) => 
     pipe(
       SocialService,
-      E.flatMap(service => service.registerOidc(request)),
+      E.flatMap(service => service.registerOidc(toRpcRegisterOidcReq(request))),
       effect => this.runPromise(effect, options),
     )     
 
@@ -353,7 +416,7 @@ export class Passlock {
     pipe(
       StorageService,
       E.flatMap(service => service.getToken(authType).pipe(effect => E.option(effect))),
-      E.map(maybeToken => Option.getOrUndefined(maybeToken)),
+      E.map(maybeToken => O.getOrUndefined(maybeToken)),
       effect => Runtime.runSync(this.runtime)(effect),
     )
 

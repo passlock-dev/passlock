@@ -53,6 +53,7 @@
     "effect": "^3.4.8"
   },
   "devDependencies": {
+    "@effect/schema": "0.68.18",
     "@tsconfig/node18": "^18.2.4",
     "@types/node": "^20.14.10",
     "@typescript-eslint/eslint-plugin": "^7.15.0",

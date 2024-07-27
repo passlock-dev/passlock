@@ -9,11 +9,9 @@ import {
   InternalBrowserError,
   type NotSupported,
 } from '@passlock/shared/dist/error/error.js'
-import type { OptionsErrors, VerificationErrors } from '@passlock/shared/dist/rpc/authentication.js'
-import { AuthenticationClient, OptionsReq, VerificationReq } from '@passlock/shared/dist/rpc/authentication.js'
+import { AuthenticationClient, OptionsErrors, OptionsReq, VerificationReq, type VerificationErrors } from '@passlock/shared/dist/rpc/authentication.js'
 import type {
-  AuthenticationCredential,
-  UserVerification,
+  AuthenticationCredential
 } from '@passlock/shared/dist/schema/passkey.js'
 import { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer, flow, pipe } from 'effect'
@@ -22,11 +20,7 @@ import { StorageService } from '../storage/storage.js'
 
 /* Requests */
 
-export type AuthenticationRequest = { 
-  email?: string, 
-  userVerification?: UserVerification 
-}
-
+export type AuthenticationRequest = OptionsReq
 /* Errors */
 
 export type AuthenticationErrors = NotSupported | OptionsErrors | VerificationErrors
@@ -102,7 +96,8 @@ export const authenticatePasskey = (
     yield* _(capabilities.passkeySupport)
 
     yield* _(E.logInfo('Fetching authentication options from Passlock'))
-    const { options, session } = yield* _(fetchOptions(new OptionsReq(request)))
+
+    const { options, session } = yield* _(fetchOptions(request))
 
     yield* _(E.logInfo('Looking up credential'))
     const get = yield* _(GetCredential)

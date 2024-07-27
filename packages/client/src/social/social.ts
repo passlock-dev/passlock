@@ -5,36 +5,26 @@ import {
   type BadRequest,
   type NotSupported
 } from '@passlock/shared/dist/error/error.js'
-import * as Shared from '@passlock/shared/dist/rpc/social.js'
+import * as RPC from '@passlock/shared/dist/rpc/social.js'
 import { SocialClient } from '@passlock/shared/dist/rpc/social.js'
 import type {
   Principal
 } from '@passlock/shared/dist/schema/principal.js'
-import { Context, Effect as E, Layer, Option as O, flow } from 'effect'
+import { Context, Effect as E, Layer, flow } from 'effect'
 
 /* Requests */
 
 export type Provider = 'apple' | 'google'
 
-export type RegisterOidcReq = {
-  provider: Provider
-  idToken: string
-  nonce: string
-  givenName?: string
-  familyName?: string
-}
+export type RegisterOidcReq = RPC.RegisterOidcReq
 
-export type AuthenticateOidcReq = {
-  provider: Provider
-  idToken: string
-  nonce: string
-}
+export type AuthenticateOidcReq = RPC.AuthOidcReq
 
 /* Errors */
 
-export type RegistrationErrors = NotSupported | BadRequest | Shared.RegisterOidcErrors
+export type RegistrationErrors = NotSupported | BadRequest | RPC.RegisterOidcErrors
 
-export type AuthenticationErrors = NotSupported | BadRequest | Shared.AuthOidcErrors
+export type AuthenticationErrors = NotSupported | BadRequest | RPC.AuthOidcErrors
 
 /* Service */
 
@@ -58,13 +48,7 @@ export const registerOidc = (
     yield* _(E.logInfo('Registering social account'))
 
     const rpcClient = yield* _(SocialClient)
-
-    const rpcRequest = new Shared.RegisterOidcReq({
-      ...request,
-      givenName: O.fromNullable(request.givenName),
-      familyName: O.fromNullable(request.familyName),
-    })
-
+    const rpcRequest = new RPC.RegisterOidcReq(request)
     const { principal } = yield* _(
       rpcClient.registerOidc(rpcRequest)
     )
@@ -80,8 +64,7 @@ export const authenticateOidc = (
     yield* _(E.logInfo('Authenticating with social account'))
 
     const rpcClient = yield* _(SocialClient)
-    const rpcRequest = new Shared.AuthOidcReq(request)
-
+    const rpcRequest = new RPC.AuthOidcReq(request)
     const { principal } = yield* _(
       rpcClient.authenticateOidc(rpcRequest)
     )

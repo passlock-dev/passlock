@@ -42,7 +42,7 @@ describe('registerOidc should', () => {
       yield* _(service.registerOidc(Fixture.registerOidcReq))
 
       const rpcClient = yield* _(SocialClient)
-      expect(rpcClient.registerOidc).toHaveBeenCalledWith(Fixture.rpcRegisterReq)
+      expect(rpcClient.registerOidc).toHaveBeenCalledWith(Fixture.registerOidcReq)
     })
 
     const rpcClientTest = L.effect(
@@ -135,7 +135,7 @@ describe('authenticateIodc should', () => {
       yield* _(service.authenticateOidc(Fixture.authOidcReq))
 
       const rpcClient = yield* _(SocialClient)
-      expect(rpcClient.authenticateOidc).toHaveBeenCalledWith(Fixture.rpcAuthenticateReq)
+      expect(rpcClient.authenticateOidc).toHaveBeenCalledWith(Fixture.authOidcReq)
     })
 
     const rpcClientTest = L.effect(

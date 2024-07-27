@@ -17,8 +17,8 @@ import { Dispatcher } from './dispatcher.js'
 /* Options */
 
 export class OptionsReq extends S.Class<OptionsReq>(`@passkey/auth/optionsReq`)({
-  email: S.optional(S.String, { exact: true }),
-  userVerification: S.optional(UserVerification, { exact: true }),
+  email: S.Option(S.String),
+  userVerification: S.Option(UserVerification),
 }) {}
 
 export class OptionsRes extends S.Class<OptionsRes>('@passkey/auth/optionsRes')({

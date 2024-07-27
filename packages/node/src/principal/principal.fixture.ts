@@ -1,4 +1,5 @@
-import type { Principal } from '@passlock/shared/dist/schema/principal.js'
+import * as S from "@effect/schema/Schema"
+import { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer as L, LogLevel, Logger, Ref, Stream, pipe } from 'effect'
 import type { RequestOptions } from 'https'
 import { Config } from '../config/config.js'
@@ -14,9 +15,11 @@ export const principal: Principal = {
   sub: '1',
   iss: 'idp.passlock.dev',
   aud: 'tenancy_id',
-  iat: new Date(),
-  nbf: new Date(),
-  exp: new Date(Date.now() + 5 * 60 * 1000),
+  // must be at least 1 second 
+  // as it's truncated to seconds
+  iat: new Date(60 * 1000),
+  nbf: new Date(120 * 100),
+  exp: new Date(180 * 1000),
   email: 'john.doe@gmail.com',
   given_name: 'john',
   family_name: 'doe',
@@ -39,7 +42,8 @@ export const buildEffect = <A, E>(
     StreamResponse,
     E.gen(function* (_) {
       const ref = yield* _(State)
-      const buff = Buffer.from(JSON.stringify(principal))
+      const res = S.encodeSync(Principal)(principal)
+      const buff = Buffer.from(JSON.stringify(res))
       return options =>
         pipe(Stream.fromEffect(Ref.set(ref, options)), Stream.zipRight(Stream.make(buff)))
     }),
