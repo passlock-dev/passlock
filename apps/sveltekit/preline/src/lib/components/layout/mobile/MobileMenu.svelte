@@ -7,7 +7,7 @@
   import { login, logout } from '$lib/routes'
   import type { User } from 'lucia'
 
-  export let user: User | undefined
+  export let user: User | null
 </script>
 
 <div class="flex flex-col gap-5 mt-5">
