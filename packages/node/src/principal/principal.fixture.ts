@@ -12,7 +12,8 @@ import {
 
 export const principal: Principal = {
   jti: 'token',
-  sub: '1',
+  token: 'token',
+  sub: 'user-1',
   iss: 'idp.passlock.dev',
   aud: 'tenancy_id',
   // must be at least 1 second 
@@ -25,6 +26,7 @@ export const principal: Principal = {
   family_name: 'doe',
   email_verified: false,
   auth_type: 'passkey',
+  auth_id: 'auth-1',
   user_verified: true
 }
 

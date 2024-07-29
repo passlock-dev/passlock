@@ -13,7 +13,7 @@ export type AuthType = 'email' | 'passkey' | 'apple' | 'google'
 export type StoredToken = {
   token: string
   authType: AuthType
-  expireAt: number
+  expiry: number
 }
 
 /* Service */
@@ -53,7 +53,7 @@ export const expandToken =
     const parse = O.liftThrowable(Number.parseInt)
     const expireAt = parse(expireAtString)
 
-    return O.map(expireAt, expireAt => ({ authType, token, expireAt }))
+    return O.map(expireAt, expiry => ({ authType, token, expiry }))
   }
 
 /* Effects */
@@ -79,20 +79,20 @@ export const storeToken = (principal: Principal): E.Effect<void, never, Storage>
 
 /**
  * Get stored token from local storage
- * @param authType
+ * @param authenticator
  * @returns
  */
 export const getToken = (
-  authType: AuthType,
+  authenticator: AuthType,
 ): E.Effect<StoredToken, NoSuchElementException, Storage> => {
   return E.gen(function* (_) {
     const localStorage = yield* _(Storage)
 
     const getEffect = pipe(
-      O.some(buildKey(authType)),
+      O.some(buildKey(authenticator)),
       O.flatMap(key => pipe(localStorage.getItem(key), O.fromNullable)),
-      O.flatMap(expandToken(authType)),
-      O.filter(({ expireAt: expireAt }) => expireAt > Date.now()),
+      O.flatMap(expandToken(authenticator)),
+      O.filter(({ expiry }) => expiry > Date.now()),
     )
 
     return yield* _(getEffect)
@@ -125,7 +125,7 @@ export const clearExpiredToken = (authType: AuthType): E.Effect<void, never, Sto
     const item = yield* _(O.fromNullable(storage.getItem(key)))
     const token = yield* _(expandToken(authType)(item))
 
-    if (token.expireAt < Date.now()) {
+    if (token.expiry < Date.now()) {
       storage.removeItem(key)
     }
   })

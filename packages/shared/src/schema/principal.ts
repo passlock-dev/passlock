@@ -37,8 +37,10 @@ const BasePrincipal = S.Struct({
   nbf: DateFromSeconds,
   exp: DateFromSeconds,
   jti: S.String,
+  token: S.String,
   user_verified: S.Boolean,
-  auth_type: AuthType
+  auth_type: AuthType,
+  auth_id: S.String,
 })
 
 export const Principal = S.Struct({

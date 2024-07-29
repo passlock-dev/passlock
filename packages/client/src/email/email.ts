@@ -7,7 +7,7 @@ import { UserClient, VerifyEmailReq } from '@passlock/shared/dist/rpc/user.js'
 import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer, Option as O, flow, identity, pipe } from 'effect'
 import { AuthenticationService, type AuthenticationErrors } from '../authentication/authenticate.js'
-import { StorageService } from '../storage/storage.js'
+import { StorageService, type StoredToken } from '../storage/storage.js'
 
 /* Requests */
 
@@ -63,8 +63,8 @@ const getToken = () => {
           E.map(principal => ({
             token: principal.jti,
             authType: principal.auth_type,
-            expiresAt: principal.exp.getTime(),
-          })),
+            expiry: principal.exp.getTime(),
+          }) as StoredToken),
         ),
     })
 
