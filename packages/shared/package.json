@@ -30,7 +30,7 @@
     "ncu:save": "ncu --peer -x @effect/* -x effect -u"
   },
   "devDependencies": {
-    "@tsconfig/node18": "^18.2.4",
+    "@tsconfig/node20": "^20.1.4",
     "@types/node": "^20.14.10",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
     "@typescript-eslint/parser": "^7.15.0",
@@ -47,9 +47,9 @@
     "vitest": "^2.0.3"
   },
   "dependencies": {
-    "effect": "^3.4.8",
+    "@effect/platform": "^0.58.21",
     "@effect/rpc": "^0.31.21",
     "@effect/schema": "^0.68.18",
-    "@effect/platform": "^0.58.21"
+    "effect": "^3.4.8"
   }
 }

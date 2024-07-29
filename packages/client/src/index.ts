@@ -49,11 +49,17 @@ export type RegistrationRequest = {
   verifyEmail?: VerifyEmail
 }
 
+const nonEmpty = (text: string): O.Option<string> => {
+  const trimmed = text.trim()
+  if (trimmed.length > 0) return O.some(trimmed)
+  return O.none()
+}
+
 const toRpcRegistrationRequest = (request: RegistrationRequest) => {
   return {
     email: request.email,
-    givenName: O.fromNullable(request.givenName),
-    familyName: O.fromNullable(request.familyName),
+    givenName: pipe(O.fromNullable(request.givenName), O.flatMap(nonEmpty)),
+    familyName: pipe(O.fromNullable(request.familyName), O.flatMap(nonEmpty)),
     userVerification: O.fromNullable(request.userVerification),
     verifyEmail: O.fromNullable(request.verifyEmail)
   }
@@ -83,8 +89,8 @@ const toRpcRegisterOidcReq = (request: RegisterOidcReq) => {
   return {
     provider: request.provider,
     idToken: request.idToken,
-    givenName: O.fromNullable(request.givenName),
-    familyName: O.fromNullable(request.familyName),
+    givenName: pipe(O.fromNullable(request.givenName), O.flatMap(nonEmpty)),
+    familyName: pipe(O.fromNullable(request.familyName), O.flatMap(nonEmpty)),
     nonce: request.nonce
   }
 }

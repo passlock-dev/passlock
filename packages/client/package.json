@@ -58,12 +58,12 @@
     "ncu:save": "ncu --peer -x @effect/* -x effect -u"
   },
   "dependencies": {
-    "@passlock/shared": "workspace:*",
     "@github/webauthn-json": "^2.1.1",
+    "@passlock/shared": "workspace:*",
     "effect": "^3.4.8"
   },
   "devDependencies": {
-    "@tsconfig/node18": "^18.2.4",
+    "@tsconfig/node20": "^20.1.4",
     "@types/node": "^20.14.10",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
     "@typescript-eslint/parser": "^7.15.0",

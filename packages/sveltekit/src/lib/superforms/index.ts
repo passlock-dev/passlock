@@ -17,8 +17,8 @@ import {
 
 export type RegistrationData = {
 	email: string;
-	givenName: string;
-	familyName: string;
+	givenName?: string;
+	familyName?: string;
 	token?: string;
 	authType: 'apple' | 'google' | 'email' | 'passkey';
 	verifyEmail?: 'link' | 'code';
@@ -62,8 +62,8 @@ export class Passlock {
 		} else if (!token && authType === 'passkey') {
 			const principal = await this.passlock.registerPasskey({
 				email,
-				givenName,
-				familyName,
+				...(givenName ? { givenName } : {}),
+				...(familyName ? { familyName } : {}),
 				verifyEmail
 			});
 
@@ -176,8 +176,8 @@ export const updateForm =
 		form.form.update((old) => ({
 			...old,
       email: event.detail.email,
-      givenName: event.detail.given_name,
-      familyName: event.detail.family_name,
+      ...(event.detail.given_name ? { givenName: event.detail.given_name } : { }),
+      ...(event.detail.family_name ? { familyName: event.detail.family_name } : { }),
 			token: event.detail.jti,
 			authType: event.detail.auth_type
 		}));
