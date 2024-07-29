@@ -9,7 +9,7 @@
   import type { User } from 'lucia'
   import { mode, setMode } from 'mode-watcher'
 
-  export let user: User | undefined
+  export let user: User | null
 
   const selectMode = (mode: 'light' | 'dark' | 'system') => () => {
     setMode(mode)
