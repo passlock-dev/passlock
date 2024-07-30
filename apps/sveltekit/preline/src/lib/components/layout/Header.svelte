@@ -7,7 +7,7 @@
   import MobileMenu from './mobile/MobileMenu.svelte'
   import MobileMenuBar from './mobile/MobileMenuBar.svelte'
 
-  export let user: User | undefined
+  export let user: User | null
   let menuOpen = false
 
   beforeNavigate(() => {

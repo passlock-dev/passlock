@@ -8,7 +8,7 @@
   import MobileAvatar from './MobileAvatar.svelte'
   import MobileMenuToggle from './MobileMenuToggle.svelte'
 
-  export let user: User | undefined
+  export let user: User | null
   export let menuOpen = false
 </script>
 
