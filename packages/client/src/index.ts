@@ -15,12 +15,12 @@ import type { UserVerification } from '@passlock/shared/dist/schema/passkey.js'
 import type { Principal, UserPrincipal } from '@passlock/shared/dist/schema/principal.js'
 
 import { Effect as E, Layer as L, Layer, Option as O, Runtime, Scope, pipe } from 'effect'
-import { dual } from 'effect/Function'
 
 import type { AuthenticationService } from './authentication/authenticate.js'
 import type { Capabilities } from './capabilities/capabilities.js'
 import type { ConnectionService } from './connection/connection.js'
 
+import { dual } from 'effect/Function'
 import {
   allRequirements,
   authenticateOidc,
@@ -192,11 +192,13 @@ const transformErrors = <A, R>(
     },
 
     Interrupt: () => {
+      console.error("Interrupt")
       return E.succeed(new PasslockError('Operation aborted', ErrorCode.InternalBrowserError))
     },
 
     Sequential: errors => {
       console.error(errors)
+
       return E.succeed(
         new PasslockError('Sorry, something went wrong', ErrorCode.InternalServerError),
       )
@@ -204,6 +206,7 @@ const transformErrors = <A, R>(
 
     Parallel: errors => {
       console.error(errors)
+      
       return E.succeed(
         new PasslockError('Sorry, something went wrong', ErrorCode.InternalServerError),
       )
@@ -247,24 +250,15 @@ export class PasslockUnsafe {
   }
 
   private readonly runPromise: {
-    <A, R extends Requirements>(
-      effect: E.Effect<A, PasslockErrors, R>,
-    ): (options: Options | undefined) => Promise<A>
-    <A, R extends Requirements>(
-      options: Options | undefined,
-    ): (effect: E.Effect<A, PasslockErrors, R>) => Promise<A>
+    <A, R extends Requirements>(options: Options | undefined): (effect: E.Effect<A, PasslockErrors, R>) => Promise<A>
+    <A, R extends Requirements>(effect: E.Effect<A, PasslockErrors, R>, options: Options | undefined): Promise<A>
   } = dual(
     2,
-    <A, R extends Requirements>(
-      options: Options | undefined,
-      effect: E.Effect<A, PasslockErrors, R>,
-    ): Promise<A> => {
-      return pipe(
-        transformErrors(effect),
-        E.flatMap(result => (PasslockError.isError(result) ? E.fail(result) : E.succeed(result))),
-        effect => Runtime.runPromise(this.runtime)(effect, options),
-      )
-    },
+    <A, R extends Requirements>(effect: E.Effect<A, PasslockErrors, R>, options: Options | undefined): Promise<A> => pipe(
+      transformErrors(effect), 
+      E.flatMap(result => (PasslockError.isError(result) ? E.fail(result) : E.succeed(result))),
+      effect => Runtime.runPromise(this.runtime)(effect, options)
+    )
   )
 
   preConnect = (options?: Options): Promise<void> => pipe(preConnect(), this.runPromise(options))
@@ -316,10 +310,9 @@ export class Passlock {
   constructor(props: PasslockProps) {
     const config = Layer.succeed(RpcConfig, RpcConfig.of(props))
     const storage = Layer.succeed(BrowserStorage, BrowserStorage.of(globalThis.localStorage))
-
     const allLayers = pipe(allRequirements, L.provide(config), L.provide(storage), L.merge(config))
-
     const scope = E.runSync(Scope.make())
+
     this.runtime = E.runSync(Layer.toRuntime(allLayers).pipe(Scope.extend(scope)))
   }
 
@@ -333,26 +326,23 @@ export class Passlock {
   }
 
   private readonly runPromise: {
-    <A, R extends Requirements>(
-      effect: E.Effect<A, PasslockErrors, R>,
-    ): (options: Options | undefined) => Promise<A | PasslockError>
-    <A, R extends Requirements>(
-      options: Options | undefined,
-    ): (effect: E.Effect<A, PasslockErrors, R>) => Promise<A | PasslockError>
+    <A, R extends Requirements>(options: Options | undefined): (effect: E.Effect<A, PasslockErrors, R>) => Promise<A | PasslockError>
+    <A, R extends Requirements>(effect: E.Effect<A, PasslockErrors, R>, options: Options | undefined): Promise<A | PasslockError>
   } = dual(
     2,
-    <A, R extends Requirements>(
-      options: Options | undefined,
-      effect: E.Effect<A, PasslockErrors, R>,
-    ): Promise<A | PasslockError> => {
-      return pipe(transformErrors(effect), effect =>
-        Runtime.runPromise(this.runtime)(effect, options),
-      )
-    },
+    <A, R extends Requirements>(effect: E.Effect<A, PasslockErrors, R>, options: Options | undefined): Promise<A | PasslockError> => pipe(
+      transformErrors(effect), 
+      effect => Runtime.runPromise(this.runtime)(effect, options)
+    )
   )
 
-  preConnect = (options?: Options): Promise<boolean | PasslockError> =>
-    pipe(preConnect(), E.as(true), this.runPromise(options))
+  preConnect = async (options?: Options): Promise<boolean | PasslockError> => {
+    return pipe(
+      preConnect(), 
+      E.as(true), 
+      this.runPromise(options)
+    )
+  }
 
   isPasskeySupport = (): Promise<boolean> =>
     pipe(isPasskeySupport, effect => Runtime.runPromise(this.runtime)(effect))
@@ -369,8 +359,11 @@ export class Passlock {
   authenticatePasskey = (
     request: AuthenticationRequest = {},
     options?: Options,
-  ): Promise<Principal | PasslockError> =>
-    pipe(authenticatePasskey(toRpcAuthenticationRequest(request)), this.runPromise(options))
+  ): Promise<Principal | PasslockError> => pipe(
+      toRpcAuthenticationRequest(request),
+      authenticatePasskey, 
+      this.runPromise(options)
+    )
 
   registerOidc = (request: RegisterOidcReq, options?: Options) =>
     pipe(registerOidc(toRpcRegisterOidcReq(request)), this.runPromise(options))

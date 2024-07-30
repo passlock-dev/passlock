@@ -160,7 +160,7 @@ export class Passlock {
 	};
 
 	readonly autoVerifyEmail = async <T extends VerifyEmailData>(form: SuperForm<T>) => {
-		if (this.passlock.getSessionToken('passkey')) {
+		if (await this.passlock.getSessionToken('passkey')) {
 			form.submit();
 		}
 	};

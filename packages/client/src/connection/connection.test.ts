@@ -1,6 +1,6 @@
+import { Dispatcher } from '@passlock/shared/dist/rpc/client.js'
 import { RpcConfig } from '@passlock/shared/dist/rpc/config.js'
 import { ConnectionClient } from '@passlock/shared/dist/rpc/connection.js'
-import { Dispatcher } from '@passlock/shared/dist/rpc/dispatcher.js'
 import { Effect as E, Layer as L, Layer, LogLevel, Logger, pipe } from 'effect'
 import { describe, expect, test } from 'vitest'
 import { mock } from 'vitest-mock-extended'

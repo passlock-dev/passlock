@@ -50,26 +50,26 @@
   },
   "dependencies": {
     "@passlock/shared": "workspace:^",
-    "effect": "^3.4.8"
+    "effect": "3.6.0"
   },
   "devDependencies": {
-    "@effect/schema": "0.68.18",
+    "@effect/schema": "0.70.0",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/node20": "^20.1.4",
-    "@types/node": "^20.14.10",
-    "@typescript-eslint/eslint-plugin": "^7.15.0",
-    "@typescript-eslint/parser": "^7.15.0",
-    "@vitest/coverage-v8": "^2.0.3",
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@vitest/coverage-v8": "^2.0.4",
     "@vitest/ui": "^2.0.3",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
-    "prettier": "^3.3.2",
-    "rimraf": "^5.0.8",
+    "prettier": "^3.3.3",
+    "rimraf": "^6.0.1",
     "tsx": "^4.16.2",
-    "typescript": "^5.5.3",
-    "vite": "^5.3.3",
+    "typescript": "^5.5.4",
+    "vite": "^5.3.5",
     "vitest": "^2.0.3"
   }
 }

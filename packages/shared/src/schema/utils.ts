@@ -2,7 +2,7 @@ import * as S from '@effect/schema/Schema'
 import { formatError } from '@effect/schema/TreeFormatter'
 import { Effect as E, pipe } from 'effect'
 
-export const optional = <A>(s: S.Schema<A>) => S.optional(s, { exact: true })
+export const optional = <A>(s: S.Schema<A>) => S.optionalWith(s, { exact: true })
 
 export class ParsingError extends S.TaggedError<ParsingError>()('ParsingError', {
   message: S.String,

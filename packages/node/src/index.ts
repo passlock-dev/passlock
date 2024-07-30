@@ -72,11 +72,14 @@ const transformErrors = <A, R>(
     },
 
     Interrupt: () => {
+      console.error("Interrupt")
+
       return E.succeed(new PasslockError('Operation aborted', ErrorCode.InternalBrowserError))
     },
 
     Sequential: errors => {
       console.error(errors)
+
       return E.succeed(
         new PasslockError('Sorry, something went wrong', ErrorCode.InternalServerError),
       )
@@ -84,6 +87,7 @@ const transformErrors = <A, R>(
 
     Parallel: errors => {
       console.error(errors)
+      
       return E.succeed(
         new PasslockError('Sorry, something went wrong', ErrorCode.InternalServerError),
       )

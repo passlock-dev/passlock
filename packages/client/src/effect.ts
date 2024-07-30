@@ -7,10 +7,10 @@ import {
 } from '@passlock/shared/dist/error/error.js'
 
 import { AuthenticationClientLive } from '@passlock/shared/dist/rpc/authentication.js'
+import { DispatcherLive } from '@passlock/shared/dist/rpc/client.js'
 import type { RpcConfig } from '@passlock/shared/dist/rpc/config.js'
 import { RetrySchedule } from '@passlock/shared/dist/rpc/config.js'
 import { ConnectionClientLive } from '@passlock/shared/dist/rpc/connection.js'
-import { DispatcherLive } from '@passlock/shared/dist/rpc/dispatcher.js'
 import { RegistrationClientLive } from '@passlock/shared/dist/rpc/registration.js'
 import { SocialClientLive } from '@passlock/shared/dist/rpc/social.js'
 import { UserClientLive } from '@passlock/shared/dist/rpc/user.js'
@@ -216,8 +216,7 @@ export const registerPasskey = (
 
 export const authenticatePasskey = (
   request: AuthenticationRequest,
-): E.Effect<Principal, AuthenticationErrors, RpcConfig> =>
-  pipe(
+): E.Effect<Principal, AuthenticationErrors, RpcConfig> => pipe(
     AuthenticationService,
     E.flatMap(service => service.authenticatePasskey(request)),
     E.provide(authenticationServiceLive),
