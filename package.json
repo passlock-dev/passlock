@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.4"
   },
   "pnpm": {
     "overrides": {
