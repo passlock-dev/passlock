@@ -76,10 +76,7 @@ describe('resendVerificationEmail should', () => {
 
     const layers = L.merge(service, rpcClientTest)
 
-    const effect = pipe(
-      E.provide(assertions, layers),
-      Logger.withMinimumLogLevel(LogLevel.None)
-    )
+    const effect = pipe(E.provide(assertions, layers), Logger.withMinimumLogLevel(LogLevel.None))
 
     return E.runPromise(effect)
   })

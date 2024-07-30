@@ -1,12 +1,7 @@
 import * as S from '@effect/schema/Schema'
-import { optional } from "./utils.js"
+import { optional } from './utils.js'
 
-export const AuthType = S.Literal(
-  'email', 
-  'apple', 
-  'google', 
-  'passkey'
-)
+export const AuthType = S.Literal('email', 'apple', 'google', 'passkey')
 
 export type AuthType = S.Schema.Type<typeof AuthType>
 
@@ -25,9 +20,9 @@ export const AuthenticationRequired = S.Struct({
 })
 
 const DateFromSeconds = S.transform(S.Number, S.DateFromSelf, {
-  encode: (date) => Math.round(date.getTime() / 1000),
-  decode: (dateNum) => new Date(dateNum * 1000),
- })
+  encode: date => Math.round(date.getTime() / 1000),
+  decode: dateNum => new Date(dateNum * 1000),
+})
 
 const BasePrincipal = S.Struct({
   iss: S.String,

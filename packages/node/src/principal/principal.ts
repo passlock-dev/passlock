@@ -4,19 +4,22 @@ import {
   NotFound,
   Unauthorized,
 } from '@passlock/shared/dist/error/error.js'
-import { Principal, } from '@passlock/shared/dist/schema/principal.js'
+import { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { createParser } from '@passlock/shared/dist/schema/utils.js'
 import type { StreamEmit } from 'effect'
 import { Chunk, Console, Context, Effect as E, Layer, Option, Stream, flow, pipe } from 'effect'
 import * as https from 'https'
+
 import { Config } from '../config/config.js'
 
 /* Dependencies */
 
-export type StreamResponse = (
-  options: https.RequestOptions,
-) => Stream.Stream<Buffer, PrincipalErrors>
-export const StreamResponse = Context.GenericTag<StreamResponse>('@services/ResponseStream')
+export class StreamResponse extends Context.Tag('@services/StreamResponse')<
+  StreamResponse,
+  {
+    streamResponse: (options: https.RequestOptions) => Stream.Stream<Buffer, PrincipalErrors>
+  }
+>() {}
 
 /* Service */
 
@@ -25,16 +28,17 @@ const parsePrincipal = createParser(Principal)
 export type PrincipalErrors = NotFound | Unauthorized | Forbidden | InternalServerError
 export type PrincipalRequest = { token: string }
 
-export type PrincipalService = {
-  fetchPrincipal: (request: PrincipalRequest) => E.Effect<Principal, PrincipalErrors>
-}
-
-export const PrincipalService = Context.GenericTag<PrincipalService>('@services/Principal')
+export class PrincipalService extends Context.Tag('@services/PrincipalService')<
+  PrincipalService,
+  {
+    fetchPrincipal: (request: PrincipalRequest) => E.Effect<Principal, PrincipalErrors>
+  }
+>() {}
 
 /* Effects */
 
-const buildHostname = (endpoint: string | undefined) => { 
-  return new URL(endpoint || 'https://api.passlock.dev').hostname 
+const buildHostname = (endpoint: string | undefined) => {
+  return new URL(endpoint || 'https://api.passlock.dev').hostname
 }
 
 const buildOptions = (token: string) =>
@@ -46,8 +50,8 @@ const buildOptions = (token: string) =>
       path: `/${tenancyId}/token/${token}`,
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        Accept: 'application/json',
+        Authorization: `Bearer ${apiKey}`,
       },
     })),
   )
@@ -62,10 +66,10 @@ export const buildError = (res: {
 
   if (res.statusCode && res.statusMessage)
     return new InternalServerError({ message: `${String(res.statusCode)} - ${res.statusMessage}` })
-  
-    if (res.statusCode) return new InternalServerError({ message: String(res.statusCode) })
-  
-    if (res.statusMessage) return new InternalServerError({ message: res.statusMessage })
+
+  if (res.statusCode) return new InternalServerError({ message: String(res.statusCode) })
+
+  if (res.statusMessage) return new InternalServerError({ message: res.statusMessage })
 
   return new InternalServerError({ message: 'Received non 200 response' })
 }
@@ -78,7 +82,7 @@ const buildStream = (token: string) =>
   pipe(
     Stream.fromEffect(buildOptions(token)),
     Stream.zip(StreamResponse),
-    Stream.flatMap(([options, streamResponse]) => streamResponse(options)),
+    Stream.flatMap(([options, { streamResponse }]) => streamResponse(options)),
   )
 
 export const fetchPrincipal = (
@@ -127,17 +131,18 @@ export const fetchPrincipal = (
 /* Live */
 
 /* v8 ignore start */
-export const StreamResponseLive = Layer.succeed(StreamResponse, options => {
-  return Stream.async((emit: StreamEmit.Emit<never, PrincipalErrors, Buffer, void>) => {
-    https
-      .request(options, res => {
-        if (200 !== res.statusCode) void emit(fail(buildError(res)))
-        res.on('data', (data: Buffer) => void emit(succeed(data)))
-        res.on('close', () => void emit(close))
-        res.on('error', e => void emit(fail(new InternalServerError({ message: e.message }))))
-      })
-      .end()
-  })
+export const StreamResponseLive = Layer.succeed(StreamResponse, {
+  streamResponse: options =>
+    Stream.async((emit: StreamEmit.Emit<never, PrincipalErrors, Buffer, void>) => {
+      https
+        .request(options, res => {
+          if (200 !== res.statusCode) void emit(fail(buildError(res)))
+          res.on('data', (data: Buffer) => void emit(succeed(data)))
+          res.on('close', () => void emit(close))
+          res.on('error', e => void emit(fail(new InternalServerError({ message: e.message }))))
+        })
+        .end()
+    }),
 })
 
 export const PrincipalServiceLive = Layer.effect(

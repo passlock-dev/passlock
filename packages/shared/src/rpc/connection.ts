@@ -1,7 +1,6 @@
 import * as S from '@effect/schema/Schema'
 import { Context, Effect as E, Layer } from 'effect'
-import { makeGetRequest } from './client.js'
-import { Dispatcher } from './dispatcher.js'
+import { Dispatcher, makeGetRequest } from './client.js'
 
 /* Pre connect */
 
@@ -17,7 +16,7 @@ export type ConnectionService = {
 
 export const CONNECT_ENDPOINT = '/connection/pre-connect'
 
-export class ConnectionClient extends Context.Tag("@connection/client")<
+export class ConnectionClient extends Context.Tag('@connection/client')<
   ConnectionClient,
   ConnectionService
 >() {}
@@ -26,17 +25,18 @@ export const ConnectionClientLive = Layer.effect(
   ConnectionClient,
   E.gen(function* (_) {
     const dispatcher = yield* _(Dispatcher)
+
     const preConnectResolver = makeGetRequest(ConnectRes, S.Never, dispatcher)
 
     return {
-      preConnect: () => preConnectResolver(CONNECT_ENDPOINT)
-     }
-  })
+      preConnect: () => preConnectResolver(CONNECT_ENDPOINT),
+    }
+  }),
 )
 
 /* Handler */
 
-export class ConnectionHandler extends Context.Tag("@connection/handler")<
-ConnectionHandler,
+export class ConnectionHandler extends Context.Tag('@connection/handler')<
+  ConnectionHandler,
   ConnectionService
 >() {}

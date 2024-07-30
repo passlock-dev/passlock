@@ -10,10 +10,7 @@ const PubKeyCredParams = S.Struct({
   type: PublicKey,
 })
 
-const AuthenticatorAttachment = S.Union(
-  S.Literal('cross-platform'), 
-  S.Literal('platform')
-)
+const AuthenticatorAttachment = S.Union(S.Literal('cross-platform'), S.Literal('platform'))
 
 const base64url = S.String
 
@@ -39,11 +36,7 @@ export const UserVerification = S.Union(
 
 export type UserVerification = S.Schema.Type<typeof UserVerification>
 
-const ResidentKey = S.Union(
-  S.Literal('discouraged'), 
-  S.Literal('preferred'),
-  S.Literal('required')
-)
+const ResidentKey = S.Union(S.Literal('discouraged'), S.Literal('preferred'), S.Literal('required'))
 
 const AuthenticatorSelection = S.Struct({
   authenticatorAttachment: optional(AuthenticatorAttachment),

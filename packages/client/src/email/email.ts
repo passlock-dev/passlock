@@ -6,7 +6,7 @@ import type { VerifyEmailErrors as RpcErrors } from '@passlock/shared/dist/rpc/u
 import { UserClient, VerifyEmailReq } from '@passlock/shared/dist/rpc/user.js'
 import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer, Option as O, flow, identity, pipe } from 'effect'
-import { AuthenticationService, type AuthenticationErrors } from '../authentication/authenticate.js'
+import { type AuthenticationErrors, AuthenticationService } from '../authentication/authenticate.js'
 import { StorageService, type StoredToken } from '../storage/storage.js'
 
 /* Requests */
@@ -21,19 +21,20 @@ export type VerifyEmailErrors = RpcErrors | AuthenticationErrors
 
 /* Dependencies */
 
-export class URLQueryString extends Context.Tag('URLQueryString')<
+export class URLQueryString extends Context.Tag('@utils/URLQueryString')<
   URLQueryString,
   E.Effect<string>
 >() {}
 
 /* Service */
 
-export type EmailService = {
-  verifyEmailCode: (request: VerifyRequest) => E.Effect<Principal, VerifyEmailErrors>
-  verifyEmailLink: () => E.Effect<Principal, VerifyEmailErrors>
-}
-
-export const EmailService = Context.GenericTag<EmailService>('@services/EmailService')
+export class EmailService extends Context.Tag('@services/EmailService')<
+  EmailService,
+  {
+    verifyEmailCode: (request: VerifyRequest) => E.Effect<Principal, VerifyEmailErrors>
+    verifyEmailLink: () => E.Effect<Principal, VerifyEmailErrors>
+  }
+>() {}
 
 /* Utils */
 
@@ -56,15 +57,18 @@ const getToken = () => {
       onFailure: () =>
         // No token, need to authenticate the user
         pipe(
-          authenticationService.authenticatePasskey({ 
-            userVerification: O.some('preferred'), 
-            email: O.none()
+          authenticationService.authenticatePasskey({
+            userVerification: O.some('preferred'),
+            email: O.none(),
           }),
-          E.map(principal => ({
-            token: principal.jti,
-            authType: principal.auth_type,
-            expiry: principal.exp.getTime(),
-          }) as StoredToken),
+          E.map(
+            principal =>
+              ({
+                token: principal.jti,
+                authType: principal.auth_type,
+                expiry: principal.exp.getTime(),
+              }) as StoredToken,
+          ),
         ),
     })
 

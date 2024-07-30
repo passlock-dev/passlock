@@ -51,7 +51,7 @@
     "build:clean": "pnpm run clean && pnpm run build",
     "build:watch": "tsc --build --watch",
     "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
-    "lint": "eslint --ext .ts src",
+    "lint": "eslint ./src --ext .ts",
     "lint:fix": "pnpm run lint --fix",
     "prepublishOnly": "pnpm run clean && pnpm run build",
     "ncu": "ncu --peer -x @effect/* -x effect",
@@ -63,10 +63,11 @@
     "effect": "^3.4.8"
   },
   "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^20.14.10",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
-    "@typescript-eslint/parser": "^7.15.0",
+    "@typescript-eslint/parser": "^7.16.1",
     "@vitest/coverage-v8": "^2.0.3",
     "@vitest/ui": "^2.0.3",
     "eslint": "^8.57.0",

@@ -1,8 +1,8 @@
 import * as Shared from '@passlock/shared/dist/rpc/social.js'
 import { SocialClient } from '@passlock/shared/dist/rpc/social.js'
 import { Effect as E, Layer as L, Option as O } from 'effect'
-import * as Fixtures from '../test/fixtures.js'
 import type { AuthenticateOidcReq } from './social.js'
+import * as Fixtures from '../test/fixtures.js'
 
 export const session = 'session'
 export const token = 'token'
@@ -15,15 +15,14 @@ export const registerOidcReq = new Shared.RegisterOidcReq({
   idToken: 'google-token',
   nonce: 'nonce',
   givenName: O.some('john'),
-  familyName: O.some('doe')
+  familyName: O.some('doe'),
 })
 
 export const authOidcReq: AuthenticateOidcReq = new Shared.AuthOidcReq({
   provider: 'google',
   idToken: 'google-token',
-  nonce: 'nonce'
+  nonce: 'nonce',
 })
-
 
 export const rpcRegisterRes = new Shared.PrincipalRes({ principal: Fixtures.principal })
 
@@ -34,7 +33,7 @@ export const rpcClientTest = L.succeed(
   SocialClient.of({
     registerOidc: () => E.fail(Fixtures.notImplemented),
     authenticateOidc: () => E.fail(Fixtures.notImplemented),
-  })
+  }),
 )
 
 export const principal = Fixtures.principal

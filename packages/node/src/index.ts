@@ -1,17 +1,20 @@
-import {
-    ErrorCode,
-    Forbidden,
-    InternalServerError,
-    NotFound,
-    Unauthorized,
-} from '@passlock/shared/dist/error/error.js'
-import { Effect as E, Layer as L, Runtime, Scope, pipe } from 'effect'
+import { ErrorCode } from '@passlock/shared/dist/error/error.js'
 import { Config } from './config/config.js'
+
+import type {
+  Forbidden,
+  InternalServerError,
+  NotFound,
+  Unauthorized,
+} from '@passlock/shared/dist/error/error.js'
+
+import { Effect as E, Layer as L, Runtime, Scope, pipe } from 'effect'
+
 import {
-    PrincipalService,
-    PrincipalServiceLive,
-    StreamResponseLive,
-    type PrincipalRequest,
+  type PrincipalRequest,
+  PrincipalService,
+  PrincipalServiceLive,
+  StreamResponseLive,
 } from './principal/principal.js'
 
 export type { PrincipalRequest } from './principal/principal.js'

@@ -1,15 +1,14 @@
 import { Effect as E, Layer, pipe } from 'effect'
 import { mock } from 'vitest-mock-extended'
-import { Storage, StorageServiceLive } from './storage.js'
+import { BrowserStorage, StorageServiceLive } from './storage.js'
 
 const storageTest = Layer.effect(
-  Storage,
+  BrowserStorage,
   E.sync(() => mock<Storage>()),
 )
 
-export const testLayers = (storage: Layer.Layer<Storage> = storageTest) => {
+export const testLayers = (storage: Layer.Layer<BrowserStorage> = storageTest) => {
   const storageService = pipe(StorageServiceLive, Layer.provide(storage))
-
   return Layer.merge(storage, storageService)
 }
 

@@ -25,10 +25,7 @@ describe('registerOidc should', () => {
       }),
     )
 
-    const service = pipe(
-      SocialServiceLive,
-      L.provide(rpcClientTest),
-    )
+    const service = pipe(SocialServiceLive, L.provide(rpcClientTest))
 
     const layers = Layer.merge(service, rpcClientTest)
     const effect = pipe(E.provide(assertions, layers), Logger.withMinimumLogLevel(LogLevel.None))
@@ -56,10 +53,7 @@ describe('registerOidc should', () => {
       }),
     )
 
-    const service = pipe(
-      SocialServiceLive,
-      L.provide(rpcClientTest),
-    )
+    const service = pipe(SocialServiceLive, L.provide(rpcClientTest))
 
     const layers = Layer.merge(service, rpcClientTest)
     const effect = pipe(E.provide(assertions, layers), Logger.withMinimumLogLevel(LogLevel.None))
@@ -81,16 +75,13 @@ describe('registerOidc should', () => {
       E.sync(() => {
         const rpcMock = mock<SocialClient['Type']>()
 
-        rpcMock.registerOidc.mockReturnValue(E.fail(new Duplicate({ message: "Duplicate user" })))
+        rpcMock.registerOidc.mockReturnValue(E.fail(new Duplicate({ message: 'Duplicate user' })))
 
         return rpcMock
       }),
     )
 
-    const service = pipe(
-      SocialServiceLive,
-      L.provide(rpcClientTest),
-    )
+    const service = pipe(SocialServiceLive, L.provide(rpcClientTest))
 
     const layers = Layer.merge(service, rpcClientTest)
     const effect = pipe(E.provide(assertions, layers), Logger.withMinimumLogLevel(LogLevel.None))
@@ -118,10 +109,7 @@ describe('authenticateIodc should', () => {
       }),
     )
 
-    const service = pipe(
-      SocialServiceLive,
-      L.provide(rpcClientTest),
-    )
+    const service = pipe(SocialServiceLive, L.provide(rpcClientTest))
 
     const layers = Layer.merge(service, rpcClientTest)
     const effect = pipe(E.provide(assertions, layers), Logger.withMinimumLogLevel(LogLevel.None))
@@ -149,10 +137,7 @@ describe('authenticateIodc should', () => {
       }),
     )
 
-    const service = pipe(
-      SocialServiceLive,
-      L.provide(rpcClientTest),
-    )
+    const service = pipe(SocialServiceLive, L.provide(rpcClientTest))
 
     const layers = Layer.merge(service, rpcClientTest)
     const effect = pipe(E.provide(assertions, layers), Logger.withMinimumLogLevel(LogLevel.None))
@@ -174,16 +159,15 @@ describe('authenticateIodc should', () => {
       E.sync(() => {
         const rpcMock = mock<SocialClient['Type']>()
 
-        rpcMock.authenticateOidc.mockReturnValue(E.fail(new NotFound({ message: "User not found" })))
+        rpcMock.authenticateOidc.mockReturnValue(
+          E.fail(new NotFound({ message: 'User not found' })),
+        )
 
         return rpcMock
       }),
     )
 
-    const service = pipe(
-      SocialServiceLive,
-      L.provide(rpcClientTest),
-    )
+    const service = pipe(SocialServiceLive, L.provide(rpcClientTest))
 
     const layers = Layer.merge(service, rpcClientTest)
     const effect = pipe(E.provide(assertions, layers), Logger.withMinimumLogLevel(LogLevel.None))

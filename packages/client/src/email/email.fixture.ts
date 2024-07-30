@@ -1,8 +1,8 @@
 import { UserClient, VerifyEmailReq, VerifyEmailRes } from '@passlock/shared/dist/rpc/user.js'
 import { Effect as E, Layer as L, Option as O } from 'effect'
+import { URLQueryString } from './email.js'
 import { AuthenticationService } from '../authentication/authenticate.js'
 import * as Fixtures from '../test/fixtures.js'
-import { URLQueryString } from './email.js'
 
 export const token = 'token'
 export const code = 'code'

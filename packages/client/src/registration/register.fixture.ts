@@ -22,7 +22,7 @@ export const registrationRequest: RegistrationRequest = {
   givenName: O.some('john'),
   familyName: O.some('doe'),
   userVerification: O.none(),
-  verifyEmail: O.none()
+  verifyEmail: O.none(),
 }
 
 export const rpcOptionsReq = new OptionsReq(registrationRequest)
@@ -58,20 +58,24 @@ export const credential: RegistrationCredential = {
   clientExtensionResults: {},
 }
 
-export const rpcVerificationReq = new VerificationReq({ session, credential, verifyEmail: O.none() })
+export const rpcVerificationReq = new VerificationReq({
+  session,
+  credential,
+  verifyEmail: O.none(),
+})
 
 export const rpcVerificationRes = new VerificationRes({ principal: Fixtures.principal })
 
 export const createCredentialTest = L.succeed(
   CreateCredential,
-  CreateCredential.of(() => E.succeed(credential)),
+  CreateCredential.of({ createCredential: () => E.succeed(credential) }),
 )
 
 export const userServiceTest = L.succeed(
   UserService,
   UserService.of({
     isExistingUser: () => E.succeed(false),
-    resendVerificationEmail: () => E.succeed(true)
+    resendVerificationEmail: () => E.succeed(true),
   }),
 )
 
@@ -80,7 +84,7 @@ export const rpcClientTest = L.succeed(
   RegistrationClient.of({
     getRegistrationOptions: () => E.succeed(rpcOptionsRes),
     verifyRegistrationCredential: () => E.succeed(rpcVerificationRes),
-  })
+  }),
 )
 
 export const principal = Fixtures.principal

@@ -2,17 +2,12 @@ import * as S from '@effect/schema/Schema'
 import { Context, Effect as E, Layer } from 'effect'
 
 import { BadRequest, Duplicate, Forbidden, Unauthorized } from '../error/error.js'
-
-import {
-  RegistrationCredential,
-  RegistrationOptions,
-  UserVerification,
-} from '../schema/passkey.js'
+import { Dispatcher, makePostRequest } from './client.js'
 
 import { VerifyEmail } from '../schema/email.js'
+import { RegistrationCredential, RegistrationOptions, UserVerification } from '../schema/passkey.js'
+
 import { Principal } from '../schema/principal.js'
-import { makePostRequest } from './client.js'
-import { Dispatcher } from './dispatcher.js'
 
 /* Options */
 
@@ -53,6 +48,7 @@ export type VerificationErrors = S.Schema.Type<typeof VerificationErrors>
 
 export type RegistrationService = {
   getRegistrationOptions: (req: OptionsReq) => E.Effect<OptionsRes, OptionsErrors>
+
   verifyRegistrationCredential: (
     req: VerificationReq,
   ) => E.Effect<VerificationRes, VerificationErrors>
@@ -72,14 +68,21 @@ export const RegistrationClientLive = Layer.effect(
   RegistrationClient,
   E.gen(function* (_) {
     const dispatcher = yield* _(Dispatcher)
+
     const optionsResolver = makePostRequest(OptionsReq, OptionsRes, OptionsErrors, dispatcher)
-    const verifyResolver = makePostRequest(VerificationReq, VerificationRes, VerificationErrors, dispatcher)
+
+    const verifyResolver = makePostRequest(
+      VerificationReq,
+      VerificationRes,
+      VerificationErrors,
+      dispatcher,
+    )
 
     return {
-      getRegistrationOptions: req => optionsResolver("/passkey/register/options", req),
-      verifyRegistrationCredential: req => verifyResolver("/passkey/register/verify", req)
+      getRegistrationOptions: req => optionsResolver('/passkey/register/options', req),
+      verifyRegistrationCredential: req => verifyResolver('/passkey/register/verify', req),
     }
-  })
+  }),
 )
 
 /* Handler */

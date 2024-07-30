@@ -8,7 +8,7 @@ import { IsExistingUserRes, VerifyEmailRes } from '@passlock/shared/dist/rpc/use
 import type { AuthenticationCredential } from '@passlock/shared/dist/schema/passkey.js'
 import { Effect as E, Layer as L, Option as O } from 'effect'
 import * as Fixtures from '../test/fixtures.js'
-import { GetCredential, type AuthenticationRequest } from './authenticate.js'
+import { type AuthenticationRequest, GetCredential } from './authenticate.js'
 
 export const session = 'session'
 export const token = 'token'
@@ -18,7 +18,7 @@ export const expireAt = Date.now() + 10000
 
 export const request: AuthenticationRequest = {
   userVerification: O.some('preferred'),
-  email: O.none()
+  email: O.none(),
 }
 
 export const rpcOptionsRes = new OptionsRes({
@@ -55,7 +55,7 @@ export const rpcVerifyEmailRes = new VerifyEmailRes({ principal: Fixtures.princi
 
 export const getCredentialTest = L.succeed(
   GetCredential,
-  GetCredential.of(() => E.succeed(credential)),
+  GetCredential.of({ getCredential: () => E.succeed(credential) }),
 )
 
 export const rpcClientTest = L.succeed(
@@ -63,7 +63,7 @@ export const rpcClientTest = L.succeed(
   AuthenticationClient.of({
     getAuthenticationOptions: () => E.succeed(rpcOptionsRes),
     verifyAuthenticationCredential: () => E.succeed(rpcVerificationRes),
-  })
+  }),
 )
 
 export const principal = Fixtures.principal

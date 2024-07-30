@@ -11,12 +11,12 @@ export class ParsingError extends S.TaggedError<ParsingError>()('ParsingError', 
 
 export const createParser =
   <A, E, R>(schema: S.Schema<A, E, R>) =>
-  (input: unknown) => { 
+  (input: unknown) => {
     return pipe(
       S.decodeUnknown(schema)(input),
       E.flip,
       E.flatMap(formatError),
       E.map(detail => new ParsingError({ message: 'Unable to parse input', detail })),
-      E.flip
+      E.flip,
     )
   }

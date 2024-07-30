@@ -42,7 +42,7 @@ describe('verifyEmailCode should', () => {
     const storageServiceTest = L.effect(
       StorageService,
       E.sync(() => {
-        const storageServiceMock = mock<StorageService>()
+        const storageServiceMock = mock<StorageService['Type']>()
 
         storageServiceMock.getToken.mockReturnValue(E.succeed(Fixture.storedToken))
         storageServiceMock.clearToken.mockReturnValue(E.void)
@@ -77,7 +77,7 @@ describe('verifyEmailCode should', () => {
     const storageServiceTest = L.effect(
       StorageService,
       E.sync(() => {
-        const storageServiceMock = mock<StorageService>()
+        const storageServiceMock = mock<StorageService['Type']>()
 
         storageServiceMock.getToken.mockReturnValue(E.fail(new NoSuchElementException()))
         storageServiceMock.clearToken.mockReturnValue(E.void)
@@ -89,7 +89,7 @@ describe('verifyEmailCode should', () => {
     const authServiceTest = L.effect(
       AuthenticationService,
       E.sync(() => {
-        const authServiceMock = mock<AuthenticationService>()
+        const authServiceMock = mock<AuthenticationService['Type']>()
 
         authServiceMock.authenticatePasskey.mockReturnValue(E.succeed(Fixture.principal))
 

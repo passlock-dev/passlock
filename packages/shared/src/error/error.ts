@@ -88,8 +88,8 @@ export class InternalServerError extends S.TaggedError<InternalServerError>()(
   },
 ) {
   toString(): string {
-    return this.detail ? 
-      `${this.name} - ${this.message} (${this.detail})` : 
-      `${this.name} - ${this.message}`
+    return this.detail
+      ? `${this.name} - ${this.message} (${this.detail})`
+      : `${this.name} - ${this.message}`
   }
 }

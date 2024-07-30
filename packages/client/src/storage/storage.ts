@@ -18,20 +18,18 @@ export type StoredToken = {
 
 /* Service */
 
-export type StorageService = {
-  storeToken: (principal: Principal) => E.Effect<void>
-  getToken: (authType: AuthType) => E.Effect<StoredToken, NoSuchElementException>
-  clearToken: (authType: AuthType) => E.Effect<void>
-  clearExpiredToken: (authType: AuthType) => E.Effect<void>
-  clearExpiredTokens: E.Effect<void>
-}
+export class StorageService extends Context.Tag('@services/StorageService')<
+  StorageService,
+  {
+    storeToken: (principal: Principal) => E.Effect<void>
+    getToken: (authType: AuthType) => E.Effect<StoredToken, NoSuchElementException>
+    clearToken: (authType: AuthType) => E.Effect<void>
+    clearExpiredToken: (authType: AuthType) => E.Effect<void>
+    clearExpiredTokens: E.Effect<void>
+  }
+>() {}
 
-/* Utilities */
-
-export const StorageService = Context.GenericTag<StorageService>('@services/StorageService')
-
-// inject window.localStorage to make testing easier
-export const Storage = Context.GenericTag<Storage>('@services/Storage')
+export class BrowserStorage extends Context.Tag('@services/Storage')<BrowserStorage, Storage>() {}
 
 export const buildKey = (authType: AuthType) => `passlock:${authType}:token`
 
@@ -39,7 +37,7 @@ export const buildKey = (authType: AuthType) => `passlock:${authType}:token`
 export const compressToken = (principal: Principal): string => {
   const expireAt = principal.exp.getTime()
   const token = principal.jti
-  return `${token}:${expireAt}`
+  return `${token}:${expireAt.toFixed(0)}`
 }
 
 // token:expireAt => { authType, token, expireAt }
@@ -63,9 +61,9 @@ export const expandToken =
  * @param principal
  * @returns
  */
-export const storeToken = (principal: Principal): E.Effect<void, never, Storage> => {
+export const storeToken = (principal: Principal): E.Effect<void, never, BrowserStorage> => {
   return E.gen(function* (_) {
-    const localStorage = yield* _(Storage)
+    const localStorage = yield* _(BrowserStorage)
 
     const storeEffect = E.try(() => {
       const compressed = compressToken(principal)
@@ -84,9 +82,9 @@ export const storeToken = (principal: Principal): E.Effect<void, never, Storage>
  */
 export const getToken = (
   authenticator: AuthType,
-): E.Effect<StoredToken, NoSuchElementException, Storage> => {
+): E.Effect<StoredToken, NoSuchElementException, BrowserStorage> => {
   return E.gen(function* (_) {
-    const localStorage = yield* _(Storage)
+    const localStorage = yield* _(BrowserStorage)
 
     const getEffect = pipe(
       O.some(buildKey(authenticator)),
@@ -104,9 +102,9 @@ export const getToken = (
  * @param authType
  * @returns
  */
-export const clearToken = (authType: AuthType): E.Effect<void, never, Storage> => {
+export const clearToken = (authType: AuthType): E.Effect<void, never, BrowserStorage> => {
   return E.gen(function* (_) {
-    const localStorage = yield* _(Storage)
+    const localStorage = yield* _(BrowserStorage)
     localStorage.removeItem(buildKey(authType))
   })
 }
@@ -117,11 +115,11 @@ export const clearToken = (authType: AuthType): E.Effect<void, never, Storage> =
  * @param defer
  * @returns
  */
-export const clearExpiredToken = (authType: AuthType): E.Effect<void, never, Storage> => {
+export const clearExpiredToken = (authType: AuthType): E.Effect<void, never, BrowserStorage> => {
   const key = buildKey(authType)
 
   const effect = E.gen(function* (_) {
-    const storage = yield* _(Storage)
+    const storage = yield* _(BrowserStorage)
     const item = yield* _(O.fromNullable(storage.getItem(key)))
     const token = yield* _(expandToken(authType)(item))
 
@@ -140,7 +138,7 @@ export const clearExpiredToken = (authType: AuthType): E.Effect<void, never, Sto
   )
 }
 
-export const clearExpiredTokens: E.Effect<void, never, Storage> = E.all([
+export const clearExpiredTokens: E.Effect<void, never, BrowserStorage> = E.all([
   clearExpiredToken('passkey'),
   clearExpiredToken('email'),
   clearExpiredToken('google'),
@@ -153,7 +151,7 @@ export const clearExpiredTokens: E.Effect<void, never, Storage> = E.all([
 export const StorageServiceLive = Layer.effect(
   StorageService,
   E.gen(function* (_) {
-    const context = yield* _(E.context<Storage>())
+    const context = yield* _(E.context<BrowserStorage>())
 
     return {
       storeToken: flow(storeToken, E.provide(context)),

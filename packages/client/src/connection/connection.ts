@@ -8,11 +8,12 @@ import { Context, Effect as E, Layer, flow, pipe } from 'effect'
 
 /* Service */
 
-export type ConnectionService = {
-  preConnect: () => E.Effect<void>
-}
-
-export const ConnectionService = Context.GenericTag<ConnectionService>('@services/ConnectService')
+export class ConnectionService extends Context.Tag('@services/ConnectionService')<
+  ConnectionService,
+  {
+    preConnect: () => E.Effect<void>
+  }
+>() {}
 
 /* Effects */
 

@@ -2,7 +2,7 @@ import * as S from '@effect/schema/Schema'
 
 export const VerifyEmailByLink = S.Struct({
   method: S.Literal('link'),
-  redirectUrl: S.String
+  redirectUrl: S.String,
 })
 
 export type VerifyEmailByLink = S.Schema.Type<typeof VerifyEmailByLink>

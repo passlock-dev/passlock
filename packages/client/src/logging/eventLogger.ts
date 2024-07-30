@@ -36,6 +36,6 @@ export const eventLoggerLive = Logger.add(
       dispatch(message)
     } else if (Array.isArray(message) && logLevel !== LogLevel.Debug) {
       message.forEach(dispatch)
-    } 
-  })
+    }
+  }),
 )

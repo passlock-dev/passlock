@@ -25,7 +25,7 @@ export const principal: Principal = {
   email_verified: false,
   auth_type: 'passkey',
   auth_id: 'auth-1',
-  user_verified: true
+  user_verified: true,
 }
 
 export const capabilitiesTest = L.succeed(

@@ -17,12 +17,13 @@ export type ResendEmailErrors = BadRequest | NotFound | Disabled
 
 /* Service */
 
-export type UserService = {
-  isExistingUser: (request: Email) => E.Effect<boolean, BadRequest>
-  resendVerificationEmail: (request: ResendEmail) => E.Effect<void, ResendEmailErrors>
-}
-
-export const UserService = Context.GenericTag<UserService>('@services/UserService')
+export class UserService extends Context.Tag('@services/UserService')<
+  UserService,
+  {
+    isExistingUser: (request: Email) => E.Effect<boolean, BadRequest>
+    resendVerificationEmail: (request: ResendEmail) => E.Effect<void, ResendEmailErrors>
+  }
+>() {}
 
 /* Effects */
 
@@ -40,7 +41,9 @@ export const isExistingUser = (request: Email): E.Effect<boolean, BadRequest, De
   })
 }
 
-export const resendVerificationEmail = (request: ResendEmail): E.Effect<void, ResendEmailErrors, Dependencies> => {
+export const resendVerificationEmail = (
+  request: ResendEmail,
+): E.Effect<void, ResendEmailErrors, Dependencies> => {
   return E.gen(function* (_) {
     yield* _(E.logInfo('Resending verification email'))
     const rpcClient = yield* _(UserClient)
@@ -60,7 +63,7 @@ export const UserServiceLive = Layer.effect(
     const context = yield* _(E.context<UserClient>())
     return UserService.of({
       isExistingUser: flow(isExistingUser, E.provide(context)),
-      resendVerificationEmail: flow(resendVerificationEmail, E.provide(context))
+      resendVerificationEmail: flow(resendVerificationEmail, E.provide(context)),
     })
   }),
 )

@@ -1,14 +1,11 @@
 module.exports = {
   env: {
     browser: true,
-    es2021: true,
-    node: true
+    es2021: true
   },
   extends: [
     'eslint:recommended',
-    'plugin:import/recommended', 
-    'plugin:import/typescript',
-    'plugin:@typescript-eslint/strict-type-checked',
+    'plugin:@typescript-eslint/recommended',
     'prettier'
   ],
   overrides: [],
@@ -18,7 +15,6 @@ module.exports = {
   },
   plugins: [
     "@typescript-eslint", 
-    "import"
   ],
   root: true,
   rules: {
@@ -35,50 +31,8 @@ module.exports = {
       "warn",
       "type"
     ],
-    "sort-imports": [
-      "warn",
-      {
-        ignoreCase: false,
-        ignoreDeclarationSort: true, // don"t want to sort import lines, use eslint-plugin-import instead
-        ignoreMemberSort: false,
-        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
-        allowSeparatedGroups: true,
-      },
+    "@typescript-eslint/consistent-type-imports": [
+      "error"
     ],
-    "import/no-unresolved": "error",
-    "import/newline-after-import": [
-      "warn", 
-      { 
-        "count": 1
-      }
-    ],
-    'import/order': [
-      'warn',
-      {
-        groups: [
-          'builtin', // Built-in imports (come from NodeJS native) go first
-          'external', // <- External imports
-          'internal', // <- Absolute imports
-          ['sibling', 'parent'], // <- Relative imports, the sibling and parent types they can be mingled together
-          'index', // <- index imports
-          'unknown', // <- unknown
-        ],
-        'newlines-between': 'always',
-        alphabetize: {
-          /* sort in ascending order. Options: ["ignore", "asc", "desc"] */
-          order: 'asc',
-          /* ignore case. Options: [true, false] */
-          caseInsensitive: true,
-        },
-      },
-    ]
-  },
-  settings: {
-    "import/parsers": {
-      "@typescript-eslint/parser": [".ts", ".tsx"]
-    },
-    "import/resolver": {
-      "typescript": true
-    }
   }
 }
