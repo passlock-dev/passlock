@@ -79,7 +79,7 @@
       case 'signup': {
         return await passlock.registerOidc({
           provider: 'google',
-          idToken: args.credential,
+          id_token: args.credential,
           nonce: args.nonce
         })
       }
@@ -87,7 +87,7 @@
       case 'signin': {
         return await passlock.authenticateOidc({
           provider: 'google',
-          idToken: args.credential,
+          id_token: args.credential,
           nonce: args.nonce
         });
       }

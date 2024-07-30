@@ -13,7 +13,7 @@ export class IsExistingUserReq extends S.Class<IsExistingUserReq>('@user/isExist
 }) {}
 
 export class IsExistingUserRes extends S.Class<IsExistingUserRes>('@user/isExistingUserRes')({
-  existingUser: S.Boolean,
+  is_existing_user: S.Boolean,
   detail: S.Option(S.String),
 }) {}
 
@@ -35,8 +35,8 @@ export type VerifyEmailErrors = S.Schema.Type<typeof VerifyEmailErrors>
 /* Resend email */
 
 export class ResendEmailReq extends S.Class<ResendEmailReq>('@user/resendEmailReq')({
-  userId: S.String,
-  verifyEmail: VerifyEmail,
+  user_id: S.String,
+  verify_email: VerifyEmail,
 }) {}
 
 export class ResendEmailRes extends S.Class<ResendEmailRes>('@user/resendEmailRes')({}) {}

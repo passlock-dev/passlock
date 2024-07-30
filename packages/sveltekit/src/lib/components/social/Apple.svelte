@@ -70,15 +70,15 @@
 		if (options.context === 'signup' && res.user) {
 			return await passlock.registerOidc({
 				provider: 'apple',
-				idToken: res.authorization.id_token,
-				givenName: res.user.name.firstName,
-				familyName: res.user.name.lastName,
+				id_token: res.authorization.id_token,
+				given_name: res.user.name.firstName,
+				family_name: res.user.name.lastName,
 				nonce: nonce
 			});
 		} else if (options.context === 'signin') {
 			return await passlock.authenticateOidc({
 				provider: 'apple',
-				idToken: res.authorization.id_token,
+				id_token: res.authorization.id_token,
 				nonce: nonce
 			});
 		} else {

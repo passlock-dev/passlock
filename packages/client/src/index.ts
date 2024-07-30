@@ -66,10 +66,10 @@ export type PasslockProps = {
 
 export type RegistrationRequest = {
   email: string
-  givenName?: string
-  familyName?: string
-  userVerification?: UserVerification
-  verifyEmail?: VerifyEmail
+  given_name?: string
+  family_name?: string
+  user_verification?: UserVerification
+  verify_email?: VerifyEmail
 }
 
 const nonEmpty = (text: string): O.Option<string> => {
@@ -81,53 +81,53 @@ const nonEmpty = (text: string): O.Option<string> => {
 const toRpcRegistrationRequest = (request: RegistrationRequest) => {
   return {
     email: request.email,
-    givenName: pipe(O.fromNullable(request.givenName), O.flatMap(nonEmpty)),
-    familyName: pipe(O.fromNullable(request.familyName), O.flatMap(nonEmpty)),
-    userVerification: O.fromNullable(request.userVerification),
-    verifyEmail: O.fromNullable(request.verifyEmail),
+    given_name: pipe(O.fromNullable(request.given_name), O.flatMap(nonEmpty)),
+    family_name: pipe(O.fromNullable(request.family_name), O.flatMap(nonEmpty)),
+    user_verification: O.fromNullable(request.user_verification),
+    verify_email: O.fromNullable(request.verify_email),
   }
 }
 
 export type AuthenticationRequest = {
   email?: string
-  userVerification?: UserVerification
+  user_verification?: UserVerification
 }
 
 const toRpcAuthenticationRequest = (request: AuthenticationRequest) => {
   return {
     email: O.fromNullable(request.email),
-    userVerification: O.fromNullable(request.userVerification),
+    user_verification: O.fromNullable(request.user_verification),
   }
 }
 
 export type RegisterOidcReq = {
   provider: Provider
-  idToken: string
-  givenName?: string
-  familyName?: string
+  id_token: string
+  given_name?: string
+  family_name?: string
   nonce: string
 }
 
 const toRpcRegisterOidcReq = (request: RegisterOidcReq) => {
   return {
     provider: request.provider,
-    idToken: request.idToken,
-    givenName: pipe(O.fromNullable(request.givenName), O.flatMap(nonEmpty)),
-    familyName: pipe(O.fromNullable(request.familyName), O.flatMap(nonEmpty)),
+    id_token: request.id_token,
+    given_name: pipe(O.fromNullable(request.given_name), O.flatMap(nonEmpty)),
+    family_name: pipe(O.fromNullable(request.family_name), O.flatMap(nonEmpty)),
     nonce: request.nonce,
   }
 }
 
 export type AuthenticateOidcReq = {
   provider: Provider
-  idToken: string
+  id_token: string
   nonce: string
 }
 
 const toRpcAuthenticateOidcReq = (request: AuthenticateOidcReq) => {
   return {
     provider: request.provider,
-    idToken: request.idToken,
+    id_token: request.id_token,
     nonce: request.nonce,
   }
 }
@@ -263,7 +263,7 @@ export class PasslockUnsafe {
 
   preConnect = (options?: Options): Promise<void> => pipe(preConnect(), this.runPromise(options))
 
-  isPasskeySupport = (): Promise<boolean> =>
+  arePasskeysSupported = (): Promise<boolean> =>
     pipe(isPasskeySupport, effect => Runtime.runPromise(this.runtime)(effect))
 
   isExistingUser = (email: Email, options?: Options): Promise<boolean> =>
@@ -290,9 +290,9 @@ export class PasslockUnsafe {
   verifyEmailLink = (options?: Options): Promise<Principal> =>
     pipe(verifyEmailLink, this.runPromise(options))
 
-  getSessionToken = (authType: AuthType): StoredToken | undefined =>
+  getSessionToken = (auth_type: AuthType): StoredToken | undefined =>
     pipe(
-      getSessionToken(authType),
+      getSessionToken(auth_type),
       E.orElseSucceed(() => undefined),
       effect => Runtime.runSync(this.runtime)(effect),
     )
@@ -344,7 +344,7 @@ export class Passlock {
     )
   }
 
-  isPasskeySupport = (): Promise<boolean> =>
+  arePasskeysSupported = (): Promise<boolean> =>
     pipe(isPasskeySupport, effect => Runtime.runPromise(this.runtime)(effect))
 
   isExistingUser = (email: Email, options?: Options): Promise<boolean | PasslockError> =>
@@ -385,9 +385,9 @@ export class Passlock {
   ): Promise<boolean | PasslockError> =>
     pipe(resendVerificationEmail(request), E.as(true), this.runPromise(options))
 
-  getSessionToken = (authType: AuthType): Promise<StoredToken | undefined> =>
+  getSessionToken = (auth_type: AuthType): Promise<StoredToken | undefined> =>
     pipe(
-      getSessionToken(authType),
+      getSessionToken(auth_type),
       E.orElseSucceed(() => undefined),
       effect => E.runPromise(effect),
     )

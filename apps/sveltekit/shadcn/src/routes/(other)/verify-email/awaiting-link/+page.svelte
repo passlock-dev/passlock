@@ -22,7 +22,7 @@
   const resend = async () => {
     if (data.user) {
       resendDisabled = true
-      await passlock.resendEmail({ userId: data.user.id, method: 'code' })
+      await passlock.resendEmail({ user_id: data.user.id, method: 'code' })
       setTimeout(() => {
         resendDisabled = false
       }, 1000)

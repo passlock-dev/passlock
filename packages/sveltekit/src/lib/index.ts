@@ -1,11 +1,11 @@
-export * from '@passlock/client';
-export * from './token.js';
-export * from './utils.js';
+export * from '@passlock/client'
+export * from './token.js'
+export * from './utils.js'
 
-import type { VerifyEmail } from '@passlock/client';
+import type { VerifyEmail } from '@passlock/client'
 
 export type ResendEmail = VerifyEmail & {
-	userId: string;
+	user_id: string;
 };
 
 export type VerifyEmailData = {

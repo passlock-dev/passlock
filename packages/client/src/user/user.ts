@@ -9,7 +9,7 @@ import { Context, Effect as E, Layer, flow } from 'effect'
 /* Requests */
 
 export type Email = { email: string }
-export type ResendEmail = VerifyEmail & { userId: string }
+export type ResendEmail = VerifyEmail & { user_id: string }
 
 /* Errors */
 
@@ -35,9 +35,9 @@ export const isExistingUser = (request: Email): E.Effect<boolean, BadRequest, De
     const rpcClient = yield* _(UserClient)
 
     yield* _(E.logDebug('Making RPC request'))
-    const { existingUser } = yield* _(rpcClient.isExistingUser(new IsExistingUserReq(request)))
+    const { is_existing_user } = yield* _(rpcClient.isExistingUser(new IsExistingUserReq(request)))
 
-    return existingUser
+    return is_existing_user
   })
 }
 
@@ -49,8 +49,8 @@ export const resendVerificationEmail = (
     const rpcClient = yield* _(UserClient)
 
     yield* _(E.logDebug('Making RPC request'))
-    const { userId, ...verifyEmail } = request
-    yield* _(rpcClient.resendVerificationEmail(new ResendEmailReq({ userId, verifyEmail })))
+    const { user_id, ...verify_email } = request
+    yield* _(rpcClient.resendVerificationEmail(new ResendEmailReq({ user_id, verify_email })))
   })
 }
 

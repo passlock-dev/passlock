@@ -51,8 +51,8 @@ export const actions = {
       ...sessionCookie.attributes
     })
 
-    const authType = form.data.authType
-    const verifyEmail = form.data.verifyEmail
+    const authType = form.data.auth_type
+    const verifyEmail = form.data.verify_email
 
     if (authType === 'passkey' && verifyEmail === 'code') {
       redirect(302, verifyEmailCode)

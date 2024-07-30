@@ -45,7 +45,7 @@
   //
   // To disable mailbox verification emails set to undefined
   // see https://docs.passlock.dev/docs/howto/verify-emails
-  const verifyEmail: VerifyEmail = { method: 'code' }
+  const verify_email: VerifyEmail = { method: 'code' }
 
   const form = superForm(data.form, {
     validators: valibotClient(registrationFormSchema),
@@ -53,11 +53,11 @@
 
     onSubmit: async ({ formData, cancel }) => {
       // we don't yet have a token so register a passkey to obtain one
-      await passlock.register({ form, formData, cancel, verifyEmail })
+      await passlock.register({ form, formData, cancel, verify_email })
     },
 
     onResult: () => {
-      if ($superformData.authType === 'passkey') {
+      if ($superformData.auth_type === 'passkey') {
         saveEmailLocally($superformData.email)
       }
     }
@@ -81,12 +81,12 @@
   // So we want to disable the Sign in with Google button
   // once the first step is complete.
   $: disableSocialBtns =
-    ($superformData.token.length > 1 && $superformData.authType === 'apple') ||
-    $superformData.authType === 'google'
+    ($superformData.token.length > 1 && $superformData.auth_type === 'apple') ||
+    $superformData.auth_type === 'google'
 
   const submittingGoogle = derived(
     submitting,
-    $submitting => $submitting && $superformData.authType === 'google'
+    $submitting => $submitting && $superformData.auth_type === 'google'
   )
 </script>
 
@@ -128,12 +128,12 @@
           <div class="grid gap-5 grid-cols-2">
             <Forms.InputText
               {form}
-              field="givenName"
+              field="given_name"
               label="First name"
               {readonly} />
             <Forms.InputText
               {form}
-              field="familyName"
+              field="family_name"
               label="Last name"
               autocomplete="family-name"
               {readonly} />
@@ -145,12 +145,12 @@
               autocomplete="email"
               {readonly} />
 
-            {#if $superformData.token && $superformData.authType === 'apple'}
+            {#if $superformData.token && $superformData.auth_type === 'apple'}
               <Forms.SubmitButton submitting={$submitting}>
                 <Icons.Apple class="size-5" slot="icon" />
                 Sign up with Apple
               </Forms.SubmitButton>
-            {:else if $superformData.token && $superformData.authType === 'google'}
+            {:else if $superformData.token && $superformData.auth_type === 'google'}
               <Forms.SubmitButton submitting={$submitting}>
                 <Icons.Google class="size-4" slot="icon" />
                 Sign up with Google

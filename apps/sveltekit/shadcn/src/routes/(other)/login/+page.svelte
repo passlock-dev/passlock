@@ -40,7 +40,7 @@
     },
 
     onResult: () => {
-      if ($superformData.authType === 'passkey' && $superformData.email) {
+      if ($superformData.auth_type === 'passkey' && $superformData.email) {
         saveEmailLocally($superformData.email)
       }
     }
@@ -56,17 +56,17 @@
 
   const submittingPasskey = derived(
     submitting,
-    $submitting => $submitting && $superformData.authType === 'passkey'
+    $submitting => $submitting && $superformData.auth_type === 'passkey'
   )
 
   const submittingApple = derived(
     submitting,
-    $submitting => $submitting && $superformData.authType === 'apple'
+    $submitting => $submitting && $superformData.auth_type === 'apple'
   )
 
   const submittingGoogle = derived(
     submitting,
-    $submitting => $submitting && $superformData.authType === 'google'
+    $submitting => $submitting && $superformData.auth_type === 'google'
   )
 
   $: readonlyEmail = $submittingPasskey || undefined
@@ -111,7 +111,7 @@
           <Forms.Divider />
         {/if}
 
-        <div class="grid">
+        <div class="grid gap-2">
           {#if PUBLIC_APPLE_CLIENT_ID}
             <Social.Apple
               context="signin"

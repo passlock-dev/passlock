@@ -7,16 +7,16 @@ export type AuthType = S.Schema.Type<typeof AuthType>
 
 export const User = S.Struct({
   id: S.String,
-  givenName: S.String,
-  familyName: S.String,
+  given_name: S.String,
+  family_name: S.String,
   email: S.String,
-  emailVerified: S.Boolean,
+  email_verified: S.Boolean,
 })
 
 export type User = S.Schema.Type<typeof User>
 
 export const AuthenticationRequired = S.Struct({
-  requiredAuthType: AuthType,
+  required_auth_type: AuthType,
 })
 
 const DateFromSeconds = S.transform(S.Number, S.DateFromSelf, {

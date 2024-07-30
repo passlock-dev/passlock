@@ -58,14 +58,14 @@ const getToken = () => {
         // No token, need to authenticate the user
         pipe(
           authenticationService.authenticatePasskey({
-            userVerification: O.some('preferred'),
+            user_verification: O.some('preferred'),
             email: O.none(),
           }),
           E.map(
             principal =>
               ({
                 token: principal.jti,
-                authType: principal.auth_type,
+                auth_type: principal.auth_type,
                 expiry: principal.exp.getTime(),
               }) as StoredToken,
           ),
