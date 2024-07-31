@@ -251,11 +251,11 @@ export const resendVerificationEmail = (
   )
 
 export const getSessionToken = (
-  auth_type: AuthType,
+  authType: AuthType,
 ): E.Effect<StoredToken, NoSuchElementException> =>
   pipe(
     StorageService,
-    E.flatMap(service => service.getToken(auth_type)),
+    E.flatMap(service => service.getToken(authType)),
     E.provide(storageServiceLive),
     E.provide(browserStorageLive),
   )

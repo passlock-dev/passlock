@@ -22,9 +22,9 @@ export class PrincipalRes extends S.Class<PrincipalRes>('@social/principalRes')(
 
 export class RegisterOidcReq extends S.Class<RegisterOidcReq>('@social/oidc/registerReq')({
   provider: Provider,
-  id_token: S.String,
-  given_name: S.Option(S.String),
-  family_name: S.Option(S.String),
+  idToken: S.String,
+  givenName: S.Option(S.String),
+  familyName: S.Option(S.String),
   nonce: S.String,
 }) {}
 
@@ -36,7 +36,7 @@ export type RegisterOidcErrors = S.Schema.Type<typeof RegisterOidcErrors>
 
 export class AuthOidcReq extends S.Class<AuthOidcReq>('@social/oidc/authReq')({
   provider: Provider,
-  id_token: S.String,
+  idToken: S.String,
   nonce: S.String,
 }) {}
 

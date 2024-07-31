@@ -7,8 +7,8 @@ import { StorageService, type StoredToken } from '../storage/storage.js'
 export const session = 'session'
 export const token = 'token'
 export const code = 'code'
-export const auth_type = 'passkey'
-export const expire_at = Date.now() + 10000
+export const authType = 'passkey'
+export const expiry = Date.now() + 10000
 
 export const principal: Principal = {
   jti: 'token',
@@ -38,7 +38,7 @@ export const capabilitiesTest = L.succeed(
   }),
 )
 
-export const storedToken: StoredToken = { token, auth_type: auth_type, expiry: expire_at }
+export const storedToken: StoredToken = { token, authType, expiry }
 
 export const storageServiceTest = L.succeed(
   StorageService,

@@ -6,8 +6,8 @@ import type { PageServerLoad } from './$types'
 
 import { PASSLOCK_API_KEY } from '$env/static/private'
 import {
-    PUBLIC_PASSLOCK_ENDPOINT,
-    PUBLIC_PASSLOCK_TENANCY_ID
+  PUBLIC_PASSLOCK_ENDPOINT,
+  PUBLIC_PASSLOCK_TENANCY_ID
 } from '$env/static/public'
 import { app, verifyEmailAwaitLink, verifyEmailCode } from '$lib/routes'
 import { lucia } from '$lib/server/auth'
@@ -58,8 +58,8 @@ export const actions = {
       ...sessionCookie.attributes
     })
 
-    const authType = form.data.auth_type
-    const verifyEmail = form.data.verify_email
+    const authType = form.data.authType
+    const verifyEmail = form.data.verifyEmail
 
     if (authType === 'passkey' && verifyEmail === 'code') {
       redirect(302, verifyEmailCode)

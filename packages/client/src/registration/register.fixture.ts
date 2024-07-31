@@ -14,15 +14,15 @@ import { CreateCredential, type RegistrationRequest } from './register.js'
 export const session = 'session'
 export const token = 'token'
 export const code = 'code'
-export const auth_type = 'passkey'
-export const expire_at = Date.now() + 10000
+export const authType = 'passkey'
+export const expireAt = Date.now() + 10000
 
 export const registrationRequest: RegistrationRequest = {
   email: 'jdoe@gmail.com',
-  given_name: O.some('john'),
-  family_name: O.some('doe'),
-  user_verification: O.none(),
-  verify_email: O.none(),
+  givenName: O.some('john'),
+  familyName: O.some('doe'),
+  userVerification: O.none(),
+  verifyEmail: O.none(),
 }
 
 export const rpcOptionsReq = new OptionsReq(registrationRequest)
@@ -61,7 +61,7 @@ export const credential: RegistrationCredential = {
 export const rpcVerificationReq = new VerificationReq({
   session,
   credential,
-  verify_email: O.none(),
+  verifyEmail: O.none(),
 })
 
 export const rpcVerificationRes = new VerificationRes({ principal: Fixtures.principal })

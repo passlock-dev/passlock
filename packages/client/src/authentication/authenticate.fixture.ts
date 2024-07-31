@@ -13,11 +13,11 @@ import { type AuthenticationRequest, GetCredential } from './authenticate.js'
 export const session = 'session'
 export const token = 'token'
 export const code = 'code'
-export const auth_type = 'passkey'
-export const expiry = Date.now() + 10000
+export const authType = 'passkey'
+export const expireAt = Date.now() + 10000
 
 export const request: AuthenticationRequest = {
-  user_verification: O.some('preferred'),
+  userVerification: O.some('preferred'),
   email: O.none(),
 }
 
@@ -49,7 +49,7 @@ export const rpcVerificationReq = new VerificationReq({ session, credential })
 
 export const rpcVerificationRes = new VerificationRes({ principal: Fixtures.principal })
 
-export const rpcIsExistingUserRes = new IsExistingUserRes({ is_existing_user: true, detail: O.none() })
+export const rpcIsExistingUserRes = new IsExistingUserRes({ existingUser: true, detail: O.none() })
 
 export const rpcVerifyEmailRes = new VerifyEmailRes({ principal: Fixtures.principal })
 

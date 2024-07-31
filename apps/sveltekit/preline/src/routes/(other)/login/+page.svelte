@@ -37,7 +37,7 @@
     },
 
     onResult: () => {
-      if ($superformData.auth_type === 'passkey' && $superformData.email) {
+      if ($superformData.authType === 'passkey' && $superformData.email) {
         saveEmailLocally($superformData.email)
       }
     }
@@ -52,13 +52,13 @@
   const { enhance, submitting, form: superformData } = form
 
   // passlock has verified the passkey, now we're submitting the principal to +page.server.ts
-  const submittingPasskey = derived(submitting, $submitting => $submitting && $superformData.auth_type === 'passkey')
+  const submittingPasskey = derived(submitting, $submitting => $submitting && $superformData.authType === 'passkey')
 
   // passlock has verified apple's response, now we're submitting the principal to +page.server.ts
-  const submittingApple = derived(submitting, $submitting => $submitting && $superformData.auth_type === 'apple')
+  const submittingApple = derived(submitting, $submitting => $submitting && $superformData.authType === 'apple')
 
   // passlock has verified google's response, now we're submitting the principal to +page.server.ts
-  const submittingGoogle = derived(submitting, $submitting => $submitting && $superformData.auth_type === 'google')
+  const submittingGoogle = derived(submitting, $submitting => $submitting && $superformData.authType === 'google')
 
   const submitForm = async () => form.submit()
 

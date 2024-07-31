@@ -14,7 +14,7 @@ describe('authenticate should', () => {
       const result = yield* _(
         service.authenticatePasskey({
           email: O.none(),
-          user_verification: O.some('preferred'),
+          userVerification: O.some('preferred'),
         }),
       )
 
@@ -41,7 +41,7 @@ describe('authenticate should', () => {
       yield* _(
         service.authenticatePasskey({
           email: O.none(),
-          user_verification: O.some('preferred'),
+          userVerification: O.some('preferred'),
         }),
       )
 
@@ -85,7 +85,7 @@ describe('authenticate should', () => {
       yield* _(
         service.authenticatePasskey({
           email: O.none(),
-          user_verification: O.some('preferred'),
+          userVerification: O.some('preferred'),
         }),
       )
 
@@ -131,7 +131,7 @@ describe('authenticate should', () => {
       yield* _(
         service.authenticatePasskey({
           email: O.none(),
-          user_verification: O.some('preferred'),
+          userVerification: O.some('preferred'),
         }),
       )
 
@@ -172,7 +172,7 @@ describe('authenticate should', () => {
       yield* _(
         service.authenticatePasskey({
           email: O.none(),
-          user_verification: O.some('preferred'),
+          userVerification: O.some('preferred'),
         }),
       )
 
@@ -213,7 +213,7 @@ describe('authenticate should', () => {
       yield* _(
         service.authenticatePasskey({
           email: O.none(),
-          user_verification: O.some('preferred'),
+          userVerification: O.some('preferred'),
         }),
       )
 

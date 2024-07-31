@@ -12,7 +12,7 @@ export type AuthType = 'email' | 'passkey' | 'apple' | 'google'
 
 export type StoredToken = {
   token: string
-  auth_type: AuthType
+  authType: AuthType
   expiry: number
 }
 
@@ -22,36 +22,36 @@ export class StorageService extends Context.Tag('@services/StorageService')<
   StorageService,
   {
     storeToken: (principal: Principal) => E.Effect<void>
-    getToken: (auth_type: AuthType) => E.Effect<StoredToken, NoSuchElementException>
-    clearToken: (auth_type: AuthType) => E.Effect<void>
-    clearExpiredToken: (auth_type: AuthType) => E.Effect<void>
+    getToken: (authType: AuthType) => E.Effect<StoredToken, NoSuchElementException>
+    clearToken: (authType: AuthType) => E.Effect<void>
+    clearExpiredToken: (authType: AuthType) => E.Effect<void>
     clearExpiredTokens: E.Effect<void>
   }
 >() {}
 
 export class BrowserStorage extends Context.Tag('@services/Storage')<BrowserStorage, Storage>() {}
 
-export const buildKey = (auth_type: AuthType) => `passlock:${auth_type}:token`
+export const buildKey = (authType: AuthType) => `passlock:${authType}:token`
 
-// principal => token:expiry
+// principal => token:expireAt
 export const compressToken = (principal: Principal): string => {
-  const expiry = principal.exp.getTime()
+  const expireAt = principal.exp.getTime()
   const token = principal.jti
-  return `${token}:${expiry.toFixed(0)}`
+  return `${token}:${expireAt.toFixed(0)}`
 }
 
-// token:expiry => { auth_type, token, expiry }
+// token:expireAt => { authType, token, expireAt }
 export const expandToken =
-  (auth_type: AuthType) =>
+  (authType: AuthType) =>
   (s: string): O.Option<StoredToken> => {
     const tokens = s.split(':')
     if (tokens.length !== 2) return O.none()
 
-    const [token, expiryString] = tokens
+    const [token, expireAtString] = tokens
     const parse = O.liftThrowable(Number.parseInt)
-    const expire_at = parse(expiryString)
+    const expireAt = parse(expireAtString)
 
-    return O.map(expire_at, expiry => ({ auth_type, token, expiry }))
+    return O.map(expireAt, expiry => ({ authType, token, expiry }))
   }
 
 /* Effects */
@@ -90,7 +90,7 @@ export const getToken = (
       O.some(buildKey(authenticator)),
       O.flatMap(key => pipe(localStorage.getItem(key), O.fromNullable)),
       O.flatMap(expandToken(authenticator)),
-      O.filter(({ expiry: expiry }) => expiry > Date.now()),
+      O.filter(({ expiry }) => expiry > Date.now()),
     )
 
     return yield* _(getEffect)
@@ -99,29 +99,29 @@ export const getToken = (
 
 /**
  * Remove token from local storage
- * @param auth_type
+ * @param authType
  * @returns
  */
-export const clearToken = (auth_type: AuthType): E.Effect<void, never, BrowserStorage> => {
+export const clearToken = (authType: AuthType): E.Effect<void, never, BrowserStorage> => {
   return E.gen(function* (_) {
     const localStorage = yield* _(BrowserStorage)
-    localStorage.removeItem(buildKey(auth_type))
+    localStorage.removeItem(buildKey(authType))
   })
 }
 
 /**
- * Only clear if now > token.expiry
- * @param auth_type
+ * Only clear if now > token.expireAt
+ * @param authType
  * @param defer
  * @returns
  */
-export const clearExpiredToken = (auth_type: AuthType): E.Effect<void, never, BrowserStorage> => {
-  const key = buildKey(auth_type)
+export const clearExpiredToken = (authType: AuthType): E.Effect<void, never, BrowserStorage> => {
+  const key = buildKey(authType)
 
   const effect = E.gen(function* (_) {
     const storage = yield* _(BrowserStorage)
     const item = yield* _(O.fromNullable(storage.getItem(key)))
-    const token = yield* _(expandToken(auth_type)(item))
+    const token = yield* _(expandToken(authType)(item))
 
     if (token.expiry < Date.now()) {
       storage.removeItem(key)

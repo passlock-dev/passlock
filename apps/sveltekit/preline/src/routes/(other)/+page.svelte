@@ -37,7 +37,7 @@
   //
   // To disable mailbox verification emails set to undefined
   // see https://docs.passlock.dev/docs/howto/verify-emails
-  const verify_email: VerifyEmail = { method: 'code' }
+  const verifyEmail: VerifyEmail = { method: 'code' }
 
   const form = superForm(data.form, {
     validators: valibotClient(registrationFormSchema),
@@ -50,7 +50,7 @@
       // be cancelled and the error will be recorded in the either the
       // form.errors.email if it's an account level error e.g. duplicate user
       // or form.message if it's a general error.
-      await passlock.register({ form, formData, cancel, verify_email })
+      await passlock.register({ form, formData, cancel, verifyEmail })
     },
 
     onResult: () => {
@@ -61,7 +61,7 @@
       // local storage. This is effectively a 'remember my username' so if
       // a user registered more than one passkey on this site the browser
       // will default to using the last one registered.
-      if ($formData.auth_type === 'passkey') {
+      if ($formData.authType === 'passkey') {
         saveEmailLocally($formData.email)
       }
     }
@@ -337,22 +337,22 @@
 
           <form method="POST" use:enhance>
             <div class="flex flex-col gap-4">
-              <Forms.InputText {form} field="given_name" label="First name" autocomplete="given-name" {readonly} />
-              <Forms.InputText {form} field="family_name" label="Last name" autocomplete="family-name" {readonly} />
+              <Forms.InputText {form} field="givenName" label="First name" autocomplete="given-name" {readonly} />
+              <Forms.InputText {form} field="familyName" label="Last name" autocomplete="family-name" {readonly} />
               <Forms.InputEmail {form} field="email" label="Email address" autocomplete="email" {readonly} />
 
-              <Forms.Checkbox {form} field="accept_terms">
+              <Forms.Checkbox {form} field="acceptTerms">
                 <div slot="label">
                   I accept the <Link>Terms and Conditions</Link>
                 </div>
               </Forms.Checkbox>
 
-              {#if $formData.token && $formData.auth_type === 'apple'}
+              {#if $formData.token && $formData.authType === 'apple'}
                 <Forms.SubmitButton submitting={$submitting}>
                   <Icons.Apple class="size-5 fill-current" slot="icon" />
                   Sign up with Apple
                 </Forms.SubmitButton>
-              {:else if $formData.token && $formData.auth_type === 'google'}
+              {:else if $formData.token && $formData.authType === 'google'}
                 <Forms.SubmitButton submitting={$submitting}>
                   <Icons.Google class="size-4" slot="icon" />
                   Sign up with Google
