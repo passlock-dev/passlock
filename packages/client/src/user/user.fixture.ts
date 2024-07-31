@@ -3,12 +3,12 @@ import {
   IsExistingUserRes,
   ResendEmailReq,
   ResendEmailRes,
-  UserClient,
   VerifyEmailRes,
 } from '@passlock/shared/dist/rpc/user.js'
 import { Effect as E, Layer as L, Option as O } from 'effect'
-import type { ResendEmail } from './user.js'
+import { UserClient } from '../rpc/user.js'
 import * as Fixtures from '../test/fixtures.js'
+import type { ResendEmail } from './user.js'
 
 export const email = 'jdoe@gmail.com'
 export const isRegisteredReq = new IsExistingUserReq({ email })

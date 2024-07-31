@@ -9,10 +9,10 @@ import type {
 } from '@passlock/shared/dist/error/error.js'
 
 import { ErrorCode } from '@passlock/shared/dist/error/error.js'
-import { RpcConfig } from '@passlock/shared/dist/rpc/config.js'
 import type { VerifyEmail } from '@passlock/shared/dist/schema/email.js'
 import type { UserVerification } from '@passlock/shared/dist/schema/passkey.js'
 import type { Principal, UserPrincipal } from '@passlock/shared/dist/schema/principal.js'
+import { RpcConfig } from './rpc/config.js'
 
 import { Effect as E, Layer as L, Layer, Option as O, Runtime, Scope, pipe } from 'effect'
 
@@ -46,6 +46,7 @@ import {
   type StoredToken,
 } from './storage/storage.js'
 import type { Email, ResendEmail, UserService } from './user/user.js'
+import { PASSLOCK_VERSION } from './version.js'
 
 /* Exports */
 
@@ -233,11 +234,12 @@ export class PasslockUnsafe {
   constructor(props: PasslockProps) {
     const config = Layer.succeed(RpcConfig, RpcConfig.of(props))
     const storage = Layer.succeed(BrowserStorage, BrowserStorage.of(globalThis.localStorage))
-
     const allLayers = pipe(allRequirements, L.provide(config), L.provide(storage), L.merge(config))
-
     const scope = E.runSync(Scope.make())
+
     this.runtime = E.runSync(Layer.toRuntime(allLayers).pipe(Scope.extend(scope)))
+
+    E.runSync(E.logInfo(`Passlock version: ${PASSLOCK_VERSION}`))
   }
 
   static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {
@@ -314,6 +316,8 @@ export class Passlock {
     const scope = E.runSync(Scope.make())
 
     this.runtime = E.runSync(Layer.toRuntime(allLayers).pipe(Scope.extend(scope)))
+    
+    E.runSync(E.logInfo(`Passlock version: ${PASSLOCK_VERSION}`))
   }
 
   static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {

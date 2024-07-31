@@ -17,19 +17,24 @@
     "src"
   ],
   "scripts": {
-    "clean": "rimraf ./dist",
+    "clean": "rimraf ./dist ./staging",
     "typecheck": "tsc --noEmit",
+    "staging:clean": "rimraf ./staging",
+    "staging:copy": "cp -r ./src ./staging",
+    "staging:tokens": "VERSION=$npm_package_version replacetokens --sources ./staging/rpc/client.ts => /dev/null --use-env",
     "build": "tsc --build",
     "build:clean": "pnpm run clean && pnpm run build",
     "build:watch": "tsc --build --watch",
+    "build:production": "pnpm run clean && pnpm run staging:copy && pnpm run staging:tokens && tsc -p tsconfig.staging.json",
     "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
     "lint": "eslint --ext .ts src",
     "lint:fix": "pnpm run lint --fix",
-    "prepublishOnly": "pnpm run clean && pnpm run build",
+    "prepublishOnly": "pnpm run build:production",
     "ncu": "ncu --peer -x @effect/* -x effect",
     "ncu:save": "ncu --peer -x @effect/* -x effect -u"
   },
   "devDependencies": {
+    "@qetza/replacetokens": "^1.7.0",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^22.0.0",

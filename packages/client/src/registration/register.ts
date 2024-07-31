@@ -10,13 +10,13 @@ import { InternalBrowserError } from '@passlock/shared/dist/error/error.js'
 import type { OptionsErrors, VerificationErrors } from '@passlock/shared/dist/rpc/registration.js'
 import {
   OptionsReq,
-  RegistrationClient,
   VerificationReq,
 } from '@passlock/shared/dist/rpc/registration.js'
 import type { RegistrationCredential } from '@passlock/shared/dist/schema/passkey.js'
 import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer, flow, pipe } from 'effect'
 import { Capabilities } from '../capabilities/capabilities.js'
+import { RegistrationClient } from '../rpc/registration.js'
 import { StorageService } from '../storage/storage.js'
 import type { UserService } from '../user/user.js'
 

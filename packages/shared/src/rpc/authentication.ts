@@ -1,8 +1,7 @@
 import * as S from '@effect/schema/Schema'
-import { Context, Effect as E, Layer } from 'effect'
+import { Context, Effect as E } from 'effect'
 
 import { BadRequest, Disabled, Forbidden, NotFound, Unauthorized } from '../error/error.js'
-import { Dispatcher, makePostRequest } from './client.js'
 
 import {
   AuthenticationCredential,
@@ -43,6 +42,11 @@ export const VerificationErrors = S.Union(BadRequest, Unauthorized, Forbidden, D
 
 export type VerificationErrors = S.Schema.Type<typeof VerificationErrors>
 
+/* Endpoints */
+
+export const OPTIONS_ENDPOINT = '/passkey/auth/options'
+export const VERIFY_ENDPOINT = '/passkey/auth/verify'
+
 /* Service */
 
 export type AuthenticationService = {
@@ -53,39 +57,7 @@ export type AuthenticationService = {
   ) => E.Effect<VerificationRes, VerificationErrors>
 }
 
-/* Client */
-
-export const OPTIONS_ENDPOINT = '/passkey/auth/options'
-export const VERIFY_ENDPOINT = '/passkey/auth/verify'
-
-export class AuthenticationClient extends Context.Tag('@passkey/auth/client')<
-  AuthenticationClient,
-  AuthenticationService
->() {}
-
-export const AuthenticationClientLive = Layer.effect(
-  AuthenticationClient,
-  E.gen(function* (_) {
-    const dispatcher = yield* _(Dispatcher)
-
-    const optionsResolver = makePostRequest(OptionsReq, OptionsRes, OptionsErrors, dispatcher)
-
-    const verifyResolver = makePostRequest(
-      VerificationReq,
-      VerificationRes,
-      VerificationErrors,
-      dispatcher,
-    )
-
-    return {
-      getAuthenticationOptions: req => optionsResolver(OPTIONS_ENDPOINT, req),
-      verifyAuthenticationCredential: req => verifyResolver(VERIFY_ENDPOINT, req),
-    }
-  }),
-)
-
 /* Handler */
-
 export class AuthenticationHandler extends Context.Tag('@passkey/auth/handler')<
   AuthenticationHandler,
   AuthenticationService

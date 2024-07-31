@@ -1,0 +1,1 @@
+export const PASSLOCK_VERSION = '#{VERSION}#'

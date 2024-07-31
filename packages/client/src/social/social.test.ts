@@ -1,8 +1,8 @@
 import { Duplicate, NotFound } from '@passlock/shared/dist/error/error.js'
-import { SocialClient } from '@passlock/shared/dist/rpc/social.js'
 import { Effect as E, Layer as L, Layer, LogLevel, Logger, pipe } from 'effect'
 import { describe, expect, test } from 'vitest'
 import { mock } from 'vitest-mock-extended'
+import { SocialClient } from '../rpc/social.js'
 import * as Fixture from './social.fixture.js'
 import { SocialService, SocialServiceLive } from './social.js'
 

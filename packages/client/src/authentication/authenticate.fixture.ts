@@ -1,5 +1,4 @@
 import {
-  AuthenticationClient,
   OptionsRes,
   VerificationReq,
   VerificationRes,
@@ -7,6 +6,7 @@ import {
 import { IsExistingUserRes, VerifyEmailRes } from '@passlock/shared/dist/rpc/user.js'
 import type { AuthenticationCredential } from '@passlock/shared/dist/schema/passkey.js'
 import { Effect as E, Layer as L, Option as O } from 'effect'
+import { AuthenticationClient } from '../rpc/authentication.js'
 import * as Fixtures from '../test/fixtures.js'
 import { type AuthenticationRequest, GetCredential } from './authenticate.js'
 

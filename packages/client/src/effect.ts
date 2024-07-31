@@ -6,14 +6,14 @@ import {
   InternalBrowserError,
 } from '@passlock/shared/dist/error/error.js'
 
-import { AuthenticationClientLive } from '@passlock/shared/dist/rpc/authentication.js'
-import { DispatcherLive } from '@passlock/shared/dist/rpc/client.js'
-import type { RpcConfig } from '@passlock/shared/dist/rpc/config.js'
-import { RetrySchedule } from '@passlock/shared/dist/rpc/config.js'
-import { ConnectionClientLive } from '@passlock/shared/dist/rpc/connection.js'
-import { RegistrationClientLive } from '@passlock/shared/dist/rpc/registration.js'
-import { SocialClientLive } from '@passlock/shared/dist/rpc/social.js'
-import { UserClientLive } from '@passlock/shared/dist/rpc/user.js'
+import { AuthenticationClientLive } from './rpc/authentication.js'
+import { DispatcherLive } from './rpc/client.js'
+import type { RpcConfig } from './rpc/config.js'
+import { RetrySchedule } from './rpc/config.js'
+import { ConnectionClientLive } from './rpc/connection.js'
+import { RegistrationClientLive } from './rpc/registration.js'
+import { SocialClientLive } from './rpc/social.js'
+import { UserClientLive } from './rpc/user.js'
 
 import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 

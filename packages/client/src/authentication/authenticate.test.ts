@@ -1,7 +1,7 @@
-import { AuthenticationClient } from '@passlock/shared/dist/rpc/authentication.js'
 import { Effect as E, Layer as L, Layer, LogLevel, Logger, Option as O, pipe } from 'effect'
 import { describe, expect, test, vi } from 'vitest'
 import { mock } from 'vitest-mock-extended'
+import { AuthenticationClient } from '../rpc/authentication.js'
 import { StorageService } from '../storage/storage.js'
 import * as Fixture from './authenticate.fixture.js'
 import { AuthenticateServiceLive, AuthenticationService, GetCredential } from './authenticate.js'

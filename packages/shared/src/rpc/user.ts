@@ -1,10 +1,9 @@
 import * as S from '@effect/schema/Schema'
-import { Context, Effect as E, Layer } from 'effect'
+import { Context, Effect as E } from 'effect'
 
 import { BadRequest, Disabled, Forbidden, NotFound, Unauthorized } from '../error/error.js'
 import { VerifyEmail } from '../schema/email.js'
 import { Principal } from '../schema/principal.js'
-import { Dispatcher, makePostRequest } from './client.js'
 
 /* Is existing user */
 
@@ -45,6 +44,12 @@ export const ResendEmailErrors = S.Union(BadRequest, NotFound, Disabled)
 
 export type ResendEmailErrors = S.Schema.Type<typeof ResendEmailErrors>
 
+/* Endpoints */
+
+export const USER_STATUS_ENDPOINT = '/user/status'
+export const VERIFY_EMAIL_ENDPOINT = '/user/verify-email'
+export const RESEND_EMAIL_ENDPOINT = '/user/verify-email/resend'
+
 /* Service */
 
 export type UserService = {
@@ -53,48 +58,6 @@ export type UserService = {
   resendVerificationEmail: (req: ResendEmailReq) => E.Effect<ResendEmailRes, ResendEmailErrors>
 }
 
-/* Client */
-
-export const USER_STATUS_ENDPOINT = '/user/status'
-export const VERIFY_EMAIL_ENDPOINT = '/user/verify-email'
-export const RESEND_EMAIL_ENDPOINT = '/user/verify-email/resend'
-
-export class UserClient extends Context.Tag('@user/client')<UserClient, UserService>() {}
-
-export const UserClientLive = Layer.effect(
-  UserClient,
-  E.gen(function* (_) {
-    const dispatcher = yield* _(Dispatcher)
-
-    const isExistingUserResolver = makePostRequest(
-      IsExistingUserReq,
-      IsExistingUserRes,
-      S.Never,
-      dispatcher,
-    )
-
-    const verifyEmailResolver = makePostRequest(
-      VerifyEmailReq,
-      VerifyEmailRes,
-      VerifyEmailErrors,
-      dispatcher,
-    )
-
-    const resendEmailResolver = makePostRequest(
-      ResendEmailReq,
-      ResendEmailRes,
-      ResendEmailErrors,
-      dispatcher,
-    )
-
-    return {
-      isExistingUser: req => isExistingUserResolver(USER_STATUS_ENDPOINT, req),
-      verifyEmail: req => verifyEmailResolver(VERIFY_EMAIL_ENDPOINT, req),
-      resendVerificationEmail: req => resendEmailResolver(RESEND_EMAIL_ENDPOINT, req),
-    }
-  }),
-)
-
 /* Handler */
 
-export class UserHandler extends Context.Tag('@user/handler')<UserClient, UserService>() {}
+export class UserHandler extends Context.Tag('@user/handler')<UserHandler, UserService>() {}
