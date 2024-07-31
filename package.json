@@ -9,6 +9,9 @@
     "lint": "pnpm -r run lint",
     "lint:fix": "pnpm -r run lint:fix",
     "format": "pnpm run -r format",
+    "clean": "pnpm run -r --sort --filter @passlock/shared --filter @passlock/node --filter @passlock/client --filter @passlock/sveltekit clean",
+    "build": "pnpm run -r --sort --filter @passlock/shared --filter @passlock/node --filter @passlock/client --filter @passlock/sveltekit build",
+    "build:prod": "pnpm run -r --sort --filter @passlock/shared --filter @passlock/node --filter @passlock/client --filter @passlock/sveltekit build:prod",
     "ncu": "ncu --peer -x @effect/* -x @passlock/* -x effect -x better-sqlite3 -x postcss-load-config && pnpm -r run ncu",
     "ncu:save": "ncu --peer -x @effect/* -x @passlock/* -x effect -x better-sqlite3 -x postcss-load-config -u && pnpm -r run ncu:save",
     "upgrade:pnpm": "corepack use pnpm@latest"

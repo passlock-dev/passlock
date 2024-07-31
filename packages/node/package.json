@@ -44,11 +44,11 @@
     "build": "tsc --build",
     "build:clean": "pnpm run clean && pnpm run build",
     "build:watch": "tsc --build --watch",
-    "build:production": "pnpm run clean && pnpm run staging:copy && pnpm run staging:tokens && tsc -p tsconfig.staging.json",
+    "build:prod": "pnpm run clean && pnpm run staging:copy && pnpm run staging:tokens && tsc -p tsconfig.staging.json",
     "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
     "lint": "eslint --ext .ts src",
     "lint:fix": "pnpm run lint --fix",
-    "prepublishOnly": "pnpm run build:production",
+    "prepublishOnly": "pnpm run build:prod",
     "ncu": "ncu --peer -x @effect/* -x effect",
     "ncu:save": "ncu --peer -x @effect/* -x effect -u"
   },
