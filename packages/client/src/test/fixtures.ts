@@ -26,6 +26,21 @@ export const principal: Principal = {
   auth_type: 'passkey',
   auth_id: 'auth-1',
   user_verified: true,
+  // legacy
+  user: {
+    id: 'user-1',
+    givenName: 'john',
+    familyName: 'doe',
+    email: 'john.doe@gmail.com',
+    emailVerified: false
+  },
+  authenticator: {
+    id: 'auth-1',
+    type: 'passkey',
+    userVerified: false
+  },
+  authTimestamp: new Date(0),
+  expireAt: new Date(0),
 }
 
 export const capabilitiesTest = L.succeed(
