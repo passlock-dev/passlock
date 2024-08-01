@@ -72,7 +72,7 @@ export const DispatcherLive = Layer.effect(
           const headers = {
             'Accept': 'application/json',
             'X-CLIENT-ID': clientId,
-            'X-PASSLOCK-VERSION': '#{VERSION}#'
+            'X-PASSLOCK-VERSION': '#{LATEST}#'
           }
 
           const url = buildUrl(path)
@@ -101,7 +101,7 @@ export const DispatcherLive = Layer.effect(
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'X-CLIENT-ID': clientId,
-            'X-PASSLOCK-VERSION': '#{VERSION}#'
+            'X-PASSLOCK-VERSION': '#{LATEST}#'
           }
 
           // drop leading /

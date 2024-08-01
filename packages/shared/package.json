@@ -21,7 +21,7 @@
     "typecheck": "tsc --noEmit",
     "staging:clean": "rimraf ./staging",
     "staging:copy": "cp -r ./src ./staging",
-    "staging:tokens": "VERSION=$npm_package_version replacetokens --sources ./staging/rpc/client.ts => /dev/null --use-env",
+    "staging:tokens": "LATEST=$npm_package_version replacetokens --sources ./staging/rpc/client.ts => /dev/null --use-env",
     "build": "tsc --build",
     "build:clean": "pnpm run clean && pnpm run build",
     "build:watch": "tsc --build --watch",

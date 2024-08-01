@@ -52,7 +52,7 @@ const buildOptions = (token: string) =>
       headers: {
         Accept: 'application/json',
         Authorization: `Bearer ${apiKey}`,
-        'X-PASSLOCK-VERSION': '#{VERSION}#'
+        'X-PASSLOCK-VERSION': '#{LATEST}#'
       },
     })),
   )
