@@ -87,7 +87,9 @@ You'll need the [pnpm][pnpm] package manager:
 
 ### Passlock
 
-This example project uses the cloud based [Passlock][passlock] framework for passkey registration and authentication. **Passlock is free for personal and commercial use**. Create an account at [passlock.dev][passlock-signup]
+This example project uses the cloud based [Passlock][passlock] framework for passkey registration and authentication.  
+**Passlock is free for personal and commercial use**.  
+Create an account at [passlock.dev][passlock-signup]
 
 ## Clone this monorepo
 
