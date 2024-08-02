@@ -79,7 +79,7 @@
 		}
 	},
 	"dependencies": {
-		"@passlock/client": "workspace:*"
+		"@passlock/client": "workspace:0.9.21"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.0.0",

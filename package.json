@@ -6,9 +6,8 @@
   "type": "module",
   "scripts": {
     "typecheck": "pnpm -r run typecheck",
-    "lint": "pnpm -r run lint",
-    "lint:fix": "pnpm -r run lint:fix",
-    "format": "pnpm run -r format",
+    "clean:all": "pnpm -r run clean",
+    "build:packages": "pnpm -r --filter @passlock/shared --filter @passlock/client --filter @passlock/node --filter @passlock/sveltekit run build",
     "ncu": "ncu --peer -x @effect/* -x @passlock/* -x effect -x better-sqlite3 -x postcss-load-config && pnpm -r run ncu",
     "ncu:save": "ncu --peer -x @effect/* -x @passlock/* -x effect -x better-sqlite3 -x postcss-load-config -u && pnpm -r run ncu:save",
     "upgrade:pnpm": "corepack use pnpm@latest"
@@ -29,6 +28,6 @@
       "@aws-sdk/client-sts": "3.606.0",
       "@aws-sdk/client-sso-oidc": "3.606.0"
     }
-  },
+  },  
   "packageManager": "pnpm@9.5.0+sha256.dbdf5961c32909fb030595a9daa1dae720162e658609a8f92f2fa99835510ca5"
 }

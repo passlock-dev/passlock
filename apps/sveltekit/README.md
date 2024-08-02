@@ -79,21 +79,33 @@ I've deployed 2 live versions of this project:
 
 ## Prerequisites
 
+### PNPM
+
+You'll need the [pnpm][pnpm] package manager:
+
+`npm install -g pnpm`
+
+### Passlock
+
 This example project uses the cloud based [Passlock][passlock] framework for passkey registration and authentication. **Passlock is free for personal and commercial use**. Create an account at [passlock.dev][passlock-signup]
 
-## Clone this repo
+## Clone this monorepo
 
-`git clone git@github.com:passlock-dev/passkeys.git`
+`git clone git@github.com:passlock-dev/ts-clients.git auth-starter`
+
+`cd auth-starter`
+
+## Install the dependencies
+
+From the repo root: `pnpm install -r`
+
+## Build the packages
+
+From the repo root: `pnpm run build:packages`
 
 ## Navigate to the template
 
 `cd apps/sveltekit/preline` or `cd apps/sveltekit/shadcn`
-
-## Install the dependencies
-
-```
-npm install
-```
 
 ## Set the environment variables
 
@@ -108,9 +120,8 @@ You'll need to set four variables:
 
 <sup>[1]</sup> Optional - If not using Apple/Google set to an empty string
 
-### Where to find these variables
-
-Your Passlock Tenancy ID, Client ID and Api Key (token) can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Please see the section [Sign in with google](#sign-in-with-google) if using Google sign in.
+> [!NOTE]
+> **Where to find these variables** - Your Passlock Tenancy ID, Client ID and Api Key (token) can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Please see the section [Sign in with google](#sign-in-with-google) if using Google sign in.
 
 Create a `.env.local` file containing the relevant credentials.
 
@@ -125,7 +136,7 @@ Create a `.env.local` file containing the relevant credentials.
 
 Start the dev server
 
-`npm run dev`
+`pnpm run dev`
 
 **Note:** by default this app runs on port 5174 when in dev mode (see [vite.config.ts](vite.config.ts))
 
@@ -249,6 +260,7 @@ Please see the [developer docs](./preline/docs/intro.md)
 
 Please file an [issue][issues] and I'll respond ASAP.
 
+[pnpm]: https://pnpm.io/installation
 [passlock]: https://passlock.dev
 [lucia]: https://lucia-auth.com
 [tailwind]: https://tailwindcss.com

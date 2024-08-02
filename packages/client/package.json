@@ -58,7 +58,7 @@
     "ncu:save": "ncu --peer -x @effect/* -x effect -u"
   },
   "dependencies": {
-    "@passlock/shared": "workspace:*",
+    "@passlock/shared": "workspace:0.9.21",
     "@github/webauthn-json": "^2.1.1",
     "effect": "^3.4.8"
   },
