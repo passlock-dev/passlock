@@ -1,7 +1,7 @@
 {
   "name": "@passlock/client",
   "version": "0.9.22",
-  "description": "Easy WebAuthn/FIDO Passkey authentication and social login for web apps. This library works with pretty much any frontend/backend stack including React/Next.js, Vue etc.",
+  "description": "Passkey authentication and social login for web apps (Typescript). Framework agnostic",
   "keywords": [
     "passkey",
     "passkeys",
@@ -9,6 +9,8 @@
     "google one tap",
     "sign in with google",
     "sign in with apple",
+    "svelte",
+    "sveltekit",
     "react",
     "next",
     "vue",
@@ -19,7 +21,7 @@
     "email": "toby@passlock.dev"
   },
   "license": "MIT",
-  "homepage": "https://github.com/passlock-dev/ts-clients",
+  "homepage": "https://passlock.dev",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/passlock-dev/ts-clients.git"

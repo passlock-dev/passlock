@@ -11,7 +11,7 @@
     "email": "toby@passlock.dev"
   },
   "license": "MIT",
-  "homepage": "https://github.com/passlock-dev/ts-clients",
+  "homepage": "https://passlock.dev",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/passlock-dev/ts-clients.git",

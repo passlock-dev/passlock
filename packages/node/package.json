@@ -2,7 +2,7 @@
   "name": "@passlock/node",
   "type": "module",
   "version": "0.9.22",
-  "description": "BAckend passkey library for node/express",
+  "description": "Passkey authentication and social login for node.js/express apps",
   "keywords": [
     "passkey",
     "passkeys",
@@ -15,7 +15,7 @@
     "email": "toby@passlock.dev"
   },
   "license": "MIT",
-  "homepage": "https://github.com/passlock-dev/ts-clients",
+  "homepage": "https://passlock.dev",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/passlock-dev/ts-clients.git",

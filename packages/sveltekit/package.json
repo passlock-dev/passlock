@@ -1,7 +1,7 @@
 {
 	"name": "@passlock/sveltekit",
 	"version": "0.9.22",
-	"description": "Easy passkey authentication and social login for SvelteKit apps. Works with Superforms and regular form actions.",
+	"description": "Passkey authentication and social login for SvelteKit apps",
 	"keywords": [
 		"passkey",
 		"passkeys",
@@ -9,18 +9,15 @@
 		"google one tap",
 		"sign in with google",
 		"sign in with apple",
-		"react",
-		"next",
-		"vue",
-		"nuxt",
-		"svelte"
+		"svelte",
+    "sveltekit"
 	],
 	"author": {
 		"name": "Toby Hobson",
 		"email": "toby@passlock.dev"
 	},
 	"license": "MIT",
-  "homepage": "https://github.com/passlock-dev/ts-clients",
+  "homepage": "https://passlock.dev",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/passlock-dev/ts-clients.git",
