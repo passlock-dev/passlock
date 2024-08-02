@@ -14,8 +14,8 @@ import { Principal } from '../schema/principal.js'
 /* Options */
 
 export class OptionsReq extends S.Class<OptionsReq>(`@passkey/auth/optionsReq`)({
-  email: S.Option(S.String),
-  userVerification: S.Option(UserVerification),
+  email: S.OptionFromUndefinedOr(S.String),
+  userVerification: S.OptionFromUndefinedOr(UserVerification),
 }) {}
 
 export class OptionsRes extends S.Class<OptionsRes>('@passkey/auth/optionsRes')({

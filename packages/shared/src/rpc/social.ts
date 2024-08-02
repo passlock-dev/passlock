@@ -22,8 +22,8 @@ export class PrincipalRes extends S.Class<PrincipalRes>('@social/principalRes')(
 export class RegisterOidcReq extends S.Class<RegisterOidcReq>('@social/oidc/registerReq')({
   provider: Provider,
   idToken: S.String,
-  givenName: S.Option(S.String),
-  familyName: S.Option(S.String),
+  givenName: S.OptionFromUndefinedOr(S.String),
+  familyName: S.OptionFromUndefinedOr(S.String),
   nonce: S.String,
 }) {}
 

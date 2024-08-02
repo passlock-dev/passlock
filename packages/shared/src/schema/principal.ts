@@ -42,13 +42,20 @@ const BasePrincipal = S.Struct({
   auth_id: S.String,
   // legacy
   token: S.String,
-  user: optional(User),
-  authenticator: S.Struct({
-    id: S.String,
-    type: AuthType,
+  user: optional(
+    S.Struct({
+      id: S.String,
+      givenName: S.String,
+      familyName: S.String,
+      email: S.String,
+      emailVerified: S.Boolean,
+    })
+  ),
+  authStatement: S.Struct({
+    authType: AuthType,
     userVerified: S.Boolean,
+    authTimestamp: S.Date,
   }),
-  authTimestamp: S.Date,
   expireAt: S.Date,
 })
 

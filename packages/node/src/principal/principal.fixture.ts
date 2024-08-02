@@ -38,12 +38,11 @@ export const principal: Principal = {
     email: 'john.doe@gmail.com',
     emailVerified: false
   },
-  authenticator: {
-    id: 'auth-1',
-    type: 'passkey',
-    userVerified: false
+  authStatement: {
+    authType: 'passkey',
+    userVerified: false,
+    authTimestamp: new Date(0),
   },
-  authTimestamp: new Date(0),
   expireAt: new Date(0),
 }
 

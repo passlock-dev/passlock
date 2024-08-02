@@ -12,10 +12,10 @@ import { Principal } from '../schema/principal.js'
 
 export class OptionsReq extends S.Class<OptionsReq>('@passkey/register/optionsReq')({
   email: S.String,
-  givenName: S.Option(S.String),
-  familyName: S.Option(S.String),
-  userVerification: S.Option(UserVerification),
-  verifyEmail: S.Option(VerifyEmail),
+  givenName: S.OptionFromUndefinedOr(S.String),
+  familyName: S.OptionFromUndefinedOr(S.String),
+  userVerification: S.OptionFromUndefinedOr(UserVerification),
+  verifyEmail: S.OptionFromUndefinedOr(VerifyEmail),
 }) {}
 
 export class OptionsRes extends S.Class<OptionsRes>('@passkey/register/optionsRes')({
@@ -32,7 +32,7 @@ export type OptionsErrors = S.Schema.Type<typeof OptionsErrors>
 export class VerificationReq extends S.Class<VerificationReq>('@passkey/register/verificationReq')({
   session: S.String,
   credential: RegistrationCredential,
-  verifyEmail: S.Option(VerifyEmail),
+  verifyEmail: S.OptionFromUndefinedOr(VerifyEmail),
 }) {}
 
 export class VerificationRes extends S.Class<VerificationRes>('@passkey/register/verificationRes')({

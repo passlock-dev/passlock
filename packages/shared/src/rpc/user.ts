@@ -13,7 +13,7 @@ export class IsExistingUserReq extends S.Class<IsExistingUserReq>('@user/isExist
 
 export class IsExistingUserRes extends S.Class<IsExistingUserRes>('@user/isExistingUserRes')({
   existingUser: S.Boolean,
-  detail: S.Option(S.String),
+  detail: S.OptionFromUndefinedOr(S.String),
 }) {}
 
 /* Verify email */

@@ -53,28 +53,26 @@
     "ncu:save": "ncu --peer -x @effect/* -x effect -u"
   },
   "dependencies": {
-    "@passlock/shared": "workspace:^",
-    "effect": "3.6.0"
+    "@passlock/shared": "workspace:*",
+    "effect": "catalog:"
   },
   "devDependencies": {
+    "@effect/schema": "catalog:",
     "@qetza/replacetokens": "^1.7.0",
-    "@effect/schema": "0.70.0",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/node20": "^20.1.4",
-    "@types/node": "^22.0.0",
+    "@types/node": "^22.1.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
-    "@vitest/coverage-v8": "^2.0.4",
-    "@vitest/ui": "^2.0.3",
+    "@vitest/coverage-v8": "^2.0.5",
+    "@vitest/ui": "^2.0.5",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-import": "^2.29.1",
     "prettier": "^3.3.3",
     "rimraf": "^6.0.1",
-    "tsx": "^4.16.2",
+    "tsx": "^4.16.5",
     "typescript": "^5.5.4",
     "vite": "^5.3.5",
-    "vitest": "^2.0.3"
+    "vitest": "^2.0.5"
   }
 }

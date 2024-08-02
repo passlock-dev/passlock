@@ -62,24 +62,22 @@
     "ncu:save": "ncu --peer -x @effect/* -x effect -u"
   },
   "dependencies": {
-    "@effect/schema": "0.70.0",
+    "@effect/schema": "catalog:",
     "@github/webauthn-json": "^2.1.1",
     "@passlock/shared": "workspace:*",
-    "effect": "3.6.0"
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@qetza/replacetokens": "^1.7.0",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/node20": "^20.1.4",
-    "@types/node": "^22.0.2",
+    "@types/node": "^22.1.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "@vitest/coverage-v8": "^2.0.5",
     "@vitest/ui": "^2.0.5",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-import": "^2.29.1",
     "jsdom": "^24.1.1",
     "prettier": "^3.3.3",
     "rimraf": "^6.0.1",
