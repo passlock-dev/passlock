@@ -1,8 +1,8 @@
 {
   "name": "@passlock/node",
   "type": "module",
-  "version": "0.9.21",
-  "description": "Server side passkey library for node/express",
+  "version": "0.9.22",
+  "description": "BAckend passkey library for node/express",
   "keywords": [
     "passkey",
     "passkeys",
@@ -15,21 +15,27 @@
     "email": "toby@passlock.dev"
   },
   "license": "MIT",
-  "homepage": "https://passlock.dev",
-  "repository": "github.com/passlock-dev/node",
+  "homepage": "https://github.com/passlock-dev/ts-clients",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/passlock-dev/ts-clients.git",
+    "directory": "packages/node"
+  },
   "bugs": {
-    "url": "https://github.com/passlock-dev/node/issues",
+    "url": "https://github.com/passlock-dev/ts-clients/issues",
     "email": "team@passlock.dev"
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "files": [
-    "src",
-    "dist"
+		"src",
+		"dist",
+		"!dist/**/*.test.*",
+		"!dist/**/*.spec.*"
   ],
   "scripts": {
     "clean": "tsc --build --clean",
@@ -38,7 +44,7 @@
     "test:watch": "vitest dev",
     "test:ui": "vitest --coverage.enabled=true --ui",
     "test:coverage": "vitest run --coverage",
-    "build": "tsc --build",
+    "build": "tsc --build && publint",
     "build:clean": "pnpm run clean && pnpm run build",
     "build:watch": "tsc --build --watch",
     "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
@@ -49,8 +55,8 @@
     "ncu:save": "ncu --peer -x @effect/* -x effect -u"
   },
   "dependencies": {
-    "@passlock/shared": "workspace:0.9.21",
-    "effect": "^3.4.8"
+    "@passlock/shared": "workspace:*",
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@tsconfig/node18": "^18.2.4",
@@ -64,6 +70,7 @@
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
     "prettier": "^3.3.2",
+    "publint": "^0.1.9",
     "rimraf": "^5.0.8",
     "tsx": "^4.16.2",
     "typescript": "^5.5.3",

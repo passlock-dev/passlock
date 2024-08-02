@@ -1,6 +1,6 @@
 {
   "name": "@passlock/shared",
-  "version": "0.9.21",
+  "version": "0.9.22",
   "type": "module",
   "description": "Shared code use by Passlock frontend libraries & backend SDKs",
   "keywords": [
@@ -11,15 +11,26 @@
     "email": "toby@passlock.dev"
   },
   "license": "MIT",
-  "homepage": "https://github.com/passlock-dev/shared",
+  "homepage": "https://github.com/passlock-dev/ts-clients",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/passlock-dev/ts-clients.git",
+    "directory": "packages/shared"
+  },
+  "bugs": {
+    "url": "https://github.com/passlock-dev/ts-clients/issues",
+    "email": "team@passlock.dev"
+  },
   "files": [
-    "dist",
-    "src"
+		"src",
+		"dist",
+		"!dist/**/*.test.*",
+		"!dist/**/*.spec.*"
   ],
   "scripts": {
     "clean": "rimraf ./dist",
     "typecheck": "tsc --noEmit",
-    "build": "tsc --build",
+    "build": "tsc --build && publint",
     "build:clean": "pnpm run clean && pnpm run build",
     "build:watch": "tsc --build --watch",
     "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
@@ -28,6 +39,10 @@
     "prepublishOnly": "pnpm run clean && pnpm run build",
     "ncu": "ncu --peer -x @effect/* -x effect",
     "ncu:save": "ncu --peer -x @effect/* -x effect -u"
+  },
+  "dependencies": {
+    "@effect/schema": "catalog:",
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@tsconfig/node18": "^18.2.4",
@@ -42,14 +57,9 @@
     "eslint-plugin-prettier": "^5.1.3",
     "fast-check": "^3.19.0",
     "prettier": "^3.3.2",
+    "publint": "^0.1.9",
     "rimraf": "^5.0.8",
     "typescript": "^5.5.3",
     "vitest": "^2.0.3"
-  },
-  "dependencies": {
-    "effect": "^3.4.8",
-    "@effect/rpc": "^0.31.21",
-    "@effect/schema": "^0.68.18",
-    "@effect/platform": "^0.58.21"
   }
 }

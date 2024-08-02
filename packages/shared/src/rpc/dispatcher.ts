@@ -1,7 +1,5 @@
-import { make as makeEffect } from '@effect/rpc/ResolverNoStream'
 import { Context, Effect as E, Layer } from 'effect'
 
-import type { Router } from '@effect/rpc'
 import { NetworkError } from '../error/error.js'
 import { RetrySchedule, RpcConfig } from './config.js'
 
@@ -20,22 +18,6 @@ export class Dispatcher extends Context.Tag('@rpc/Dispatcher')<
     post: (path: string, body: string) => E.Effect<DispatcherResponse, NetworkError>
   }
 >() {}
-
-/** Fires off requests using a Dispatcher */
-export const dispatchResolver = <R extends Router.Router<any, any>>(router: R) => makeEffect(u => {
-  return E.gen(function* (_) {
-    const dispatcher = yield* _(Dispatcher)
-
-    const requestBody = yield* _(
-      E.try({
-        try: () => JSON.stringify(u),
-        catch: () => new NetworkError({ message: 'Unable to serialize RPC request' }),
-      }),
-    )
-
-    return yield* _(dispatcher.post('/rpc', requestBody))
-  })
-})<typeof router>()
 
 /** Fires off client requests using fetch */
 /** TODO: Write tests */

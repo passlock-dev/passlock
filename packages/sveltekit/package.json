@@ -1,6 +1,6 @@
 {
 	"name": "@passlock/sveltekit",
-	"version": "0.9.21",
+	"version": "0.9.22",
 	"description": "Easy passkey authentication and social login for SvelteKit apps. Works with Superforms and regular form actions.",
 	"keywords": [
 		"passkey",
@@ -20,10 +20,14 @@
 		"email": "toby@passlock.dev"
 	},
 	"license": "MIT",
-	"homepage": "https://passlock.dev",
-	"repository": "github.com/passlock-dev/svelte-passkeys",
+  "homepage": "https://github.com/passlock-dev/ts-clients",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/passlock-dev/ts-clients.git",
+    "directory": "packages/sveltekit"
+  },
 	"bugs": {
-		"url": "https://github.com/passlock-dev/svelte-passkeys/issues",
+		"url": "https://github.com/passlock-dev/ts-clients/issues",
 		"email": "team@passlock.dev"
 	},
 	"scripts": {
@@ -79,7 +83,7 @@
 		}
 	},
 	"dependencies": {
-		"@passlock/client": "workspace:0.9.21"
+		"@passlock/client": "workspace:*"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.0.0",
