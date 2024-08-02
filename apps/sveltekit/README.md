@@ -122,8 +122,9 @@ You'll need to set four variables:
 
 <sup>[1]</sup> Optional - If not using Apple/Google set to an empty string
 
-> [!NOTE]
-> **Where to find these variables** - Your Passlock Tenancy ID, Client ID and Api Key (token) can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. Please see the section [Sign in with google](#sign-in-with-google) if using Google sign in.
+Your Passlock **Tenancy ID**, **Client ID** and **API Key** (token) can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. 
+
+Please see the section [Sign in with Google](#sign-in-with-google) if using Google sign in.
 
 Create a `.env.local` file containing the relevant credentials.
 
