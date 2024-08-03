@@ -11,8 +11,8 @@ export const handle: Handle = async ({ event, resolve }) => {
   if (!sessionId && isProtectedRoute(event.route.id)) {
     return redirect(302, '/')
   } else if (!sessionId) {
-    event.locals.user = undefined
-    event.locals.session = undefined
+    event.locals.user = null
+    event.locals.session = null
     return resolve(event)
   }
 
@@ -36,8 +36,8 @@ export const handle: Handle = async ({ event, resolve }) => {
     })
   }
 
-  event.locals.user = user || undefined
-  event.locals.session = session || undefined
+  event.locals.user = user || null
+  event.locals.session = session || null
 
   if (isProtectedRoute(event.route.id) && event.locals.user) {
     return resolve(event)

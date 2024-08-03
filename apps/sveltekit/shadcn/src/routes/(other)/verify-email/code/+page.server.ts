@@ -5,8 +5,9 @@ import { fail, superValidate } from 'sveltekit-superforms'
 import { valibot } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
 
-export const load = (async () => {
+export const load = (async ({ locals }) => {
   return {
+    user: locals.user,
     form: await superValidate(valibot(verifyEmailSchema))
   }
 }) satisfies PageServerLoad

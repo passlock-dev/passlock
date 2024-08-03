@@ -1,9 +1,7 @@
-// +page.server.ts
 import { registrationFormSchema } from '$lib/schemas'
 import { PasslockError, TokenVerifier } from '@passlock/sveltekit'
 import { superValidate } from 'sveltekit-superforms'
 import { valibot } from 'sveltekit-superforms/adapters'
-import type { PageServerLoad } from './$types'
 
 import { PASSLOCK_API_KEY } from '$env/static/private'
 import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public'
@@ -13,17 +11,16 @@ import { createUser } from '$lib/server/db'
 import { error, fail, redirect } from '@sveltejs/kit'
 import type { Actions } from './$types'
 
+/* 
+ * The registration form on the home page posts here.
+ * as it has actions, it can't be pre-rendered
+ */
+
 const tokenVerifier = new TokenVerifier({
   tenancyId: PUBLIC_PASSLOCK_TENANCY_ID,
   apiKey: PASSLOCK_API_KEY,
   endpoint: PUBLIC_PASSLOCK_ENDPOINT
 })
-
-export const load: PageServerLoad = async () => {
-  return {
-    form: await superValidate(valibot(registrationFormSchema))
-  }
-}
 
 export const actions = {
   default: async ({ request, cookies }) => {

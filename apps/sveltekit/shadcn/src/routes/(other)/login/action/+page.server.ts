@@ -10,17 +10,7 @@ import { PasslockError, TokenVerifier } from '@passlock/sveltekit'
 import { error, fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms'
 import { valibot } from 'sveltekit-superforms/adapters'
-import type { Actions, PageServerLoad } from './$types'
-
-export const load: PageServerLoad = async ({ locals }) => {
-  if (locals.user) {
-    redirect(302, app)
-  }
-
-  return {
-    form: await superValidate(valibot(loginFormSchema))
-  }
-}
+import type { Actions } from './$types'
 
 const tokenVerifier = new TokenVerifier({
   tenancyId: PUBLIC_PASSLOCK_TENANCY_ID,

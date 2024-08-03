@@ -44,8 +44,7 @@
     "build": "pnpm run check:errors && svelte-package && publint",
     "build:clean": "pnpm run clean && pnpm run build",
 		"prepublishOnly": "pnpm run build:clean",
-    "ncu": "ncu --peer -x effect -x @effect/*",
-    "ncu:save": "ncu --peer -x effect -x @effect/* -u"
+    "upgrade:deps": "ncu --peer -x effect -x @effect/* -u"
 	},
 	"exports": {
 		".": {
@@ -84,7 +83,7 @@
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.2.2",
-		"@sveltejs/kit": "^2.5.19",
+		"@sveltejs/kit": "^2.5.20",
 		"@sveltejs/package": "^2.3.2",
 		"@sveltejs/vite-plugin-svelte": "^3.1.1",
 		"@types/apple-signin-api": "^1.5.3",
