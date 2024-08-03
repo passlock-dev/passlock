@@ -6,17 +6,18 @@
 
 <h1 align="center">Passkeys, Social Login & More</h1>
 
-<a name="readme-top"></a>
 <div align="center">
   <picture align="center">
-    <source srcset="README_assets/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
-    <img align="center" width=550 height=50 src="README_assets/repo-banner.svg" />
+    <source srcset="https://raw.githubusercontent.com/passlock-dev/ts-clients/master/README_assets/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
+    <img align="center" width=550 height=50 src="https://raw.githubusercontent.com/passlock-dev/ts-clients/master/README_assets/repo-banner.svg" />
   </picture>
   <p align="center">
     Typescript library for next generation authentication. Passkeys, Apple login, Google one-tap and more..
     <br />
     <a href="https://passlock.dev"><strong>Project website »</strong></a>
     <br />
+    <a href="https://github.com/passlock-dev/ts-clients">GitHub</a>
+    ·    
     <a href="https://d1rl0ue18b0151.cloudfront.net">Demo</a>
     ·
     <a href="https://docs.passlock.dev">Documentation</a>
@@ -26,9 +27,6 @@
 </div>
 
 <br />
-
-> [!IMPORTANT]  
-> **Looking for the SvelteKit templates?** You'll find the SvelteKit app templates in [apps/sveltekit](./apps/sveltekit/)
 
 ## Features
 
@@ -48,24 +46,15 @@ Passkeys and the WebAuthn API are quite complex. I've taken an opinionated appro
 
 7. **👌 Headless components** - You have 100% control over the UI
 
-## Screen recording
-
-https://github.com/user-attachments/assets/f1c21242-74cb-4739-8eff-fddb19cb3256
-
 ## Screenshots
 
-![SvelteKit template using this library](./README_assets/preline.dark.png)
+![SvelteKit template using this library](https://raw.githubusercontent.com/passlock-dev/ts-clients/master/README_assets/preline.dark.png)
 <p align="center">Demo app using this library for passkey and social login</p>
 
-![Passlock user profile](./README_assets/console.png)
+![Passlock user profile](https://raw.githubusercontent.com/passlock-dev/ts-clients/master/README_assets/console.png)
 <p align="center">Viewing a user's authentication activity on their profile page</p>
 
 ## Usage
-
-> [!TIP]
-> **SvelteKit users** - Whilst this library is framework agnostic, SvelteKit users may want to check out the [@passlock/sveltekit](./packages/sveltekit/) wrapper This offers several enhancements, including UI components, form action helpers and Superforms support.
-
-Use this library to generate a secure token, representing passkey registration or authentication. Send the token to your backend for verification (see below)
 
 ### Register a passkey
 
@@ -134,5 +123,3 @@ Please see the [tutorial][tutorial] and [documentation][docs]
 [tutorial]: https://docs.passlock.dev/docs/tutorial/introduction
 [docs]: https://docs.passlock.dev
 [node]: https://www.npmjs.com/package/@passlock/node
-[melt]: https://melt-ui.com
-[shadcn]: https://www.shadcn-svelte.com

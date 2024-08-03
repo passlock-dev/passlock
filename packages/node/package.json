@@ -1,8 +1,8 @@
 {
   "name": "@passlock/node",
   "type": "module",
-  "version": "0.9.19",
-  "description": "Server side passkey library for node/express",
+  "version": "0.9.23",
+  "description": "Passkey authentication and social login for node.js/express apps",
   "keywords": [
     "passkey",
     "passkeys",
@@ -16,48 +16,50 @@
   },
   "license": "MIT",
   "homepage": "https://passlock.dev",
-  "repository": "github.com/passlock-dev/node",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/passlock-dev/ts-clients.git",
+    "directory": "packages/node"
+  },
   "bugs": {
-    "url": "https://github.com/passlock-dev/node/issues",
+    "url": "https://github.com/passlock-dev/ts-clients/issues",
     "email": "team@passlock.dev"
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "files": [
     "src",
-    "dist"
+    "dist",
+    "!dist/**/*.test.*",
+    "!dist/**/*.spec.*"
   ],
   "scripts": {
-    "clean": "rimraf ./dist ./staging",
+    "clean": "tsc --build --clean",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest dev",
     "test:ui": "vitest --coverage.enabled=true --ui",
     "test:coverage": "vitest run --coverage",
-    "staging:clean": "rimraf ./staging",
-    "staging:copy": "cp -r ./src ./staging",
-    "staging:tokens": "VERSION=$npm_package_version replacetokens --sources ./staging/principal/principal.ts => /dev/null --use-env",
-    "build": "tsc --build",
+    "build": "tsc --build && publint",
     "build:clean": "pnpm run clean && pnpm run build",
     "build:watch": "tsc --build --watch",
-    "build:prod": "pnpm run clean && pnpm run staging:copy && pnpm run staging:tokens && tsc -p tsconfig.staging.json",
     "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
     "lint": "eslint --ext .ts src",
     "lint:fix": "pnpm run lint --fix",
-    "prepublishOnly": "pnpm run build:prod",
-    "ncu": "ncu --peer -x @effect/* -x effect",
-    "ncu:save": "ncu --peer -x @effect/* -x effect -u"
+    "prepublishOnly": "pnpm run clean && pnpm run build",
+    "ncu": "ncu --peer -x effect -x @effect/*",
+    "ncu:save": "ncu --peer -x effect -x @effect/* -u"
   },
   "dependencies": {
     "@passlock/shared": "workspace:*",
-    "effect": "catalog:"
+    "effect": "3.6.0"
   },
   "devDependencies": {
-    "@effect/schema": "catalog:",
+    "@effect/schema": "0.70.0",
     "@qetza/replacetokens": "^1.7.0",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/node20": "^20.1.4",
@@ -69,6 +71,7 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.3.3",
+    "publint": "^0.2.9",
     "rimraf": "^6.0.1",
     "tsx": "^4.16.5",
     "typescript": "^5.5.4",

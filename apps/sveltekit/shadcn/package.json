@@ -1,6 +1,6 @@
 {
-  "name": "sveltekit",
-  "version": "0.0.1",
+  "name": "sveltekit-auth-template",
+  "version": "0.9.23",
   "private": true,
   "type": "module",
   "scripts": {

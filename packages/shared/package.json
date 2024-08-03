@@ -1,6 +1,6 @@
 {
   "name": "@passlock/shared",
-  "version": "0.9.19",
+  "version": "0.9.23",
   "type": "module",
   "description": "Shared code use by Passlock frontend libraries & backend SDKs",
   "keywords": [
@@ -11,27 +11,38 @@
     "email": "toby@passlock.dev"
   },
   "license": "MIT",
-  "homepage": "https://github.com/passlock-dev/shared",
+  "homepage": "https://passlock.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/passlock-dev/ts-clients.git",
+    "directory": "packages/shared"
+  },
+  "bugs": {
+    "url": "https://github.com/passlock-dev/ts-clients/issues",
+    "email": "team@passlock.dev"
+  },
   "files": [
+    "src",
     "dist",
-    "src"
+    "!dist/**/*.test.*",
+    "!dist/**/*.spec.*"
   ],
   "scripts": {
-    "clean": "rimraf ./dist ./staging",
+    "clean": "rimraf ./dist",
     "typecheck": "tsc --noEmit",
-    "staging:clean": "rimraf ./staging",
-    "staging:copy": "cp -r ./src ./staging",
-    "staging:tokens": "LATEST=$npm_package_version replacetokens --sources ./staging/rpc/client.ts => /dev/null --use-env",
-    "build": "tsc --build",
+    "build": "tsc --build && publint",
     "build:clean": "pnpm run clean && pnpm run build",
     "build:watch": "tsc --build --watch",
-    "build:prod": "pnpm run clean && pnpm run staging:copy && pnpm run staging:tokens && tsc -p tsconfig.staging.json",
     "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
     "lint": "eslint --ext .ts src",
     "lint:fix": "pnpm run lint --fix",
-    "prepublishOnly": "pnpm run build:prod",
-    "ncu": "ncu --peer -x @effect/* -x effect",
-    "ncu:save": "ncu --peer -x @effect/* -x effect -u"
+    "prepublishOnly": "pnpm run clean && pnpm run build",
+    "ncu": "ncu --peer -x effect -x @effect/*",
+    "ncu:save": "ncu --peer -x effect -x @effect/* -u"
+  },
+  "dependencies": {
+    "@effect/schema": "0.70.0",
+    "effect": "3.6.0"
   },
   "devDependencies": {
     "@qetza/replacetokens": "^1.7.0",
@@ -46,12 +57,9 @@
     "eslint-plugin-prettier": "^5.2.1",
     "fast-check": "^3.20.0",
     "prettier": "^3.3.3",
+    "publint": "^0.2.9",
     "rimraf": "^6.0.1",
     "typescript": "^5.5.4",
     "vitest": "^2.0.5"
-  },
-  "dependencies": {
-    "@effect/schema": "catalog:",
-    "effect": "catalog:"
   }
 }

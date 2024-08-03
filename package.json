@@ -1,28 +1,25 @@
 {
   "name": "public",
   "description": "Monorepo containing the JS/TS client libraries",
-  "version": "0.0.0",
+  "version": "0.9.23",
   "private": true,
   "type": "module",
   "scripts": {
     "typecheck": "pnpm -r run typecheck",
-    "lint": "pnpm -r run lint",
-    "lint:fix": "pnpm -r run lint:fix",
-    "format": "pnpm run -r format",
-    "clean": "pnpm run -r clean",
-    "build": "pnpm run -r build",
-    "build:clean": "pnpm run -r build:clean",
-    "build:prod": "pnpm run -r build:prod",
-    "ncu": "ncu --peer -x @effect/* -x @passlock/* -x effect -x better-sqlite3 -x postcss-load-config && pnpm -r run ncu",
-    "ncu:save": "ncu --peer -x @effect/* -x @passlock/* -x effect -x better-sqlite3 -x postcss-load-config -u && pnpm -r run ncu:save",
+    "clean:all": "pnpm -r run clean",
+    "build:packages": "pnpm -r --filter @passlock/shared --filter @passlock/client --filter @passlock/node --filter @passlock/sveltekit run build",
+    "ncu": "ncu --peer -x effect -x @effect/* -x @passlock/* -x better-sqlite3 -x postcss-load-config && pnpm -r run ncu",
+    "ncu:save": "ncu --peer -x effect -x @effect/* -x @passlock/* -x better-sqlite3 -x postcss-load-config -u && pnpm -r run ncu:save",
     "upgrade:pnpm": "corepack use pnpm@latest"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.3"
   },
   "pnpm": {
     "overrides": {
+      "effect": "3.6.0",
+      "@effect/schema": "0.70.0",
       "@passlock/sveltekit": "workspace:*",
       "@passlock/client": "workspace:*",
       "@passlock/shared": "workspace:*",

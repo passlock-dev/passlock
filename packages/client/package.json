@@ -1,7 +1,7 @@
 {
   "name": "@passlock/client",
-  "version": "0.9.19",
-  "description": "Easy WebAuthn/FIDO Passkey authentication and social login for web apps. This library works with pretty much any frontend/backend stack including React/Next.js, Vue etc.",
+  "version": "0.9.23",
+  "description": "Passkey authentication and social login for web apps (Typescript). Framework agnostic",
   "keywords": [
     "passkey",
     "passkeys",
@@ -9,6 +9,8 @@
     "google one tap",
     "sign in with google",
     "sign in with apple",
+    "svelte",
+    "sveltekit",
     "react",
     "next",
     "vue",
@@ -20,52 +22,49 @@
   },
   "license": "MIT",
   "homepage": "https://passlock.dev",
-  "repository": "github.com/passlock-dev/passkeys",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/passlock-dev/ts-clients.git"
+  },
   "bugs": {
-    "url": "https://github.com/passlock-dev/passkeys/issues",
+    "url": "https://github.com/passlock-dev/ts-clients/issues",
     "email": "team@passlock.dev"
   },
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./effect": {
-      "import": "./dist/effect.js",
-      "types": "./dist/effect.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "files": [
     "src",
-    "dist"
+    "dist",
+    "!dist/**/*.test.*",
+    "!dist/**/*.spec.*"
   ],
   "scripts": {
-    "clean": "rimraf ./dist ./staging",
+    "clean": "tsc --build --clean",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest dev",
     "test:ui": "vitest --coverage.enabled=true --ui",
     "test:coverage": "vitest run --coverage",
-    "staging:clean": "rimraf ./staging",
-    "staging:copy": "cp -r ./src ./staging",
-    "staging:tokens": "VERSION=$npm_package_version replacetokens --sources ./staging/version.ts => /dev/null --use-env",
-    "build": "tsc --build",
+    "build": "tsc --build && publint",
     "build:clean": "pnpm run clean && pnpm run build",
     "build:watch": "tsc --build --watch",
-    "build:prod": "pnpm run clean && pnpm run staging:copy && pnpm run staging:tokens && tsc -p tsconfig.staging.json",
     "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
     "lint": "eslint --ext .ts src",
     "lint:fix": "pnpm run lint --fix",
-    "prepublishOnly": "pnpm run build:prod",
-    "ncu": "ncu --peer -x @effect/* -x effect",
-    "ncu:save": "ncu --peer -x @effect/* -x effect -u"
+    "prepublishOnly": "pnpm run clean && pnpm run build",
+    "ncu": "ncu --peer -x effect -x @effect/*",
+    "ncu:save": "ncu --peer -x effect -x @effect/* -u"
   },
   "dependencies": {
-    "@effect/schema": "catalog:",
+    "@effect/schema": "0.70.0",
     "@github/webauthn-json": "^2.1.1",
     "@passlock/shared": "workspace:*",
-    "effect": "catalog:"
+    "effect": "3.6.0"
   },
   "devDependencies": {
     "@qetza/replacetokens": "^1.7.0",
@@ -80,6 +79,7 @@
     "eslint-config-prettier": "^9.1.0",
     "jsdom": "^24.1.1",
     "prettier": "^3.3.3",
+    "publint": "^0.2.9",
     "rimraf": "^6.0.1",
     "tslib": "^2.6.3",
     "typescript": "^5.5.4",

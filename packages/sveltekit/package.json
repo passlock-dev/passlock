@@ -1,7 +1,7 @@
 {
 	"name": "@passlock/sveltekit",
-	"version": "0.9.20",
-	"description": "Easy passkey authentication and social login for SvelteKit apps. Works with Superforms and regular form actions.",
+	"version": "0.9.23",
+	"description": "Passkey authentication and social login for SvelteKit apps",
 	"keywords": [
 		"passkey",
 		"passkeys",
@@ -9,43 +9,43 @@
 		"google one tap",
 		"sign in with google",
 		"sign in with apple",
-		"react",
-		"next",
-		"vue",
-		"nuxt",
-		"svelte"
+		"svelte",
+    "sveltekit"
 	],
 	"author": {
 		"name": "Toby Hobson",
 		"email": "toby@passlock.dev"
 	},
 	"license": "MIT",
-	"homepage": "https://passlock.dev",
-	"repository": "github.com/passlock-dev/svelte-passkeys",
+  "homepage": "https://passlock.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/passlock-dev/ts-clients.git",
+    "directory": "packages/sveltekit"
+  },
 	"bugs": {
-		"url": "https://github.com/passlock-dev/svelte-passkeys/issues",
+		"url": "https://github.com/passlock-dev/ts-clients/issues",
 		"email": "team@passlock.dev"
 	},
 	"scripts": {
-		"dev": "vite dev",
-		"clean": "rimraf ./dist",
-		"typecheck": "pnpm run check:errors",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "dev": "vite dev",
+    "clean": "rimraf ./dist",
+    "typecheck": "pnpm run check:errors",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:errors": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold error",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"test": "vitest run",
-		"test:watch": "vitest dev",
-		"test:ui": "vitest --coverage.enabled=true --ui",
-		"test:coverage": "vitest run --coverage",
-		"format": "prettier --write \"src/**/*.+(js|ts|json|svelte)\"",
-		"lint": "eslint --ext .ts --ext .svelte src",
-		"lint:fix": "pnpm run lint --fix",
-		"build": "svelte-kit sync && svelte-package && publint",
-		"build:clean": "pnpm run clean && pnpm run typecheck && pnpm run build",
-		"build:prod": "pnpm run build",
+    "test": "vitest run",
+    "test:watch": "vitest dev",
+    "test:ui": "vitest --coverage.enabled=true --ui",
+    "test:coverage": "vitest run --coverage",
+    "format": "prettier --write \"src/**/*.+(js|ts|json|svelte)\"",
+    "lint": "eslint --ext .ts --ext .svelte src",
+    "lint:fix": "pnpm run lint --fix",
+    "build": "svelte-kit sync && svelte-package && publint",
+    "build:clean": "pnpm run clean && pnpm run build",
 		"prepublishOnly": "pnpm run build:clean",
-		"ncu": "ncu --peer -x @effect/* -x effect",
-		"ncu:save": "ncu --peer -x @effect/* -x effect -u"
+    "ncu": "ncu --peer -x effect -x @effect/*",
+    "ncu:save": "ncu --peer -x effect -x @effect/* -u"
 	},
 	"exports": {
 		".": {
