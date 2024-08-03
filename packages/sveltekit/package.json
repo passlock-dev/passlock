@@ -41,7 +41,7 @@
     "format": "prettier --write \"src/**/*.+(js|ts|json|svelte)\"",
     "lint": "eslint --ext .ts --ext .svelte src",
     "lint:fix": "pnpm run lint --fix",
-    "build": "svelte-kit sync && svelte-package && publint",
+    "build": "pnpm run check:errors && svelte-package && publint",
     "build:clean": "pnpm run clean && pnpm run build",
 		"prepublishOnly": "pnpm run build:clean",
     "ncu": "ncu --peer -x effect -x @effect/*",

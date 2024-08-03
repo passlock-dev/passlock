@@ -54,7 +54,7 @@ export class Passlock {
 
 		if (token && authType) {
 			// a bit hacky but basically the Google button sets the fields on the superform,
-			// whos data is not necessarily posted to the backend unless we use a hidden
+			// who's data is not necessarily posted to the backend unless we use a hidden
 			// form field. We're basically duplicating the role of a hidden field here by
 			// adding the token and authType to the request
 			formData.set('token', token);
@@ -97,8 +97,8 @@ export class Passlock {
 				cancel();
       } else {
 				// append the passlock token to the form request
-				formData.set('authType', principal.auth_type);
-				formData.set('token', principal.jti);
+				formData.set('authType', principal.authType);
+				formData.set('token', principal.token);
 				if (verifyEmail) formData.set('verifyEmail', verifyEmail.method);
 			}
 		}
@@ -134,8 +134,8 @@ export class Passlock {
       } else {
         form.form.update((old) => ({ ...old, email: principal.email }));
         // append the passlock token to the form request
-        formData.set('authType', principal.auth_type);
-        formData.set('token', principal.jti);
+        formData.set('authType', principal.authType);
+        formData.set('token', principal.token);
 			}
 		}
 	};
@@ -176,10 +176,10 @@ export const updateForm =
 		form.form.update((old) => ({
 			...old,
       email: event.detail.email,
-      ...(event.detail.given_name ? { givenName: event.detail.given_name } : { }),
-      ...(event.detail.family_name ? { familyName: event.detail.family_name } : { }),
+      ...(event.detail.givenName ? { givenName: event.detail.givenName } : { }),
+      ...(event.detail.familyName ? { familyName: event.detail.familyName } : { }),
 			token: event.detail.jti,
-			authType: event.detail.auth_type
+			authType: event.detail.authType
 		}));
 
 		if (typeof onComplete === 'function') {

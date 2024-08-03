@@ -30,6 +30,7 @@ const DateFromSeconds = S.transform(S.Number, S.DateFromSelf, {
 })
 
 const BasePrincipal = S.Struct({
+  // jwt stuff
   iss: S.String,
   aud: S.String,
   sub: S.String,
@@ -37,11 +38,12 @@ const BasePrincipal = S.Struct({
   nbf: DateFromSeconds,
   exp: DateFromSeconds,
   jti: S.String,
-  user_verified: S.Boolean,
-  auth_type: AuthType,
-  auth_id: S.String,
-  // legacy
   token: S.String,
+  // custom
+  userVerified: S.Boolean,
+  authType: AuthType,
+  authId: S.String,
+  // legacy
   user: optional(
     S.Struct({
       id: S.String,
@@ -61,20 +63,20 @@ const BasePrincipal = S.Struct({
 
 export const Principal = S.Struct({
   ...BasePrincipal.fields,
-  given_name: optional(S.String),
-  family_name: optional(S.String),
+  givenName: optional(S.String),
+  familyName: optional(S.String),
   email: optional(S.String),
-  email_verified: optional(S.Boolean),
+  emailVerified: optional(S.Boolean),
 })
 
 export type Principal = S.Schema.Type<typeof Principal>
 
 export const UserPrincipal = S.Struct({
   ...BasePrincipal.fields,
-  given_name: S.String,
-  family_name: S.String,
+  givenName: S.String,
+  familyName: S.String,
   email: S.String,
-  email_verified: S.Boolean,
+  emailVerified: S.Boolean,
 })
 
 export type UserPrincipal = S.Schema.Type<typeof UserPrincipal>

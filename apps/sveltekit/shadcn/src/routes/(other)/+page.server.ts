@@ -12,7 +12,7 @@ import {
 import { app, verifyEmailAwaitLink, verifyEmailCode } from '$lib/routes'
 import { lucia } from '$lib/server/auth'
 import { createUser } from '$lib/server/db'
-import { Passlock, TokenVerifier } from '@passlock/sveltekit'
+import { PasslockError, TokenVerifier } from '@passlock/sveltekit'
 import { error, fail, redirect } from '@sveltejs/kit'
 import type { Actions } from './$types'
 
@@ -40,13 +40,13 @@ export const actions = {
       return fail(400, { form })
     }
 
-    const principal = await tokenVerifier.exchangeToken(form.data.token)
-    if (!Passlock.isUserPrincipal(principal)) error(500, "No user returned from Passlock")
+    const principal = await tokenVerifier.exchangeUserToken(form.data.token)
+    if (PasslockError.isError(principal)) error(500, principal.message)
 
     const user = await createUser({ 
       id: principal.sub, 
-      givenName: principal.given_name, 
-      familyName: principal.family_name, 
+      givenName: principal.givenName, 
+      familyName: principal.familyName, 
       email: principal.email 
     })
     

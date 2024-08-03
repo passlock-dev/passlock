@@ -67,7 +67,7 @@ export const storeToken = (principal: Principal): E.Effect<void, never, BrowserS
 
     const storeEffect = E.try(() => {
       const compressed = compressToken(principal)
-      const key = buildKey(principal.auth_type)
+      const key = buildKey(principal.authType)
       localStorage.setItem(key, compressed)
     }).pipe(E.orElse(() => E.void)) // We dont care if it fails
 

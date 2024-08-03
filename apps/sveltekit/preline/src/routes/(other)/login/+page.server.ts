@@ -3,7 +3,7 @@ import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/stati
 import { app } from '$lib/routes'
 import { loginFormSchema } from '$lib/schemas'
 import { lucia } from '$lib/server/auth'
-import { Passlock, TokenVerifier } from '@passlock/sveltekit'
+import { PasslockError, TokenVerifier } from '@passlock/sveltekit'
 import { error, fail, redirect } from '@sveltejs/kit'
 import { superValidate } from 'sveltekit-superforms'
 import { valibot } from 'sveltekit-superforms/adapters'
@@ -30,8 +30,8 @@ export const actions = {
     }
 
     // Verify the Passlock token is genuine
-    const principal = await tokenVerifier.exchangeToken(form.data.token)
-    if (!Passlock.isUserPrincipal(principal)) error(500, "No user returned from Passlock")
+    const principal = await tokenVerifier.exchangeUserToken(form.data.token)
+    if (PasslockError.isError(principal)) error(500, principal.message)
 
     const session = await lucia.createSession(principal.sub, {})
 

@@ -8,6 +8,7 @@
     "typecheck": "pnpm -r run typecheck",
     "clean:all": "pnpm -r run clean",
     "build:packages": "pnpm -r --filter @passlock/shared --filter @passlock/client --filter @passlock/node --filter @passlock/sveltekit run build",
+    "typecheck:apps": "pnpm -r --filter preline-template --filter shadcn-template run typecheck",
     "ncu": "ncu --peer -x effect -x @effect/* -x @passlock/* -x better-sqlite3 -x postcss-load-config && pnpm -r run ncu",
     "ncu:save": "ncu --peer -x effect -x @effect/* -x @passlock/* -x better-sqlite3 -x postcss-load-config -u && pnpm -r run ncu:save",
     "upgrade:pnpm": "corepack use pnpm@latest"

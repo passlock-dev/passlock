@@ -53,7 +53,7 @@ import { PASSLOCK_VERSION } from './version.js'
 export type Options = { signal?: AbortSignal }
 export type { VerifyEmail } from '@passlock/shared/dist/schema/email.js'
 export type { UserVerification } from '@passlock/shared/dist/schema/passkey.js'
-export type { Principal } from '@passlock/shared/dist/schema/principal.js'
+export type { Principal, UserPrincipal } from '@passlock/shared/dist/schema/principal.js'
 
 export type { VerifyRequest } from './email/email.js'
 export type { AuthType, StoredToken } from './storage/storage.js'
@@ -244,10 +244,10 @@ export class PasslockUnsafe {
 
   static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {
     return (
-      principal.given_name !== undefined &&
-      principal.family_name !== undefined &&
+      principal.givenName !== undefined &&
+      principal.familyName !== undefined &&
       principal.email !== undefined &&
-      principal.email_verified !== undefined
+      principal.emailVerified !== undefined
     )
   }
 
@@ -322,10 +322,10 @@ export class Passlock {
 
   static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {
     return (
-      principal.given_name !== undefined &&
-      principal.family_name !== undefined &&
+      principal.givenName !== undefined &&
+      principal.familyName !== undefined &&
       principal.email !== undefined &&
-      principal.email_verified !== undefined
+      principal.emailVerified !== undefined
     )
   }
 
@@ -369,7 +369,7 @@ export class Passlock {
       this.runPromise(options)
     )
 
-  registerOidc = (request: RegisterOidcReq, options?: Options) =>
+  registerOidc = (request: RegisterOidcReq, options?: Options) => 
     pipe(registerOidc(toRpcRegisterOidcReq(request)), this.runPromise(options))
 
   authenticateOidc = (request: AuthenticateOidcReq, options?: Options) =>

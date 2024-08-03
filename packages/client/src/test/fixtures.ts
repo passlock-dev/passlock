@@ -20,12 +20,12 @@ export const principal: Principal = {
   nbf: new Date(),
   exp: new Date(Date.now() + 5 * 60 * 1000),
   email: 'john.doe@gmail.com',
-  given_name: 'john',
-  family_name: 'doe',
-  email_verified: false,
-  auth_type: 'passkey',
-  auth_id: 'auth-1',
-  user_verified: true,
+  givenName: 'john',
+  familyName: 'doe',
+  emailVerified: false,
+  authType: 'passkey',
+  authId: 'auth-1',
+  userVerified: true,
   // legacy
   user: {
     id: 'user-1',

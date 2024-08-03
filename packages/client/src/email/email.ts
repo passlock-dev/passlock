@@ -66,7 +66,7 @@ const getToken = () => {
             principal =>
               ({
                 token: principal.jti,
-                authType: principal.auth_type,
+                authType: principal.authType,
                 expiry: principal.exp.getTime(),
               }) as StoredToken,
           ),
