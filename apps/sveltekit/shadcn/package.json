@@ -12,8 +12,7 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "typecheck": "pnpm run check:errors",
     "format": "prettier --write .",
-    "upgrade:deps": "ncu --peer -x @passlock/sveltekit -x better-sqlite3 -x postcss-load-config -u",
-    "pnpm:upgrade": "corepack use pnpm@latest"
+    "upgrade:deps": "ncu --peer -x @passlock/sveltekit -u"
   },
   "devDependencies": {
     "@lucia-auth/adapter-sqlite": "^3.0.2",
@@ -28,7 +27,7 @@
     "@types/better-sqlite3": "^7.6.11",
     "@types/google-one-tap": "^1.2.6",
     "autoprefixer": "^10.4.20",
-    "better-sqlite3": "~9.6.0",
+    "better-sqlite3": "~11.1.2",
     "bits-ui": "^0.21.13",
     "clsx": "^2.1.1",
     "dedent": "^1.5.3",
@@ -38,7 +37,7 @@
     "mode-watcher": "^0.4.1",
     "node-check-updates": "^0.1.9",
     "postcss": "^8.4.41",
-    "postcss-load-config": "^5.1.0",
+    "postcss-load-config": "^6.0.1",
     "prettier": "^3.3.3",
     "prettier-plugin-svelte": "^3.2.6",
     "svelte": "^4.2.18",
@@ -51,6 +50,5 @@
     "typescript": "^5.5.4",
     "valibot": "^0.37.0",
     "vite": "^5.4.0"
-  },
-  "packageManager": "pnpm@9.5.0+sha256.dbdf5961c32909fb030595a9daa1dae720162e658609a8f92f2fa99835510ca5"
+  }
 }

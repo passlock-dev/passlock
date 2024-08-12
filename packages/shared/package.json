@@ -37,7 +37,8 @@
     "lint": "eslint --ext .ts src",
     "lint:fix": "pnpm run lint --fix",
     "prepublishOnly": "pnpm run clean && pnpm run build",
-    "upgrade:deps": "ncu --peer -x effect -x @effect/* -u"
+    "upgrade:deps": "ncu --peer -x effect -x @effect/* -u",
+    "upgrade:pnpm": "corepack use pnpm@latest"
   },
   "dependencies": {
     "@effect/schema": "0.70.4",

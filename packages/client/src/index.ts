@@ -239,7 +239,7 @@ export class PasslockUnsafe {
 
     this.runtime = E.runSync(Layer.toRuntime(allLayers).pipe(Scope.extend(scope)))
 
-    E.runSync(E.logInfo(`Passlock version: ${PASSLOCK_CLIENT_VERSION}`))
+    E.runSync(E.logDebug(`Passlock version: ${PASSLOCK_CLIENT_VERSION}`))
   }
 
   static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {
@@ -317,7 +317,7 @@ export class Passlock {
 
     this.runtime = E.runSync(Layer.toRuntime(allLayers).pipe(Scope.extend(scope)))
     
-    E.runSync(E.logInfo(`Passlock version: ${PASSLOCK_CLIENT_VERSION}`))
+    E.runSync(E.logDebug(`Passlock version: ${PASSLOCK_CLIENT_VERSION}`))
   }
 
   static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {

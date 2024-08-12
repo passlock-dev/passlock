@@ -36,7 +36,7 @@
   import * as Table from '$lib/components/ui/table/index.js'
   import * as Tabs from '$lib/components/ui/tabs/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import { logout } from '$lib/routes'
+  import { logoutAction } from '$lib/routes'
   import type { PageData } from './$types'
 
   export let data: PageData
@@ -688,5 +688,5 @@
   </div>
 </div>
 
-<form bind:this={logoutForm} method="post" action={logout} class="hidden">
+<form bind:this={logoutForm} method="post" action={logoutAction} class="hidden">
 </form>

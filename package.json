@@ -9,8 +9,7 @@
     "clean:all": "pnpm -r run clean",
     "build:packages": "pnpm -r --filter @passlock/shared --filter @passlock/client --filter @passlock/node --filter @passlock/sveltekit run build",
     "typecheck:apps": "pnpm -r --filter preline-template --filter shadcn-template run typecheck",
-    "upgrade:deps": "ncu --peer -x effect -x @effect/* -x @passlock/* -u && pnpm -r run upgrade:deps",
-    "upgrade:pnpm": "corepack use pnpm@latest"
+    "upgrade:deps": "ncu --peer -x effect -x @effect/* -x @passlock/* -u && pnpm -r run upgrade:deps"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
@@ -23,6 +22,7 @@
       "@passlock/sveltekit": "workspace:*",
       "@passlock/client": "workspace:*",
       "@passlock/shared": "workspace:*",
+      "svelte-preprocess": "^6.0.2",
       "@aws-sdk/lib-dynamodb": "3.395.0",
       "@aws-sdk/client-dynamodb": "3.395.0",
       "@aws-sdk/client-sts": "3.606.0",

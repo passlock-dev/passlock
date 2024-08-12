@@ -3,7 +3,7 @@
   Displays the user's Gravatar, falling back to their initials
 -->
 <script lang="ts">
-  import { logout } from '$lib/routes'
+  import { logoutAction } from '$lib/routes'
   import { createAvatar, createDropdownMenu, melt } from '@melt-ui/svelte'
   import type { User } from 'lucia'
 
@@ -46,4 +46,4 @@
   </button>
 </div>
 
-<form bind:this={form} method="post" action={logout}></form>
+<form bind:this={form} method="post" action={logoutAction}></form>
