@@ -38,13 +38,13 @@ https://github.com/user-attachments/assets/c1da1bea-a1c5-4930-8f57-d12728106630
 
 # Screenshots
 
-![Register a passkey](./README_assets/preline.png)
+![Register a passkey](./README_assets/preline.webp)
 
 <p align="center">Creating a new account and passkey</p>
 
 <br />
 
-![Shadcn/ui variant](./README_assets/shadcn.png)
+![Shadcn/ui variant](./README_assets/shadcn.webp)
 
 <p align="center">Shadcn/ui variant (dark mode)</p>
 
@@ -236,7 +236,7 @@ See the emails section of your [Passlock console][passlock-settings]
 
 # Shadcn/ui variant
 
-![Shadcn/ui variant](./README_assets/shadcn.png)
+![Shadcn/ui variant](./README_assets/shadcn.webp)
 
 <p align="center">Shadcn/ui variant</p>
 

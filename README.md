@@ -54,10 +54,10 @@ https://github.com/user-attachments/assets/f1c21242-74cb-4739-8eff-fddb19cb3256
 
 ## Screenshots
 
-![SvelteKit template using this library](./README_assets/preline.dark.png)
+![SvelteKit template using this library](./README_assets/preline.dark.webp)
 <p align="center">Demo app using this library for passkey and social login</p>
 
-![Passlock user profile](./README_assets/console.png)
+![Passlock user profile](./README_assets/console.webp)
 <p align="center">Viewing a user's authentication activity on their profile page</p>
 
 ## Usage
