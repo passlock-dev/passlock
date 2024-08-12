@@ -40,21 +40,22 @@
     "upgrade:deps": "ncu --peer -x effect -x @effect/* -u"
   },
   "dependencies": {
-    "@effect/schema": "0.70.1",
-    "effect": "3.6.0"
+    "@effect/schema": "0.70.4",
+    "effect": "3.6.3"
   },
   "devDependencies": {
     "@qetza/replacetokens": "^1.7.0",
+    "@total-typescript/tsconfig": "^1.0.4",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/node20": "^20.1.4",
-    "@types/node": "^22.1.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
+    "@types/node": "^22.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.1",
+    "@typescript-eslint/parser": "^8.0.1",
     "@vitest/coverage-v8": "^2.0.5",
-    "eslint": "^9.8.0",
+    "eslint": "^9.9.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
-    "fast-check": "^3.20.0",
+    "fast-check": "^3.21.0",
     "prettier": "^3.3.3",
     "publint": "^0.2.9",
     "rimraf": "^6.0.1",

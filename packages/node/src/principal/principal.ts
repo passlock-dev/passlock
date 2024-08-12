@@ -9,6 +9,7 @@ import { createParser } from '@passlock/shared/dist/schema/utils.js'
 import type { StreamEmit } from 'effect'
 import { Chunk, Console, Context, Effect as E, Layer, Option, Stream, flow, pipe } from 'effect'
 import * as https from 'https'
+import { PASSLOCK_CLIENT_VERSION } from '../version.js'
 
 import { Config } from '../config/config.js'
 
@@ -52,7 +53,7 @@ const buildOptions = (token: string) =>
       headers: {
         Accept: 'application/json',
         Authorization: `Bearer ${apiKey}`,
-        'X-PASSLOCK-VERSION': '#{LATEST}#'
+        'X-PASSLOCK-CLIENT-VERSION': PASSLOCK_CLIENT_VERSION
       },
     })),
   )

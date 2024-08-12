@@ -1,6 +1,7 @@
 import * as S from '@effect/schema/Schema'
 import { NetworkError } from '@passlock/shared/dist/error/error.js'
 import { Context, Effect as E, Layer, pipe } from 'effect'
+import { PASSLOCK_CLIENT_VERSION } from '../version.js'
 import { RetrySchedule, RpcConfig } from './config.js'
 
 export type DispatcherResponse = {
@@ -72,7 +73,7 @@ export const DispatcherLive = Layer.effect(
           const headers = {
             'Accept': 'application/json',
             'X-CLIENT-ID': clientId,
-            'X-PASSLOCK-VERSION': '#{LATEST}#'
+            'X-PASSLOCK-CLIENT-VERSION': PASSLOCK_CLIENT_VERSION
           }
 
           const url = buildUrl(path)
@@ -101,7 +102,7 @@ export const DispatcherLive = Layer.effect(
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'X-CLIENT-ID': clientId,
-            'X-PASSLOCK-VERSION': '#{LATEST}#'
+            'X-PASSLOCK-CLIENT-VERSION': PASSLOCK_CLIENT_VERSION
           }
 
           // drop leading /

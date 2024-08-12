@@ -87,7 +87,7 @@ export class InternalServerError extends S.TaggedError<InternalServerError>()(
     detail: S.optional(S.String),
   },
 ) {
-  toString(): string {
+  override toString(): string {
     return this.detail
       ? `${this.name} - ${this.message} (${this.detail})`
       : `${this.name} - ${this.message}`

@@ -46,8 +46,10 @@ export const expandToken =
   (s: string): O.Option<StoredToken> => {
     const tokens = s.split(':')
     if (tokens.length !== 2) return O.none()
+      
+    const [token, expireAtString] = tokens      
+    if (token === undefined || expireAtString === undefined) return O.none()
 
-    const [token, expireAtString] = tokens
     const parse = O.liftThrowable(Number.parseInt)
     const expireAt = parse(expireAtString)
 

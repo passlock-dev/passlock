@@ -1,4 +1,5 @@
 import { ErrorCode, Passlock, PasslockError, type Principal, type UserPrincipal } from '@passlock/client'
+import { PASSLOCK_CLIENT_VERSION } from './version.js'
 
 export type TokenVerifierProps = {
 	readonly tenancyId: string;
@@ -29,7 +30,8 @@ export class TokenVerifier {
 
 		const headers = {
 			Accept: 'application/json',
-			Authorization: `Bearer ${this.apiKey}`
+			Authorization: `Bearer ${this.apiKey}`,
+      'X-PASSLOCK-CLIENT-VERSION': PASSLOCK_CLIENT_VERSION,
 		};
 
 		const response = await fetch(url, { headers });

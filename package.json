@@ -9,7 +9,7 @@
     "clean:all": "pnpm -r run clean",
     "build:packages": "pnpm -r --filter @passlock/shared --filter @passlock/client --filter @passlock/node --filter @passlock/sveltekit run build",
     "typecheck:apps": "pnpm -r --filter preline-template --filter shadcn-template run typecheck",
-    "upgrade:deps": "ncu --peer -x effect -x @effect/* -x @passlock/* -x better-sqlite3 -x postcss-load-config -u && pnpm -r run upgrade:deps",
+    "upgrade:deps": "ncu --peer -x effect -x @effect/* -x @passlock/* -u && pnpm -r run upgrade:deps",
     "upgrade:pnpm": "corepack use pnpm@latest"
   },
   "devDependencies": {
@@ -18,8 +18,8 @@
   },
   "pnpm": {
     "overrides": {
-      "effect": "3.6.0",
-      "@effect/schema": "0.70.1",
+      "effect": "3.6.3",
+      "@effect/schema": "0.70.4",
       "@passlock/sveltekit": "workspace:*",
       "@passlock/client": "workspace:*",
       "@passlock/shared": "workspace:*",
@@ -29,5 +29,5 @@
       "@aws-sdk/client-sso-oidc": "3.606.0"
     }
   },
-  "packageManager": "pnpm@9.6.0+sha256.dae0f7e822c56b20979bb5965e3b73b8bdabb6b8b8ef121da6d857508599ca35"
+  "packageManager": "pnpm@9.7.0+sha256.b35018fbfa8f583668b2649e407922a721355cd81f61beeb4ac1d4258e585559"
 }

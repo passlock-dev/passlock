@@ -10,41 +10,42 @@
 		"sign in with google",
 		"sign in with apple",
 		"svelte",
-    "sveltekit"
+		"sveltekit"
 	],
 	"author": {
 		"name": "Toby Hobson",
 		"email": "toby@passlock.dev"
 	},
 	"license": "MIT",
-  "homepage": "https://passlock.dev",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/passlock-dev/ts-clients.git",
-    "directory": "packages/sveltekit"
-  },
+	"homepage": "https://passlock.dev",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/passlock-dev/ts-clients.git",
+		"directory": "packages/sveltekit"
+	},
 	"bugs": {
 		"url": "https://github.com/passlock-dev/ts-clients/issues",
 		"email": "team@passlock.dev"
 	},
 	"scripts": {
-    "dev": "vite dev",
-    "clean": "rimraf ./dist",
-    "typecheck": "pnpm run check:errors",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"dev": "vite dev",
+		"clean": "rimraf ./dist",
+		"typecheck": "pnpm run check:errors",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:errors": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold error",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "test": "vitest run",
-    "test:watch": "vitest dev",
-    "test:ui": "vitest --coverage.enabled=true --ui",
-    "test:coverage": "vitest run --coverage",
-    "format": "prettier --write \"src/**/*.+(js|ts|json|svelte)\"",
-    "lint": "eslint --ext .ts --ext .svelte src",
-    "lint:fix": "pnpm run lint --fix",
-    "build": "pnpm run check:errors && svelte-package && publint",
-    "build:clean": "pnpm run clean && pnpm run build",
+		"test": "vitest run",
+		"test:watch": "vitest dev",
+		"test:ui": "vitest --coverage.enabled=true --ui",
+		"test:coverage": "vitest run --coverage",
+		"replaceTokens": "LATEST=${npm_package_version} replacetokens --sources ./dist/version.* --log-level error --missing-var-action keep --use-env > /dev/null",
+		"format": "prettier --write \"src/**/*.+(js|ts|json|svelte)\"",
+		"lint": "eslint --ext .ts --ext .svelte src",
+		"lint:fix": "pnpm run lint --fix",
+		"build": "pnpm run check:errors && svelte-package && pnpm run replaceTokens && publint",
+		"build:clean": "pnpm run clean && pnpm run build",
 		"prepublishOnly": "pnpm run build:clean",
-    "upgrade:deps": "ncu --peer -x effect -x @effect/* -u"
+		"upgrade:deps": "ncu --peer -x effect -x @effect/* -u"
 	},
 	"exports": {
 		".": {
@@ -82,14 +83,15 @@
 		"@passlock/client": "workspace:*"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-auto": "^3.2.2",
-		"@sveltejs/kit": "^2.5.20",
-		"@sveltejs/package": "^2.3.2",
+		"@qetza/replacetokens": "^1.7.0",
+		"@sveltejs/adapter-auto": "^3.2.3",
+		"@sveltejs/kit": "^2.5.21",
+		"@sveltejs/package": "^2.3.3",
 		"@sveltejs/vite-plugin-svelte": "^3.1.1",
 		"@types/apple-signin-api": "^1.5.3",
 		"@types/eslint": "^9.6.0",
 		"@types/google-one-tap": "^1.2.6",
-		"eslint": "^9.8.0",
+		"eslint": "^9.9.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^2.43.0",
 		"globals": "^15.9.0",
@@ -102,8 +104,8 @@
 		"sveltekit-superforms": "^2.16.1",
 		"tslib": "^2.6.3",
 		"typescript": "^5.5.4",
-		"typescript-eslint": "^8.0.0",
-		"vite": "^5.3.5",
+		"typescript-eslint": "^8.0.1",
+		"vite": "^5.4.0",
 		"vitest": "^2.0.5"
 	},
 	"svelte": "./dist/index.js",

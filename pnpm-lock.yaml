@@ -5,8 +5,8 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  effect: 3.6.0
-  '@effect/schema': 0.70.1
+  effect: 3.6.3
+  '@effect/schema': 0.70.4
   '@passlock/sveltekit': workspace:*
   '@passlock/client': workspace:*
   '@passlock/shared': workspace:*
@@ -41,10 +41,10 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/sveltekit
       '@sveltejs/adapter-auto':
-        specifier: ^3.2.2
+        specifier: ^3.2.3
         version: 3.2.3(@sveltejs/kit@2.5.21(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0)))(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0)))
       '@sveltejs/kit':
-        specifier: ^2.5.20
+        specifier: ^2.5.21
         version: 2.5.21(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0)))(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0))
       '@sveltejs/vite-plugin-svelte':
         specifier: ^3.1.1
@@ -80,8 +80,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
       lucide-svelte:
-        specifier: ^0.424.0
-        version: 0.424.0(svelte@4.2.18)
+        specifier: ^0.427.0
+        version: 0.427.0(svelte@4.2.18)
       mode-watcher:
         specifier: ^0.4.1
         version: 0.4.1(svelte@4.2.18)
@@ -89,7 +89,7 @@ importers:
         specifier: ^0.1.9
         version: 0.1.9
       postcss:
-        specifier: ^8.4.40
+        specifier: ^8.4.41
         version: 8.4.41
       postcss-load-config:
         specifier: ^5.1.0
@@ -110,7 +110,7 @@ importers:
         specifier: ^2.16.1
         version: 2.16.1(@sveltejs/kit@2.5.21(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0)))(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0)))(svelte@4.2.18)
       tailwindcss:
-        specifier: ^3.4.7
+        specifier: ^3.4.9
         version: 3.4.9
       tslib:
         specifier: ^2.6.3
@@ -122,7 +122,7 @@ importers:
         specifier: ^0.37.0
         version: 0.37.0(typescript@5.5.4)
       vite:
-        specifier: ^5.3.5
+        specifier: ^5.4.0
         version: 5.4.0(@types/node@22.2.0)
 
   apps/sveltekit/shadcn:
@@ -140,10 +140,10 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/sveltekit
       '@sveltejs/adapter-auto':
-        specifier: ^3.2.2
+        specifier: ^3.2.3
         version: 3.2.3(@sveltejs/kit@2.5.21(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0)))(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0)))
       '@sveltejs/kit':
-        specifier: ^2.5.20
+        specifier: ^2.5.21
         version: 2.5.21(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0)))(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0))
       '@sveltejs/vite-plugin-svelte':
         specifier: ^3.1.1
@@ -182,8 +182,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
       lucide-svelte:
-        specifier: ^0.424.0
-        version: 0.424.0(svelte@4.2.18)
+        specifier: ^0.427.0
+        version: 0.427.0(svelte@4.2.18)
       mode-watcher:
         specifier: ^0.4.1
         version: 0.4.1(svelte@4.2.18)
@@ -191,7 +191,7 @@ importers:
         specifier: ^0.1.9
         version: 0.1.9
       postcss:
-        specifier: ^8.4.40
+        specifier: ^8.4.41
         version: 8.4.41
       postcss-load-config:
         specifier: ^5.1.0
@@ -212,13 +212,13 @@ importers:
         specifier: ^2.16.1
         version: 2.16.1(@sveltejs/kit@2.5.21(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0)))(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0)))(svelte@4.2.18)
       tailwind-merge:
-        specifier: ^2.4.0
+        specifier: ^2.5.1
         version: 2.5.1
       tailwind-variants:
         specifier: ^0.2.1
         version: 0.2.1(tailwindcss@3.4.9)
       tailwindcss:
-        specifier: ^3.4.7
+        specifier: ^3.4.9
         version: 3.4.9
       tslib:
         specifier: ^2.6.3
@@ -230,14 +230,14 @@ importers:
         specifier: ^0.37.0
         version: 0.37.0(typescript@5.5.4)
       vite:
-        specifier: ^5.3.5
+        specifier: ^5.4.0
         version: 5.4.0(@types/node@22.2.0)
 
   packages/client:
     dependencies:
       '@effect/schema':
-        specifier: 0.70.1
-        version: 0.70.1(effect@3.6.0)
+        specifier: 0.70.4
+        version: 0.70.4(effect@3.6.3)
       '@github/webauthn-json':
         specifier: ^2.1.1
         version: 2.1.1
@@ -245,12 +245,15 @@ importers:
         specifier: workspace:*
         version: link:../shared
       effect:
-        specifier: 3.6.0
-        version: 3.6.0
+        specifier: 3.6.3
+        version: 3.6.3
     devDependencies:
       '@qetza/replacetokens':
         specifier: ^1.7.0
         version: 1.7.0
+      '@total-typescript/tsconfig':
+        specifier: ^1.0.4
+        version: 1.0.4
       '@trivago/prettier-plugin-sort-imports':
         specifier: ^4.3.0
         version: 4.3.0(prettier@3.3.3)
@@ -258,13 +261,13 @@ importers:
         specifier: ^20.1.4
         version: 20.1.4
       '@types/node':
-        specifier: ^22.1.0
+        specifier: ^22.2.0
         version: 22.2.0
       '@typescript-eslint/eslint-plugin':
-        specifier: ^8.0.0
+        specifier: ^8.0.1
         version: 8.0.1(@typescript-eslint/parser@8.0.1(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4))(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
       '@typescript-eslint/parser':
-        specifier: ^8.0.0
+        specifier: ^8.0.1
         version: 8.0.1(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
@@ -273,7 +276,7 @@ importers:
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5)
       eslint:
-        specifier: ^9.8.0
+        specifier: ^9.9.0
         version: 9.9.0(jiti@1.21.6)
       eslint-config-prettier:
         specifier: ^9.1.0
@@ -297,7 +300,7 @@ importers:
         specifier: ^5.5.4
         version: 5.5.4
       vite:
-        specifier: ^5.3.5
+        specifier: ^5.4.0
         version: 5.4.0(@types/node@22.2.0)
       vitest:
         specifier: ^2.0.5
@@ -312,15 +315,18 @@ importers:
         specifier: workspace:*
         version: link:../shared
       effect:
-        specifier: 3.6.0
-        version: 3.6.0
+        specifier: 3.6.3
+        version: 3.6.3
     devDependencies:
       '@effect/schema':
-        specifier: 0.70.1
-        version: 0.70.1(effect@3.6.0)
+        specifier: 0.70.4
+        version: 0.70.4(effect@3.6.3)
       '@qetza/replacetokens':
         specifier: ^1.7.0
         version: 1.7.0
+      '@total-typescript/tsconfig':
+        specifier: ^1.0.4
+        version: 1.0.4
       '@trivago/prettier-plugin-sort-imports':
         specifier: ^4.3.0
         version: 4.3.0(prettier@3.3.3)
@@ -328,13 +334,13 @@ importers:
         specifier: ^20.1.4
         version: 20.1.4
       '@types/node':
-        specifier: ^22.1.0
+        specifier: ^22.2.0
         version: 22.2.0
       '@typescript-eslint/eslint-plugin':
-        specifier: ^8.0.0
+        specifier: ^8.0.1
         version: 8.0.1(@typescript-eslint/parser@8.0.1(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4))(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
       '@typescript-eslint/parser':
-        specifier: ^8.0.0
+        specifier: ^8.0.1
         version: 8.0.1(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
@@ -343,7 +349,7 @@ importers:
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5)
       eslint:
-        specifier: ^9.8.0
+        specifier: ^9.9.0
         version: 9.9.0(jiti@1.21.6)
       eslint-config-prettier:
         specifier: ^9.1.0
@@ -358,13 +364,13 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       tsx:
-        specifier: ^4.16.5
+        specifier: ^4.17.0
         version: 4.17.0
       typescript:
         specifier: ^5.5.4
         version: 5.5.4
       vite:
-        specifier: ^5.3.5
+        specifier: ^5.4.0
         version: 5.4.0(@types/node@22.2.0)
       vitest:
         specifier: ^2.0.5
@@ -373,15 +379,18 @@ importers:
   packages/shared:
     dependencies:
       '@effect/schema':
-        specifier: 0.70.1
-        version: 0.70.1(effect@3.6.0)
+        specifier: 0.70.4
+        version: 0.70.4(effect@3.6.3)
       effect:
-        specifier: 3.6.0
-        version: 3.6.0
+        specifier: 3.6.3
+        version: 3.6.3
     devDependencies:
       '@qetza/replacetokens':
         specifier: ^1.7.0
         version: 1.7.0
+      '@total-typescript/tsconfig':
+        specifier: ^1.0.4
+        version: 1.0.4
       '@trivago/prettier-plugin-sort-imports':
         specifier: ^4.3.0
         version: 4.3.0(prettier@3.3.3)
@@ -389,19 +398,19 @@ importers:
         specifier: ^20.1.4
         version: 20.1.4
       '@types/node':
-        specifier: ^22.1.0
+        specifier: ^22.2.0
         version: 22.2.0
       '@typescript-eslint/eslint-plugin':
-        specifier: ^8.0.0
+        specifier: ^8.0.1
         version: 8.0.1(@typescript-eslint/parser@8.0.1(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4))(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
       '@typescript-eslint/parser':
-        specifier: ^8.0.0
+        specifier: ^8.0.1
         version: 8.0.1(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@22.2.0)(@vitest/ui@2.0.5)(jsdom@24.1.1))
       eslint:
-        specifier: ^9.8.0
+        specifier: ^9.9.0
         version: 9.9.0(jiti@1.21.6)
       eslint-config-prettier:
         specifier: ^9.1.0
@@ -410,7 +419,7 @@ importers:
         specifier: ^5.2.1
         version: 5.2.1(@types/eslint@9.6.0)(eslint-config-prettier@9.1.0(eslint@9.9.0(jiti@1.21.6)))(eslint@9.9.0(jiti@1.21.6))(prettier@3.3.3)
       fast-check:
-        specifier: ^3.20.0
+        specifier: ^3.21.0
         version: 3.21.0
       prettier:
         specifier: ^3.3.3
@@ -434,14 +443,17 @@ importers:
         specifier: workspace:*
         version: link:../client
     devDependencies:
+      '@qetza/replacetokens':
+        specifier: ^1.7.0
+        version: 1.7.0
       '@sveltejs/adapter-auto':
-        specifier: ^3.2.2
+        specifier: ^3.2.3
         version: 3.2.3(@sveltejs/kit@2.5.21(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0)))(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0)))
       '@sveltejs/kit':
-        specifier: ^2.5.20
+        specifier: ^2.5.21
         version: 2.5.21(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0)))(svelte@4.2.18)(vite@5.4.0(@types/node@22.2.0))
       '@sveltejs/package':
-        specifier: ^2.3.2
+        specifier: ^2.3.3
         version: 2.3.3(svelte@4.2.18)(typescript@5.5.4)
       '@sveltejs/vite-plugin-svelte':
         specifier: ^3.1.1
@@ -456,7 +468,7 @@ importers:
         specifier: ^1.2.6
         version: 1.2.6
       eslint:
-        specifier: ^9.8.0
+        specifier: ^9.9.0
         version: 9.9.0(jiti@1.21.6)
       eslint-config-prettier:
         specifier: ^9.1.0
@@ -495,10 +507,10 @@ importers:
         specifier: ^5.5.4
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.0
+        specifier: ^8.0.1
         version: 8.0.1(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
       vite:
-        specifier: ^5.3.5
+        specifier: ^5.4.0
         version: 5.4.0(@types/node@22.2.0)
       vitest:
         specifier: ^2.0.5
@@ -588,10 +600,10 @@ packages:
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
-  '@effect/schema@0.70.1':
-    resolution: {integrity: sha512-pxHAmOxWXUs7ZcHBTJUHcMg3ici65bOepxWV7cs//ujv1n9cLQJDQE8phUIzbxtROPcEbZwukGgJy7/HlBjx+w==}
+  '@effect/schema@0.70.4':
+    resolution: {integrity: sha512-iviV5abu6x3pMjg2uI2Mv5/1FpXLgkUhxJmt2lyzjKoAIED3lcntcrzJBMRbjYDOB0SJL1tYCY/Y0r2rPkC/JQ==}
     peerDependencies:
-      effect: 3.6.0
+      effect: 3.6.3
 
   '@emnapi/core@0.45.0':
     resolution: {integrity: sha512-DPWjcUDQkCeEM4VnljEOEcXdAD7pp8zSZsgOujk/LGIwCXWbXJngin+MO4zbH429lzeC3WbYLGjE2MaUOwzpyw==}
@@ -1347,6 +1359,9 @@ packages:
     peerDependencies:
       tailwindcss: '>=3.0.0 || >= 3.0.0-alpha.1'
 
+  '@total-typescript/tsconfig@1.0.4':
+    resolution: {integrity: sha512-fO4ctMPGz1kOFOQ4RCPBRBfMy3gDn+pegUfrGyUFRMv/Rd0ZM3/SHH3hFCYG4u6bPLG8OlmOGcBLDexvyr3A5w==}
+
   '@trivago/prettier-plugin-sort-imports@4.3.0':
     resolution: {integrity: sha512-r3n0onD3BTOVUNPhR4lhVK4/pABGpbA7bW3eumZnYdKaHkf1qEC+Mag6DPbGNuuh0eG8AaYj+YqmVHSiGslaTQ==}
     peerDependencies:
@@ -1791,8 +1806,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  effect@3.6.0:
-    resolution: {integrity: sha512-7bUV/Ytt058F3YWZJyra63MGA80msTk4AnFiVlvCM65RN7afc3LsvLOHpMifLqX/8CG0eDlJLg2lDLByyEnYGQ==}
+  effect@3.6.3:
+    resolution: {integrity: sha512-KHD2j476/9KvmeqBN+kNNf+HwCycLqSY1jqxtVjL0P0D7SMV9FGSMBiNmFqy8BZ7kKCsCeF2sQ/8v6KxKF3Gkg==}
 
   electron-to-chromium@1.5.6:
     resolution: {integrity: sha512-jwXWsM5RPf6j9dPYzaorcBSUg6AiqocPEyMpkchkvntaH9HGfOOMZwxMJjDY/XEs3T5dM7uyH1VhRMkqUU9qVw==}
@@ -2330,8 +2345,8 @@ packages:
   lucia@3.2.0:
     resolution: {integrity: sha512-eXMxXwk6hqtjRTj4W/x3EnTUtAztLPm0p2N2TEBMDEbakDLXiYnDQ9z/qahjPdPdhPguQc+vwO0/88zIWxlpuw==}
 
-  lucide-svelte@0.424.0:
-    resolution: {integrity: sha512-mrEapPPlH5PWGMI0zs3dctR/6NylLx1VM9avRmH4OHN5aaldk4QYd/wTooROD4H6OKlC+7XOdgz0zX1tSxFlXw==}
+  lucide-svelte@0.427.0:
+    resolution: {integrity: sha512-l0IJqYVBTxMkJPvZqyIMyVFlbZ18Mjg0n6p7Zo9bSQNvsmeviTyOxYmYdp/G5gXcSHaOGL6YoQW7fmbFklbW/w==}
     peerDependencies:
       svelte: ^3 || ^4 || ^5.0.0-next.42
 
@@ -3488,9 +3503,9 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@effect/schema@0.70.1(effect@3.6.0)':
+  '@effect/schema@0.70.4(effect@3.6.3)':
     dependencies:
-      effect: 3.6.0
+      effect: 3.6.3
       fast-check: 3.21.0
 
   '@emnapi/core@0.45.0':
@@ -4072,6 +4087,8 @@ snapshots:
       mini-svg-data-uri: 1.4.4
       tailwindcss: 3.4.9
 
+  '@total-typescript/tsconfig@1.0.4': {}
+
   '@trivago/prettier-plugin-sort-imports@4.3.0(prettier@3.3.3)':
     dependencies:
       '@babel/generator': 7.17.7
@@ -4558,7 +4575,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  effect@3.6.0: {}
+  effect@3.6.3: {}
 
   electron-to-chromium@1.5.6: {}
 
@@ -5167,7 +5184,7 @@ snapshots:
     dependencies:
       oslo: 1.2.0
 
-  lucide-svelte@0.424.0(svelte@4.2.18):
+  lucide-svelte@0.427.0(svelte@4.2.18):
     dependencies:
       svelte: 4.2.18
 

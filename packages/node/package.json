@@ -38,13 +38,14 @@
     "!dist/**/*.spec.*"
   ],
   "scripts": {
-    "clean": "tsc --build --clean",
+    "clean": "rimraf ./dist",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest dev",
     "test:ui": "vitest --coverage.enabled=true --ui",
     "test:coverage": "vitest run --coverage",
-    "build": "tsc --build && publint",
+    "replaceTokens": "LATEST=${npm_package_version} replacetokens --sources ./dist/version.* --log-level error --missing-var-action keep --use-env > /dev/null",
+    "build": "tsc --build && pnpm run replaceTokens && publint",
     "build:clean": "pnpm run clean && pnpm run build",
     "build:watch": "tsc --build --watch",
     "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
@@ -55,26 +56,27 @@
   },
   "dependencies": {
     "@passlock/shared": "workspace:*",
-    "effect": "3.6.0"
+    "effect": "3.6.3"
   },
   "devDependencies": {
-    "@effect/schema": "0.70.1",
+    "@effect/schema": "0.70.4",
     "@qetza/replacetokens": "^1.7.0",
+    "@total-typescript/tsconfig": "^1.0.4",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/node20": "^20.1.4",
-    "@types/node": "^22.1.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
+    "@types/node": "^22.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.1",
+    "@typescript-eslint/parser": "^8.0.1",
     "@vitest/coverage-v8": "^2.0.5",
     "@vitest/ui": "^2.0.5",
-    "eslint": "^9.8.0",
+    "eslint": "^9.9.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.3.3",
     "publint": "^0.2.9",
     "rimraf": "^6.0.1",
-    "tsx": "^4.16.5",
+    "tsx": "^4.17.0",
     "typescript": "^5.5.4",
-    "vite": "^5.3.5",
+    "vite": "^5.4.0",
     "vitest": "^2.0.5"
   }
 }
