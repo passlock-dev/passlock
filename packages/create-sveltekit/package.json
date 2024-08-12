@@ -1,0 +1,57 @@
+{
+  "name": "@passlock/create-sveltekit",
+  "version": "0.9.22",
+  "description": "A CLI for creating new SvelteKit projects with Passkey authentication, Social Login and more",
+  "keywords": [
+    "create",
+    "new",
+    "project",
+    "starter",
+    "svelte",
+    "sveltekit",
+    "template",
+    "wizard",
+    "authentication",
+    "passkey",
+    "passkeys"
+  ],
+  "author": {
+    "name": "Toby Hobson",
+    "email": "toby@passlock.dev"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/passlock-dev/ts-clients/packages/create-sveltekit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/passlock-dev/ts-clients.git",
+    "directory": "packages/create-sveltekit"
+  },
+  "bugs": {
+    "url": "https://github.com/passlock-dev/ts-clients/issues",
+    "email": "team@passlock.dev"
+  },
+  "bin": "./dist/cli.js",
+  "files": [
+    "dist",
+    "templates",
+    "!dist/**/*.test.*",
+    "!dist/**/*.spec.*"
+  ],
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "build": "tsc --build && publint",
+    "build:clean": "pnpm run clean && pnpm run build",
+    "prepublishOnly": "pnpm run build:clean"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "kleur": "^4.1.5"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@total-typescript/tsconfig": "^1.0.4",
+    "@types/node": "^22.2.0",
+    "publint": "^0.2.9",
+    "rimraf": "^6.0.1"
+  }
+}

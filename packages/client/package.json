@@ -24,7 +24,8 @@
   "homepage": "https://passlock.dev",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/passlock-dev/ts-clients.git"
+    "url": "git+https://github.com/passlock-dev/ts-clients.git",
+    "directory": "packages/client"
   },
   "bugs": {
     "url": "https://github.com/passlock-dev/ts-clients/issues",
