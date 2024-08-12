@@ -1,0 +1,13 @@
+{
+  "extends": "@total-typescript/tsconfig/tsc/no-dom/app",
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": true,
+    "outDir": "./dist",
+    "types": ["node"]
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.json"
+  ],
+  "exclude": ["./node_modules/**"]
+}

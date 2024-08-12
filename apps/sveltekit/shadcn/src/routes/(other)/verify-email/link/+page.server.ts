@@ -16,7 +16,7 @@ export const load = (async ({ locals, url }) => {
 }) satisfies PageServerLoad
 
 export const actions = {
-  default: async ({ request, cookies }) => {
+  default: async ({ request }) => {
     const form = await superValidate(request, valibot(verifyEmailSchema))
 
     if (!form.valid) {
