@@ -1,7 +1,7 @@
-import { UserClient } from '@passlock/shared/dist/rpc/user.js'
 import { Effect as E, Layer as L, Layer, LogLevel, Logger, pipe } from 'effect'
 import { describe, expect, test } from 'vitest'
 import { mock } from 'vitest-mock-extended'
+import { UserClient } from '../rpc/user.js'
 import * as Fixture from './user.fixture.js'
 import { UserService, UserServiceLive } from './user.js'
 
@@ -76,10 +76,7 @@ describe('resendVerificationEmail should', () => {
 
     const layers = L.merge(service, rpcClientTest)
 
-    const effect = pipe(
-      E.provide(assertions, layers),
-      Logger.withMinimumLogLevel(LogLevel.None)
-    )
+    const effect = pipe(E.provide(assertions, layers), Logger.withMinimumLogLevel(LogLevel.None))
 
     return E.runPromise(effect)
   })

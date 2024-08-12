@@ -1,29 +1,21 @@
 import * as S from '@effect/schema/Schema'
-import { Context, Effect as E, Layer } from 'effect'
+import { Context, Effect as E } from 'effect'
 
 import { BadRequest, Duplicate, Forbidden, Unauthorized } from '../error/error.js'
 
-import {
-  RegistrationCredential,
-  RegistrationOptions,
-  UserVerification,
-} from '../schema/passkey.js'
-
 import { VerifyEmail } from '../schema/email.js'
-import { Principal } from '../schema/principal.js'
+import { RegistrationCredential, RegistrationOptions, UserVerification } from '../schema/passkey.js'
 
-import { makePostRequest } from './client.js'
-import { Dispatcher } from './dispatcher.js'
+import { Principal } from '../schema/principal.js'
 
 /* Options */
 
 export class OptionsReq extends S.Class<OptionsReq>('@passkey/register/optionsReq')({
   email: S.String,
-  givenName: S.String,
-  familyName: S.String,
-  userVerification: S.optional(UserVerification, { exact: true }),
-  verifyEmail: S.optional(VerifyEmail, { exact: true }),
-  redirectUrl: S.optional(S.String, { exact: true }),
+  givenName: S.OptionFromUndefinedOr(S.String),
+  familyName: S.OptionFromUndefinedOr(S.String),
+  userVerification: S.OptionFromUndefinedOr(UserVerification),
+  verifyEmail: S.OptionFromUndefinedOr(VerifyEmail),
 }) {}
 
 export class OptionsRes extends S.Class<OptionsRes>('@passkey/register/optionsRes')({
@@ -40,8 +32,7 @@ export type OptionsErrors = S.Schema.Type<typeof OptionsErrors>
 export class VerificationReq extends S.Class<VerificationReq>('@passkey/register/verificationReq')({
   session: S.String,
   credential: RegistrationCredential,
-  verifyEmail: S.optional(VerifyEmail, { exact: true }),
-  redirectUrl: S.optional(S.String, { exact: true }),
+  verifyEmail: S.OptionFromUndefinedOr(VerifyEmail),
 }) {}
 
 export class VerificationRes extends S.Class<VerificationRes>('@passkey/register/verificationRes')({
@@ -52,38 +43,20 @@ export const VerificationErrors = S.Union(BadRequest, Duplicate, Unauthorized, F
 
 export type VerificationErrors = S.Schema.Type<typeof VerificationErrors>
 
-/* Service */
-
-export type RegistrationService = {
-  getRegistrationOptions: (req: OptionsReq) => E.Effect<OptionsRes, OptionsErrors>
-  verifyRegistrationCredential: (
-    req: VerificationReq,
-  ) => E.Effect<VerificationRes, VerificationErrors>
-}
-
-/* Client */
+/* Endpoints */
 
 export const OPTIONS_ENDPOINT = '/passkey/register/options'
 export const VERIFY_ENDPOINT = '/passkey/register/verify'
 
-export class RegistrationClient extends Context.Tag('@passkey/register/client')<
-  RegistrationClient,
-  RegistrationService
->() {}
+/* Service */
 
-export const RegistrationClientLive = Layer.effect(
-  RegistrationClient,
-  E.gen(function* (_) {
-    const dispatcher = yield* _(Dispatcher)
-    const optionsResolver = makePostRequest(OptionsReq, OptionsRes, OptionsErrors, dispatcher)
-    const verifyResolver = makePostRequest(VerificationReq, VerificationRes, VerificationErrors, dispatcher)
+export type RegistrationService = {
+  getRegistrationOptions: (req: OptionsReq) => E.Effect<OptionsRes, OptionsErrors>
 
-    return {
-      getRegistrationOptions: req => optionsResolver("/passkey/register/options", req),
-      verifyRegistrationCredential: req => verifyResolver("/passkey/register/verify", req)
-    }
-  })
-)
+  verifyRegistrationCredential: (
+    req: VerificationReq,
+  ) => E.Effect<VerificationRes, VerificationErrors>
+}
 
 /* Handler */
 

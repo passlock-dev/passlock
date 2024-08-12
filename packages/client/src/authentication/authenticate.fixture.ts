@@ -1,14 +1,14 @@
 import {
-  AuthenticationClient,
   OptionsRes,
   VerificationReq,
   VerificationRes,
 } from '@passlock/shared/dist/rpc/authentication.js'
 import { IsExistingUserRes, VerifyEmailRes } from '@passlock/shared/dist/rpc/user.js'
 import type { AuthenticationCredential } from '@passlock/shared/dist/schema/passkey.js'
-import { Effect as E, Layer as L } from 'effect'
+import { Effect as E, Layer as L, Option as O } from 'effect'
+import { AuthenticationClient } from '../rpc/authentication.js'
 import * as Fixtures from '../test/fixtures.js'
-import { GetCredential, type AuthenticationRequest } from './authenticate.js'
+import { type AuthenticationRequest, GetCredential } from './authenticate.js'
 
 export const session = 'session'
 export const token = 'token'
@@ -17,7 +17,8 @@ export const authType = 'passkey'
 export const expireAt = Date.now() + 10000
 
 export const request: AuthenticationRequest = {
-  userVerification: 'preferred',
+  userVerification: O.some('preferred'),
+  email: O.none(),
 }
 
 export const rpcOptionsRes = new OptionsRes({
@@ -48,13 +49,13 @@ export const rpcVerificationReq = new VerificationReq({ session, credential })
 
 export const rpcVerificationRes = new VerificationRes({ principal: Fixtures.principal })
 
-export const rpcIsExistingUserRes = new IsExistingUserRes({ existingUser: true })
+export const rpcIsExistingUserRes = new IsExistingUserRes({ existingUser: true, detail: O.none() })
 
 export const rpcVerifyEmailRes = new VerifyEmailRes({ principal: Fixtures.principal })
 
 export const getCredentialTest = L.succeed(
   GetCredential,
-  GetCredential.of(() => E.succeed(credential)),
+  GetCredential.of({ getCredential: () => E.succeed(credential) }),
 )
 
 export const rpcClientTest = L.succeed(
@@ -62,7 +63,7 @@ export const rpcClientTest = L.succeed(
   AuthenticationClient.of({
     getAuthenticationOptions: () => E.succeed(rpcOptionsRes),
     verifyAuthenticationCredential: () => E.succeed(rpcVerificationRes),
-  })
+  }),
 )
 
 export const principal = Fixtures.principal

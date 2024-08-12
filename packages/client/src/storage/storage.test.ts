@@ -2,7 +2,13 @@ import { Effect as E, Layer, LogLevel, Logger, identity, pipe } from 'effect'
 import { describe, expect, test } from 'vitest'
 import { mock } from 'vitest-mock-extended'
 import { principal, testLayers } from './storage.fixture.js'
-import { Storage, StorageService, clearExpiredToken, clearToken, getToken } from './storage.js'
+import {
+  BrowserStorage,
+  StorageService,
+  clearExpiredToken,
+  clearToken,
+  getToken,
+} from './storage.js'
 
 // eslint chokes on expect(storage.setItem) etc
 /* eslint @typescript-eslint/unbound-method: 0 */
@@ -13,7 +19,7 @@ describe('storeToken should', () => {
       const service = yield* _(StorageService)
       yield* _(service.storeToken(principal))
 
-      const storage = yield* _(Storage)
+      const storage = yield* _(BrowserStorage)
       expect(storage.setItem).toHaveBeenCalled()
     })
 
@@ -30,7 +36,7 @@ describe('storeToken should', () => {
       const service = yield* _(StorageService)
       yield* _(service.storeToken(principal))
 
-      const storage = yield* _(Storage)
+      const storage = yield* _(BrowserStorage)
       expect(storage.setItem).toHaveBeenCalledWith('passlock:passkey:token', expect.any(String))
     })
 
@@ -47,10 +53,13 @@ describe('storeToken should', () => {
       const service = yield* _(StorageService)
       yield* _(service.storeToken(principal))
 
-      const storage = yield* _(Storage)
-      const token = principal.token
-      const expiry = principal.expireAt.getTime()
-      expect(storage.setItem).toHaveBeenCalledWith('passlock:passkey:token', `${token}:${expiry}`)
+      const storage = yield* _(BrowserStorage)
+      const token = principal.jti
+      const expiry = principal.exp.getTime()
+      expect(storage.setItem).toHaveBeenCalledWith(
+        'passlock:passkey:token',
+        `${token}:${expiry.toFixed(0)}`,
+      )
     })
 
     const effect = pipe(
@@ -68,17 +77,17 @@ describe('getToken should', () => {
       const service = yield* _(StorageService)
       yield* _(service.getToken('passkey'))
 
-      const storage = yield* _(Storage)
+      const storage = yield* _(BrowserStorage)
       expect(storage.getItem).toHaveBeenCalled()
       expect(storage.getItem).toHaveBeenCalledWith('passlock:passkey:token')
     })
 
     const storageTest = Layer.effect(
-      Storage,
+      BrowserStorage,
       E.sync(() => {
         const mockStorage = mock<Storage>()
         const expiry = Date.now() + 1000
-        mockStorage.getItem.mockReturnValue(`token:${expiry}`)
+        mockStorage.getItem.mockReturnValue(`token:${expiry.toFixed(0)}`)
         return mockStorage
       }),
     )
@@ -106,11 +115,11 @@ describe('getToken should', () => {
     )
 
     const storageTest = Layer.effect(
-      Storage,
+      BrowserStorage,
       E.sync(() => {
         const mockStorage = mock<Storage>()
         const expiry = Date.now() - 1000
-        mockStorage.getItem.mockReturnValue(`token:${expiry}`)
+        mockStorage.getItem.mockReturnValue(`token:${expiry.toFixed(0)}`)
         return mockStorage
       }),
     )
@@ -127,7 +136,7 @@ describe('getToken should', () => {
 describe('clearToken should', () => {
   test('clear the token in local storage', () => {
     const assertions = E.gen(function* (_) {
-      const storage = yield* _(Storage)
+      const storage = yield* _(BrowserStorage)
       yield* _(clearToken('passkey'))
       expect(storage.removeItem).toHaveBeenCalledWith('passlock:passkey:token')
     })
@@ -144,18 +153,18 @@ describe('clearToken should', () => {
 describe('clearExpiredToken should', () => {
   test('clear an expired token from local storage', () => {
     const assertions = E.gen(function* (_) {
-      const storage = yield* _(Storage)
+      const storage = yield* _(BrowserStorage)
       yield* _(clearExpiredToken('passkey'))
       expect(storage.getItem).toHaveBeenCalledWith('passlock:passkey:token')
       expect(storage.removeItem).toHaveBeenCalledWith('passlock:passkey:token')
     })
 
     const storageTest = Layer.effect(
-      Storage,
+      BrowserStorage,
       E.sync(() => {
         const mockStorage = mock<Storage>()
         const expiry = Date.now() - 1000
-        mockStorage.getItem.mockReturnValue(`token:${expiry}`)
+        mockStorage.getItem.mockReturnValue(`token:${expiry.toFixed(0)}`)
         return mockStorage
       }),
     )
@@ -170,18 +179,18 @@ describe('clearExpiredToken should', () => {
 
   test('leave a live token in local storage', () => {
     const assertions = E.gen(function* (_) {
-      const storage = yield* _(Storage)
+      const storage = yield* _(BrowserStorage)
       yield* _(clearExpiredToken('passkey'))
       expect(storage.getItem).toHaveBeenCalledWith('passlock:passkey:token')
       expect(storage.removeItem).not.toHaveBeenCalled()
     })
 
     const storageTest = Layer.effect(
-      Storage,
+      BrowserStorage,
       E.sync(() => {
         const mockStorage = mock<Storage>()
         const expiry = Date.now() + 1000
-        mockStorage.getItem.mockReturnValue(`token:${expiry}`)
+        mockStorage.getItem.mockReturnValue(`token:${expiry.toFixed(0)}`)
         return mockStorage
       }),
     )

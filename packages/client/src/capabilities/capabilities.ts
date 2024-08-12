@@ -6,14 +6,15 @@ import { Context, Effect as E, Layer, identity, pipe } from 'effect'
 
 /* Service */
 
-export type Capabilities = {
-  passkeySupport: E.Effect<void, NotSupported>
-  isPasskeySupport: E.Effect<boolean>
-  autofillSupport: E.Effect<void, NotSupported>
-  isAutofillSupport: E.Effect<boolean>
-}
-
-export const Capabilities = Context.GenericTag<Capabilities>('@services/Capabilities')
+export class Capabilities extends Context.Tag('@services/Capabilities')<
+  Capabilities,
+  {
+    passkeySupport: E.Effect<void, NotSupported>
+    isPasskeySupport: E.Effect<boolean>
+    autofillSupport: E.Effect<void, NotSupported>
+    isAutofillSupport: E.Effect<boolean>
+  }
+>() {}
 
 /* Effects */
 

@@ -1,7 +1,4 @@
 packages:
   - "apps/**"
   - "packages/**"
-
-catalog:
-  "effect": "3.4.8"
-  "@effect/schema": "0.68.18"
+  - "!packages/create/src/templates/**"

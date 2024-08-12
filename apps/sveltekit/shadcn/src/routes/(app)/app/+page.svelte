@@ -5,6 +5,7 @@
   import { resetMode, setMode } from 'mode-watcher'
 
   import * as Avatar from '$lib/components/ui/avatar'
+  import LineChart from 'lucide-svelte/icons/chart-line'
   import ChevronLeft from 'lucide-svelte/icons/chevron-left'
   import ChevronRight from 'lucide-svelte/icons/chevron-right'
   import Copy from 'lucide-svelte/icons/copy'
@@ -12,7 +13,6 @@
   import EllipsisVertical from 'lucide-svelte/icons/ellipsis-vertical'
   import File from 'lucide-svelte/icons/file'
   import Home from 'lucide-svelte/icons/house'
-  import LineChart from 'lucide-svelte/icons/line-chart'
   import ListFilter from 'lucide-svelte/icons/list-filter'
   import Package from 'lucide-svelte/icons/package'
   import Package2 from 'lucide-svelte/icons/package-2'

@@ -1,4 +1,5 @@
-import { Context, Schedule } from "effect"
+import type { Schedule } from 'effect'
+import { Context } from 'effect'
 
 export class RpcConfig extends Context.Tag('@rpc/RpcConfig')<
   RpcConfig,

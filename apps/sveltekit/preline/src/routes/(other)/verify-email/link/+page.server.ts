@@ -5,11 +5,12 @@ import { fail, superValidate } from 'sveltekit-superforms'
 import { valibot } from 'sveltekit-superforms/adapters'
 import type { Actions, PageServerLoad } from './$types'
 
-export const load = (async ({ url }) => {
+export const load = (async ({ locals, url }) => {
   const code = url.searchParams.get('code')
   if (!code) error(400, 'Expected ?code search parameter')
 
   return {
+    data: locals.user,
     form: await superValidate({ code }, valibot(verifyEmailSchema))
   }
 }) satisfies PageServerLoad

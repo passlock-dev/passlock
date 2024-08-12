@@ -8,16 +8,31 @@ export const session = 'session'
 export const token = 'token'
 export const code = 'code'
 export const authType = 'passkey'
-export const expireAt = Date.now() + 10000
+export const expiry = Date.now() + 10000
 
 export const principal: Principal = {
+  jti: 'token',
   token: 'token',
+  sub: 'user-1',
+  iss: 'idp.passlock.dev',
+  aud: 'tenancy_id',
+  iat: new Date(),
+  nbf: new Date(),
+  exp: new Date(Date.now() + 5 * 60 * 1000),
+  email: 'john.doe@gmail.com',
+  givenName: 'john',
+  familyName: 'doe',
+  emailVerified: false,
+  authType: 'passkey',
+  authId: 'auth-1',
+  userVerified: true,
+  // legacy
   user: {
-    id: '1',
-    email: 'john.doe@gmail.com',
+    id: 'user-1',
     givenName: 'john',
     familyName: 'doe',
-    emailVerified: false,
+    email: 'john.doe@gmail.com',
+    emailVerified: false
   },
   authStatement: {
     authType: 'passkey',
@@ -37,7 +52,7 @@ export const capabilitiesTest = L.succeed(
   }),
 )
 
-export const storedToken: StoredToken = { token, authType, expireAt }
+export const storedToken: StoredToken = { token, authType, expiry }
 
 export const storageServiceTest = L.succeed(
   StorageService,

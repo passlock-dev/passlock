@@ -1,5 +1,4 @@
-import type { Principal } from '@passlock/client'
-import { error } from '@sveltejs/kit'
+import { ErrorCode, Passlock, PasslockError, type Principal, type UserPrincipal } from '@passlock/client'
 
 export type TokenVerifierProps = {
 	readonly tenancyId: string;
@@ -9,7 +8,7 @@ export type TokenVerifierProps = {
 
 const delayPromise = <T>(p: () => Promise<T>) => {
 	return new Promise((resolve) => {
-		setTimeout(resolve, 200);
+		setTimeout(resolve, 100);
 	}).then(p);
 };
 
@@ -21,12 +20,10 @@ export class TokenVerifier {
 	constructor(props: TokenVerifierProps) {
 		this.tenancyId = props.tenancyId;
 		this.apiKey = props.apiKey;
-    if (props.endpoint) {
-      this.endpoint = props.endpoint
-    }
+		this.endpoint = props.endpoint;
 	}
 
-	private readonly _exchangeToken = async (token: string, retryCount = 0): Promise<Principal> => {
+	private readonly _exchangeToken = async (token: string, retryCount = 0): Promise<Principal | PasslockError> => {
 		const endpoint = this.endpoint ?? 'https://api.passlock.dev';
 		const url = `${endpoint}/${this.tenancyId}/token/${token}`;
 
@@ -42,15 +39,17 @@ export class TokenVerifier {
 			console.warn(errorMessage);
 			console.warn('Retrying...');
 			await delayPromise(() => this._exchangeToken(token, retryCount + 1));
-		} else {
+		} if (!response.ok) {
 			const errorMessage = await response.json();
-			console.error(errorMessage);
-			error(500, 'Unable to exchange token');
-		}
-
-		const principal = await response.json();
-
-		return principal as Principal;
+      return new PasslockError(
+        "Unable to exchange token with Passlock backend", 
+        ErrorCode.InternalServerError, 
+        errorMessage
+      )
+		} else {
+      const principal = await response.json();
+      return principal as Principal;
+    }
 	};
 
 	/**
@@ -61,24 +60,18 @@ export class TokenVerifier {
 	 * @param token
 	 * @returns
 	 */
-	readonly exchangeToken = async (token: string): Promise<Principal> => {
-		const url = `${this.endpoint}/${this.tenancyId}/token/${token}`;
+	readonly exchangeToken = async (token: string): Promise<Principal | PasslockError> => this._exchangeToken(token, 0)
 
-		const headers = {
-			Accept: 'application/json',
-			Authorization: `Bearer ${this.apiKey}`
-		};
+  readonly exchangeUserToken = async (token: string): Promise<UserPrincipal | PasslockError> => {
+    const principal = await this.exchangeToken(token)
+    
+    if (PasslockError.isError(principal)) return principal
 
-		const response = await fetch(url, { headers });
+    if (!Passlock.isUserPrincipal(principal)) return new PasslockError(
+      "No user details returned from Passlock backend", 
+      ErrorCode.InternalServerError
+    )
 
-		if (!response.ok) {
-			const errorMessage = await response.json();
-			console.error(errorMessage);
-			error(500, 'Unable to exchange token');
-		}
-
-		const principal = await response.json();
-
-		return principal as Principal;
-	};
+    return principal
+  }
 }

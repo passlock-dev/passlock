@@ -23,7 +23,7 @@
   import { valibotClient } from 'sveltekit-superforms/adapters'
 
   import Logo from '$lib/components/ui/logo'
-  import { login } from '$lib/routes.js'
+  import { login, registerAction } from '$lib/routes.js'
   import { tick } from 'svelte'
   import { derived } from 'svelte/store'
 
@@ -124,7 +124,7 @@
       </div>
 
       <div class="grid gap-2">
-        <form method="post" use:enhance>
+        <form method="post" action={registerAction} use:enhance>
           <div class="grid gap-5 grid-cols-2">
             <Forms.InputText
               {form}

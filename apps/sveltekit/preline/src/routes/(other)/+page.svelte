@@ -11,15 +11,16 @@
   import * as Forms from '$lib/components/ui/forms'
   import FormError from '$lib/components/ui/forms/FormErrors.svelte'
   import * as Social from '$lib/components/ui/social'
-  import { login } from '$lib/routes.js'
+  import { login, registerAction } from '$lib/routes.js'
   import { registrationFormSchema } from '$lib/schemas.js'
   import type { VerifyEmail } from '@passlock/sveltekit'
   import { Passlock, saveEmailLocally, updateForm } from '@passlock/sveltekit/superforms'
   import { onMount } from 'svelte'
   import { superForm } from 'sveltekit-superforms'
   import { valibotClient } from 'sveltekit-superforms/adapters'
+  import type { PageData } from './$types'
 
-  export let data
+  export let data: PageData
 
   const endpoint = PUBLIC_PASSLOCK_ENDPOINT
   const tenancyId = PUBLIC_PASSLOCK_TENANCY_ID
@@ -335,7 +336,7 @@
             </div>
           {/if}
 
-          <form method="POST" use:enhance>
+          <form method="post" action={registerAction} use:enhance>
             <div class="flex flex-col gap-4">
               <Forms.InputText {form} field="givenName" label="First name" autocomplete="given-name" {readonly} />
               <Forms.InputText {form} field="familyName" label="Last name" autocomplete="family-name" {readonly} />

@@ -11,6 +11,7 @@
   import * as Forms from '$lib/components/ui/forms'
   import Logo from '$lib/components/ui/logo'
   import * as Social from '$lib/components/ui/social'
+  import { loginAction } from '$lib/routes.js'
   import { loginFormSchema } from '$lib/schemas'
   import {
     Passlock,
@@ -90,7 +91,7 @@
       </div>
 
       <div class="grid gap-2">
-        <form method="post" use:enhance>
+        <form method="post" action={loginAction} use:enhance>
           <div class="grid gap-5 grid-cols-2">
             <Forms.InputEmail
               {form}

@@ -2,7 +2,6 @@
 import { registrationFormSchema } from '$lib/schemas'
 import { superValidate } from 'sveltekit-superforms'
 import { valibot } from 'sveltekit-superforms/adapters'
-import type { PageServerLoad } from './$types'
 
 import { PASSLOCK_API_KEY } from '$env/static/private'
 import {
@@ -12,19 +11,9 @@ import {
 import { app, verifyEmailAwaitLink, verifyEmailCode } from '$lib/routes'
 import { lucia } from '$lib/server/auth'
 import { createUser } from '$lib/server/db'
-import { TokenVerifier } from '@passlock/sveltekit'
-import { fail, redirect } from '@sveltejs/kit'
+import { PasslockError, TokenVerifier } from '@passlock/sveltekit'
+import { error, fail, redirect } from '@sveltejs/kit'
 import type { Actions } from './$types'
-
-export const load: PageServerLoad = async ({ locals }) => {
-  if (locals.user) {
-    redirect(302, app)
-  }
-
-  return {
-    form: await superValidate(valibot(registrationFormSchema))
-  }
-}
 
 const tokenVerifier = new TokenVerifier({
   tenancyId: PUBLIC_PASSLOCK_TENANCY_ID,
@@ -40,8 +29,16 @@ export const actions = {
       return fail(400, { form })
     }
 
-    const principal = await tokenVerifier.exchangeToken(form.data.token)
-    const user = await createUser(principal.user)
+    const principal = await tokenVerifier.exchangeUserToken(form.data.token)
+    if (PasslockError.isError(principal)) error(500, principal.message)
+
+    const user = await createUser({ 
+      id: principal.sub, 
+      givenName: principal.givenName, 
+      familyName: principal.familyName, 
+      email: principal.email 
+    })
+    
     const session = await lucia.createSession(user.id, {})
     const sessionCookie = lucia.createSessionCookie(session.id)
 

@@ -7,5 +7,14 @@
   "bracketSpacing": true,
   "htmlWhitespaceSensitivity": "ignore",
   "bracketSameLine": true,
-  "useTabs": false
+  "useTabs": false,
+  "importOrder": [
+     "^@passlock/shared/(.*)$", 
+     "^@passlock/client/(.*)$", 
+     "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrderGroupNamespaceSpecifiers": true,
+  "plugins": ["@trivago/prettier-plugin-sort-imports"]
 }

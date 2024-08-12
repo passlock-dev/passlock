@@ -1,8 +1,8 @@
 import { Duplicate, InternalBrowserError } from '@passlock/shared/dist/error/error.js'
-import { RegistrationClient } from '@passlock/shared/dist/rpc/registration.js'
 import { Effect as E, Layer as L, Layer, LogLevel, Logger, pipe } from 'effect'
 import { describe, expect, test, vi } from 'vitest'
 import { mock } from 'vitest-mock-extended'
+import { RegistrationClient } from '../rpc/registration.js'
 import * as Fixture from './register.fixture.js'
 import { CreateCredential, RegistrationService, RegistrationServiceLive } from './register.js'
 
@@ -70,7 +70,9 @@ describe('register should', () => {
       yield* _(service.registerPasskey(Fixture.registrationRequest))
 
       const rpcClient = yield* _(RegistrationClient)
-      expect(rpcClient.verifyRegistrationCredential).toHaveBeenCalledWith(Fixture.rpcVerificationReq)
+      expect(rpcClient.verifyRegistrationCredential).toHaveBeenCalledWith(
+        Fixture.rpcVerificationReq,
+      )
     })
 
     const rpcClientTest = L.effect(
@@ -114,7 +116,9 @@ describe('register should', () => {
       E.sync(() => {
         const rpcMock = mock<RegistrationClient['Type']>()
 
-        rpcMock.getRegistrationOptions.mockReturnValue(E.fail(new Duplicate({ message: 'User already exists' })))
+        rpcMock.getRegistrationOptions.mockReturnValue(
+          E.fail(new Duplicate({ message: 'User already exists' })),
+        )
 
         return rpcMock
       }),
@@ -147,11 +151,11 @@ describe('register should', () => {
     const createTest = L.effect(
       CreateCredential,
       E.sync(() => {
-        const createTest = vi.fn()
+        const createCredential = vi.fn()
 
-        createTest.mockReturnValue(E.fail(new Duplicate({ message: 'boom!' })))
+        createCredential.mockReturnValue(E.fail(new Duplicate({ message: 'boom!' })))
 
-        return createTest
+        return { createCredential }
       }),
     )
 
@@ -185,11 +189,11 @@ describe('register should', () => {
     const createTest = L.effect(
       CreateCredential,
       E.sync(() => {
-        const createTest = vi.fn()
+        const createCredential = vi.fn()
 
-        createTest.mockReturnValue(E.fail(new InternalBrowserError({ message: 'boom!' })))
+        createCredential.mockReturnValue(E.fail(new InternalBrowserError({ message: 'boom!' })))
 
-        return createTest
+        return { createCredential }
       }),
     )
 

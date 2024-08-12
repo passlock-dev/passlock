@@ -1,4 +1,5 @@
 import * as S from '@effect/schema/Schema'
+import { optional } from './utils.js'
 
 export const AuthType = S.Literal(
   'email', 
@@ -9,16 +10,49 @@ export const AuthType = S.Literal(
 
 export type AuthType = S.Schema.Type<typeof AuthType>
 
-/** Represents a successful registration/authentication */
-export const Principal = S.Struct({
+export const User = S.Struct({
+  id: S.String,
+  givenName: S.String,
+  familyName: S.String,
+  email: S.String,
+  emailVerified: S.Boolean,
+})
+
+export type User = S.Schema.Type<typeof User>
+
+export const AuthenticationRequired = S.Struct({
+  requiredAuthType: AuthType,
+})
+
+const DateFromSeconds = S.transform(S.Number, S.DateFromSelf, {
+  encode: date => Math.round(date.getTime() / 1000),
+  decode: dateNum => new Date(dateNum * 1000),
+})
+
+const BasePrincipal = S.Struct({
+  // jwt stuff
+  iss: S.String,
+  aud: S.String,
+  sub: S.String,
+  iat: DateFromSeconds,
+  nbf: DateFromSeconds,
+  exp: DateFromSeconds,
+  jti: S.String,
   token: S.String,
-  user: S.Struct({
-    id: S.String,
-    givenName: S.String,
-    familyName: S.String,
-    email: S.String,
-    emailVerified: S.Boolean,
-  }),
+  // custom
+  userVerified: S.Boolean,
+  authType: AuthType,
+  authId: S.String,
+  // legacy
+  user: optional(
+    S.Struct({
+      id: S.String,
+      givenName: S.String,
+      familyName: S.String,
+      email: S.String,
+      emailVerified: S.Boolean,
+    })
+  ),
   authStatement: S.Struct({
     authType: AuthType,
     userVerified: S.Boolean,
@@ -27,8 +61,22 @@ export const Principal = S.Struct({
   expireAt: S.Date,
 })
 
+export const Principal = S.Struct({
+  ...BasePrincipal.fields,
+  givenName: optional(S.String),
+  familyName: optional(S.String),
+  email: optional(S.String),
+  emailVerified: optional(S.Boolean),
+})
+
 export type Principal = S.Schema.Type<typeof Principal>
 
-export const AuthenticationRequired = S.Struct({
-  requiredAuthType: AuthType,
+export const UserPrincipal = S.Struct({
+  ...BasePrincipal.fields,
+  givenName: S.String,
+  familyName: S.String,
+  email: S.String,
+  emailVerified: S.Boolean,
 })
+
+export type UserPrincipal = S.Schema.Type<typeof UserPrincipal>

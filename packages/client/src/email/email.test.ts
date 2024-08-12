@@ -1,9 +1,9 @@
-import { UserClient } from '@passlock/shared/dist/rpc/user.js'
 import { Effect as E, Layer as L, LogLevel, Logger, pipe } from 'effect'
 import { NoSuchElementException } from 'effect/Cause'
 import { describe, expect, test } from 'vitest'
 import { mock } from 'vitest-mock-extended'
 import { AuthenticationService } from '../authentication/authenticate.js'
+import { UserClient } from '../rpc/user.js'
 import { StorageService } from '../storage/storage.js'
 import * as Fixture from './email.fixture.js'
 import { EmailService, EmailServiceLive } from './email.js'
@@ -42,7 +42,7 @@ describe('verifyEmailCode should', () => {
     const storageServiceTest = L.effect(
       StorageService,
       E.sync(() => {
-        const storageServiceMock = mock<StorageService>()
+        const storageServiceMock = mock<StorageService['Type']>()
 
         storageServiceMock.getToken.mockReturnValue(E.succeed(Fixture.storedToken))
         storageServiceMock.clearToken.mockReturnValue(E.void)
@@ -77,7 +77,7 @@ describe('verifyEmailCode should', () => {
     const storageServiceTest = L.effect(
       StorageService,
       E.sync(() => {
-        const storageServiceMock = mock<StorageService>()
+        const storageServiceMock = mock<StorageService['Type']>()
 
         storageServiceMock.getToken.mockReturnValue(E.fail(new NoSuchElementException()))
         storageServiceMock.clearToken.mockReturnValue(E.void)
@@ -89,7 +89,7 @@ describe('verifyEmailCode should', () => {
     const authServiceTest = L.effect(
       AuthenticationService,
       E.sync(() => {
-        const authServiceMock = mock<AuthenticationService>()
+        const authServiceMock = mock<AuthenticationService['Type']>()
 
         authServiceMock.authenticatePasskey.mockReturnValue(E.succeed(Fixture.principal))
 

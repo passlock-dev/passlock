@@ -9,36 +9,128 @@ import type {
 } from '@passlock/shared/dist/error/error.js'
 
 import { ErrorCode } from '@passlock/shared/dist/error/error.js'
-import { RpcConfig } from '@passlock/shared/dist/rpc/config.js'
-import type { Principal } from '@passlock/shared/dist/schema/principal.js'
-import { Effect as E, Layer as L, Layer, Option, Runtime, Scope, pipe } from 'effect'
-import { AuthenticationService, type AuthenticationRequest } from './authentication/authenticate.js'
-import { Capabilities } from './capabilities/capabilities.js'
-import { ConnectionService } from './connection/connection.js'
-import { allRequirements } from './effect.js'
-import { EmailService, type VerifyRequest } from './email/email.js'
-import { RegistrationService, type RegistrationRequest } from './registration/register.js'
-import { SocialService, type AuthenticateOidcReq, type RegisterOidcReq } from './social/social.js'
-import { Storage, StorageService, type AuthType, type StoredToken } from './storage/storage.js'
-import { UserService, type Email, type ResendEmail } from './user/user.js'
+import type { VerifyEmail } from '@passlock/shared/dist/schema/email.js'
+import type { UserVerification } from '@passlock/shared/dist/schema/passkey.js'
+import type { Principal, UserPrincipal } from '@passlock/shared/dist/schema/principal.js'
+import { RpcConfig } from './rpc/config.js'
+
+import { Effect as E, Layer as L, Layer, Option as O, Runtime, Scope, pipe } from 'effect'
+
+import type { AuthenticationService } from './authentication/authenticate.js'
+import type { Capabilities } from './capabilities/capabilities.js'
+import type { ConnectionService } from './connection/connection.js'
+
+import { dual } from 'effect/Function'
+import {
+  allRequirements,
+  authenticateOidc,
+  authenticatePasskey,
+  clearExpiredTokens,
+  getSessionToken,
+  isExistingUser,
+  isPasskeySupport,
+  preConnect,
+  registerOidc,
+  registerPasskey,
+  resendVerificationEmail,
+  verifyEmailCode,
+  verifyEmailLink,
+} from './effect.js'
+import type { EmailService, VerifyRequest } from './email/email.js'
+import type { RegistrationService } from './registration/register.js'
+import type { Provider, SocialService } from './social/social.js'
+import {
+  type AuthType,
+  BrowserStorage,
+  StorageService,
+  type StoredToken,
+} from './storage/storage.js'
+import type { Email, ResendEmail, UserService } from './user/user.js'
+import { PASSLOCK_VERSION } from './version.js'
 
 /* Exports */
 
 export type Options = { signal?: AbortSignal }
 export type { VerifyEmail } from '@passlock/shared/dist/schema/email.js'
 export type { UserVerification } from '@passlock/shared/dist/schema/passkey.js'
-export type { Principal } from '@passlock/shared/dist/schema/principal.js'
+export type { Principal, UserPrincipal } from '@passlock/shared/dist/schema/principal.js'
 
-export type { AuthenticationRequest } from './authentication/authenticate.js'
 export type { VerifyRequest } from './email/email.js'
-export type { RegistrationRequest } from './registration/register.js'
 export type { AuthType, StoredToken } from './storage/storage.js'
 export type { Email } from './user/user.js'
 
 export type PasslockProps = {
-  tenancyId: string; 
-  clientId: string; 
+  tenancyId: string
+  clientId: string
   endpoint?: string
+}
+
+export type RegistrationRequest = {
+  email: string
+  givenName?: string
+  familyName?: string
+  userVerification?: UserVerification
+  verifyEmail?: VerifyEmail
+}
+
+const nonEmpty = (text: string): O.Option<string> => {
+  const trimmed = text.trim()
+  if (trimmed.length > 0) return O.some(trimmed)
+  return O.none()
+}
+
+const toRpcRegistrationRequest = (request: RegistrationRequest) => {
+  return {
+    email: request.email,
+    givenName: pipe(O.fromNullable(request.givenName), O.flatMap(nonEmpty)),
+    familyName: pipe(O.fromNullable(request.familyName), O.flatMap(nonEmpty)),
+    userVerification: O.fromNullable(request.userVerification),
+    verifyEmail: O.fromNullable(request.verifyEmail),
+  }
+}
+
+export type AuthenticationRequest = {
+  email?: string
+  userVerification?: UserVerification
+}
+
+const toRpcAuthenticationRequest = (request: AuthenticationRequest) => {
+  return {
+    email: O.fromNullable(request.email),
+    userVerification: O.fromNullable(request.userVerification),
+  }
+}
+
+export type RegisterOidcReq = {
+  provider: Provider
+  idToken: string
+  givenName?: string
+  familyName?: string
+  nonce: string
+}
+
+const toRpcRegisterOidcReq = (request: RegisterOidcReq) => {
+  return {
+    provider: request.provider,
+    idToken: request.idToken,
+    givenName: pipe(O.fromNullable(request.givenName), O.flatMap(nonEmpty)),
+    familyName: pipe(O.fromNullable(request.familyName), O.flatMap(nonEmpty)),
+    nonce: request.nonce,
+  }
+}
+
+export type AuthenticateOidcReq = {
+  provider: Provider
+  idToken: string
+  nonce: string
+}
+
+const toRpcAuthenticateOidcReq = (request: AuthenticateOidcReq) => {
+  return {
+    provider: request.provider,
+    idToken: request.idToken,
+    nonce: request.nonce,
+  }
 }
 
 export { ErrorCode } from '@passlock/shared/dist/error/error.js'
@@ -54,11 +146,7 @@ export class PasslockError extends Error {
   }
 
   static readonly isError = (error: unknown): error is PasslockError => {
-    return (
-      typeof error === 'object' &&
-      error !== null &&
-      error instanceof PasslockError
-    )
+    return typeof error === 'object' && error !== null && error instanceof PasslockError
   }
 }
 
@@ -105,11 +193,13 @@ const transformErrors = <A, R>(
     },
 
     Interrupt: () => {
+      console.error("Interrupt")
       return E.succeed(new PasslockError('Operation aborted', ErrorCode.InternalBrowserError))
     },
 
     Sequential: errors => {
       console.error(errors)
+
       return E.succeed(
         new PasslockError('Sorry, something went wrong', ErrorCode.InternalServerError),
       )
@@ -117,6 +207,7 @@ const transformErrors = <A, R>(
 
     Parallel: errors => {
       console.error(errors)
+      
       return E.succeed(
         new PasslockError('Sorry, something went wrong', ErrorCode.InternalServerError),
       )
@@ -135,218 +226,183 @@ type Requirements =
   | StorageService
   | Capabilities
   | SocialService
+  | RpcConfig
 
 export class PasslockUnsafe {
   private readonly runtime: Runtime.Runtime<Requirements>
 
-  constructor(config: PasslockProps) {
-    const rpcConfig = Layer.succeed(RpcConfig, RpcConfig.of(config))
-    const storage = Layer.succeed(Storage, Storage.of(globalThis.localStorage))
-    const allLayers = pipe(allRequirements, L.provide(rpcConfig), L.provide(storage))
+  constructor(props: PasslockProps) {
+    const config = Layer.succeed(RpcConfig, RpcConfig.of(props))
+    const storage = Layer.succeed(BrowserStorage, BrowserStorage.of(globalThis.localStorage))
+    const allLayers = pipe(allRequirements, L.provide(config), L.provide(storage), L.merge(config))
     const scope = E.runSync(Scope.make())
+
     this.runtime = E.runSync(Layer.toRuntime(allLayers).pipe(Scope.extend(scope)))
+
+    E.runSync(E.logInfo(`Passlock version: ${PASSLOCK_VERSION}`))
   }
 
-  private readonly runPromise = <A, R extends Requirements>(
-    effect: E.Effect<A, PasslockErrors, R>,
-    options: Options | undefined = undefined
-  ) => {
-    return pipe(
-      transformErrors(effect),
+  static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {
+    return (
+      principal.givenName !== undefined &&
+      principal.familyName !== undefined &&
+      principal.email !== undefined &&
+      principal.emailVerified !== undefined
+    )
+  }
+
+  private readonly runPromise: {
+    <A, R extends Requirements>(options: Options | undefined): (effect: E.Effect<A, PasslockErrors, R>) => Promise<A>
+    <A, R extends Requirements>(effect: E.Effect<A, PasslockErrors, R>, options: Options | undefined): Promise<A>
+  } = dual(
+    2,
+    <A, R extends Requirements>(effect: E.Effect<A, PasslockErrors, R>, options: Options | undefined): Promise<A> => pipe(
+      transformErrors(effect), 
       E.flatMap(result => (PasslockError.isError(result) ? E.fail(result) : E.succeed(result))),
-      effect => Runtime.runPromise(this.runtime)(effect, options),
+      effect => Runtime.runPromise(this.runtime)(effect, options)
     )
-  }
+  )
 
-  preConnect = (options?: Options): Promise<void> =>
-    pipe(
-      ConnectionService,
-      E.flatMap(service => service.preConnect()),
-      effect => Runtime.runPromise(this.runtime)(effect, options),
-    )
+  preConnect = (options?: Options): Promise<void> => pipe(preConnect(), this.runPromise(options))
 
   isPasskeySupport = (): Promise<boolean> =>
-    pipe(
-      Capabilities,
-      E.flatMap(service => service.isPasskeySupport),
-      effect => Runtime.runPromise(this.runtime)(effect),
-    )
+    pipe(isPasskeySupport, effect => Runtime.runPromise(this.runtime)(effect))
 
   isExistingUser = (email: Email, options?: Options): Promise<boolean> =>
-    pipe(
-      UserService,
-      E.flatMap(service => service.isExistingUser(email)),
-      effect => this.runPromise(effect, options),
-    )
+    pipe(isExistingUser(email), this.runPromise(options))
 
   registerPasskey = (request: RegistrationRequest, options?: Options): Promise<Principal> =>
-    pipe(
-      RegistrationService,
-      E.flatMap(service => service.registerPasskey(request)),
-      effect => this.runPromise(effect, options),
-    )
+    pipe(registerPasskey(toRpcRegistrationRequest(request)), this.runPromise(options))
 
   authenticatePasskey = (request: AuthenticationRequest, options?: Options): Promise<Principal> =>
-    pipe(
-      AuthenticationService,
-      E.flatMap(service => service.authenticatePasskey(request)),
-      effect => this.runPromise(effect, options),
-    )
+    pipe(authenticatePasskey(toRpcAuthenticationRequest(request)), this.runPromise(options))
 
-  registerOidc = (request: RegisterOidcReq, options?: Options) => 
-    pipe(
-      SocialService,
-      E.flatMap(service => service.registerOidc(request)),
-      effect => this.runPromise(effect, options),
-    )   
-    
-  authenticateOidc = (request: AuthenticateOidcReq, options?: Options) => 
-    pipe(
-      SocialService,
-      E.flatMap(service => service.authenticateOidc(request)),
-      effect => this.runPromise(effect, options),
-    )      
+  registerOidc = (request: RegisterOidcReq, options?: Options) =>
+    pipe(registerOidc(toRpcRegisterOidcReq(request)), this.runPromise(options))
+
+  authenticateOidc = (request: AuthenticateOidcReq, options?: Options) =>
+    pipe(authenticateOidc(toRpcAuthenticateOidcReq(request)), this.runPromise(options))
 
   verifyEmailCode = (request: VerifyRequest, options?: Options): Promise<Principal> =>
-    pipe(
-      EmailService,
-      E.flatMap(service => service.verifyEmailCode(request)),
-      effect => this.runPromise(effect, options),
-    )
+    pipe(verifyEmailCode(request), this.runPromise(options))
 
   resendVerificationEmail = (request: ResendEmail, options?: Options): Promise<void> =>
-    pipe(
-      UserService,
-      E.flatMap(service => service.resendVerificationEmail(request)),
-      effect => this.runPromise(effect, options),
-    )    
+    pipe(resendVerificationEmail(request), this.runPromise(options))
 
   verifyEmailLink = (options?: Options): Promise<Principal> =>
-    pipe(
-      EmailService,
-      E.flatMap(service => service.verifyEmailLink()),
-      effect => this.runPromise(effect, options),
-    )
+    pipe(verifyEmailLink, this.runPromise(options))
 
   getSessionToken = (authType: AuthType): StoredToken | undefined =>
     pipe(
-      StorageService,
-      E.flatMap(service => service.getToken(authType).pipe(effect => E.option(effect))),
-      E.map(Option.getOrUndefined),
+      getSessionToken(authType),
+      E.orElseSucceed(() => undefined),
       effect => Runtime.runSync(this.runtime)(effect),
     )
 
-  clearExpiredTokens = (): void =>
-    pipe(
-      StorageService,
-      E.flatMap(service => service.clearExpiredTokens),
-      effect => Runtime.runSync(this.runtime)(effect),
-    )
+  clearExpiredTokens = (): void => {
+    pipe(clearExpiredTokens, effect => {
+      Runtime.runSync(this.runtime)(effect)
+    })
+  }
 }
 
 export class Passlock {
   private readonly runtime: Runtime.Runtime<Requirements>
 
-  constructor(config: PasslockProps) {
-    const rpcConfig = Layer.succeed(RpcConfig, RpcConfig.of(config))
-    const storage = Layer.succeed(Storage, Storage.of(globalThis.localStorage))
-    const allLayers = pipe(allRequirements, L.provide(rpcConfig), L.provide(storage))
+  constructor(props: PasslockProps) {
+    const config = Layer.succeed(RpcConfig, RpcConfig.of(props))
+    const storage = Layer.succeed(BrowserStorage, BrowserStorage.of(globalThis.localStorage))
+    const allLayers = pipe(allRequirements, L.provide(config), L.provide(storage), L.merge(config))
     const scope = E.runSync(Scope.make())
+
     this.runtime = E.runSync(Layer.toRuntime(allLayers).pipe(Scope.extend(scope)))
+    
+    E.runSync(E.logInfo(`Passlock version: ${PASSLOCK_VERSION}`))
   }
 
-  private readonly runPromise = <A, R extends Requirements>(
-    effect: E.Effect<A, PasslockErrors, R>,
-    options: Options | undefined = undefined
-  ) => {
-    return pipe(
+  static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {
+    return (
+      principal.givenName !== undefined &&
+      principal.familyName !== undefined &&
+      principal.email !== undefined &&
+      principal.emailVerified !== undefined
+    )
+  }
+
+  private readonly runPromise: {
+    <A, R extends Requirements>(options: Options | undefined): (effect: E.Effect<A, PasslockErrors, R>) => Promise<A | PasslockError>
+    <A, R extends Requirements>(effect: E.Effect<A, PasslockErrors, R>, options: Options | undefined): Promise<A | PasslockError>
+  } = dual(
+    2,
+    <A, R extends Requirements>(effect: E.Effect<A, PasslockErrors, R>, options: Options | undefined): Promise<A | PasslockError> => pipe(
       transformErrors(effect), 
       effect => Runtime.runPromise(this.runtime)(effect, options)
     )
+  )
+
+  preConnect = async (options?: Options): Promise<boolean | PasslockError> => {
+    return pipe(
+      preConnect(), 
+      E.as(true), 
+      this.runPromise(options)
+    )
   }
 
-  preConnect = (options?: Options): Promise<void | PasslockError> =>
-    pipe(
-      ConnectionService,
-      E.flatMap(service => service.preConnect()),
-      effect => this.runPromise(effect, options),
-    )
-
   isPasskeySupport = (): Promise<boolean> =>
-    pipe(
-      Capabilities,
-      E.flatMap(service => service.isPasskeySupport),
-      effect => Runtime.runPromise(this.runtime)(effect),
-    )
+    pipe(isPasskeySupport, effect => Runtime.runPromise(this.runtime)(effect))
 
   isExistingUser = (email: Email, options?: Options): Promise<boolean | PasslockError> =>
-    pipe(
-      UserService,
-      E.flatMap(service => service.isExistingUser(email)),
-      effect => this.runPromise(effect, options),
-    )
+    pipe(isExistingUser(email), this.runPromise(options))
 
-  registerPasskey = (request: RegistrationRequest, options?: Options): Promise<Principal | PasslockError> =>
-    pipe(
-      RegistrationService,
-      E.flatMap(service => service.registerPasskey(request)),
-      effect => this.runPromise(effect, options),
-    )
+  registerPasskey = (
+    request: RegistrationRequest,
+    options?: Options,
+  ): Promise<Principal | PasslockError> =>
+    pipe(registerPasskey(toRpcRegistrationRequest(request)), this.runPromise(options))
 
-  authenticatePasskey = (request: AuthenticationRequest = {}, options?: Options): Promise<Principal | PasslockError> =>
-    pipe(
-      AuthenticationService,
-      E.flatMap(service => service.authenticatePasskey(request)),
-      effect => this.runPromise(effect, options),
+  authenticatePasskey = (
+    request: AuthenticationRequest = {},
+    options?: Options,
+  ): Promise<Principal | PasslockError> => pipe(
+      toRpcAuthenticationRequest(request),
+      authenticatePasskey, 
+      this.runPromise(options)
     )
 
   registerOidc = (request: RegisterOidcReq, options?: Options) => 
-    pipe(
-      SocialService,
-      E.flatMap(service => service.registerOidc(request)),
-      effect => this.runPromise(effect, options),
-    )     
+    pipe(registerOidc(toRpcRegisterOidcReq(request)), this.runPromise(options))
 
-  authenticateOidc = (request: AuthenticateOidcReq, options?: Options) => 
-    pipe(
-      SocialService,
-      E.flatMap(service => service.authenticateOidc(request)),
-      effect => this.runPromise(effect, options),
-    )      
+  authenticateOidc = (request: AuthenticateOidcReq, options?: Options) =>
+    pipe(authenticateOidc(request), this.runPromise(options))
 
-  verifyEmailCode = (request: VerifyRequest, options?: Options): Promise<Principal | PasslockError> =>
-    pipe(
-      EmailService,
-      E.flatMap(service => service.verifyEmailCode(request)),
-      effect => this.runPromise(effect, options),
-    )
+  verifyEmailCode = (
+    request: VerifyRequest,
+    options?: Options,
+  ): Promise<Principal | PasslockError> => pipe(verifyEmailCode(request), this.runPromise(options))
 
   verifyEmailLink = (options?: Options): Promise<Principal | PasslockError> =>
+    pipe(verifyEmailLink, this.runPromise(options))
+
+  resendVerificationEmail = (
+    request: ResendEmail,
+    options?: Options,
+  ): Promise<boolean | PasslockError> =>
+    pipe(resendVerificationEmail(request), E.as(true), this.runPromise(options))
+
+  getSessionToken = (authType: AuthType): Promise<StoredToken | undefined> =>
     pipe(
-      EmailService,
-      E.flatMap(service => service.verifyEmailLink()),
-      effect => this.runPromise(effect, options),
+      getSessionToken(authType),
+      E.orElseSucceed(() => undefined),
+      effect => E.runPromise(effect),
     )
 
-  resendVerificationEmail = (request: ResendEmail, options?: Options): Promise<void | PasslockError> =>
-    pipe(
-      UserService,
-      E.flatMap(service => service.resendVerificationEmail(request)),
-      effect => this.runPromise(effect, options),
-    )      
-
-  getSessionToken = (authType: AuthType): StoredToken | undefined =>
-    pipe(
-      StorageService,
-      E.flatMap(service => service.getToken(authType).pipe(effect => E.option(effect))),
-      E.map(maybeToken => Option.getOrUndefined(maybeToken)),
-      effect => Runtime.runSync(this.runtime)(effect),
-    )
-
-  clearExpiredTokens = (): void =>
+  clearExpiredTokens = (): void => {
     pipe(
       StorageService,
       E.flatMap(service => service.clearExpiredTokens),
-      effect => Runtime.runSync(this.runtime)(effect),
+      effect => {
+        Runtime.runSync(this.runtime)(effect)
+      },
     )
+  }
 }

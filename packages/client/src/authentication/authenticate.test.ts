@@ -1,7 +1,7 @@
-import { AuthenticationClient } from '@passlock/shared/dist/rpc/authentication.js'
-import { Effect as E, Layer as L, Layer, LogLevel, Logger, pipe } from 'effect'
+import { Effect as E, Layer as L, Layer, LogLevel, Logger, Option as O, pipe } from 'effect'
 import { describe, expect, test, vi } from 'vitest'
 import { mock } from 'vitest-mock-extended'
+import { AuthenticationClient } from '../rpc/authentication.js'
 import { StorageService } from '../storage/storage.js'
 import * as Fixture from './authenticate.fixture.js'
 import { AuthenticateServiceLive, AuthenticationService, GetCredential } from './authenticate.js'
@@ -10,7 +10,13 @@ describe('authenticate should', () => {
   test('return a valid principal', async () => {
     const assertions = E.gen(function* (_) {
       const service = yield* _(AuthenticationService)
-      const result = yield* _(service.authenticatePasskey({ userVerification: 'preferred' }))
+
+      const result = yield* _(
+        service.authenticatePasskey({
+          email: O.none(),
+          userVerification: O.some('preferred'),
+        }),
+      )
 
       expect(result).toEqual(Fixture.principal)
     })
@@ -31,7 +37,13 @@ describe('authenticate should', () => {
   test('pass the authentication request to the backend', async () => {
     const assertions = E.gen(function* (_) {
       const service = yield* _(AuthenticationService)
-      yield* _(service.authenticatePasskey({ userVerification: 'preferred' }))
+
+      yield* _(
+        service.authenticatePasskey({
+          email: O.none(),
+          userVerification: O.some('preferred'),
+        }),
+      )
 
       const rpcClient = yield* _(AuthenticationClient)
       expect(rpcClient.getAuthenticationOptions).toHaveBeenCalledOnce()
@@ -44,7 +56,9 @@ describe('authenticate should', () => {
         const rpcMock = mock<AuthenticationClient['Type']>()
 
         rpcMock.getAuthenticationOptions.mockReturnValue(E.succeed(Fixture.rpcOptionsRes))
-        rpcMock.verifyAuthenticationCredential.mockReturnValue(E.succeed(Fixture.rpcVerificationRes))
+        rpcMock.verifyAuthenticationCredential.mockReturnValue(
+          E.succeed(Fixture.rpcVerificationRes),
+        )
 
         return rpcMock
       }),
@@ -67,11 +81,19 @@ describe('authenticate should', () => {
   test('send the credential to the backend', async () => {
     const assertions = E.gen(function* (_) {
       const service = yield* _(AuthenticationService)
-      yield* _(service.authenticatePasskey({ userVerification: 'preferred' }))
+
+      yield* _(
+        service.authenticatePasskey({
+          email: O.none(),
+          userVerification: O.some('preferred'),
+        }),
+      )
 
       const rpcClient = yield* _(AuthenticationClient)
       expect(rpcClient.getAuthenticationOptions).toHaveBeenCalledOnce()
-      expect(rpcClient.verifyAuthenticationCredential).toHaveBeenCalledWith(Fixture.rpcVerificationReq)
+      expect(rpcClient.verifyAuthenticationCredential).toHaveBeenCalledWith(
+        Fixture.rpcVerificationReq,
+      )
     })
 
     const rpcClientTest = L.effect(
@@ -80,7 +102,9 @@ describe('authenticate should', () => {
         const rpcMock = mock<AuthenticationClient['Type']>()
 
         rpcMock.getAuthenticationOptions.mockReturnValue(E.succeed(Fixture.rpcOptionsRes))
-        rpcMock.verifyAuthenticationCredential.mockReturnValue(E.succeed(Fixture.rpcVerificationRes))
+        rpcMock.verifyAuthenticationCredential.mockReturnValue(
+          E.succeed(Fixture.rpcVerificationRes),
+        )
 
         return rpcMock
       }),
@@ -103,7 +127,13 @@ describe('authenticate should', () => {
   test('store the credential in local storage', async () => {
     const assertions = E.gen(function* (_) {
       const service = yield* _(AuthenticationService)
-      yield* _(service.authenticatePasskey({ userVerification: 'preferred' }))
+
+      yield* _(
+        service.authenticatePasskey({
+          email: O.none(),
+          userVerification: O.some('preferred'),
+        }),
+      )
 
       const storageService = yield* _(StorageService)
       expect(storageService.storeToken).toHaveBeenCalledWith(Fixture.principal)
@@ -112,7 +142,7 @@ describe('authenticate should', () => {
     const storageServiceTest = L.effect(
       StorageService,
       E.sync(() => {
-        const storageMock = mock<StorageService>()
+        const storageMock = mock<StorageService['Type']>()
 
         storageMock.storeToken.mockReturnValue(E.void)
         storageMock.clearExpiredToken.mockReturnValue(E.void)
@@ -138,7 +168,13 @@ describe('authenticate should', () => {
   test('schedule deletion of the local token', async () => {
     const assertions = E.gen(function* (_) {
       const service = yield* _(AuthenticationService)
-      yield* _(service.authenticatePasskey({ userVerification: 'preferred' }))
+
+      yield* _(
+        service.authenticatePasskey({
+          email: O.none(),
+          userVerification: O.some('preferred'),
+        }),
+      )
 
       const storageService = yield* _(StorageService)
       expect(storageService.clearExpiredToken).toHaveBeenCalledWith('passkey')
@@ -147,7 +183,7 @@ describe('authenticate should', () => {
     const storageServiceTest = L.effect(
       StorageService,
       E.sync(() => {
-        const storageMock = mock<StorageService>()
+        const storageMock = mock<StorageService['Type']>()
 
         storageMock.storeToken.mockReturnValue(E.void)
         storageMock.clearExpiredToken.mockReturnValue(E.void)
@@ -173,20 +209,26 @@ describe('authenticate should', () => {
   test("return an error if the browser can't create a credential", async () => {
     const assertions = E.gen(function* (_) {
       const service = yield* _(AuthenticationService)
-      yield* _(service.authenticatePasskey({ userVerification: 'preferred' }))
 
-      const getCredential = yield* _(GetCredential)
+      yield* _(
+        service.authenticatePasskey({
+          email: O.none(),
+          userVerification: O.some('preferred'),
+        }),
+      )
+
+      const { getCredential } = yield* _(GetCredential)
       expect(getCredential).toHaveBeenCalledOnce()
     })
 
     const getCredentialTest = L.effect(
       GetCredential,
       E.sync(() => {
-        const getCredentialMock = vi.fn()
+        const getCredential = vi.fn()
 
-        getCredentialMock.mockReturnValue(E.succeed(Fixture.credential))
+        getCredential.mockReturnValue(E.succeed(Fixture.credential))
 
-        return getCredentialMock
+        return { getCredential }
       }),
     )
 

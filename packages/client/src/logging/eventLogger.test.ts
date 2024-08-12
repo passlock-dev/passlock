@@ -79,7 +79,7 @@ describe('log', () => {
     const withLogLevel = logStatement.pipe(Logger.withMinimumLogLevel(LogLevel.Warning))
 
     const effect = E.provide(withLogLevel, eventLoggerLive)
-    
+
     E.runSync(effect)
 
     const expectedEvent = new CustomEvent('PasslogDebugMessage', {

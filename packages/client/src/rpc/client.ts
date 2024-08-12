@@ -1,9 +1,7 @@
-import { Context, Effect as E, Layer } from 'effect'
-
-import { NetworkError } from '../error/error.js'
+import * as S from '@effect/schema/Schema'
+import { NetworkError } from '@passlock/shared/dist/error/error.js'
+import { Context, Effect as E, Layer, pipe } from 'effect'
 import { RetrySchedule, RpcConfig } from './config.js'
-
-/* Services */
 
 export type DispatcherResponse = {
   status: number
@@ -74,6 +72,7 @@ export const DispatcherLive = Layer.effect(
           const headers = {
             'Accept': 'application/json',
             'X-CLIENT-ID': clientId,
+            'X-PASSLOCK-VERSION': '#{LATEST}#'
           }
 
           const url = buildUrl(path)
@@ -102,6 +101,7 @@ export const DispatcherLive = Layer.effect(
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'X-CLIENT-ID': clientId,
+            'X-PASSLOCK-VERSION': '#{LATEST}#'
           }
 
           // drop leading /
@@ -125,5 +125,48 @@ export const DispatcherLive = Layer.effect(
         return E.retry(effect, { schedule })
       },
     }
-  })
+  }),
 )
+
+export const makeGetRequest =
+  <Res, ResEnc, Err, ErrEnc>(
+    responseSchema: S.Schema<Res, ResEnc, never>,
+    errorSchema: S.Schema<Err, ErrEnc, never>,
+    dispatcher: Dispatcher['Type'],
+  ) =>
+  (path: string) =>
+    pipe(
+      dispatcher.get(path),
+      E.flatMap(res => {
+        if (res.status === 200) return S.decodeUnknown(responseSchema)(res.body)
+        return pipe(
+          S.decodeUnknown(errorSchema)(res.body),
+          E.flatMap(err => E.fail(err)),
+        )
+      }),
+      E.catchTag('ParseError', e => E.die(e)),
+      E.catchTag('NetworkError', e => E.die(e)),
+    )
+
+export const makePostRequest =
+  <Req, ReqEnc, Res, ResEnc, Err, ErrEnc>(
+    requestSchema: S.Schema<Req, ReqEnc, never>,
+    responseSchema: S.Schema<Res, ResEnc, never>,
+    errorSchema: S.Schema<Err, ErrEnc, never>,
+    dispatcher: Dispatcher['Type'],
+  ) =>
+  (path: string, request: Req) => {
+    return pipe(
+      S.encode(requestSchema)(request),
+      E.flatMap(request => dispatcher.post(path, JSON.stringify(request))),
+      E.flatMap(res => {
+        if (res.status === 200) return S.decodeUnknown(responseSchema)(res.body)
+        return pipe(
+          S.decodeUnknown(errorSchema)(res.body),
+          E.flatMap(err => E.fail(err)),
+        )
+      }),
+      E.catchTag('ParseError', e => E.die(e)),
+      E.catchTag('NetworkError', e => E.die(e)),
+    )
+  }

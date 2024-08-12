@@ -2,9 +2,10 @@
  * Check for an existing user
  */
 import type { BadRequest, Disabled, NotFound } from '@passlock/shared/dist/error/error.js'
-import { IsExistingUserReq, ResendEmailReq, UserClient } from '@passlock/shared/dist/rpc/user.js'
+import { IsExistingUserReq, ResendEmailReq } from '@passlock/shared/dist/rpc/user.js'
 import type { VerifyEmail } from '@passlock/shared/dist/schema/email.js'
 import { Context, Effect as E, Layer, flow } from 'effect'
+import { UserClient } from '../rpc/user.js'
 
 /* Requests */
 
@@ -17,12 +18,13 @@ export type ResendEmailErrors = BadRequest | NotFound | Disabled
 
 /* Service */
 
-export type UserService = {
-  isExistingUser: (request: Email) => E.Effect<boolean, BadRequest>
-  resendVerificationEmail: (request: ResendEmail) => E.Effect<void, ResendEmailErrors>
-}
-
-export const UserService = Context.GenericTag<UserService>('@services/UserService')
+export class UserService extends Context.Tag('@services/UserService')<
+  UserService,
+  {
+    isExistingUser: (request: Email) => E.Effect<boolean, BadRequest>
+    resendVerificationEmail: (request: ResendEmail) => E.Effect<void, ResendEmailErrors>
+  }
+>() {}
 
 /* Effects */
 
@@ -40,7 +42,9 @@ export const isExistingUser = (request: Email): E.Effect<boolean, BadRequest, De
   })
 }
 
-export const resendVerificationEmail = (request: ResendEmail): E.Effect<void, ResendEmailErrors, Dependencies> => {
+export const resendVerificationEmail = (
+  request: ResendEmail,
+): E.Effect<void, ResendEmailErrors, Dependencies> => {
   return E.gen(function* (_) {
     yield* _(E.logInfo('Resending verification email'))
     const rpcClient = yield* _(UserClient)
@@ -60,7 +64,7 @@ export const UserServiceLive = Layer.effect(
     const context = yield* _(E.context<UserClient>())
     return UserService.of({
       isExistingUser: flow(isExistingUser, E.provide(context)),
-      resendVerificationEmail: flow(resendVerificationEmail, E.provide(context))
+      resendVerificationEmail: flow(resendVerificationEmail, E.provide(context)),
     })
   }),
 )

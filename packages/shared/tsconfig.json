@@ -1,12 +1,13 @@
 {
-  "extends": "@tsconfig/node18/tsconfig.json",
   "compilerOptions": {
     "declaration": true,
     "declarationMap": true,
+    "strict": true,
     "exactOptionalPropertyTypes": true,
-    "lib": ["es2023", "DOM", "DOM.Iterable"],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "lib": ["ES2019", "ES2020.promise", "ES2020.bigint", "ES2020.string"],
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "target": "ES2019",
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -16,7 +17,9 @@
     "removeComments": true,
     "rootDir": "./src",
     "sourceMap": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true
   },
   "include": [
     "./src/**/*.ts",

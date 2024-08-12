@@ -17,8 +17,8 @@ import {
 
 export type RegistrationData = {
 	email: string;
-	givenName: string;
-	familyName: string;
+	givenName?: string;
+	familyName?: string;
 	token?: string;
 	authType: 'apple' | 'google' | 'email' | 'passkey';
 	verifyEmail?: 'link' | 'code';
@@ -54,7 +54,7 @@ export class Passlock {
 
 		if (token && authType) {
 			// a bit hacky but basically the Google button sets the fields on the superform,
-			// whos data is not necessarily posted to the backend unless we use a hidden
+			// who's data is not necessarily posted to the backend unless we use a hidden
 			// form field. We're basically duplicating the role of a hidden field here by
 			// adding the token and authType to the request
 			formData.set('token', token);
@@ -62,9 +62,9 @@ export class Passlock {
 		} else if (!token && authType === 'passkey') {
 			const principal = await this.passlock.registerPasskey({
 				email,
-				givenName,
-				familyName,
-				...(verifyEmail ? { verifyEmail } : { })
+				...(givenName ? { givenName } : {}),
+				...(familyName ? { familyName } : {}),
+				verifyEmail
 			});
 
 			if (PasslockError.isError(principal) && principal.code === ErrorCode.Duplicate) {
@@ -85,9 +85,19 @@ export class Passlock {
 				});
 
 				cancel();
-			} else {
+			} else if (!Client.isUserPrincipal(principal)) {
+        console.error("No user returned by Passlock");
+
+				// set a form level error
+				form.errors.update((errors) => {
+					const _errors = [...(errors._errors ?? []), 'Sorry something went wrong'];
+					return { ..._errors, _errors };
+				});
+
+				cancel();
+      } else {
 				// append the passlock token to the form request
-				formData.set('authType', principal.authStatement.authType);
+				formData.set('authType', principal.authType);
 				formData.set('token', principal.token);
 				if (verifyEmail) formData.set('verifyEmail', verifyEmail.method);
 			}
@@ -103,8 +113,8 @@ export class Passlock {
 			formData.set('authType', authType);
 		} else if (!token && authType === 'passkey') {
 			const principal = await this.passlock.authenticatePasskey({
-				userVerification: 'discouraged',
-        ...(email ? { email } : { })
+				email,
+				userVerification: 'discouraged'
 			});
 
 			if (PasslockError.isError(principal) && principal.code === ErrorCode.NotFound) {
@@ -117,11 +127,15 @@ export class Passlock {
 			} else if (PasslockError.isError(principal)) {
 				form.message.set(principal.message);
 				cancel();
-			} else {
-				form.form.update((old) => ({ ...old, email: principal.user.email }));
-				// append the passlock token to the form request
-				formData.set('authType', principal.authStatement.authType);
-				formData.set('token', principal.token);
+			} else if (! Client.isUserPrincipal(principal)) {
+        console.error("No user returned from Passlock");
+        form.message.set("Sorry, something went wrong");
+				cancel();
+      } else {
+        form.form.update((old) => ({ ...old, email: principal.email }));
+        // append the passlock token to the form request
+        formData.set('authType', principal.authType);
+        formData.set('token', principal.token);
 			}
 		}
 	};
@@ -137,7 +151,7 @@ export class Passlock {
 				form.errors.update((old) => ({ ...old, code: [principal.message] }));
 				cancel();
 			} else {
-				formData.set('token', principal.token);
+				formData.set('token', principal.jti);
 			}
 		} else {
 			form.errors.update((old) => ({ ...old, code: ['Please enter your code'] }));
@@ -146,7 +160,7 @@ export class Passlock {
 	};
 
 	readonly autoVerifyEmail = async <T extends VerifyEmailData>(form: SuperForm<T>) => {
-		if (this.passlock.getSessionToken('passkey')) {
+		if (await this.passlock.getSessionToken('passkey')) {
 			form.submit();
 		}
 	};
@@ -161,9 +175,11 @@ export const updateForm =
 	(event: CustomEvent<Principal>) => {
 		form.form.update((old) => ({
 			...old,
-			...event.detail.user,
-			token: event.detail.token,
-			authType: event.detail.authStatement.authType
+      email: event.detail.email,
+      ...(event.detail.givenName ? { givenName: event.detail.givenName } : { }),
+      ...(event.detail.familyName ? { familyName: event.detail.familyName } : { }),
+			token: event.detail.jti,
+			authType: event.detail.authType
 		}));
 
 		if (typeof onComplete === 'function') {

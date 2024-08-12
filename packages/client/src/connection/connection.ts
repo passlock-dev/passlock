@@ -1,18 +1,19 @@
 /**
  * Hits the rpc endpoint to warm up a lambda
  */
-import type { RpcConfig } from '@passlock/shared/dist/rpc/config.js'
-import { ConnectionClient } from '@passlock/shared/dist/rpc/connection.js'
-import { Dispatcher } from '@passlock/shared/dist/rpc/dispatcher.js'
 import { Context, Effect as E, Layer, flow, pipe } from 'effect'
+import { Dispatcher } from '../rpc/client.js'
+import type { RpcConfig } from '../rpc/config.js'
+import { ConnectionClient } from '../rpc/connection.js'
 
 /* Service */
 
-export type ConnectionService = {
-  preConnect: () => E.Effect<void>
-}
-
-export const ConnectionService = Context.GenericTag<ConnectionService>('@services/ConnectService')
+export class ConnectionService extends Context.Tag('@services/ConnectionService')<
+  ConnectionService,
+  {
+    preConnect: () => E.Effect<void>
+  }
+>() {}
 
 /* Effects */
 

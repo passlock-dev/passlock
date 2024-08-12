@@ -2,41 +2,38 @@
  * User & passkey registration effects
  */
 import {
-  parseCreationOptionsFromJSON,
   type CredentialCreationOptionsJSON,
+  parseCreationOptionsFromJSON,
 } from '@github/webauthn-json/browser-ponyfill'
-import type { NotSupported } from '@passlock/shared/dist/error/error.js'
-import { Duplicate, InternalBrowserError } from '@passlock/shared/dist/error/error.js'
+import type { Duplicate, NotSupported } from '@passlock/shared/dist/error/error.js'
+import { InternalBrowserError } from '@passlock/shared/dist/error/error.js'
 import type { OptionsErrors, VerificationErrors } from '@passlock/shared/dist/rpc/registration.js'
-import { OptionsReq, RegistrationClient, VerificationReq } from '@passlock/shared/dist/rpc/registration.js'
-import { VerifyEmail } from '@passlock/shared/dist/schema/email.js'
-import type {
-  RegistrationCredential,
-  UserVerification,
-} from '@passlock/shared/dist/schema/passkey.js'
-import { Principal } from '@passlock/shared/dist/schema/principal.js'
+import {
+  OptionsReq,
+  VerificationReq,
+} from '@passlock/shared/dist/rpc/registration.js'
+import type { RegistrationCredential } from '@passlock/shared/dist/schema/passkey.js'
+import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer, flow, pipe } from 'effect'
 import { Capabilities } from '../capabilities/capabilities.js'
+import { RegistrationClient } from '../rpc/registration.js'
 import { StorageService } from '../storage/storage.js'
-import { UserService } from '../user/user.js'
+import type { UserService } from '../user/user.js'
 
 /* Requests */
 
-export type RegistrationRequest = {
-  email: string
-  givenName: string
-  familyName: string
-  userVerification?: UserVerification
-  verifyEmail?: VerifyEmail
-}
+export type RegistrationRequest = OptionsReq
 
 /* Dependencies */
 
-export type CreateCredential = (
-  request: CredentialCreationOptions,
-) => E.Effect<RegistrationCredential, InternalBrowserError | Duplicate>
-
-export const CreateCredential = Context.GenericTag<CreateCredential>('@services/Create')
+export class CreateCredential extends Context.Tag('@services/CreateCredential')<
+  CreateCredential,
+  {
+    createCredential: (
+      request: CredentialCreationOptions,
+    ) => E.Effect<RegistrationCredential, InternalBrowserError | Duplicate>
+  }
+>() {}
 
 /* Errors */
 
@@ -44,13 +41,12 @@ export type RegistrationErrors = NotSupported | OptionsErrors | VerificationErro
 
 /* Service */
 
-export type RegistrationService = {
-  registerPasskey: (request: RegistrationRequest) => E.Effect<Principal, RegistrationErrors>
-}
-
-export const RegistrationService = Context.GenericTag<RegistrationService>(
-  '@services/RegistrationService',
-)
+export class RegistrationService extends Context.Tag('@services/RegistrationService')<
+  RegistrationService,
+  {
+    registerPasskey: (request: RegistrationRequest) => E.Effect<Principal, RegistrationErrors>
+  }
+>() {}
 
 /* Utilities */
 
@@ -94,7 +90,12 @@ const verifyCredential = (request: VerificationReq) => {
 
 /* Effects */
 
-type Dependencies = Capabilities | CreateCredential | StorageService | UserService | RegistrationClient
+type Dependencies =
+  | Capabilities
+  | CreateCredential
+  | StorageService
+  | UserService
+  | RegistrationClient
 
 export const registerPasskey = (
   request: RegistrationRequest,
@@ -105,10 +106,10 @@ export const registerPasskey = (
     yield* _(capabilities.passkeySupport)
 
     yield* _(E.logInfo('Fetching registration options from Passlock'))
-    const { options, session } = yield* _(fetchOptions(new OptionsReq(request)))
+    const { options, session } = yield* fetchOptions(new OptionsReq(request))
 
     yield* _(E.logInfo('Building new credential'))
-    const createCredential = yield* _(CreateCredential)
+    const { createCredential } = yield* _(CreateCredential)
     const credential = yield* _(createCredential(options))
 
     yield* _(E.logInfo('Storing credential public key in Passlock'))
@@ -145,7 +146,9 @@ export const RegistrationServiceLive = Layer.effect(
   RegistrationService,
   E.gen(function* (_) {
     const context = yield* _(
-      E.context<CreateCredential | RegistrationClient | Capabilities | StorageService | UserService>(),
+      E.context<
+        CreateCredential | RegistrationClient | Capabilities | StorageService | UserService
+      >(),
     )
 
     return RegistrationService.of({

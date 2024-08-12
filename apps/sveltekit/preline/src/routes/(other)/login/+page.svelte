@@ -13,14 +13,16 @@
   import * as Forms from '$lib/components/ui/forms'
   import * as Social from '$lib/components/ui/social'
 
+  import { loginAction } from '$lib/routes.js'
   import { loginFormSchema } from '$lib/schemas'
   import { getLocalEmail, Passlock, saveEmailLocally, updateForm } from '@passlock/sveltekit/superforms'
   import { onMount } from 'svelte'
   import { derived } from 'svelte/store'
   import { valibotClient } from 'sveltekit-superforms/adapters'
   import { superForm } from 'sveltekit-superforms/client'
+  import type { PageData } from './$types'
 
-  export let data
+  export let data: PageData
 
   const endpoint = PUBLIC_PASSLOCK_ENDPOINT
   const tenancyId = PUBLIC_PASSLOCK_TENANCY_ID
@@ -87,7 +89,7 @@
       </div>
     {/if}
 
-    <form method="POST" use:enhance>
+    <form method="post" action={loginAction} use:enhance>
       <div class="flex flex-col gap-4">
         <Forms.InputEmail {form} field="email" label="Email address" autocomplete="email" readonly={readonlyEmail} />
 

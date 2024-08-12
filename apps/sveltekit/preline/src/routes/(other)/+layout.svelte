@@ -4,9 +4,6 @@
   import Header from '$lib/components/layout/Header.svelte'
   import { ModeWatcher } from 'mode-watcher'
   import '../../app.pcss'
-  import type { LayoutData } from './$types'
-
-  export let data: LayoutData
 </script>
 
 <svelte:head>
@@ -19,7 +16,7 @@
 <div class="h-screen flex flex-col bg-white dark:bg-slate-950">
   <Banner />
 
-  <Header user={data.user} />
+  <Header user={null} />
 
   <main class="pt-2 pb-8 md:px-8 grow">
     <slot />

@@ -1,6 +1,6 @@
 {
   "name": "@passlock/client",
-  "version": "0.9.22",
+  "version": "0.9.23",
   "description": "Passkey authentication and social login for web apps (Typescript). Framework agnostic",
   "keywords": [
     "passkey",
@@ -33,15 +33,15 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",      
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
   },
   "files": [
-		"src",
-		"dist",
-		"!dist/**/*.test.*",
-		"!dist/**/*.spec.*"
+    "src",
+    "dist",
+    "!dist/**/*.test.*",
+    "!dist/**/*.spec.*"
   ],
   "scripts": {
     "clean": "tsc --build --clean",
@@ -57,33 +57,33 @@
     "lint": "eslint --ext .ts src",
     "lint:fix": "pnpm run lint --fix",
     "prepublishOnly": "pnpm run clean && pnpm run build",
-    "ncu": "ncu --peer -x @effect/* -x effect",
-    "ncu:save": "ncu --peer -x @effect/* -x effect -u"
+    "upgrade:deps": "ncu --peer -x effect -x @effect/* -u"
   },
   "dependencies": {
+    "@effect/schema": "0.70.1",
     "@github/webauthn-json": "^2.1.1",
     "@passlock/shared": "workspace:*",
-    "effect": "catalog:"
+    "effect": "3.6.0"
   },
   "devDependencies": {
-    "@tsconfig/node18": "^18.2.4",
-    "@types/node": "^20.14.10",
-    "@typescript-eslint/eslint-plugin": "^7.15.0",
-    "@typescript-eslint/parser": "^7.15.0",
-    "@vitest/coverage-v8": "^2.0.3",
-    "@vitest/ui": "^2.0.3",
-    "eslint": "^8.57.0",
+    "@qetza/replacetokens": "^1.7.0",
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^22.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@vitest/coverage-v8": "^2.0.5",
+    "@vitest/ui": "^2.0.5",
+    "eslint": "^9.8.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-import": "^2.29.1",
-    "jsdom": "^24.1.0",
-    "prettier": "^3.3.2",
-    "publint": "^0.1.9",
-    "rimraf": "^5.0.8",
+    "jsdom": "^24.1.1",
+    "prettier": "^3.3.3",
+    "publint": "^0.2.9",
+    "rimraf": "^6.0.1",
     "tslib": "^2.6.3",
-    "typescript": "^5.5.3",
-    "vite": "^5.3.3",
-    "vitest": "^2.0.3",
-    "vitest-mock-extended": "^1.3.1"
+    "typescript": "^5.5.4",
+    "vite": "^5.3.5",
+    "vitest": "^2.0.5",
+    "vitest-mock-extended": "^2.0.0"
   }
 }

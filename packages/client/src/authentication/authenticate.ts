@@ -2,52 +2,51 @@
  * Passkey authentication effects
  */
 import {
-  parseRequestOptionsFromJSON,
   type CredentialRequestOptionsJSON,
+  parseRequestOptionsFromJSON,
 } from '@github/webauthn-json/browser-ponyfill'
+import { InternalBrowserError, type NotSupported } from '@passlock/shared/dist/error/error.js'
 import {
-  InternalBrowserError,
-  type NotSupported,
-} from '@passlock/shared/dist/error/error.js'
-import type { OptionsErrors, VerificationErrors } from '@passlock/shared/dist/rpc/authentication.js'
-import { AuthenticationClient, OptionsReq, VerificationReq } from '@passlock/shared/dist/rpc/authentication.js'
-import type {
-  AuthenticationCredential,
-  UserVerification,
-} from '@passlock/shared/dist/schema/passkey.js'
-import { Principal } from '@passlock/shared/dist/schema/principal.js'
+  type OptionsErrors,
+  type OptionsReq,
+  type VerificationErrors,
+  VerificationReq,
+} from '@passlock/shared/dist/rpc/authentication.js'
+import type { AuthenticationCredential } from '@passlock/shared/dist/schema/passkey.js'
+import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer, flow, pipe } from 'effect'
 import { Capabilities } from '../capabilities/capabilities.js'
+import { AuthenticationClient } from '../rpc/authentication.js'
 import { StorageService } from '../storage/storage.js'
 
 /* Requests */
 
-export type AuthenticationRequest = { 
-  email?: string, 
-  userVerification?: UserVerification 
-}
-
+export type AuthenticationRequest = OptionsReq
 /* Errors */
 
 export type AuthenticationErrors = NotSupported | OptionsErrors | VerificationErrors
 
 /* Dependencies */
 
-export type GetCredential = (
-  request: CredentialRequestOptions,
-) => E.Effect<AuthenticationCredential, InternalBrowserError>
-
-export const GetCredential = Context.GenericTag<GetCredential>('@services/Get')
+export class GetCredential extends Context.Tag('@services/GetCredential')<
+  GetCredential,
+  {
+    getCredential: (
+      request: CredentialRequestOptions,
+    ) => E.Effect<AuthenticationCredential, InternalBrowserError>
+  }
+>() {}
 
 /* Service */
 
-export type AuthenticationService = {
-  authenticatePasskey: (request: AuthenticationRequest) => E.Effect<Principal, AuthenticationErrors>
-}
-
-export const AuthenticationService = Context.GenericTag<AuthenticationService>(
-  '@services/AuthenticationService',
-)
+export class AuthenticationService extends Context.Tag('@services/AuthenticationService')<
+  AuthenticationService,
+  {
+    authenticatePasskey: (
+      request: AuthenticationRequest,
+    ) => E.Effect<Principal, AuthenticationErrors>
+  }
+>() {}
 
 /* Utilities */
 
@@ -102,11 +101,12 @@ export const authenticatePasskey = (
     yield* _(capabilities.passkeySupport)
 
     yield* _(E.logInfo('Fetching authentication options from Passlock'))
-    const { options, session } = yield* _(fetchOptions(new OptionsReq(request)))
+
+    const { options, session } = yield* _(fetchOptions(request))
 
     yield* _(E.logInfo('Looking up credential'))
-    const get = yield* _(GetCredential)
-    const credential = yield* _(get(options))
+    const { getCredential } = yield* _(GetCredential)
+    const credential = yield* _(getCredential(options))
 
     yield* _(E.logInfo('Verifying credential with Passlock'))
     const principal = yield* _(verifyCredential(new VerificationReq({ credential, session })))
@@ -135,7 +135,9 @@ export const authenticatePasskey = (
 export const AuthenticateServiceLive = Layer.effect(
   AuthenticationService,
   E.gen(function* (_) {
-    const context = yield* _(E.context<GetCredential | AuthenticationClient | Capabilities | StorageService>())
+    const context = yield* _(
+      E.context<GetCredential | AuthenticationClient | Capabilities | StorageService>(),
+    )
 
     return AuthenticationService.of({
       authenticatePasskey: flow(authenticatePasskey, E.provide(context)),
