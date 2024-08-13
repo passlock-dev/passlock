@@ -1,7 +1,7 @@
 {
   "extends": "@total-typescript/tsconfig/tsc/no-dom/app",
   "compilerOptions": {
-    "exactOptionalPropertyTypes": true,
+    "sourceMap": false,
     "outDir": "./dist",
     "types": ["node"]
   },
