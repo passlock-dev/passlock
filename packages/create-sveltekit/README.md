@@ -77,4 +77,4 @@ Please see the template [homepage][homepage]
 [pnpm]: https://pnpm.io/installation
 [preline]: https://preline.co
 [shadcn]: https://www.shadcn-svelte.com
-[homepage]: https://github.com/passlock-dev/ts-clients/packages/create-sveltekit
+[homepage]: https://github.com/passlock-dev/ts-clients/packages/create-sveltekit/docs/README.md
