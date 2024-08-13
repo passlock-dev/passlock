@@ -15,22 +15,20 @@
     <img align="center" width=550 height=50 src="README_assets/repo-banner.svg" />
   </picture>
   <p align="center">
-    <br />
     SvelteKit authentication template featuring Passkeys, social login (Apple and Google), mailbox verification and much more.
-  </p>
-  <p align="center">
+    <br />
     <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Preline)</a> &nbsp; | &nbsp; <a href="https://dbr4qrmypnl85.cloudfront.net">Demo (Shadcn)</a>
   </p>
 </div>
 
 ## Features
 
-🔑 Passkey registration and authentication  
-📱 Apple sign in  
-☝️ Google sign in / one-tap  
-📪 Mailbox verification (via a one time code or link)  
-🌘 Dark mode with theme selection (light/dark/system)  
-🚀 [Preline][preline] and [Shadcn][shadcn] variants
+* 🔑 Passkey registration and authentication
+* 📱 Apple sign in
+* ☝️ Google sign in / one-tap
+* 📪 Mailbox verification (via a one time code or link)
+* 🌘 Dark mode with theme selection (light/dark/system)
+* 🚀 [Preline][preline] and [Shadcn][shadcn] variants
 
 ## Screen recording
 
