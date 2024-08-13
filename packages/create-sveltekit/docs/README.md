@@ -30,10 +30,6 @@
 * 🌘 Dark mode with theme selection (light/dark/system)
 * 🚀 [Preline][preline] and [Shadcn][shadcn] variants
 
-## Screen recording
-
-https://github.com/user-attachments/assets/c1da1bea-a1c5-4930-8f57-d12728106630
-
 ## Screenshots
 
 ![Register a passkey](./assets/preline.webp)
