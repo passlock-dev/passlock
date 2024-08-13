@@ -95,12 +95,10 @@ You'll need to set up to six variables:
 
 Your Passlock **Tenancy ID**, **Client ID** and **API Key** (token) can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. 
 
-Please see the section [Sign in with Google](#sign-in-with-google) if using Google sign in.
-
-Update the `.env` file with the relevant credentials.
+**Update your `.env` file with the relevant credentials.**
 
 > [!TIP]
-> Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]:
+> Alternatively you can download a ready made .env file from your passlock console [settings][passlock-settings]
 >
 > `Tenancy information -> Vite .env -> Download`
 
@@ -132,6 +130,10 @@ Logout then navigate to the [login](http://localhost:5174/login) page. You shoul
 > By asking for an email address we can check if they have a passkey registered in the backed or they have a linked Google account. This allows us to display a helpful message telling them to either sign up or login using their Google credentials.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Social Login
+
+This template also supports Social Login using both Apple and Google..
 
 ## Sign in with Google
 
@@ -211,7 +213,7 @@ See the emails section of your [Passlock console][passlock-settings]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-# Questions? Problems
+## Questions? Problems
 
 Please file an [issue][issues] and I'll respond ASAP.
 
