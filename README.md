@@ -28,7 +28,7 @@
 <br />
 
 > [!IMPORTANT]  
-> **Looking for the SvelteKit templates?** Use the [@passlock/create-sveltekit](./packages/create-sveltekit/docs/README.md) script to create a new project with Passkey authentication, social login and more..
+> **Looking for the SvelteKit templates?** Use the [@passlock/create-sveltekit](./packages/create-sveltekit/docs/README.md) script to create a new project
 
 ## Features
 
