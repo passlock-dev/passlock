@@ -25,11 +25,11 @@
 
 ## Features
 
-🔑 Passkey registration and authentication
-📱 Apple sign in
-☝️ Google sign in / one-tap
-📪 Mailbox verification (via a one time code or link)
-🌘 Dark mode with theme selection (light/dark/system)
+🔑 Passkey registration and authentication  
+📱 Apple sign in  
+☝️ Google sign in / one-tap  
+📪 Mailbox verification (via a one time code or link)  
+🌘 Dark mode with theme selection (light/dark/system)  
 🚀 [Preline][preline] and [Shadcn][shadcn] variants
 
 ## Requirements
