@@ -60,10 +60,6 @@ https://github.com/user-attachments/assets/c1da1bea-a1c5-4930-8f57-d12728106630
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## About
-
-The future of web authenticaton lies in [Passkeys][google-passkeys]. Learn how to add Passkey authentication to your SvelteKit app, perform facial or fingerprint recognition and more. You'll also learn how to use some of SvelteKit's hottest libraries and implement Google's latest social sign in feature.
-
 ## Demos
 
 I've deployed 2 live versions of this project:
@@ -112,13 +108,13 @@ Update the `.env` file with the relevant credentials.
 >
 > `Tenancy information -> Vite .env -> Download`
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 ### Start the dev server
 
 `pnpm run dev`
 
 **Note:** by default this app runs on port 5174 when in dev mode (see [vite.config.ts](vite.config.ts))
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Navigate the app
 
@@ -145,7 +141,7 @@ Logout then navigate to the [login](http://localhost:5174/login) page. You shoul
 
 This app also allows users to register/sign in using a Google account. It uses the latest [sign in with google][google-signin] code, avoiding redirects.
 
-## Adding Google sign in
+### Adding Google sign in
 
 1. Obtain your [Google API Client ID][google-client-id]
 2. Update your `.env` or `.env.local` to include a `PUBLIC_GOOGLE_CLIENT_ID` variable.
@@ -154,7 +150,7 @@ This app also allows users to register/sign in using a Google account. It uses t
 > [!IMPORTANT]  
 > Don't forget the last step!
 
-## Testing Google sign in
+### Testing Google sign in
 
 If all went well you should be able to register an account and then sign in using your Google credentials.
 
@@ -179,6 +175,12 @@ Similar to Google, users can sign in using an Apple account, also without redire
 3. Register the relevant website domains and redirect URLs with the service account
 4. Update your `.env` or `.env.local` to include the `PUBLIC_APPLE_CLIENT_ID` and `PUBLIC_APPLE_REDIRECT_URL` variables.
 5. Record your Apple Client ID in your [Passlock settings][passlock-settings]: Social Login -> Apple Client ID
+
+### Testing Apple sign in
+
+If all went well you should be able to register an account and then sign in using your Apple id.
+
+**IMPORTANT!** If you previously used the same email address with another authenticator (i.e. passkey or Google), you'll need to first delete the user in your Passlock console. We don't yet support account linking in this template but it's being developed now.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
