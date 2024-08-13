@@ -25,12 +25,12 @@
 
 ## Features
 
-* 🔑 Passkey registration and authentication
-* 📱 Apple sign in
-* ☝️ Google sign in / one-tap
-* 📪 Mailbox verification (via a one time code or link)
-* 🌘 Dark mode with theme selection (light/dark/system)
-* 🚀 [Preline][preline] and [Shadcn][shadcn] variants
+🔑 Passkey registration and authentication  
+📱 Apple sign in  
+☝️ Google sign in / one-tap  
+📪 Mailbox verification (via a one time code or link)  
+🌘 Dark mode with theme selection (light/dark/system)  
+🚀 [Preline][preline] and [Shadcn][shadcn] variants
 
 ## Screen recording
 
@@ -55,7 +55,7 @@ https://github.com/user-attachments/assets/c1da1bea-a1c5-4930-8f57-d12728106630
 3. [Lucia][lucia] - Robust session management
 4. [Tailwind][tailwind] - Utility-first CSS framework
 5. [Preline][preline] - Tailwind UI library <sup>1</sup>
-6. [shadcn-svelte][shadcn-svelte] - Tailwind components for Svelte
+6. [shadcn][shadcn] - Tailwind components for Svelte
 7. [Melt UI][meltui] - Headless component library for Svelte
 
 <sup>[1]</sup> Uses native Svelte in place of Preline JavaScript  
@@ -225,7 +225,7 @@ Please file an [issue][issues] and I'll respond ASAP.
 [tailwind]: https://tailwindcss.com
 [preline]: https://preline.co
 [meltui]: https://melt-ui.com
-[shadcn-svelte]: https://www.shadcn-svelte.com
+[shadcn]: https://www.shadcn-svelte.com
 [passlock-signup]: https://console.passlock.dev/register
 [passlock-console]: https://console.passlock.dev
 [passlock-settings]: https://console.passlock.dev/settings

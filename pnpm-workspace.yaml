@@ -1,4 +1,3 @@
 packages:
-  - "apps/**"
   - "packages/**"
-  - "!packages/create/src/templates/**"
+  - "!packages/create-sveltekit/templates/**"

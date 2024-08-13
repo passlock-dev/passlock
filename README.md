@@ -28,7 +28,7 @@
 <br />
 
 > [!IMPORTANT]  
-> **Looking for the SvelteKit templates?** You'll find the SvelteKit app templates in [apps/sveltekit](./apps/sveltekit/)
+> **Looking for the SvelteKit templates?** Use the [@passlock/create-sveltekit](./packages/create-sveltekit/) CLI to create a new project with Passkey authentication, social login and more..
 
 ## Features
 
