@@ -11,8 +11,8 @@
 
 <div align="center">
     <picture align="center">
-    <source srcset="README_assets/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
-    <img align="center" width=550 height=50 src="README_assets/repo-banner.svg" />
+    <source srcset="assets/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
+    <img align="center" width=550 height=50 src="assets/repo-banner.svg" />
   </picture>
   <p align="center">
     SvelteKit authentication template featuring Passkeys, social login (Apple and Google), mailbox verification and much more.
@@ -36,13 +36,13 @@ https://github.com/user-attachments/assets/c1da1bea-a1c5-4930-8f57-d12728106630
 
 ## Screenshots
 
-![Register a passkey](./README_assets/preline.webp)
+![Register a passkey](./assets/preline.webp)
 
 <p align="center">Creating a new account and passkey</p>
 
 <br />
 
-![Shadcn/ui variant](./README_assets/shadcn.webp)
+![Shadcn/ui variant](./assets/shadcn.webp)
 
 <p align="center">Shadcn/ui variant (dark mode)</p>
 
