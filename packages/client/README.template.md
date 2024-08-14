@@ -1,4 +1,4 @@
-<!-- The pnpm script build:readme replaces the tokens in this file 01 -->
+<!-- The pnpm script build:readme replaces the tokens in this file -->
 <div align="center">
   <a href="#{GITHUB_REPO}#">
     <img src="#{PASSLOCK_LOGO}#" alt="Passlock logo" width="80" height="80">

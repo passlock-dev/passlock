@@ -42,7 +42,7 @@
     "build": "tsc --project tsconfig.build.json",
     "build:clean": "pnpm run clean && pnpm run build",
     "build:readme": "LATEST=${npm_package_version} tsx scripts/replace-readme-tokens.ts",
-    "replaceTokens": "LATEST=${npm_package_version} tsx scripts/replace-tokens.ts",
+    "replaceTokens": "LATEST=${npm_package_version} tsx scripts/replace-readme-tokens.ts",
     "build:production": "pnpm run replaceTokens && echo '' && publint",
     "prepublishOnly": "pnpm run build:production",
     "upgrade:deps": "ncu --peer -x effect -x @effect/* -u"

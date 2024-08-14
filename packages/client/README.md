@@ -1,4 +1,4 @@
-﻿<!-- The pnpm script build:readme replaces the tokens in this file 01 -->
+﻿<!-- The pnpm script build:readme replaces the tokens in this file -->
 <div align="center">
   <a href="https://github.com/passlock-dev/passlock">
     <img src="https://github.com/passlock-dev/passkeys-frontend/assets/208345/53ee00d3-8e6c-49ea-b43c-3f901450c73b" alt="Passlock logo" width="80" height="80">
