@@ -1,9 +1,11 @@
-import { Duplicate, NotFound } from '@passlock/shared/dist/error/error.js'
 import { Effect as E, Layer as L, Layer, LogLevel, Logger, pipe } from 'effect'
 import { describe, expect, test } from 'vitest'
 import { mock } from 'vitest-mock-extended'
-import { SocialClient } from '../rpc/social.js'
+
+import { Duplicate, NotFound } from '@passlock/shared/dist/error/error.js'
+
 import * as Fixture from './social.fixture.js'
+import { SocialClient } from '../rpc/social.js'
 import { SocialService, SocialServiceLive } from './social.js'
 
 describe('registerOidc should', () => {

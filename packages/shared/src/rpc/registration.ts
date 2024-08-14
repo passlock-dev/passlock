@@ -1,11 +1,9 @@
 import * as S from '@effect/schema/Schema'
-import { Context, Effect as E } from 'effect'
+import { Context, type Effect as E } from 'effect'
 
 import { BadRequest, Duplicate, Forbidden, Unauthorized } from '../error/error.js'
-
 import { VerifyEmail } from '../schema/email.js'
 import { RegistrationCredential, RegistrationOptions, UserVerification } from '../schema/passkey.js'
-
 import { Principal } from '../schema/principal.js'
 
 /* Options */

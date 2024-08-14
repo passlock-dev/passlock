@@ -6,8 +6,13 @@
   "type": "module",
   "scripts": {
     "clean": "pnpm -r run clean",
-    "typecheck": "pnpm -r run typecheck",
     "build": "pnpm -r run build",
+    "build:clean": "pnpm -r run build:clean",
+    "build:readme": "pnpm -r run build:readme",
+    "build:production": "pnpm -r run build:production",
+    "format": "pnpm -r run format",
+    "lint": "pnpm -r run lint",
+    "lint:fix": "pnpm -r run lint:fix",
     "upgrade:deps": "ncu --peer -x effect -x @effect/* -x @passlock/* -u && pnpm -r run upgrade:deps",
     "upgrade:pnpm": "corepack use pnpm@latest"
   },

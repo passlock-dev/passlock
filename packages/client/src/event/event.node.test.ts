@@ -1,5 +1,6 @@
 import { Effect, pipe } from 'effect'
 import { describe, expect, test } from 'vitest'
+
 import { fireEvent } from './event.js'
 
 // @vitest-environment node

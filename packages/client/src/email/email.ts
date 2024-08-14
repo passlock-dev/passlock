@@ -1,11 +1,13 @@
 /**
  * Email verification effects
  */
+import { Context, Effect as E, Layer, Option as O, flow, identity, pipe } from 'effect'
+
 import { BadRequest } from '@passlock/shared/dist/error/error.js'
 import type { VerifyEmailErrors as RpcErrors } from '@passlock/shared/dist/rpc/user.js'
 import { VerifyEmailReq } from '@passlock/shared/dist/rpc/user.js'
 import type { Principal } from '@passlock/shared/dist/schema/principal.js'
-import { Context, Effect as E, Layer, Option as O, flow, identity, pipe } from 'effect'
+
 import { type AuthenticationErrors, AuthenticationService } from '../authentication/authenticate.js'
 import { UserClient } from '../rpc/user.js'
 import { StorageService, type StoredToken } from '../storage/storage.js'

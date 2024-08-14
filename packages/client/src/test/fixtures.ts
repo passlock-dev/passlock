@@ -1,6 +1,8 @@
+import { Effect as E, Layer as L } from 'effect'
+
 import { BadRequest } from '@passlock/shared/dist/error/error.js'
 import type { Principal } from '@passlock/shared/dist/schema/principal.js'
-import { Effect as E, Layer as L } from 'effect'
+
 import { Capabilities } from '../capabilities/capabilities.js'
 import { StorageService, type StoredToken } from '../storage/storage.js'
 
@@ -32,7 +34,7 @@ export const principal: Principal = {
     givenName: 'john',
     familyName: 'doe',
     email: 'john.doe@gmail.com',
-    emailVerified: false
+    emailVerified: false,
   },
   authStatement: {
     authType: 'passkey',

@@ -1,8 +1,9 @@
 import { Effect as E, Layer as L, Layer, LogLevel, Logger, pipe } from 'effect'
 import { describe, expect, test } from 'vitest'
 import { mock } from 'vitest-mock-extended'
-import { UserClient } from '../rpc/user.js'
+
 import * as Fixture from './user.fixture.js'
+import { UserClient } from '../rpc/user.js'
 import { UserService, UserServiceLive } from './user.js'
 
 describe('isExistingUser should', () => {

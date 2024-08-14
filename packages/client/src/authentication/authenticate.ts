@@ -5,6 +5,8 @@ import {
   type CredentialRequestOptionsJSON,
   parseRequestOptionsFromJSON,
 } from '@github/webauthn-json/browser-ponyfill'
+import { Context, Effect as E, Layer, flow, pipe } from 'effect'
+
 import { InternalBrowserError, type NotSupported } from '@passlock/shared/dist/error/error.js'
 import {
   type OptionsErrors,
@@ -14,7 +16,7 @@ import {
 } from '@passlock/shared/dist/rpc/authentication.js'
 import type { AuthenticationCredential } from '@passlock/shared/dist/schema/passkey.js'
 import type { Principal } from '@passlock/shared/dist/schema/principal.js'
-import { Context, Effect as E, Layer, flow, pipe } from 'effect'
+
 import { Capabilities } from '../capabilities/capabilities.js'
 import { AuthenticationClient } from '../rpc/authentication.js'
 import { StorageService } from '../storage/storage.js'

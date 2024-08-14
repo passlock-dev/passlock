@@ -1,10 +1,12 @@
 /**
  * Passkey authentication effects
  */
-import { type BadRequest, type NotSupported } from '@passlock/shared/dist/error/error.js'
-import * as RPC from '@passlock/shared/dist/rpc/social.js'
-import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer, flow } from 'effect'
+
+import * as RPC from '@passlock/shared/dist/rpc/social.js'
+import { type BadRequest, type NotSupported } from '@passlock/shared/dist/error/error.js'
+import type { Principal } from '@passlock/shared/dist/schema/principal.js'
+
 import { SocialClient } from '../rpc/social.js'
 
 /* Requests */

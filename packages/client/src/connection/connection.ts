@@ -2,6 +2,7 @@
  * Hits the rpc endpoint to warm up a lambda
  */
 import { Context, Effect as E, Layer, flow, pipe } from 'effect'
+
 import { Dispatcher } from '../rpc/client.js'
 import type { RpcConfig } from '../rpc/config.js'
 import { ConnectionClient } from '../rpc/connection.js'

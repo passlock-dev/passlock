@@ -1,6 +1,21 @@
 import * as S from '@effect/schema/Schema'
-import { IsExistingUserReq, IsExistingUserRes, RESEND_EMAIL_ENDPOINT, ResendEmailErrors, ResendEmailReq, ResendEmailRes, USER_STATUS_ENDPOINT, VERIFY_EMAIL_ENDPOINT, VerifyEmailErrors, VerifyEmailReq, VerifyEmailRes, type UserService } from '@passlock/shared/dist/rpc/user.js'
 import { Context, Effect as E, Layer } from 'effect'
+
+import {
+  IsExistingUserReq,
+  IsExistingUserRes,
+  RESEND_EMAIL_ENDPOINT,
+  ResendEmailErrors,
+  ResendEmailReq,
+  ResendEmailRes,
+  USER_STATUS_ENDPOINT,
+  type UserService,
+  VERIFY_EMAIL_ENDPOINT,
+  VerifyEmailErrors,
+  VerifyEmailReq,
+  VerifyEmailRes,
+} from '@passlock/shared/dist/rpc/user.js'
+
 import { Dispatcher, makePostRequest } from './client.js'
 
 /* Client */

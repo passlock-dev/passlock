@@ -1,3 +1,5 @@
+import { Effect as E, Layer as L, Option as O } from 'effect'
+
 import {
   OptionsRes,
   VerificationReq,
@@ -5,9 +7,9 @@ import {
 } from '@passlock/shared/dist/rpc/authentication.js'
 import { IsExistingUserRes, VerifyEmailRes } from '@passlock/shared/dist/rpc/user.js'
 import type { AuthenticationCredential } from '@passlock/shared/dist/schema/passkey.js'
-import { Effect as E, Layer as L, Option as O } from 'effect'
-import { AuthenticationClient } from '../rpc/authentication.js'
+
 import * as Fixtures from '../test/fixtures.js'
+import { AuthenticationClient } from '../rpc/authentication.js'
 import { type AuthenticationRequest, GetCredential } from './authenticate.js'
 
 export const session = 'session'

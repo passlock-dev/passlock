@@ -1,5 +1,6 @@
 import { Effect as E, LogLevel, Logger } from 'effect'
 import { describe, expect, test, vi } from 'vitest'
+
 import { eventLoggerLive, logRaw } from './eventLogger.js'
 
 /**

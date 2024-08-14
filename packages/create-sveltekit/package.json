@@ -39,11 +39,15 @@
   ],
   "scripts": {
     "clean": "rimraf ./dist",
+    "typecheck": "tsc --project tsconfig.build.json --noEmit",
     "build": "tsc --project tsconfig.build.json",
     "build:clean": "pnpm run clean && pnpm run build",
     "build:readme": "LATEST=${npm_package_version} tsx scripts/replace-readme-tokens.ts",
     "replaceTokens": "LATEST=${npm_package_version} tsx scripts/replace-readme-tokens.ts",
-    "build:production": "pnpm run replaceTokens && echo '' && publint",
+    "build:production": "pnpm run build:clean && pnpm run replaceTokens && echo '' && publint",
+    "format": "prettier --write \"(src|scripts)/**/*.+(js|ts|json)\"",
+    "lint": "eslint ./src",
+    "lint:fix": "pnpm run lint --fix",
     "prepublishOnly": "pnpm run build:production",
     "upgrade:deps": "ncu --peer -x effect -x @effect/* -u"
   },
@@ -56,6 +60,7 @@
     "@passlock/shared": "workspace:^",
     "@total-typescript/tsconfig": "^1.0.4",
     "@types/node": "^22.2.0",
+    "globals": "^15.9.0",
     "publint": "^0.2.9",
     "rimraf": "^6.0.1"
   }

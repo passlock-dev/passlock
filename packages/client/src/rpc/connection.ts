@@ -1,6 +1,12 @@
 import * as S from '@effect/schema/Schema'
-import { CONNECT_ENDPOINT, ConnectRes, type ConnectionService } from '@passlock/shared/dist/rpc/connection.js'
 import { Context, Effect as E, Layer } from 'effect'
+
+import {
+  CONNECT_ENDPOINT,
+  ConnectRes,
+  type ConnectionService,
+} from '@passlock/shared/dist/rpc/connection.js'
+
 import { Dispatcher, makeGetRequest } from './client.js'
 
 /* Client */

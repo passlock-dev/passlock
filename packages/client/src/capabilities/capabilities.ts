@@ -1,8 +1,9 @@
 /**
  * Test if the browser supports passkeys, conditional UI etc
  */
-import { NotSupported } from '@passlock/shared/dist/error/error.js'
 import { Context, Effect as E, Layer, identity, pipe } from 'effect'
+
+import { NotSupported } from '@passlock/shared/dist/error/error.js'
 
 /* Service */
 

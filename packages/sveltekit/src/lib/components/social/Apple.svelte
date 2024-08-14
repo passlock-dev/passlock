@@ -27,7 +27,7 @@
 		tenancyId: string;
 		clientId: string;
 		endpoint?: string;
-    context: Context;
+		context: Context;
 		apple: {
 			clientId: string;
 			redirectURL?: string;
@@ -49,7 +49,7 @@
 
 	const passlock = new Passlock(options);
 
-  // We need to poll as on:load doesn't currently work for scripts
+	// We need to poll as on:load doesn't currently work for scripts
 	// see https://github.com/sveltejs/svelte/issues/8301
 	const appleScripts = () => {
 		return new Promise<void>((resolve) => {
@@ -64,7 +64,7 @@
 				}, 100);
 			}
 		});
-  }
+	};
 
 	const callPasslock = async (nonce: string, res: AppleSignInAPI.SignInResponseI) => {
 		if (options.context === 'signup' && res.user) {
@@ -109,7 +109,7 @@
 
 	const signIn = async () => {
 		try {
-      error = '';
+			error = '';
 			submitting = true;
 			await appleScripts();
 

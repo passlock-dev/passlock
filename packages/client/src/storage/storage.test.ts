@@ -1,6 +1,7 @@
 import { Effect as E, Layer, LogLevel, Logger, identity, pipe } from 'effect'
 import { describe, expect, test } from 'vitest'
 import { mock } from 'vitest-mock-extended'
+
 import { principal, testLayers } from './storage.fixture.js'
 import {
   BrowserStorage,

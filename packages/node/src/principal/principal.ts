@@ -1,3 +1,7 @@
+import * as https from 'https'
+import type { StreamEmit } from 'effect'
+import { Chunk, Console, Context, Effect as E, Layer, Option, Stream, flow, pipe } from 'effect'
+
 import {
   Forbidden,
   InternalServerError,
@@ -6,12 +10,9 @@ import {
 } from '@passlock/shared/dist/error/error.js'
 import { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { createParser } from '@passlock/shared/dist/schema/utils.js'
-import type { StreamEmit } from 'effect'
-import { Chunk, Console, Context, Effect as E, Layer, Option, Stream, flow, pipe } from 'effect'
-import * as https from 'https'
-import { PASSLOCK_CLIENT_VERSION } from '../version.js'
 
 import { Config } from '../config/config.js'
+import { PASSLOCK_CLIENT_VERSION } from '../version.js'
 
 /* Dependencies */
 
@@ -51,9 +52,9 @@ const buildOptions = (token: string) =>
       path: `/${tenancyId}/token/${token}`,
       method: 'GET',
       headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        'X-PASSLOCK-CLIENT-VERSION': PASSLOCK_CLIENT_VERSION
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'X-PASSLOCK-CLIENT-VERSION': PASSLOCK_CLIENT_VERSION,
       },
     })),
   )

@@ -1,16 +1,16 @@
 import * as S from '@effect/schema/Schema'
-import { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer as L, LogLevel, Logger, Ref, Stream, pipe } from 'effect'
 import type { RequestOptions } from 'https'
 
+import { Principal } from '@passlock/shared/dist/schema/principal.js'
+
+import { Config } from '../config/config.js'
 import {
   type PrincipalService,
   PrincipalServiceLive,
   StreamResponse,
   buildError,
 } from './principal.js'
-
-import { Config } from '../config/config.js'
 
 export const principal: Principal = {
   jti: 'token',
@@ -36,7 +36,7 @@ export const principal: Principal = {
     givenName: 'john',
     familyName: 'doe',
     email: 'john.doe@gmail.com',
-    emailVerified: false
+    emailVerified: false,
   },
   authStatement: {
     authType: 'passkey',

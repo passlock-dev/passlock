@@ -1,5 +1,17 @@
-import { OPTIONS_ENDPOINT, OptionsErrors, OptionsReq, OptionsRes, VerificationErrors, VerificationReq, VerificationRes, VERIFY_ENDPOINT, type AuthenticationService } from '@passlock/shared/dist/rpc/authentication.js'
 import { Context, Effect as E, Layer } from 'effect'
+
+import {
+  type AuthenticationService,
+  OPTIONS_ENDPOINT,
+  OptionsErrors,
+  OptionsReq,
+  OptionsRes,
+  VERIFY_ENDPOINT,
+  VerificationErrors,
+  VerificationReq,
+  VerificationRes,
+} from '@passlock/shared/dist/rpc/authentication.js'
+
 import { Dispatcher, makePostRequest } from './client.js'
 
 /* Client */

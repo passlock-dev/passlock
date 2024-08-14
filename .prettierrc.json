@@ -11,6 +11,7 @@
   "importOrder": [
      "^@passlock/shared/(.*)$", 
      "^@passlock/client/(.*)$", 
+     "^@passlock/sveltekit/(.*)$", 
      "^[./]"
   ],
   "importOrderSeparation": true,

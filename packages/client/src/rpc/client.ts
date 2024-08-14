@@ -1,6 +1,8 @@
 import * as S from '@effect/schema/Schema'
-import { NetworkError } from '@passlock/shared/dist/error/error.js'
 import { Context, Effect as E, Layer, pipe } from 'effect'
+
+import { NetworkError } from '@passlock/shared/dist/error/error.js'
+
 import { PASSLOCK_CLIENT_VERSION } from '../version.js'
 import { RetrySchedule, RpcConfig } from './config.js'
 
@@ -27,7 +29,6 @@ export const DispatcherLive = Layer.effect(
     const { schedule } = yield* _(RetrySchedule)
     const { tenancyId, clientId, endpoint: maybeEndpoint } = yield* _(RpcConfig)
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parseJson = (res: Response, url: string) =>
       E.tryPromise({
         try: () => res.json() as Promise<unknown>,
@@ -73,7 +74,7 @@ export const DispatcherLive = Layer.effect(
           const headers = {
             'Accept': 'application/json',
             'X-CLIENT-ID': clientId,
-            'X-PASSLOCK-CLIENT-VERSION': PASSLOCK_CLIENT_VERSION
+            'X-PASSLOCK-CLIENT-VERSION': PASSLOCK_CLIENT_VERSION,
           }
 
           const url = buildUrl(path)
@@ -102,7 +103,7 @@ export const DispatcherLive = Layer.effect(
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'X-CLIENT-ID': clientId,
-            'X-PASSLOCK-CLIENT-VERSION': PASSLOCK_CLIENT_VERSION
+            'X-PASSLOCK-CLIENT-VERSION': PASSLOCK_CLIENT_VERSION,
           }
 
           // drop leading /

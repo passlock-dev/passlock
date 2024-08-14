@@ -1,10 +1,11 @@
 import { Effect as E, Layer as L, Layer, LogLevel, Logger, pipe } from 'effect'
 import { describe, expect, test } from 'vitest'
 import { mock } from 'vitest-mock-extended'
+
+import * as Fixture from './connection.fixture.js'
 import { Dispatcher } from '../rpc/client.js'
 import { RpcConfig } from '../rpc/config.js'
 import { ConnectionClient } from '../rpc/connection.js'
-import * as Fixture from './connection.fixture.js'
 import { ConnectionService, ConnectionServiceLive } from './connection.js'
 
 describe('preConnect should', () => {

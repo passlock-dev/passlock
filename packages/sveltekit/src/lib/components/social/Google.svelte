@@ -72,27 +72,27 @@
 				}, 100);
 			}
 		});
-  }
+	};
 
-  const callPasslock = async (args: { credential: string, nonce: string }) => {
-    switch(options.context) {
-      case 'signup': {
-        return await passlock.registerOidc({
-          provider: 'google',
-          idToken: args.credential,
-          nonce: args.nonce
-        })
-      }
+	const callPasslock = async (args: { credential: string; nonce: string }) => {
+		switch (options.context) {
+			case 'signup': {
+				return await passlock.registerOidc({
+					provider: 'google',
+					idToken: args.credential,
+					nonce: args.nonce
+				});
+			}
 
-      case 'signin': {
-        return await passlock.authenticateOidc({
-          provider: 'google',
-          idToken: args.credential,
-          nonce: args.nonce
-        });
-      }
-    }
-  }
+			case 'signin': {
+				return await passlock.authenticateOidc({
+					provider: 'google',
+					idToken: args.credential,
+					nonce: args.nonce
+				});
+			}
+		}
+	};
 
 	const initialize = async () => {
 		await googleScripts();
@@ -106,7 +106,7 @@
 			callback: async ({ credential }) => {
 				submitting = true;
 
-        const response = await callPasslock({ credential, nonce })
+				const response = await callPasslock({ credential, nonce });
 				if (PasslockError.isError(response) && response.detail) {
 					submitting = false;
 					error = `${response.message}. ${response.detail}`.trim();

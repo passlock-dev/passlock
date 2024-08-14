@@ -1,9 +1,11 @@
-import { Duplicate, InternalBrowserError } from '@passlock/shared/dist/error/error.js'
 import { Effect as E, Layer as L, Layer, LogLevel, Logger, pipe } from 'effect'
 import { describe, expect, test, vi } from 'vitest'
 import { mock } from 'vitest-mock-extended'
-import { RegistrationClient } from '../rpc/registration.js'
+
+import { Duplicate, InternalBrowserError } from '@passlock/shared/dist/error/error.js'
+
 import * as Fixture from './register.fixture.js'
+import { RegistrationClient } from '../rpc/registration.js'
 import { CreateCredential, RegistrationService, RegistrationServiceLive } from './register.js'
 
 describe('register should', () => {

@@ -25,7 +25,7 @@ const dispatch = (message: string) => {
   try {
     const evt = new CustomEvent(DebugMessage, { detail: message })
     globalThis.dispatchEvent(evt)
-  } catch (e) {
+  } catch {
     globalThis.console.log('Unable to fire custom event')
   }
 }

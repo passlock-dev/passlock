@@ -1,1 +1,1 @@
-export const PASSLOCK_CLIENT_VERSION = '#{LATEST}#'
+export const PASSLOCK_CLIENT_VERSION = '#{LATEST}#';

@@ -1,6 +1,6 @@
-import { ErrorCode } from '@passlock/shared/dist/error/error.js'
-import { Config } from './config/config.js'
+import { Effect as E, Layer as L, Runtime, Scope, pipe } from 'effect'
 
+import { ErrorCode } from '@passlock/shared/dist/error/error.js'
 import type {
   Forbidden,
   InternalServerError,
@@ -8,8 +8,7 @@ import type {
   Unauthorized,
 } from '@passlock/shared/dist/error/error.js'
 
-import { Effect as E, Layer as L, Runtime, Scope, pipe } from 'effect'
-
+import { Config } from './config/config.js'
 import {
   type PrincipalRequest,
   PrincipalService,
@@ -72,7 +71,7 @@ const transformErrors = <A, R>(
     },
 
     Interrupt: () => {
-      console.error("Interrupt")
+      console.error('Interrupt')
 
       return E.succeed(new PasslockError('Operation aborted', ErrorCode.InternalBrowserError))
     },
@@ -87,7 +86,7 @@ const transformErrors = <A, R>(
 
     Parallel: errors => {
       console.error(errors)
-      
+
       return E.succeed(
         new PasslockError('Sorry, something went wrong', ErrorCode.InternalServerError),
       )

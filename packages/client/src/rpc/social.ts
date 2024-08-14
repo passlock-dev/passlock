@@ -1,5 +1,14 @@
-import { AuthOidcErrors, AuthOidcReq, PrincipalRes, RegisterOidcErrors, RegisterOidcReq, type SocialService } from '@passlock/shared/dist/rpc/social.js'
 import { Context, Effect as E, Layer } from 'effect'
+
+import {
+  AuthOidcErrors,
+  AuthOidcReq,
+  PrincipalRes,
+  RegisterOidcErrors,
+  RegisterOidcReq,
+  type SocialService,
+} from '@passlock/shared/dist/rpc/social.js'
+
 import { Dispatcher, makePostRequest } from './client.js'
 
 /* Client */

@@ -2,10 +2,11 @@ import { Effect as E, Layer as L, LogLevel, Logger, pipe } from 'effect'
 import { NoSuchElementException } from 'effect/Cause'
 import { describe, expect, test } from 'vitest'
 import { mock } from 'vitest-mock-extended'
+
+import * as Fixture from './email.fixture.js'
 import { AuthenticationService } from '../authentication/authenticate.js'
 import { UserClient } from '../rpc/user.js'
 import { StorageService } from '../storage/storage.js'
-import * as Fixture from './email.fixture.js'
 import { EmailService, EmailServiceLive } from './email.js'
 
 describe('verifyEmailCode should', () => {

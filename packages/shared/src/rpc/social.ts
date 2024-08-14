@@ -1,5 +1,5 @@
 import * as S from '@effect/schema/Schema'
-import { Context, Effect as E } from 'effect'
+import { Context, type Effect as E } from 'effect'
 
 import {
   BadRequest,

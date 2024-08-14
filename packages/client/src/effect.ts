@@ -1,24 +1,13 @@
 import { create, get as getCredential } from '@github/webauthn-json/browser-ponyfill'
+import { Effect as E, Layer as L, Layer, Schedule, pipe } from 'effect'
+import type { NoSuchElementException } from 'effect/Cause'
 
 import {
   type BadRequest,
   Duplicate,
   InternalBrowserError,
 } from '@passlock/shared/dist/error/error.js'
-
-import { AuthenticationClientLive } from './rpc/authentication.js'
-import { DispatcherLive } from './rpc/client.js'
-import type { RpcConfig } from './rpc/config.js'
-import { RetrySchedule } from './rpc/config.js'
-import { ConnectionClientLive } from './rpc/connection.js'
-import { RegistrationClientLive } from './rpc/registration.js'
-import { SocialClientLive } from './rpc/social.js'
-import { UserClientLive } from './rpc/user.js'
-
 import type { Principal } from '@passlock/shared/dist/schema/principal.js'
-
-import { Effect as E, Layer as L, Layer, Schedule, pipe } from 'effect'
-import type { NoSuchElementException } from 'effect/Cause'
 
 import {
   AuthenticateServiceLive,
@@ -27,7 +16,6 @@ import {
   AuthenticationService,
   GetCredential,
 } from './authentication/authenticate.js'
-
 import { Capabilities, capabilitiesLive } from './capabilities/capabilities.js'
 import { ConnectionService, ConnectionServiceLive } from './connection/connection.js'
 import {
@@ -37,7 +25,6 @@ import {
   type VerifyEmailErrors,
   type VerifyRequest,
 } from './email/email.js'
-
 import {
   CreateCredential,
   type RegistrationErrors,
@@ -45,7 +32,14 @@ import {
   RegistrationService,
   RegistrationServiceLive,
 } from './registration/register.js'
-
+import { AuthenticationClientLive } from './rpc/authentication.js'
+import { DispatcherLive } from './rpc/client.js'
+import type { RpcConfig } from './rpc/config.js'
+import { RetrySchedule } from './rpc/config.js'
+import { ConnectionClientLive } from './rpc/connection.js'
+import { RegistrationClientLive } from './rpc/registration.js'
+import { SocialClientLive } from './rpc/social.js'
+import { UserClientLive } from './rpc/user.js'
 import {
   type AuthenticateOidcReq,
   type AuthenticationErrors as OidcAuthenticationErrors,
@@ -61,7 +55,6 @@ import {
   StorageServiceLive,
   type StoredToken,
 } from './storage/storage.js'
-
 import {
   type Email,
   type ResendEmail,
@@ -216,7 +209,8 @@ export const registerPasskey = (
 
 export const authenticatePasskey = (
   request: AuthenticationRequest,
-): E.Effect<Principal, AuthenticationErrors, RpcConfig> => pipe(
+): E.Effect<Principal, AuthenticationErrors, RpcConfig> =>
+  pipe(
     AuthenticationService,
     E.flatMap(service => service.authenticatePasskey(request)),
     E.provide(authenticationServiceLive),

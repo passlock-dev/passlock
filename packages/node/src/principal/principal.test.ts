@@ -1,11 +1,13 @@
+import { Effect as E, Effect, Ref } from 'effect'
+import { describe, expect, test } from 'vitest'
+
 import {
   Forbidden,
   InternalServerError,
   NotFound,
   Unauthorized,
 } from '@passlock/shared/dist/error/error.js'
-import { Effect as E, Effect, Ref } from 'effect'
-import { describe, expect, test } from 'vitest'
+
 import * as Fixture from './principal.fixture.js'
 import { PrincipalService } from './principal.js'
 

@@ -1,7 +1,9 @@
-import * as Shared from '@passlock/shared/dist/rpc/social.js'
 import { Effect as E, Layer as L, Option as O } from 'effect'
-import { SocialClient } from '../rpc/social.js'
+
+import * as Shared from '@passlock/shared/dist/rpc/social.js'
+
 import * as Fixtures from '../test/fixtures.js'
+import { SocialClient } from '../rpc/social.js'
 import type { AuthenticateOidcReq } from './social.js'
 
 export const session = 'session'

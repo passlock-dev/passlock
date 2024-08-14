@@ -1,10 +1,12 @@
 /**
  * Check for an existing user
  */
+import { Context, Effect as E, Layer, flow } from 'effect'
+
 import type { BadRequest, Disabled, NotFound } from '@passlock/shared/dist/error/error.js'
 import { IsExistingUserReq, ResendEmailReq } from '@passlock/shared/dist/rpc/user.js'
 import type { VerifyEmail } from '@passlock/shared/dist/schema/email.js'
-import { Context, Effect as E, Layer, flow } from 'effect'
+
 import { UserClient } from '../rpc/user.js'
 
 /* Requests */

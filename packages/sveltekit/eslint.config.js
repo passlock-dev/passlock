@@ -15,12 +15,15 @@ export default [
 		languageOptions: {
 			globals: {
 				...globals.browser,
-				...globals.node
+				...globals.node,
+        AppleID: "readonly",
+        AppleSignInAPI: "readonly",
+        google: "readonly"
 			}
 		}
 	},
 	{
-		files: ['**/*.svelte'],
+		files: ['**/*.ts', '**/*.j', '**/*.svelte'],
 		languageOptions: {
 			parserOptions: {
 				parser: ts.parser

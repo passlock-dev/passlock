@@ -1,19 +1,19 @@
 import {
-  Passlock as Client,
-  ErrorCode,
-  PasslockError,
-  type PasslockProps,
-  type Principal,
-  type VerifyEmail
-} from '@passlock/client'
-import { get } from 'svelte/store'
-import type { SuperForm } from 'sveltekit-superforms'
+	Passlock as Client,
+	ErrorCode,
+	PasslockError,
+	type PasslockProps,
+	type Principal,
+	type VerifyEmail
+} from '@passlock/client';
+import { get } from 'svelte/store';
+import type { SuperForm } from 'sveltekit-superforms';
 import {
-  getLocalEmail,
-  saveEmailLocally,
-  type ResendEmail,
-  type VerifyEmailData
-} from '../index.js'
+	getLocalEmail,
+	saveEmailLocally,
+	type ResendEmail,
+	type VerifyEmailData
+} from '../index.js';
 
 export type RegistrationData = {
 	email: string;
@@ -86,7 +86,7 @@ export class Passlock {
 
 				cancel();
 			} else if (!Client.isUserPrincipal(principal)) {
-        console.error("No user returned by Passlock");
+				console.error('No user returned by Passlock');
 
 				// set a form level error
 				form.errors.update((errors) => {
@@ -95,7 +95,7 @@ export class Passlock {
 				});
 
 				cancel();
-      } else {
+			} else {
 				// append the passlock token to the form request
 				formData.set('authType', principal.authType);
 				formData.set('token', principal.token);
@@ -127,15 +127,15 @@ export class Passlock {
 			} else if (PasslockError.isError(principal)) {
 				form.message.set(principal.message);
 				cancel();
-			} else if (! Client.isUserPrincipal(principal)) {
-        console.error("No user returned from Passlock");
-        form.message.set("Sorry, something went wrong");
+			} else if (!Client.isUserPrincipal(principal)) {
+				console.error('No user returned from Passlock');
+				form.message.set('Sorry, something went wrong');
 				cancel();
-      } else {
-        form.form.update((old) => ({ ...old, email: principal.email }));
-        // append the passlock token to the form request
-        formData.set('authType', principal.authType);
-        formData.set('token', principal.token);
+			} else {
+				form.form.update((old) => ({ ...old, email: principal.email }));
+				// append the passlock token to the form request
+				formData.set('authType', principal.authType);
+				formData.set('token', principal.token);
 			}
 		}
 	};
@@ -175,9 +175,9 @@ export const updateForm =
 	(event: CustomEvent<Principal>) => {
 		form.form.update((old) => ({
 			...old,
-      email: event.detail.email,
-      ...(event.detail.givenName ? { givenName: event.detail.givenName } : { }),
-      ...(event.detail.familyName ? { familyName: event.detail.familyName } : { }),
+			email: event.detail.email,
+			...(event.detail.givenName ? { givenName: event.detail.givenName } : {}),
+			...(event.detail.familyName ? { familyName: event.detail.familyName } : {}),
 			token: event.detail.jti,
 			authType: event.detail.authType
 		}));
@@ -187,5 +187,4 @@ export const updateForm =
 		}
 	};
 
-export { getLocalEmail, saveEmailLocally }
-
+export { getLocalEmail, saveEmailLocally };

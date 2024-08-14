@@ -2,9 +2,10 @@
  * Wrapper around local storage that allows us to store
  * authentication tokens in local storage for a short period.
  */
-import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 import { Context, Effect as E, Layer, Option as O, flow, pipe } from 'effect'
 import type { NoSuchElementException } from 'effect/Cause'
+
+import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 
 /* Requests */
 
@@ -46,8 +47,8 @@ export const expandToken =
   (s: string): O.Option<StoredToken> => {
     const tokens = s.split(':')
     if (tokens.length !== 2) return O.none()
-      
-    const [token, expireAtString] = tokens      
+
+    const [token, expireAtString] = tokens
     if (token === undefined || expireAtString === undefined) return O.none()
 
     const parse = O.liftThrowable(Number.parseInt)

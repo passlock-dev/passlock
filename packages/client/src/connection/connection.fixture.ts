@@ -1,5 +1,7 @@
-import { ConnectRes } from '@passlock/shared/dist/rpc/connection.js'
 import { Effect as E, Layer as L } from 'effect'
+
+import { ConnectRes } from '@passlock/shared/dist/rpc/connection.js'
+
 import { ConnectionClient } from '../rpc/connection.js'
 
 export const preConnectRes = new ConnectRes({ warmed: true })

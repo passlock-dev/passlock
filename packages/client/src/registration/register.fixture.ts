@@ -1,3 +1,5 @@
+import { Effect as E, Layer as L, Option as O } from 'effect'
+
 import {
   OptionsReq,
   OptionsRes,
@@ -5,9 +7,9 @@ import {
   VerificationRes,
 } from '@passlock/shared/dist/rpc/registration.js'
 import type { RegistrationCredential } from '@passlock/shared/dist/schema/passkey.js'
-import { Effect as E, Layer as L, Option as O } from 'effect'
-import { RegistrationClient } from '../rpc/registration.js'
+
 import * as Fixtures from '../test/fixtures.js'
+import { RegistrationClient } from '../rpc/registration.js'
 import { UserService } from '../user/user.js'
 import { CreateCredential, type RegistrationRequest } from './register.js'
 

@@ -1,12 +1,8 @@
 import * as S from '@effect/schema/Schema'
+
 import { optional } from './utils.js'
 
-export const AuthType = S.Literal(
-  'email', 
-  'apple', 
-  'google', 
-  'passkey'
-)
+export const AuthType = S.Literal('email', 'apple', 'google', 'passkey')
 
 export type AuthType = S.Schema.Type<typeof AuthType>
 
@@ -51,7 +47,7 @@ const BasePrincipal = S.Struct({
       familyName: S.String,
       email: S.String,
       emailVerified: S.Boolean,
-    })
+    }),
   ),
   authStatement: S.Struct({
     authType: AuthType,

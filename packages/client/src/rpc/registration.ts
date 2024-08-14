@@ -1,5 +1,15 @@
-import { OptionsErrors, OptionsReq, OptionsRes, VerificationErrors, VerificationReq, VerificationRes, type RegistrationService } from '@passlock/shared/dist/rpc/registration.js'
 import { Context, Effect as E, Layer } from 'effect'
+
+import {
+  OptionsErrors,
+  OptionsReq,
+  OptionsRes,
+  type RegistrationService,
+  VerificationErrors,
+  VerificationReq,
+  VerificationRes,
+} from '@passlock/shared/dist/rpc/registration.js'
+
 import { Dispatcher, makePostRequest } from './client.js'
 
 /* Client */
