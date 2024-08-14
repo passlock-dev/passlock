@@ -33,6 +33,12 @@ export const disableConsole = () => {
 	return _console
 }
 
+// callers should pass import.mata.url
+export const getPackageDir = (thisFileUrl: string) => {
+	const thisFilePath = fileURLToPath(thisFileUrl)
+	return path.resolve(path.dirname(thisFilePath), '../')
+}
+
 export const restoreConsole = (_console: ReturnType<typeof disableConsole>) => {
 	console.log = _console.log
 	console.debug = _console.debug
@@ -41,19 +47,13 @@ export const restoreConsole = (_console: ReturnType<typeof disableConsole>) => {
 	console.warn = _console.warn
 }
 
-const thisFilePath = fileURLToPath(import.meta.url)
-export const packageDirPath = path.resolve(path.dirname(thisFilePath), '../')
-
 export const deleteDir = (dir: string) => {
-	const resolvedDir = path.resolve(packageDirPath, dir)
-	if (!fs.existsSync(resolvedDir)) return
-	fs.rmSync(resolvedDir, { recursive: true })
+	if (!fs.existsSync(dir)) return
+	fs.rmSync(dir, { recursive: true })
 }
 
 export const copy = (from: string, to: string) => {
-	const resolvedDir = path.resolve(packageDirPath, from)
-	const destinationDir = path.resolve(process.cwd(), to)
-	fs.cpSync(resolvedDir, destinationDir, { recursive: true })
+	fs.cpSync(from, to, { recursive: true })
 }
 
 export const execSync = util.promisify(exec)

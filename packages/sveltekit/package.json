@@ -38,13 +38,15 @@
 		"test:watch": "vitest dev",
 		"test:ui": "vitest --coverage.enabled=true --ui",
 		"test:coverage": "vitest run --coverage",
-		"replaceTokens": "LATEST=${npm_package_version} replacetokens --sources ./dist/version.* --log-level error --missing-var-action keep --use-env > /dev/null",
 		"format": "prettier --write \"src/**/*.+(js|ts|json|svelte)\"",
 		"lint": "eslint --ext .ts --ext .svelte src",
 		"lint:fix": "pnpm run lint --fix",
-		"build": "pnpm run check:errors && svelte-package && pnpm run replaceTokens && publint",
+		"build": "pnpm run check:errors && svelte-package",
 		"build:clean": "pnpm run clean && pnpm run build",
-		"prepublishOnly": "pnpm run build:clean",
+		"build:readme": "LATEST=${npm_package_version} tsx scripts/replace-readme-tokens.ts",
+		"replaceTokens": "LATEST=${npm_package_version} tsx scripts/replace-tokens.ts",
+		"build:production": "pnpm run build:clean && pnpm run replaceTokens && echo '' && publint",
+		"prepublishOnly": "pnpm run build:production",
 		"upgrade:deps": "ncu --peer -x effect -x @effect/* -u"
 	},
 	"exports": {
@@ -83,6 +85,7 @@
 		"@passlock/client": "workspace:*"
 	},
 	"devDependencies": {
+		"@passlock/shared": "workspace:*",
 		"@qetza/replacetokens": "^1.7.0",
 		"@sveltejs/adapter-auto": "^3.2.3",
 		"@sveltejs/kit": "^2.5.21",
@@ -91,6 +94,7 @@
 		"@types/apple-signin-api": "^1.5.3",
 		"@types/eslint": "^9.6.0",
 		"@types/google-one-tap": "^1.2.6",
+		"@types/node": "^22.2.0",
 		"eslint": "^9.9.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^2.43.0",

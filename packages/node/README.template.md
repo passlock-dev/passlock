@@ -1,7 +1,7 @@
-﻿<!-- The pnpm script build:readme replaces the tokens in this file -->
+<!-- The pnpm script build:readme replaces the tokens in this file -->
 <div align="center">
-  <a href="https://github.com/passlock-dev/passlock">
-    <img src="https://github.com/passlock-dev/passkeys-frontend/assets/208345/53ee00d3-8e6c-49ea-b43c-3f901450c73b" alt="Passlock logo" width="80" height="80">
+  <a href="#{GITHUB_REPO}#">
+    <img src="#{PASSLOCK_LOGO}#" alt="Passlock logo" width="80" height="80">
   </a>
 </div>
 
@@ -10,15 +10,15 @@
   <p align="center">
     Node SDK for Passkey authentication, Social Login using Apple, Google and more...
     <br />
-    <a href="https://passlock.dev"><strong>Project website »</strong></a>
+    <a href="#{PASSLOCK_SITE}#"><strong>Project website »</strong></a>
     <br />
-    <a href="https://github.com/passlock-dev/passlock">GitHub</a>
+    <a href="#{GITHUB_REPO}#">GitHub</a>
     ·    
-    <a href="https://d1rl0ue18b0151.cloudfront.net">Demo</a>
+    <a href="#{DEMO_SITE}#">Demo</a>
     ·
-    <a href="https://docs.passlock.dev">Documentation</a>
+    <a href="#{DOCS}#">Documentation</a>
     ·
-    <a href="https://docs.passlock.dev/docs/tutorial/introduction">Tutorial</a>
+    <a href="#{TUTORIAL}#">Tutorial</a>
   </p>
 </div>
 
