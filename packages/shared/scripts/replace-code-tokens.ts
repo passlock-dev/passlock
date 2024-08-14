@@ -3,7 +3,7 @@ import path from 'node:path'
 import { deleteDir, disableConsole, execSync, getPackageDir, restoreConsole, STATIC_VARS } from './common.js'
 
 export type Options = { skipBuild: boolean }
-export const replaceVersionToken = async(thisFilePath: string, options: Options = { skipBuild: false }) => {
+export const replaceCodeTokens = async(thisFilePath: string, options: Options = { skipBuild: false }) => {
 	// Replace the tokens
 	const LATEST = process.env['LATEST']
 	if (!LATEST) {

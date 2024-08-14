@@ -3,7 +3,7 @@ import path from 'node:path'
 import { copy, disableConsole, getPackageDir, restoreConsole, STATIC_VARS } from './common.js'
 import { fileURLToPath } from 'node:url'
 
-export const buildReadme = async (thisFileUrl: string) => {
+export const replaceReadmeTokens = async (thisFileUrl: string) => {
 	console.log("Copying README.template.md to README.md")
 	const packageDirPath = getPackageDir(thisFileUrl)
 
@@ -33,5 +33,5 @@ export const buildReadme = async (thisFileUrl: string) => {
 
 // see https://stackoverflow.com/a/60309682
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-	await buildReadme(import.meta.url)
+	await replaceReadmeTokens(import.meta.url)
 }
