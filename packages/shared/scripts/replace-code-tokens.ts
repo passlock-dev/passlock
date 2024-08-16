@@ -4,7 +4,7 @@ import path from 'node:path'
 
 import { STATIC_VARS, disableConsole, getPackageDir, restoreConsole } from './common.js'
 
-export const replaceCodeTokens = async (thisFilePath: string) => {
+export const replaceCodeTokens = async (pathRelativeToRoot: string) => {
   // Replace the tokens
   const LATEST = process.env['LATEST']
   if (!LATEST) {
@@ -12,7 +12,7 @@ export const replaceCodeTokens = async (thisFilePath: string) => {
     process.exit(-1)
   }
 
-  const packageDirPath = getPackageDir(thisFilePath)
+  const packageDirPath = getPackageDir(pathRelativeToRoot)
   const distPath = path.resolve(packageDirPath, './dist')
 
   const vars = {

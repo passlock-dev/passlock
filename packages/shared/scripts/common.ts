@@ -34,10 +34,11 @@ export const disableConsole = () => {
   return _console
 }
 
-// callers should pass import.mata.url
-export const getPackageDir = (thisFileUrl: string) => {
-  const thisFilePath = fileURLToPath(thisFileUrl)
-  return path.resolve(path.dirname(thisFilePath), '../')
+// callers should pass something like packages/shared
+export const getPackageDir = (pathRelativeToRoot: string) => {
+  const thisFile = fileURLToPath(import.meta.url)
+  const root = path.resolve(thisFile, '../../../..')
+  return path.resolve(root, pathRelativeToRoot)
 }
 
 export const restoreConsole = (_console: ReturnType<typeof disableConsole>) => {

@@ -43,9 +43,9 @@
 		"lint:fix": "pnpm run lint --fix",
 		"build": "pnpm run check:errors && svelte-package",
 		"build:clean": "pnpm run clean && pnpm run build",
-		"build:readme": "LATEST=${npm_package_version} tsx scripts/replace-readme-tokens.ts",
-		"replaceTokens": "LATEST=${npm_package_version} tsx scripts/replace-tokens.ts",
-		"build:production": "pnpm run build:clean && pnpm run replaceTokens && echo '' && publint",
+    "build:readme": "LATEST=${npm_package_version} tsx ../shared/scripts/replace-readme-tokens.ts ./packages/sveltekit",
+    "replaceTokens": "LATEST=${npm_package_version} tsx ../shared/scripts/replace-tokens.ts ./packages/sveltekit",
+    "build:production": "pnpm run build:clean && pnpm run replaceTokens && echo '' && publint",
 		"prepublishOnly": "pnpm run build:production",
 		"upgrade:deps": "ncu --peer -x effect -x @effect/* -u"
 	},

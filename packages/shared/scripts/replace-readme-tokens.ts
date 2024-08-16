@@ -5,9 +5,9 @@ import { fileURLToPath } from 'node:url'
 
 import { STATIC_VARS, copy, disableConsole, getPackageDir, restoreConsole } from './common.js'
 
-export const replaceReadmeTokens = async (thisFileUrl: string) => {
+export const replaceReadmeTokens = async (pathRelativeToRoot: string) => {
   console.log(kleur.yellow('Copying README.template.md to README.md'))
-  const packageDirPath = getPackageDir(thisFileUrl)
+  const packageDirPath = getPackageDir(pathRelativeToRoot)
 
   // Copy README.template.md to README.md and replace tokens
   const readmeTemplate = path.resolve(packageDirPath, './README.template.md')
@@ -37,8 +37,7 @@ export const replaceReadmeTokens = async (thisFileUrl: string) => {
   }
 }
 
-// see https://stackoverflow.com/a/60309682
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  console.log('Replacing packages/shared tokens')
-  await replaceReadmeTokens(import.meta.url)
+if (process.argv[1] === fileURLToPath(import.meta.url) && process.argv[2]) {
+  console.log(`Replacing ${process.argv[2]} tokens`)
+  await replaceReadmeTokens(process.argv[2])
 }
