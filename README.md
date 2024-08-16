@@ -1,6 +1,6 @@
 ﻿<!-- 
 The pnpm script build:readme replaces tokens 
-in README.template.md and outputs to README.md 
+in README.template.md and outputs to README.md
 -->
 <div align="center">
   <a href="https://github.com/passlock-dev/passlock">
