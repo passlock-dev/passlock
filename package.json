@@ -8,8 +8,8 @@
     "clean": "pnpm -r run clean",
     "build": "pnpm -r run build",
     "build:clean": "pnpm -r run build:clean",
-    "build:readme": "pnpm -r run build:readme",
-    "build:production": "pnpm -r run build:production",
+    "build:readme": "LATEST=${npm_package_version} tsx scripts/replace-readme-tokens.ts && pnpm -r run build:readme",
+    "build:production": "LATEST=${npm_package_version} tsx scripts/replace-readme-tokens.ts && pnpm -r run build:production",
     "format": "pnpm -r run format",
     "lint": "pnpm -r run lint",
     "lint:fix": "pnpm -r run lint:fix",
@@ -17,7 +17,11 @@
     "upgrade:pnpm": "corepack use pnpm@latest"
   },
   "devDependencies": {
+    "@passlock/shared": "workspace:^",
+    "@total-typescript/tsconfig": "^1.0.4",
     "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^22.2.0",
+    "tsx": "^4.17.0",
     "typescript": "^5.5.4"
   },
   "pnpm": {

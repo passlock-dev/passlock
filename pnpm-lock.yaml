@@ -20,9 +20,21 @@ importers:
 
   .:
     devDependencies:
+      '@passlock/shared':
+        specifier: workspace:^
+        version: link:packages/shared
+      '@total-typescript/tsconfig':
+        specifier: ^1.0.4
+        version: 1.0.4
       '@tsconfig/node20':
         specifier: ^20.1.4
         version: 20.1.4
+      '@types/node':
+        specifier: ^22.2.0
+        version: 22.2.0
+      tsx:
+        specifier: ^4.17.0
+        version: 4.17.0
       typescript:
         specifier: ^5.5.4
         version: 5.5.4
