@@ -1,6 +1,6 @@
 <!-- 
 The pnpm script build:readme replaces tokens 
-in README.template.md and outputs to README.md 
+in README.template.md and outputs to README.md 2
 -->
 <div align="center">
   <a href="#{GITHUB_REPO}#">
