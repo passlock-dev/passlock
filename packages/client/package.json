@@ -60,22 +60,22 @@
     "lint": "eslint ./src",
     "lint:fix": "pnpm run lint --fix",
     "prepublishOnly": "pnpm run build:production",
-    "upgrade:deps": "ncu --peer -x effect -x @effect/* -u"
+    "upgrade:deps": "ncu --peer -x effect -x @effect/* -i -u"
   },
   "dependencies": {
-    "@effect/schema": "0.70.4",
+    "@effect/schema": "0.71.0",
     "@github/webauthn-json": "^2.1.1",
     "@passlock/shared": "workspace:*",
-    "effect": "3.6.3"
+    "effect": "3.6.4"
   },
   "devDependencies": {
     "@qetza/replacetokens": "^1.7.0",
     "@total-typescript/tsconfig": "^1.0.4",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/node20": "^20.1.4",
-    "@types/node": "^22.2.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.1",
-    "@typescript-eslint/parser": "^8.0.1",
+    "@types/node": "^22.4.0",
+    "@typescript-eslint/eslint-plugin": "^8.1.0",
+    "@typescript-eslint/parser": "^8.1.0",
     "@vitest/coverage-v8": "^2.0.5",
     "@vitest/ui": "^2.0.5",
     "eslint": "^9.9.0",
@@ -83,12 +83,12 @@
     "globals": "^15.9.0",
     "jsdom": "^24.1.1",
     "prettier": "^3.3.3",
-    "publint": "^0.2.9",
+    "publint": "^0.2.10",
     "rimraf": "^6.0.1",
     "tslib": "^2.6.3",
     "tsx": "^4.17.0",
     "typescript": "^5.5.4",
-    "vite": "^5.4.0",
+    "vite": "^5.4.1",
     "vitest": "^2.0.5",
     "vitest-mock-extended": "^2.0.0"
   }

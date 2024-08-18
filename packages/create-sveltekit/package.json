@@ -49,7 +49,7 @@
     "lint": "eslint ./src",
     "lint:fix": "pnpm run lint --fix",
     "prepublishOnly": "pnpm run build:production",
-    "upgrade:deps": "ncu --peer -x effect -x @effect/* -u"
+    "upgrade:deps": "ncu --peer -x effect -x @effect/* -i -u"
   },
   "dependencies": {
     "@clack/prompts": "^0.7.0",
@@ -57,11 +57,11 @@
   },
   "type": "module",
   "devDependencies": {
-    "@passlock/shared": "workspace:^",
+    "@passlock/shared": "workspace:*",
     "@total-typescript/tsconfig": "^1.0.4",
-    "@types/node": "^22.2.0",
+    "@types/node": "^22.4.0",
     "globals": "^15.9.0",
-    "publint": "^0.2.9",
+    "publint": "^0.2.10",
     "rimraf": "^6.0.1"
   }
 }

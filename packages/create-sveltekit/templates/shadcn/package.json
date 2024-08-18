@@ -12,7 +12,7 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "typecheck": "pnpm run check:errors",
     "format": "prettier --write .",
-    "upgrade:deps": "ncu --peer -x @passlock/sveltekit -u"
+    "upgrade:deps": "ncu --peer -x @passlock/sveltekit -i -u"
   },
   "devDependencies": {
     "@lucia-auth/adapter-sqlite": "^3.0.2",
