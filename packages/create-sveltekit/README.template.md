@@ -13,7 +13,7 @@ in README.template.md and outputs to README.md
   <p align="center">
     Sveltekit starter template featuring Passkeys, Social Login (Apple & Google) and more...
     <br />
-    <a href="#{PASSLOCK_SITE}#"><strong>Project website »</strong></a>
+    <a href="#{GITHUB_REPO}#/packages/create-sveltekit/docs/README.md"><strong>Project website »</strong></a>
     <br />
     <a href="#{GITHUB_REPO}#">GitHub</a>
     ·
@@ -40,7 +40,8 @@ in README.template.md and outputs to README.md
 
 * Node 18+
 * [pnpm][pnpm] (optional)
-* This example project uses the cloud based [Passlock][passlock] framework for passkey registration and authentication. **Passlock is free for personal and commercial use**.
+* This example project uses the cloud based [Passlock][passlock] framework for passkey 
+registration and authentication. **Passlock is free for personal and commercial use**.
 Create an account at [https://passlock.dev][passlock-signup]
 
 ## Usage
@@ -59,7 +60,8 @@ You'll need to set three variables:
 2. PUBLIC_PASSLOCK_CLIENT_ID
 3. PASSLOCK_API_KEY
 
-Your Passlock **Tenancy ID**, **Client ID** and **API Key** (token) can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. 
+Your Passlock **Tenancy ID**, **Client ID** and **API Key** (token) can be found in your 
+[Passlock console][passlock-console] under [settings][passlock-settings]. 
 
 Update the `.env` file with the relevant credentials.
 

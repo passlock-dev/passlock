@@ -1,10 +1,10 @@
-﻿<!-- 
+<!-- 
 The pnpm script build:readme replaces tokens 
 in README.template.md and outputs to README.md 
 -->
 <div align="center">
-  <a href="https://github.com/passlock-dev/passlock">
-    <img src="https://github.com/passlock-dev/passkeys-frontend/assets/208345/53ee00d3-8e6c-49ea-b43c-3f901450c73b" alt="Passlock logo" width="80" height="80">
+  <a href="#{GITHUB_REPO}#">
+    <img src="#{PASSLOCK_LOGO}#" alt="Passlock logo" width="80" height="80">
   </a>
 </div>
 
@@ -20,7 +20,7 @@ in README.template.md and outputs to README.md
 <p align="center">
   Sveltekit starter template featuring Passkeys, Social Login (Apple & Google) and more...
   <br />
-  <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Preline)</a> &nbsp; | &nbsp; <a href="">Demo (Shadcn)</a>
+  <a href="#{DEMO_SITE}#">Demo (Preline)</a> &nbsp; | &nbsp; <a href="#{SHADCN_DEMO_SITE}#">Demo (Shadcn)</a>
 </p>
 
 ## Features

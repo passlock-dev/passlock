@@ -49,6 +49,8 @@ export const restoreConsole = (_console: ReturnType<typeof disableConsole>) => {
   console.warn = _console.warn
 }
 
+export const exists = (path: string) => fs.existsSync(path)
+
 export const deleteDir = (dir: string) => {
   if (!fs.existsSync(dir)) return
   fs.rmSync(dir, { recursive: true })
