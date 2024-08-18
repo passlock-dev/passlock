@@ -106,7 +106,7 @@ Then follow the instructions:
 
 `pnpm run dev`
 
-**Note:** by default this app runs on port 5174 when in dev mode (see [vite.config.ts](vite.config.ts))
+**Note:** by default this app runs on port 5174 when in dev mode (see `vite.config.ts`)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -188,7 +188,7 @@ This app also supports mailbox verification emails (via Passlock):
 
 ![Verifying mailbox ownership](https://github.com/passlock-dev/svelte-passkeys/assets/208345/2f7c06d6-c2a9-40f2-a8db-0a44fa378281)
 
-You can choose to verify an email address during passkey registration. Take a look at [src/routes/(other)/+page.svelte](<src/routes/(other)/+page.svelte>):
+You can choose to verify an email address during passkey registration. Take a look at `src/routes/(other)/+page.svelte`:
 
 ```typescript
 // Email a verification link
