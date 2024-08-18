@@ -68,11 +68,13 @@ Create an account at [https://passlock.dev][passlock-signup]
 
 ## Usage
 
-Use this CLI to create a SvelteKit app. Choose from [Preline CSS][preline] or [Shadcn/ui][shadcn] variants
+Use the CLI to create a SvelteKit app. Choose from [Preline CSS][preline] or [Shadcn/ui][shadcn] variants
 
 ```bash
 pnpm create @passlock/sveltekit
 ```
+
+Then follow the instructions:
 
 ![CLI in action](./assets/cli.png)
 
