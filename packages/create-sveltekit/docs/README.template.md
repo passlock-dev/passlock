@@ -74,6 +74,8 @@ Use this CLI to create a SvelteKit app. Choose from [Preline CSS][preline] or [S
 pnpm create @passlock/sveltekit
 ```
 
+![CLI in action](./assets/cli.png)
+
 ### Set the environment variables
 
 You'll need to set three required and three optional variables:
