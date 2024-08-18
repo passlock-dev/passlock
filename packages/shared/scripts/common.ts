@@ -8,6 +8,7 @@ export const STATIC_VARS = {
   PASSLOCK_SITE: 'https://passlock.dev',
   GITHUB_REPO: 'https://github.com/passlock-dev/passlock',
   DEMO_SITE: 'https://d1rl0ue18b0151.cloudfront.net',
+  SHADCN_DEMO_SITE: 'https://dbr4qrmypnl85.cloudfront.net',
   DOCS: 'https://docs.passlock.dev',
   TUTORIAL: 'https://docs.passlock.dev/docs/tutorial/introduction',
   PASSLOCK_LOGO:
