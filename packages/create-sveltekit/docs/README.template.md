@@ -125,9 +125,9 @@ Logout then navigate to the [login](http://localhost:5174/login) page. You shoul
 > [!TIP]
 > Prompting for an email address during authentication is optional but **highly recommended**.
 >
-> Imagine the user hasn't created a passkey, or they signed up using Google. When they try to sign in using a passkey you might expect that they would receive an error telling them that no passkey can be found, but unfortunately that's not how browsers behave. Instead the browser/device will prompt them to use a passkey on another different device. In my experience this confuses 90% of users.
+> Imagine the user hasn't created a passkey, or they signed up using a social provider. When they try to sign in using a passkey you might expect that they would receive an error telling them that no passkey can be found. Unfortunately that's not how browsers behave. Instead the browser/device will prompt them to use a passkey from a different device. In my experience this confuses 90% of users.
 >
-> By asking for an email address we can check if they have a passkey registered in the backed or they have a linked Google account. This allows us to display a helpful message telling them to either sign up or login using their Google credentials.
+> By asking for an email address we can check if they have a passkey registered in the backend or they have a linked social account. This allows us to display a helpful message telling them to either sign up or login using their Google credentials.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
