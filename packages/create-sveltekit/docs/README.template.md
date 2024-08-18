@@ -80,8 +80,6 @@ Then follow the instructions:
 
 ### Set the environment variables
 
-You'll need to set three required and three optional variables:
-
 1. PUBLIC_PASSLOCK_TENANCY_ID
 2. PUBLIC_PASSLOCK_CLIENT_ID
 3. PUBLIC_APPLE_CLIENT_ID (optional) <sup>1</sup>
@@ -91,7 +89,9 @@ You'll need to set three required and three optional variables:
 
 <sup>[1]</sup> If not using Apple/Google set to an empty string
 
-Your Passlock **Tenancy ID**, **Client ID** and **API Key** (token) can be found in your [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. 
+> [!NOTE]
+> Your Passlock **Tenancy ID**, **Client ID** and **API Key** (token) can be found in your 
+> [Passlock console][passlock-console] under [settings][passlock-settings] and [API Keys][passlock-apikeys]. 
 
 **Update your `.env` file with the relevant credentials.**
 
