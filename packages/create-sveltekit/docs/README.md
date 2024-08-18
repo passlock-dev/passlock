@@ -20,7 +20,7 @@ in README.template.md and outputs to README.md
 <p align="center">
   Sveltekit starter template featuring Passkeys, Social Login (Apple & Google) and more...
   <br />
-  <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Preline)</a> &nbsp; | &nbsp; <a href="">Demo (Shadcn)</a>
+  <a href="https://d1rl0ue18b0151.cloudfront.net">Demo (Preline)</a> &nbsp; | &nbsp; <a href="https://dbr4qrmypnl85.cloudfront.net">Demo (Shadcn)</a>
 </p>
 
 ## Features
