@@ -13,7 +13,7 @@ in README.template.md and outputs to README.md
   <p align="center">
     Sveltekit starter template featuring Passkeys, Social Login (Apple & Google) and more...
     <br />
-    <a href="https://github.com/passlock-dev/passlock/packages/create-sveltekit/docs/README.md"><strong>Project website »</strong></a>
+    <a href="https://github.com/passlock-dev/passlock/blob/master/packages/create-sveltekit/docs/README.md"><strong>Project website »</strong></a>
     <br />
     <a href="https://github.com/passlock-dev/passlock">GitHub</a>
     ·

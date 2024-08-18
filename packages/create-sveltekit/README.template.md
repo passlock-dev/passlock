@@ -13,7 +13,7 @@ in README.template.md and outputs to README.md
   <p align="center">
     Sveltekit starter template featuring Passkeys, Social Login (Apple & Google) and more...
     <br />
-    <a href="#{GITHUB_REPO}#/packages/create-sveltekit/docs/README.md"><strong>Project website »</strong></a>
+    <a href="#{GITHUB_REPO}#/blob/master/packages/create-sveltekit/docs/README.md"><strong>Project website »</strong></a>
     <br />
     <a href="#{GITHUB_REPO}#">GitHub</a>
     ·
