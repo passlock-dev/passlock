@@ -152,6 +152,33 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
 
+  packages/demo:
+    devDependencies:
+      '@passlock/sveltekit':
+        specifier: workspace:*
+        version: link:../sveltekit
+      '@sveltejs/adapter-auto':
+        specifier: ^3.0.0
+        version: 3.2.4(@sveltejs/kit@2.5.22(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.4.1(@types/node@22.4.0)))(svelte@4.2.18)(vite@5.4.1(@types/node@22.4.0)))
+      '@sveltejs/kit':
+        specifier: ^2.0.0
+        version: 2.5.22(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.4.1(@types/node@22.4.0)))(svelte@4.2.18)(vite@5.4.1(@types/node@22.4.0))
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^3.0.0
+        version: 3.1.1(svelte@4.2.18)(vite@5.4.1(@types/node@22.4.0))
+      svelte:
+        specifier: ^4.2.7
+        version: 4.2.18
+      svelte-check:
+        specifier: ^3.6.0
+        version: 3.8.5(postcss-load-config@6.0.1(jiti@1.21.6)(postcss@8.4.41)(tsx@4.17.0)(yaml@2.5.0))(postcss@8.4.41)(svelte@4.2.18)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.5.4
+      vite:
+        specifier: ^5.0.3
+        version: 5.4.1(@types/node@22.4.0)
+
   packages/node:
     dependencies:
       '@passlock/shared':

@@ -70,10 +70,18 @@ async function main() {
   }
 
   const uiFramework = await select({
-    message: 'Choose a Tailwind framework.',
+    message: 'Choose a template.',
     options: [
-      { value: 'preline', label: 'Preline CSS' },
-      { value: 'shadcn', label: 'Shadcn/ui (Svelte fork)' },
+      {
+        value: 'preline',
+        label: 'Preline CSS',
+        hint: 'Lucia, Preline & Superforms',
+      },
+      {
+        value: 'shadcn',
+        label: 'Shadcn/ui',
+        hint: 'Lucia, Shadcn/ui (Svelte fork) & Superforms',
+      },
     ],
     initialValue: 'preline',
   })

@@ -1,6 +1,6 @@
 /**
+ * Implement type safe routes.
  * Please see https://github.com/sveltejs/kit/issues/647#issuecomment-2136031840
- * Credit to https://github.com/david-plugge
  */
 
 import { resolveRoute } from '$app/paths'
