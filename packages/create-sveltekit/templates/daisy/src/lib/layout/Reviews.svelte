@@ -9,7 +9,7 @@
   <div>
     <div class="flex space-x-1">
       <svg
-        class="size-4 text-base-800 dark:text-base-200"
+        class="size-4 text-base-800"
         width="51"
         height="51"
         viewBox="0 0 51 51"
@@ -20,7 +20,7 @@
           fill="currentColor" />
       </svg>
       <svg
-        class="size-4 text-base-800 dark:text-base-200"
+        class="size-4 text-base-800"
         width="51"
         height="51"
         viewBox="0 0 51 51"
@@ -31,7 +31,7 @@
           fill="currentColor" />
       </svg>
       <svg
-        class="size-4 text-base-800 dark:text-base-200"
+        class="size-4 text-base-800"
         width="51"
         height="51"
         viewBox="0 0 51 51"
@@ -42,7 +42,7 @@
           fill="currentColor" />
       </svg>
       <svg
-        class="size-4 text-base-800 dark:text-base-200"
+        class="size-4 text-base-800"
         width="51"
         height="51"
         viewBox="0 0 51 51"
@@ -53,7 +53,7 @@
           fill="currentColor" />
       </svg>
       <svg
-        class="size-4 text-base-800 dark:text-base-200"
+        class="size-4 text-base-800"
         width="51"
         height="51"
         viewBox="0 0 51 51"
@@ -65,7 +65,7 @@
       </svg>
     </div>
 
-    <p class="mt-3 text-sm text-base-800 dark:text-base-200">
+    <p class="mt-3 text-sm text-base-800">
       <span class="font-bold">4.6</span>
       /5 - from 12k reviews
     </p>
@@ -105,7 +105,7 @@
   <div>
     <div class="flex space-x-1">
       <svg
-        class="size-4 text-base-800 dark:text-base-200"
+        class="size-4 text-base-800"
         width="51"
         height="51"
         viewBox="0 0 51 51"
@@ -116,7 +116,7 @@
           fill="currentColor" />
       </svg>
       <svg
-        class="size-4 text-base-800 dark:text-base-200"
+        class="size-4 text-base-800"
         width="51"
         height="51"
         viewBox="0 0 51 51"
@@ -127,7 +127,7 @@
           fill="currentColor" />
       </svg>
       <svg
-        class="size-4 text-base-800 dark:text-base-200"
+        class="size-4 text-base-800"
         width="51"
         height="51"
         viewBox="0 0 51 51"
@@ -138,7 +138,7 @@
           fill="currentColor" />
       </svg>
       <svg
-        class="size-4 text-base-800 dark:text-base-200"
+        class="size-4 text-base-800"
         width="51"
         height="51"
         viewBox="0 0 51 51"
@@ -149,7 +149,7 @@
           fill="currentColor" />
       </svg>
       <svg
-        class="size-4 text-base-800 dark:text-base-200"
+        class="size-4 text-base-800"
         width="51"
         height="51"
         viewBox="0 0 51 51"
@@ -164,7 +164,7 @@
       </svg>
     </div>
 
-    <p class="mt-3 text-sm text-base-800 dark:text-base-200">
+    <p class="mt-3 text-sm text-base-800">
       <span class="font-bold">4.8</span>
       /5 - from 5k reviews
     </p>
