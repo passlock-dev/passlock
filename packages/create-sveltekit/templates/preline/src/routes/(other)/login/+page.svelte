@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Link from '$lib/components/layout/Link.svelte'
+  import Link from '$lib/layout/Link.svelte'
 
   import {
     PUBLIC_APPLE_CLIENT_ID,
@@ -9,9 +9,9 @@
     PUBLIC_PASSLOCK_TENANCY_ID
   } from '$env/static/public'
 
-  import * as Icons from '$lib/components/icons'
-  import * as Forms from '$lib/components/ui/forms'
-  import * as Social from '$lib/components/ui/social'
+  import * as Icons from '$lib/icons'
+  import * as Forms from '$lib/forms'
+  import * as Social from '$lib/social'
 
   import { loginAction } from '$lib/routes.js'
   import { loginFormSchema } from '$lib/schemas'

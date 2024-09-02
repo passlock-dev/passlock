@@ -1,6 +1,6 @@
 import { PASSLOCK_API_KEY } from '$env/static/private'
 import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public'
-import { app } from '$lib/routes'
+import { todos } from '$lib/routes'
 import { loginFormSchema } from '$lib/schemas'
 import { lucia } from '$lib/server/auth'
 import { PasslockError, TokenVerifier } from '@passlock/sveltekit'
@@ -28,7 +28,6 @@ export const actions = {
     if (PasslockError.isError(principal)) error(500, principal.message)
 
     const session = await lucia.createSession(principal.sub, {})
-
     const sessionCookie = lucia.createSessionCookie(session.id)
 
     cookies.set(sessionCookie.name, sessionCookie.value, {
@@ -36,6 +35,6 @@ export const actions = {
       ...sessionCookie.attributes
     })
 
-    redirect(302, app)
+    redirect(302, todos)
   }
 } satisfies Actions

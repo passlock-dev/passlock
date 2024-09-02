@@ -1,15 +1,11 @@
 <script lang="ts">
-  import {
-    PUBLIC_PASSLOCK_CLIENT_ID,
-    PUBLIC_PASSLOCK_ENDPOINT,
-    PUBLIC_PASSLOCK_TENANCY_ID
-  } from '$env/static/public'
+  import { PUBLIC_PASSLOCK_CLIENT_ID, PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public'
   import { Passlock } from '@passlock/sveltekit/superforms'
   import type { PageData } from './$types'
 
-  import { ThemeSelector } from '$lib/components/theme'
-  import * as Card from '$lib/components/ui/card/index.js'
-  import Logo from '$lib/components/ui/logo'
+  import { ThemeSelector } from '$lib/theme'
+  import * as Card from '$lib/ui/card/index.js'
+  import Logo from '$lib/ui/logo'
 
   export let data: PageData
 

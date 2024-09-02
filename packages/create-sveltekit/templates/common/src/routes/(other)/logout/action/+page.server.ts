@@ -4,11 +4,15 @@ import { redirect } from '@sveltejs/kit'
 import type { Actions } from './$types'
 
 export const actions = {
-  default: async ({ locals }) => {
+  default: async ({ locals, cookies }) => {
     const session = locals.session
 
     if (session) {
-      lucia.invalidateSession(session.id)
+      const sessionCookie = lucia.createBlankSessionCookie()
+      cookies.set(sessionCookie.name, sessionCookie.value, {
+        path: '/',
+        ...sessionCookie.attributes
+      })
     }
 
     redirect(302, login)

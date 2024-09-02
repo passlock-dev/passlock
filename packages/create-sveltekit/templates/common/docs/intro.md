@@ -14,6 +14,10 @@ Passlock also handles social sign in, abstracting passkey and google authenticat
 
 During registration and authentication, Passlock returns a token. We send this token to the backend actions and verify it's authenticity via the Passlock REST API.
 
+## Prisma
+
+[Primsa][prisma] is a SQL ORM that works well with both Typescript and Prisma. Lucia (see below) has built in support for Prisma.
+
 ## Lucia
 
 [Lucia][lucia] handles sessions. Put simply, when a user authenticates, Passlock returns a token. A backend `+page.server.ts` action verifies the token is authentic, then creates a Lucia session. Lucia supports many database backends, this example uses sqlite.
@@ -83,7 +87,7 @@ Similar conceptually, the heaby lifting is offloaded to Passlock. We just need t
 
 ## Hooks
 
-We want to protect the `/app` route. We do this in [src/hooks.server.ts](../src/hooks.server.ts) by checking the route id and user/session status.
+We want to protect the `/todos` route. We do this in [src/hooks.server.ts](../src/hooks.server.ts) by checking the route id and user/session status.
 
 ## Mailbox verification
 
@@ -121,6 +125,7 @@ Passlock will send the user to this route, appending a `?code=xxx` query paramet
 > Why do it this way? Why not simply verify the code in the +page.server.ts load function? Because we may need to re-authenticate the user. For background please see the [passlock docs](https://docs.passlock.dev/docs/howto/verify-emails#re-authenticating-the-user)
 
 [passlock]: https://passlock.dev
+[prisma]: https://www.prisma.io/orm
 [lucia]: https://lucia-auth.com
 [tailwind]: https://tailwindcss.com
 [preline]: https://preline.co

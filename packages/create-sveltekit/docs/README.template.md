@@ -20,7 +20,7 @@ in README.template.md and outputs to README.md
 <p align="center">
   Sveltekit starter template featuring Passkeys, Social Login (Apple & Google) and more...
   <br />
-  <a href="#{DEMO_SITE}#">Demo (Preline)</a> &nbsp; | &nbsp; <a href="#{SHADCN_DEMO_SITE}#">Demo (Shadcn)</a>
+  <a href="#{DAISY_DEMO_SITE}#">Demo (Daisy UI)</a> &nbsp; | &nbsp; <a href="#{PRELINE_DEMO_SITE}#">Demo (Preline)</a> | &nbsp; <a href="#{SHADCN_DEMO_SITE}#">Demo (Shadcn)</a>
 </p>
 
 ## Features
@@ -30,7 +30,7 @@ in README.template.md and outputs to README.md
 ☝️ Google sign in / one-tap  
 📪 Mailbox verification (via a one time code or link)  
 🌘 Dark mode with theme selection (light/dark/system)  
-🚀 [Preline][preline] and [Shadcn][shadcn] variants
+🚀 [Daisy UI][daisy], [Preline][preline] and [Shadcn][shadcn] variants
 
 ## Screenshots
 
@@ -222,6 +222,7 @@ Please file an [issue][issues] and I'll respond ASAP.
 [lucia]: https://lucia-auth.com
 [tailwind]: https://tailwindcss.com
 [preline]: https://preline.co
+[daisy]: https://daisyui.com
 [meltui]: https://melt-ui.com
 [shadcn]: https://www.shadcn-svelte.com
 [passlock-signup]: https://console.passlock.dev/register

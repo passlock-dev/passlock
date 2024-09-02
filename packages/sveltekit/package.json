@@ -1,6 +1,6 @@
 {
 	"name": "@passlock/sveltekit",
-	"version": "0.9.23",
+	"version": "0.9.24",
 	"description": "Passkey authentication and social login for SvelteKit apps",
 	"keywords": [
 		"passkey",

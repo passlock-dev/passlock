@@ -1,20 +1,16 @@
 <script lang="ts">
-  import {
-    PUBLIC_PASSLOCK_CLIENT_ID,
-    PUBLIC_PASSLOCK_ENDPOINT,
-    PUBLIC_PASSLOCK_TENANCY_ID
-  } from '$env/static/public'
+  import { PUBLIC_PASSLOCK_CLIENT_ID, PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public'
   import { verifyEmailSchema } from '$lib/schemas'
   import { Passlock } from '@passlock/sveltekit/superforms'
   import { superForm } from 'sveltekit-superforms'
   import { valibotClient } from 'sveltekit-superforms/adapters'
   import type { PageData } from './$types'
 
-  import * as Icons from '$lib/components/icons'
-  import { ThemeSelector } from '$lib/components/theme'
-  import * as Card from '$lib/components/ui/card/index.js'
-  import * as Forms from '$lib/components/ui/forms'
-  import Logo from '$lib/components/ui/logo'
+  import * as Icons from '$lib/icons'
+  import { ThemeSelector } from '$lib/theme'
+  import * as Card from '$lib/ui/card/index.js'
+  import * as Forms from '$lib/ui/forms'
+  import Logo from '$lib/ui/logo'
   import { onMount } from 'svelte'
 
   export let data: PageData
@@ -64,9 +60,7 @@
     <Card.Root class="w-full max-w-sm">
       <Card.Header>
         <Card.Title class="text-2xl text-center">Verify your email</Card.Title>
-        <Card.Description class="text-center">
-          Please click below to verify your email
-        </Card.Description>
+        <Card.Description class="text-center">Please click below to verify your email</Card.Description>
       </Card.Header>
       <Card.Footer class="flex flex-col">
         <Forms.SubmitButton submitting={$submitting}>
@@ -79,12 +73,7 @@
             Email sent
           {:else}
             Still waiting?
-            <button
-              on:click={() => resend()}
-              type="button"
-              class="hover:underline">
-              Resend code
-            </button>
+            <button on:click={() => resend()} type="button" class="hover:underline">Resend code</button>
           {/if}
         </div>
       </Card.Footer>

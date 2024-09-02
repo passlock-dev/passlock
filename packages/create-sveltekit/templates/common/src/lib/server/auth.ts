@@ -1,8 +1,9 @@
 import { dev } from '$app/environment'
-import { BetterSqlite3Adapter } from '@lucia-auth/adapter-sqlite'
-import { sha256 } from 'js-sha256'
+import { PrismaAdapter } from '@lucia-auth/adapter-prisma'
 import { Lucia } from 'lucia'
-import { db } from './db'
+import { client } from './db'
+import type { Cookies } from '@sveltejs/kit'
+import { sha256 } from 'js-sha256'
 
 /*
  * Note: you can replace js-sha256 with node:crypto
@@ -17,13 +18,7 @@ const buildGravatarUrl = (email: string) => {
   return `https://gravatar.com/avatar/${hashedEmail}?d=mp`
 }
 
-/**
- * Swap this for a more robust implementation
- */
-const adapter = new BetterSqlite3Adapter(db, {
-  user: 'user',
-  session: 'session'
-})
+const adapter = new PrismaAdapter(client.session, client.user)
 
 export const lucia = new Lucia(adapter, {
   sessionCookie: {
@@ -34,23 +29,33 @@ export const lucia = new Lucia(adapter, {
   getUserAttributes: attributes => {
     return {
       email: attributes.email,
-      givenName: attributes.given_name,
-      familyName: attributes.family_name,
+      givenName: attributes.givenName,
+      familyName: attributes.familyName,
       avatar: buildGravatarUrl(attributes.email),
-      initials: attributes.given_name[0] + attributes.family_name[0]
+      initials: attributes.givenName[0] + attributes.familyName[0]
     }
   }
 })
+
+export const createSession = async (userId: string, cookies: Cookies): Promise<void> => {
+  const session = await lucia.createSession(userId, {})
+  const sessionCookie = lucia.createSessionCookie(session.id)
+
+  cookies.set(sessionCookie.name, sessionCookie.value, {
+    path: '/',
+    ...sessionCookie.attributes
+  })
+}
+
+export type DatabaseUserAttributes = {
+  email: string
+  givenName: string
+  familyName: string
+}
 
 declare module 'lucia' {
   interface Register {
     Lucia: typeof lucia
     DatabaseUserAttributes: DatabaseUserAttributes
   }
-}
-
-interface DatabaseUserAttributes {
-  email: string
-  given_name: string
-  family_name: string
 }

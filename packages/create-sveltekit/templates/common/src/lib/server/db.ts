@@ -1,41 +1,27 @@
+import { PrismaClient } from '@prisma/client'
 import sqlite from 'better-sqlite3'
-import dedent from 'dedent'
+import type { User, Todo, CreateUser, FindUser, CreateTodo, FindAllTodos, DeleteTodo } from '$lib/types'
 
-export const db = sqlite('./sqlite.db')
+export const client = new PrismaClient()
+export const db = sqlite('./prisma/sqlite.db')
 
-const createTablesSql = dedent(`
-  CREATE TABLE IF NOT EXISTS user (
-    id TEXT NOT NULL PRIMARY KEY,
-    email TEXT NOT NULL,
-    given_name TEXT NOT NULL,
-    family_name TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS session (
-    id TEXT NOT NULL PRIMARY KEY,
-    expires_at INTEGER NOT NULL,
-    user_id TEXT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES user(id)
-  );
-`)
-
-export const initLucia = () => {
-  db.exec(createTablesSql)
+export const createUser: CreateUser = async (user: User): Promise<User> => {
+  await client.user.deleteMany({ where: { email: user.email } })
+  return await client.user.create({ data: user })
 }
 
-export type CreateUser = {
-  id: string
-  email: string
-  givenName: string
-  familyName: string
+export const findUser: FindUser = async (id: string): Promise<User | null> => {
+  return await client.user.findFirst({ where: { id } })
 }
 
-export const createUser = async (user: CreateUser) => {
-  const insert = db.prepare(
-    'INSERT INTO user (id, email, given_name, family_name) ' + 'VALUES (@id, @email, @givenName, @familyName)'
-  )
+export const createTodo: CreateTodo = async (todo: Todo): Promise<Todo> => {
+  return await client.todo.create({ data: todo })
+}
 
-  insert.run(user)
+export const findAllTodos: FindAllTodos = async (userId: string): Promise<Todo[]> => {
+  return await client.todo.findMany({ where: { userId } })
+}
 
-  return user
+export const deleteTodo: DeleteTodo = async (filter: { userId: string; id: string }): Promise<Todo | null> => {
+  return await client.todo.delete({ where: filter })
 }

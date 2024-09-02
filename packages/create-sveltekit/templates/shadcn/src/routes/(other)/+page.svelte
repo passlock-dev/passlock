@@ -7,22 +7,18 @@
     PUBLIC_PASSLOCK_TENANCY_ID
   } from '$env/static/public'
 
-  import * as Icons from '$lib/components/icons'
-  import { ThemeSelector } from '$lib/components/theme'
-  import * as Forms from '$lib/components/ui/forms'
-  import * as Social from '$lib/components/ui/social'
+  import * as Icons from '$lib/icons'
+  import { ThemeSelector } from '$lib/theme'
+  import * as Forms from '$lib/ui/forms'
+  import * as Social from '$lib/ui/social'
   import { registrationFormSchema } from '$lib/schemas.js'
   import type { VerifyEmail } from '@passlock/sveltekit'
-  import {
-    Passlock,
-    saveEmailLocally,
-    updateForm
-  } from '@passlock/sveltekit/superforms'
+  import { Passlock, saveEmailLocally, updateForm } from '@passlock/sveltekit/superforms'
   import { onMount } from 'svelte'
   import { superForm } from 'sveltekit-superforms'
   import { valibotClient } from 'sveltekit-superforms/adapters'
 
-  import Logo from '$lib/components/ui/logo'
+  import Logo from '$lib/ui/logo'
   import { login, registerAction } from '$lib/routes.js'
   import { tick } from 'svelte'
   import { derived } from 'svelte/store'
@@ -81,17 +77,12 @@
   // So we want to disable the Sign in with Google button
   // once the first step is complete.
   $: disableSocialBtns =
-    ($superformData.token.length > 1 && $superformData.authType === 'apple') ||
-    $superformData.authType === 'google'
+    ($superformData.token.length > 1 && $superformData.authType === 'apple') || $superformData.authType === 'google'
 
-  const submittingGoogle = derived(
-    submitting,
-    $submitting => $submitting && $superformData.authType === 'google'
-  )
+  const submittingGoogle = derived(submitting, $submitting => $submitting && $superformData.authType === 'google')
 </script>
 
-<div
-  class="relative h-full w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
+<div class="relative h-full w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
   <div class="absolute right-4 top-4 right-8 top-8 flex items-center gap-4">
     <ThemeSelector />
     <a class="text-primary hover:underline" href={login}>Login</a>
@@ -104,9 +95,8 @@
     <div class="relative z-20 mt-auto">
       <blockquote class="space-y-2">
         <p class="text-lg">
-          &ldquo;This library has saved me countless hours of work and helped me
-          deliver stunning designs to my clients faster than ever before. Highly
-          recommended!&rdquo;
+          &ldquo;This library has saved me countless hours of work and helped me deliver stunning designs to my clients
+          faster than ever before. Highly recommended!&rdquo;
         </p>
         <footer class="text-sm">Sofia Davis</footer>
       </blockquote>
@@ -114,36 +104,18 @@
   </div>
 
   <div class="h-full flex items-center justify-center py-12">
-    <div
-      class="px-8 mx-auto max-w-[500px] flex w-full flex-col justify-center space-y-6">
+    <div class="px-8 mx-auto max-w-[500px] flex w-full flex-col justify-center space-y-6">
       <div class="flex flex-col space-y-2 text-center">
         <h1 class="text-2xl font-semibold tracking-tight">Create an account</h1>
-        <p class="text-sm text-muted-foreground">
-          Enter your email below to create your account
-        </p>
+        <p class="text-sm text-muted-foreground">Enter your email below to create your account</p>
       </div>
 
       <div class="grid gap-2">
         <form method="post" action={registerAction} use:enhance>
           <div class="grid gap-5 grid-cols-2">
-            <Forms.InputText
-              {form}
-              field="givenName"
-              label="First name"
-              {readonly} />
-            <Forms.InputText
-              {form}
-              field="familyName"
-              label="Last name"
-              autocomplete="family-name"
-              {readonly} />
-            <Forms.InputEmail
-              {form}
-              field="email"
-              label="Email"
-              cols={2}
-              autocomplete="email"
-              {readonly} />
+            <Forms.InputText {form} field="givenName" label="First name" {readonly} />
+            <Forms.InputText {form} field="familyName" label="Last name" autocomplete="family-name" {readonly} />
+            <Forms.InputEmail {form} field="email" label="Email" cols={2} autocomplete="email" {readonly} />
 
             {#if $superformData.token && $superformData.authType === 'apple'}
               <Forms.SubmitButton submitting={$submitting}>
@@ -195,13 +167,9 @@
 
       <p class="px-8 text-center text-sm text-muted-foreground">
         By creating an account, you agree to our
-        <a href="#" class="underline underline-offset-4 hover:text-primary">
-          Terms of Service
-        </a>
+        <a href="#" class="underline underline-offset-4 hover:text-primary">Terms of Service</a>
         and
-        <a href="#" class="underline underline-offset-4 hover:text-primary">
-          Privacy Policy
-        </a>
+        <a href="#" class="underline underline-offset-4 hover:text-primary">Privacy Policy</a>
         .
       </p>
     </div>

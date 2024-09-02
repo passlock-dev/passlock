@@ -26,3 +26,9 @@ export const verifyEmailSchema = v.object({
 })
 
 export type VerifyEmailSchema = typeof verifyEmailSchema
+
+export const todoSchema = v.object({
+  text: v.string()
+})
+
+export type TodoSchema = typeof todoSchema

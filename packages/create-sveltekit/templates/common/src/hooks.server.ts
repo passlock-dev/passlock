@@ -1,15 +1,15 @@
 import { login } from '$lib/routes'
 import { lucia } from '$lib/server/auth'
-import { initLucia } from '$lib/server/db'
 import { redirect, type Handle } from '@sveltejs/kit'
 
+// protect /todos
 const isProtectedRoute = (routeId: string | null) => routeId?.startsWith('/(app)')
 
 export const handle: Handle = async ({ event, resolve }) => {
   const sessionId = event.cookies.get(lucia.sessionCookieName)
 
   if (!sessionId && isProtectedRoute(event.route.id)) {
-    return redirect(302, '/')
+    return redirect(302, '/login')
   } else if (!sessionId) {
     event.locals.user = null
     event.locals.session = null
@@ -19,9 +19,8 @@ export const handle: Handle = async ({ event, resolve }) => {
   const { session, user } = await lucia.validateSession(sessionId)
 
   if (session && session.fresh) {
+    // update the cookie with the new session id
     const sessionCookie = lucia.createSessionCookie(session.id)
-    // sveltekit types deviates from the de-facto standard
-    // you can use 'as any' too
     event.cookies.set(sessionCookie.name, sessionCookie.value, {
       path: '/',
       ...sessionCookie.attributes
@@ -29,6 +28,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   if (!session) {
+    // session id was invalid so set a blank cookie
     const sessionCookie = lucia.createBlankSessionCookie()
     event.cookies.set(sessionCookie.name, sessionCookie.value, {
       path: '/',
@@ -36,8 +36,8 @@ export const handle: Handle = async ({ event, resolve }) => {
     })
   }
 
-  event.locals.user = user || null
-  event.locals.session = session || null
+  event.locals.user = user
+  event.locals.session = session
 
   if (isProtectedRoute(event.route.id) && event.locals.user) {
     return resolve(event)
@@ -47,5 +47,3 @@ export const handle: Handle = async ({ event, resolve }) => {
     return resolve(event)
   }
 }
-
-initLucia()

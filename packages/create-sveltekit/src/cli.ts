@@ -75,12 +75,17 @@ async function main() {
       {
         value: 'preline',
         label: 'Preline CSS',
-        hint: 'Lucia, Preline & Superforms',
+        hint: 'Prisma, Lucia, Preline & Superforms',
+      },
+      {
+        value: 'daisy',
+        label: 'Daisy UI',
+        hint: 'Prisma, Lucia, Daisy UI & Superforms',
       },
       {
         value: 'shadcn',
         label: 'Shadcn/ui',
-        hint: 'Lucia, Shadcn/ui (Svelte fork) & Superforms',
+        hint: 'Prisma, Lucia, Shadcn/ui (Svelte fork) & Superforms',
       },
     ],
     initialValue: 'preline',
@@ -110,7 +115,6 @@ async function main() {
 
   if (dependencies) {
     const s = spinner()
-
     s.start('Installing dependencies...')
 
     try {
@@ -123,6 +127,32 @@ async function main() {
     }
 
     s.stop('Installed dependencies.')
+  }
+
+  // ask to setup prisma
+  const prisma = await confirm({
+    message: 'Setup Sqlite dev database? (requires pnpm)',
+  })
+
+  if (isCancel(prisma)) {
+    cancel('Operation cancelled.')
+    return process.exit(0)
+  }
+
+  if (prisma) {
+    const s = spinner()
+    s.start('Creating Sqlite database...')
+
+    try {
+      await execSync('pnpm run prisma:migrate', { cwd })
+    } catch {
+      console.log()
+      console.log('📦️ pnpm is required:')
+      console.log('npm i -g pnpm')
+      return process.exit(0)
+    }
+
+    s.stop('Database created.')
   }
 
   note(outroNote, 'Important')

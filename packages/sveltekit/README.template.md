@@ -18,7 +18,7 @@ in README.template.md and outputs to README.md
     <br />
     <a href="#{GITHUB_REPO}#">GitHub</a>
     ·    
-    <a href="#{DEMO_SITE}#">Demo</a>
+    <a href="#{PRELINE_DEMO_SITE}#">Demo</a>
     ·
     <a href="#{DOCS}#">Documentation</a>
     ·

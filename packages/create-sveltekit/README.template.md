@@ -17,7 +17,7 @@ in README.template.md and outputs to README.md
     <br />
     <a href="#{GITHUB_REPO}#">GitHub</a>
     ·
-    <a href="#{DEMO_SITE}#">Demo</a>
+    <a href="#{PRELINE_DEMO_SITE}#">Demo</a>
     ·
     <a href="#{DOCS}#">Documentation</a>
     ·
@@ -34,7 +34,7 @@ in README.template.md and outputs to README.md
 ☝️ Google sign in / one-tap  
 📪 Mailbox verification (via a one time code or link)  
 🌘 Dark mode with theme selection (light/dark/system)  
-🚀 [Preline][preline] and [Shadcn][shadcn] variants
+🚀 [Daisy UI][daisy], [Preline][preline] and [Shadcn][shadcn] variants
 
 ## Requirements
 
@@ -82,5 +82,6 @@ Please see the template [homepage][homepage]
 [passlock-apikeys]: https://console.passlock.dev/apikeys
 [pnpm]: https://pnpm.io/installation
 [preline]: https://preline.co
+[daisy]: https://daisyui.com
 [shadcn]: https://www.shadcn-svelte.com
 [homepage]: https://github.com/passlock-dev/ts-clients/packages/create-sveltekit/docs/README.md

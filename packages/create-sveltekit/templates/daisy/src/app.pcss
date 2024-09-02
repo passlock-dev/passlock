@@ -1,0 +1,27 @@
+/* Write your global styles here, in PostCSS syntax */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .pin {
+    @apply block 
+      text-center 
+      border-gray-200 
+      rounded-md 
+      text-sm 
+      font-mono
+      font-semibold
+      [&::-webkit-outer-spin-button]:appearance-none 
+      [&::-webkit-inner-spin-button]:appearance-none 
+      focus:border-blue-500 
+      focus:ring-blue-500 
+      disabled:opacity-50 
+      disabled:pointer-events-none;
+  }
+}
+
+/* Use white text instead of the weird shade of blue for buttons */
+[data-theme='light'] .btn:not(.btn-accent) {
+  color: #fff;
+}

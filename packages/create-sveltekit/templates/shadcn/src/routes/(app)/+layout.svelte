@@ -5,9 +5,7 @@
 
 <svelte:head>
   <script src="https://accounts.google.com/gsi/client" async></script>
-  <script
-    src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"
-    async></script>
+  <script src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js" async></script>
 </svelte:head>
 
 <ModeWatcher />
@@ -21,9 +19,7 @@
 <style>
   /* See https://stackoverflow.com/a/43519235 */
   @media (prefers-color-scheme: dark) {
-    :global(
-        input:not(input:-webkit-autofill)::-webkit-contacts-auto-fill-button
-      ) {
+    :global(input:not(input:-webkit-autofill)::-webkit-contacts-auto-fill-button) {
       background-color: #fff;
     }
   }

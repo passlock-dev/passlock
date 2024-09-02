@@ -3,7 +3,14 @@ import kleur from 'kleur'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { STATIC_VARS, exists, copy, disableConsole, getPackageDir, restoreConsole } from './common.js'
+import {
+  STATIC_VARS,
+  copy,
+  disableConsole,
+  exists,
+  getPackageDir,
+  restoreConsole,
+} from './common.js'
 
 export const replaceReadmeTokens = async (pathRelativeToRoot: string) => {
   console.log(kleur.yellow('Copying README.template.md to README.md'))

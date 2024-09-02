@@ -1,6 +1,7 @@
 import { route } from './routing.js'
 
-export const app = route({ routeId: '/(app)/app' })
+export const todos = route({ routeId: '/(app)/todos' })
+
 export const login = route({ routeId: '/(other)/login' })
 export const registerAction = route({ routeId: '/(other)/register/action' })
 export const loginAction = route({ routeId: '/(other)/login/action' })

@@ -1,6 +1,6 @@
 {
   "name": "preline-template",
-  "version": "0.9.23",
+  "version": "0.9.24",
   "private": true,
   "scripts": {
     "dev": "vite dev --host",
@@ -10,11 +10,12 @@
     "check:errors": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold error",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "typecheck": "pnpm run check:errors",
+    "prisma:migrate": "prisma migrate dev",
     "format": "prettier --write .",
-    "upgrade:deps": "ncu --peer -x @passlock/sveltekit -i -u"
+    "upgrade:deps": "ncu --peer -x @passlock/sveltekit -u"
   },
   "devDependencies": {
-    "@lucia-auth/adapter-sqlite": "^3.0.2",
+    "@lucia-auth/adapter-prisma": "^4.0.1",
     "@melt-ui/pp": "^0.3.2",
     "@melt-ui/svelte": "^0.83.0",
     "@passlock/sveltekit": "0.9.23",
@@ -35,9 +36,10 @@
     "mode-watcher": "^0.4.1",
     "node-check-updates": "^0.1.9",
     "postcss": "^8.4.41",
-    "postcss-load-config": "^6.0.1",
+    "postcss-load-config": "^5.0.0",
     "prettier": "^3.3.3",
     "prettier-plugin-svelte": "^3.2.6",
+    "prisma": "^5.18.0",
     "svelte": "^4.2.18",
     "svelte-check": "^3.8.5",
     "sveltekit-superforms": "^2.16.1",
@@ -47,5 +49,9 @@
     "valibot": "^0.37.0",
     "vite": "^5.4.0"
   },
-  "type": "module"
+  "type": "module",
+  "packageManager": "pnpm@9.7.1+sha512.faf344af2d6ca65c4c5c8c2224ea77a81a5e8859cbc4e06b1511ddce2f0151512431dd19e6aff31f2c6a8f5f2aced9bd2273e1fed7dd4de1868984059d2c4247",
+  "dependencies": {
+    "@prisma/client": "5.18.0"
+  }
 }

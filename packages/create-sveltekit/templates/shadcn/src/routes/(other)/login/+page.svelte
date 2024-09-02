@@ -6,19 +6,14 @@
     PUBLIC_PASSLOCK_ENDPOINT,
     PUBLIC_PASSLOCK_TENANCY_ID
   } from '$env/static/public'
-  import * as Icons from '$lib/components/icons'
-  import { ThemeSelector } from '$lib/components/theme'
-  import * as Forms from '$lib/components/ui/forms'
-  import Logo from '$lib/components/ui/logo'
-  import * as Social from '$lib/components/ui/social'
+  import * as Icons from '$lib/icons'
+  import { ThemeSelector } from '$lib/theme'
+  import * as Forms from '$lib/ui/forms'
+  import Logo from '$lib/ui/logo'
+  import * as Social from '$lib/ui/social'
   import { loginAction } from '$lib/routes.js'
   import { loginFormSchema } from '$lib/schemas'
-  import {
-    Passlock,
-    getLocalEmail,
-    saveEmailLocally,
-    updateForm
-  } from '@passlock/sveltekit/superforms'
+  import { Passlock, getLocalEmail, saveEmailLocally, updateForm } from '@passlock/sveltekit/superforms'
   import { onMount } from 'svelte'
   import { derived } from 'svelte/store'
   import { valibotClient } from 'sveltekit-superforms/adapters'
@@ -55,26 +50,16 @@
 
   const { enhance, submitting, form: superformData } = form
 
-  const submittingPasskey = derived(
-    submitting,
-    $submitting => $submitting && $superformData.authType === 'passkey'
-  )
+  const submittingPasskey = derived(submitting, $submitting => $submitting && $superformData.authType === 'passkey')
 
-  const submittingApple = derived(
-    submitting,
-    $submitting => $submitting && $superformData.authType === 'apple'
-  )
+  const submittingApple = derived(submitting, $submitting => $submitting && $superformData.authType === 'apple')
 
-  const submittingGoogle = derived(
-    submitting,
-    $submitting => $submitting && $superformData.authType === 'google'
-  )
+  const submittingGoogle = derived(submitting, $submitting => $submitting && $superformData.authType === 'google')
 
   $: readonlyEmail = $submittingPasskey || undefined
 </script>
 
-<div
-  class="relative h-full w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
+<div class="relative h-full w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
   <div class="absolute right-4 top-4 right-8 top-8 flex items-center gap-4">
     <ThemeSelector mode="dark" />
   </div>
@@ -85,9 +70,7 @@
     <div class="mx-auto grid w-[350px] gap-6">
       <div class="grid gap-2 text-center">
         <h1 class="text-3xl font-bold">Login</h1>
-        <p class="text-balance text-muted-foreground">
-          Enter your email below to login to your account
-        </p>
+        <p class="text-balance text-muted-foreground">Enter your email below to login to your account</p>
       </div>
 
       <div class="grid gap-2">
@@ -142,6 +125,5 @@
     </div>
   </div>
 
-  <div
-    class="hidden bg-muted lg:block bg-cover bg-[url('/images/bg-hero.jpg')]" />
+  <div class="hidden bg-muted lg:block bg-cover bg-[url('/images/bg-hero.jpg')]" />
 </div>

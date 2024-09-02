@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Banner from '$lib/components/layout/Banner.svelte'
-  import Footer from '$lib/components/layout/Footer.svelte'
-  import Header from '$lib/components/layout/Header.svelte'
+  import Banner from '$lib/layout/Banner.svelte'
+  import Footer from '$lib/layout/Footer.svelte'
+  import Header from '$lib/layout/Header.svelte'
   import { ModeWatcher } from 'mode-watcher'
   import '../../app.pcss'
 </script>
