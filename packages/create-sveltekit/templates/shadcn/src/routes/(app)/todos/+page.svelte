@@ -7,7 +7,7 @@
   import { superForm } from 'sveltekit-superforms'
 
   const form = superForm(data.form)
-  const { enhance: enhanceSupermenu } = form
+  const { enhance: enhanceSupermenu, submitting } = form
 </script>
 
 <div class="container mx-auto py-12">
@@ -45,7 +45,7 @@
           autocomplete="off"
           autofocus />
 
-        <Forms.SubmitButton class="mt-4">Add TODO</Forms.SubmitButton>
+        <Forms.SubmitButton submitting={$submitting} class="mt-4">Add TODO</Forms.SubmitButton>
       </form>
     </div>
   </div>

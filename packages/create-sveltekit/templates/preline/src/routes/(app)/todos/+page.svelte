@@ -8,7 +8,7 @@
   import Divider from '$lib/forms/Divider.svelte'
 
   const form = superForm(data.form)
-  const { enhance: enhanceSuperform } = form
+  const { enhance: enhanceSuperform, submitting } = form
 </script>
 
 <div class="container mx-auto py-12">
@@ -46,7 +46,7 @@
           autocomplete="off"
           autofocus />
 
-        <Forms.SubmitButton class="mt-4">Add TODO</Forms.SubmitButton>
+        <Forms.SubmitButton submitting={$submitting} class="mt-4">Add TODO</Forms.SubmitButton>
       </form>
     </div>
   </div>
