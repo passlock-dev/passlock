@@ -10,7 +10,7 @@ in README.template.md and outputs to README.md
 
 <a name="readme-top"></a>
 
-<h1 align="center">SvelteKit Authentication Starter App</h1>
+<h1 align="center">SvelteKit Starter App</h1>
 <div align="center">
   <picture align="center">
     <source srcset="assets/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
@@ -18,19 +18,20 @@ in README.template.md and outputs to README.md
   </picture>
 </div>
 <p align="center">
-  Sveltekit starter template featuring Passkeys, Social Login (Apple & Google) and more...
+  Sveltekit starter template featuring Passkeys, Social Login (Apple & Google), CRUD operations and more...
   <br />
-  <a href="#{DAISY_DEMO_SITE}#">Demo (Daisy UI)</a> &nbsp; | &nbsp; <a href="#{PRELINE_DEMO_SITE}#">Demo (Preline)</a> | &nbsp; <a href="#{SHADCN_DEMO_SITE}#">Demo (Shadcn)</a>
+  <a href="#{DAISY_DEMO_SITE}#">Demo (Daisy UI)</a> &nbsp; | &nbsp; <a href="#{PRELINE_DEMO_SITE}#">Demo (Preline)</a> &nbsp; | &nbsp; <a href="#{SHADCN_DEMO_SITE}#">Demo (Shadcn)</a>
 </p>
 
 ## Features
 
-🔑 Passkey registration and authentication  
-📱 Apple sign in  
-☝️ Google sign in / one-tap  
-📪 Mailbox verification (via a one time code or link)  
-🌘 Dark mode with theme selection (light/dark/system)  
-🚀 [Daisy UI][daisy], [Preline][preline] and [Shadcn][shadcn] variants
+1. 🔑 Passkey registration and authentication
+2. 📱 Apple sign in
+3. ☝️ Google sign in / one-tap
+4. 📪 Mailbox verification (via a one time code or link)
+5. 💾 CRUD operations via Prisma
+6. 🌘 Dark mode with theme selection (light/dark/system)
+7. 🚀 Daisy UI, Preline & Shadcn/UI variants
 
 ## Screenshots
 
@@ -49,10 +50,12 @@ in README.template.md and outputs to README.md
 1. [Passlock][passlock] - Serverless passkey platform
 2. [Superforms][superforms] - Makes form handling a breeze
 3. [Lucia][lucia] - Robust session management
-4. [Tailwind][tailwind] - Utility-first CSS framework
-5. [Preline][preline] - Tailwind UI library <sup>1</sup>
-6. [shadcn][shadcn] - Tailwind components for Svelte
-7. [Melt UI][meltui] - Headless component library for Svelte
+4. [Prisma ORM][prisma] - Typescript ORM
+5. [Tailwind][tailwind] - Utility-first CSS framework
+6. [Daisy UI][daisy] = Tailwind UI library
+7. [Preline][preline] - Tailwind UI library <sup>1</sup>
+8. [shadcn][shadcn] - Tailwind components for Svelte
+9. [Melt UI][meltui] - Headless component library for Svelte
 
 <sup>[1]</sup> Uses native Svelte in place of Preline JavaScript  
 
@@ -223,6 +226,7 @@ Please file an [issue][issues] and I'll respond ASAP.
 [tailwind]: https://tailwindcss.com
 [preline]: https://preline.co
 [daisy]: https://daisyui.com
+[prisma]: https://www.prisma.io/orm
 [meltui]: https://melt-ui.com
 [shadcn]: https://www.shadcn-svelte.com
 [passlock-signup]: https://console.passlock.dev/register

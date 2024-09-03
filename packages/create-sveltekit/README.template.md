@@ -29,12 +29,13 @@ in README.template.md and outputs to README.md
 
 ## Features
 
-🔑 Passkey registration and authentication  
-📱 Apple sign in  
-☝️ Google sign in / one-tap  
-📪 Mailbox verification (via a one time code or link)  
-🌘 Dark mode with theme selection (light/dark/system)  
-🚀 [Daisy UI][daisy], [Preline][preline] and [Shadcn][shadcn] variants
+1. 🔑 Passkey registration and authentication
+2. 📱 Apple sign in
+3. ☝️ Google sign in / one-tap
+4. 📪 Mailbox verification (via a one time code or link)
+5. 💾 CRUD operations via Prisma
+6. 🌘 Dark mode with theme selection (light/dark/system)
+7. 🚀 Daisy UI, Preline & Shadcn/UI variants
 
 ## Requirements
 
