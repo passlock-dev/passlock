@@ -1,6 +1,6 @@
 {
   "name": "preline-template",
-  "version": "0.9.24",
+  "version": "0.9.25",
   "private": true,
   "scripts": {
     "dev": "vite dev --host",

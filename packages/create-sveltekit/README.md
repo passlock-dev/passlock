@@ -4,16 +4,16 @@ in README.template.md and outputs to README.md
 -->
 <div align="center">
   <a href="https://github.com/passlock-dev/passlock">
-    <img src="https://github.com/passlock-dev/passkeys-frontend/assets/208345/53ee00d3-8e6c-49ea-b43c-3f901450c73b" alt="Passlock logo" width="80" height="80">
+    <img src="https://passlock-assets.b-cdn.net/images/passlock-logo.svg" alt="Passlock logo" width="80" height="80">
   </a>
 </div>
 
 <div>
-  <h1 align="center">SvelteKit authentication starter app</h1>
+  <h1 align="center">SvelteKit starter app</h1>
   <p align="center">
-    Sveltekit starter template featuring Passkeys, Social Login (Apple & Google) and more...
+    Sveltekit starter template featuring Passkeys, Social Login (Apple & Google), CRUD operations and more...
     <br />
-    <a href="https://github.com/passlock-dev/passlock/blob/master/packages/create-sveltekit/docs/README.md"><strong>Project website »</strong></a>
+    <a href="https://github.com/passlock-dev/passlock/tree/master/packages/create-sveltekit/docs"><strong>Project website »</strong></a>
     <br />
     <a href="https://github.com/passlock-dev/passlock">GitHub</a>
     ·
@@ -30,12 +30,12 @@ in README.template.md and outputs to README.md
 ## Features
 
 1. 🔑 Passkey registration and authentication
-2. 📱 Apple sign in
-3. ☝️ Google sign in / one-tap
+2. 📱 [Apple sign in][apple-sign-in]
+3. ☝️ [Google sign in][google-sign-in] / one-tap
 4. 📪 Mailbox verification (via a one time code or link)
-5. 💾 CRUD operations via Prisma
+5. 💾 CRUD operations via [Prisma][prisma]
 6. 🌘 Dark mode with theme selection (light/dark/system)
-7. 🚀 Daisy UI, Preline & Shadcn/UI variants
+7. 🚀 [Daisy UI][daisy], [Preline UI][preline] & [Shadcn/UI][shadcn] variants
 
 ## Requirements
 
@@ -47,7 +47,7 @@ Create an account at [https://passlock.dev][passlock-signup]
 
 ## Usage
 
-Use this CLI to create a SvelteKit app. Choose from [Preline CSS][preline] or [Shadcn/ui][shadcn] variants
+Use the CLI to create a SvelteKit app. Choose from [Daisy][daisy], [Preline][preline] or [Shadcn][shadcn] variants
 
 ```bash
 pnpm create @passlock/sveltekit
@@ -82,7 +82,10 @@ Please see the template [homepage][homepage]
 [passlock-settings]: https://console.passlock.dev/settings
 [passlock-apikeys]: https://console.passlock.dev/apikeys
 [pnpm]: https://pnpm.io/installation
-[preline]: https://preline.co
+[apple-sign-in]: https://developer.apple.com/sign-in-with-apple/
+[google-sign-in]: https://developers.google.com/identity/gsi/web/guides/overview
+[prisma]: https://www.prisma.io/orm
 [daisy]: https://daisyui.com
+[preline]: https://preline.co
 [shadcn]: https://www.shadcn-svelte.com
-[homepage]: https://github.com/passlock-dev/ts-clients/packages/create-sveltekit/docs/README.md
+[homepage]: https://github.com/passlock-dev/passlock/tree/master/packages/create-sveltekit/docs

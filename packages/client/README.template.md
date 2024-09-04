@@ -12,8 +12,8 @@ in README.template.md and outputs to README.md
 
 <div align="center">
   <picture align="center">
-    <source srcset="https://raw.githubusercontent.com/passlock-dev/ts-clients/master/README_assets/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
-    <img align="center" width=550 height=50 src="https://raw.githubusercontent.com/passlock-dev/ts-clients/master/README_assets/repo-banner.svg" />
+    <source srcset="#{ASSETS_CDN}#/images/client-repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
+    <img align="center" width=550 height=50 src="#{ASSETS_CDN}#/images/client-repo-banner.svg" />
   </picture>
   <p align="center">
     Typescript library for next generation authentication. <br/>
@@ -53,10 +53,10 @@ Passkeys and the WebAuthn API are quite complex. I've taken an opinionated appro
 
 ## Screenshots
 
-![SvelteKit template using this library](https://raw.githubusercontent.com/passlock-dev/ts-clients/master/README_assets/preline.dark.png)
+![SvelteKit template using this library](#{ASSETS_CDN}#/images/preline.dark.png)
 <p align="center">Demo app using this library for passkey and social login</p>
 
-![Passlock user profile](https://raw.githubusercontent.com/passlock-dev/ts-clients/master/README_assets/console.png)
+![Passlock user profile](#{ASSETS_CDN}#/images/console.png)
 <p align="center">Viewing a user's authentication activity on their profile page</p>
 
 ## Usage

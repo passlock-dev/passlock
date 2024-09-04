@@ -4,7 +4,7 @@ in README.template.md and outputs to README.md
 -->
 <div align="center">
   <a href="https://github.com/passlock-dev/passlock">
-    <img src="https://github.com/passlock-dev/passkeys-frontend/assets/208345/53ee00d3-8e6c-49ea-b43c-3f901450c73b" alt="Passlock logo" width="80" height="80">
+    <img src="https://passlock-assets.b-cdn.net/images/passlock-logo.svg" alt="Passlock logo" width="80" height="80">
   </a>
 </div>
 
@@ -13,8 +13,8 @@ in README.template.md and outputs to README.md
 <a name="readme-top"></a>
 <div align="center">
   <picture align="center">
-    <source srcset="README_assets/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
-    <img align="center" width=550 height=50 src="README_assets/repo-banner.svg" />
+    <source srcset="https://passlock-assets.b-cdn.net/images/client-repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
+    <img align="center" width=550 height=50 src="https://passlock-assets.b-cdn.net/images/client-repo-banner.svg" />
   </picture>
   <p align="center">
     Typescript library for next generation authentication. Passkeys, Apple login, Google one-tap and more..

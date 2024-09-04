@@ -1,6 +1,6 @@
 {
   "name": "shadcn-template",
-  "version": "0.9.24",
+  "version": "0.9.25",
   "private": true,
   "type": "module",
   "scripts": {

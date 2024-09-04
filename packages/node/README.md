@@ -4,7 +4,7 @@ in README.template.md and outputs to README.md
 -->
 <div align="center">
   <a href="https://github.com/passlock-dev/passlock">
-    <img src="https://github.com/passlock-dev/passkeys-frontend/assets/208345/53ee00d3-8e6c-49ea-b43c-3f901450c73b" alt="Passlock logo" width="80" height="80">
+    <img src="https://passlock-assets.b-cdn.net/images/passlock-logo.svg" alt="Passlock logo" width="80" height="80">
   </a>
 </div>
 

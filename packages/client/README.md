@@ -4,7 +4,7 @@ in README.template.md and outputs to README.md
 -->
 <div align="center">
   <a href="https://github.com/passlock-dev/passlock">
-    <img src="https://github.com/passlock-dev/passkeys-frontend/assets/208345/53ee00d3-8e6c-49ea-b43c-3f901450c73b" alt="Passlock logo" width="80" height="80">
+    <img src="https://passlock-assets.b-cdn.net/images/passlock-logo.svg" alt="Passlock logo" width="80" height="80">
   </a>
 </div>
 
@@ -12,8 +12,8 @@ in README.template.md and outputs to README.md
 
 <div align="center">
   <picture align="center">
-    <source srcset="https://raw.githubusercontent.com/passlock-dev/ts-clients/master/README_assets/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
-    <img align="center" width=550 height=50 src="https://raw.githubusercontent.com/passlock-dev/ts-clients/master/README_assets/repo-banner.svg" />
+    <source srcset="https://passlock-assets.b-cdn.net/images/client-repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
+    <img align="center" width=550 height=50 src="https://passlock-assets.b-cdn.net/images/client-repo-banner.svg" />
   </picture>
   <p align="center">
     Typescript library for next generation authentication. <br/>
@@ -53,10 +53,10 @@ Passkeys and the WebAuthn API are quite complex. I've taken an opinionated appro
 
 ## Screenshots
 
-![SvelteKit template using this library](https://raw.githubusercontent.com/passlock-dev/ts-clients/master/README_assets/preline.dark.png)
+![SvelteKit template using this library](https://passlock-assets.b-cdn.net/images/preline.dark.png)
 <p align="center">Demo app using this library for passkey and social login</p>
 
-![Passlock user profile](https://raw.githubusercontent.com/passlock-dev/ts-clients/master/README_assets/console.png)
+![Passlock user profile](https://passlock-assets.b-cdn.net/images/console.png)
 <p align="center">Viewing a user's authentication activity on their profile page</p>
 
 ## Usage

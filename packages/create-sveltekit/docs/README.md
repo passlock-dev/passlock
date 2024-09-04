@@ -4,7 +4,7 @@ in README.template.md and outputs to README.md
 -->
 <div align="center">
   <a href="https://github.com/passlock-dev/passlock">
-    <img src="https://github.com/passlock-dev/passkeys-frontend/assets/208345/53ee00d3-8e6c-49ea-b43c-3f901450c73b" alt="Passlock logo" width="80" height="80">
+    <img src="https://passlock-assets.b-cdn.net/images/passlock-logo.svg" alt="Passlock logo" width="80" height="80">
   </a>
 </div>
 
@@ -13,8 +13,8 @@ in README.template.md and outputs to README.md
 <h1 align="center">SvelteKit Starter App</h1>
 <div align="center">
   <picture align="center">
-    <source srcset="assets/repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
-    <img align="center" width=550 height=50 src="assets/repo-banner.svg" />
+    <source srcset="https://passlock-assets.b-cdn.net/images/client-repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
+    <img align="center" width=550 height=50 src="https://passlock-assets.b-cdn.net/images/client-repo-banner.svg" />
   </picture>
 </div>
 <p align="center">
@@ -26,12 +26,12 @@ in README.template.md and outputs to README.md
 ## Features
 
 1. 🔑 Passkey registration and authentication
-2. 📱 Apple sign in
-3. ☝️ Google sign in / one-tap
+2. 📱 [Apple sign in][apple-sign-in]
+3. ☝️ [Google sign in][google-sign-in] / one-tap
 4. 📪 Mailbox verification (via a one time code or link)
-5. 💾 CRUD operations via Prisma
+5. 💾 CRUD operations via [Prisma][prisma]
 6. 🌘 Dark mode with theme selection (light/dark/system)
-7. 🚀 Daisy UI, Preline & Shadcn/UI variants
+7. 🚀 [Daisy UI][daisy], [Preline][preline] & [Shadcn/UI][shadcn] variants
 
 ## Screenshots
 
@@ -41,7 +41,7 @@ in README.template.md and outputs to README.md
 
 <br />
 
-![Shadcn/ui variant](./assets/shadcn.webp)
+![Shadcn/UI variant](./assets/shadcn.webp)
 
 <p align="center">Shadcn/ui variant (dark mode)</p>
 
@@ -53,8 +53,8 @@ in README.template.md and outputs to README.md
 4. [Prisma ORM][prisma] - Typescript ORM
 5. [Tailwind][tailwind] - Utility-first CSS framework
 6. [Daisy UI][daisy] = Tailwind UI library
-7. [Preline][preline] - Tailwind UI library <sup>1</sup>
-8. [shadcn][shadcn] - Tailwind components for Svelte
+7. [Preline UI][preline] - Tailwind UI library <sup>1</sup>
+8. [Shadcn UI][shadcn] - Tailwind components for Svelte
 9. [Melt UI][meltui] - Headless component library for Svelte
 
 <sup>[1]</sup> Uses native Svelte in place of Preline JavaScript  
@@ -71,7 +71,7 @@ Create an account at [https://passlock.dev][passlock-signup]
 
 ## Usage
 
-Use the CLI to create a SvelteKit app. Choose from [Preline CSS][preline] or [Shadcn/ui][shadcn] variants
+Use the CLI to create a SvelteKit app. Choose from [Daisy][daisy], [Preline][preline] or [Shadcn][shadcn] variants
 
 ```bash
 pnpm create @passlock/sveltekit
@@ -140,7 +140,7 @@ This template also supports Social Login from both Apple and Google..
 
 ## Sign in with Google
 
-Allow your users to register/sign in using a Google account. The app uses the latest [sign in with google][google-signin] code, avoiding redirects.
+Allow your users to register/sign in using a Google account. The app uses the latest [sign in with google][google-sign-in] code, avoiding redirects.
 
 ### Adding Google sign in
 
@@ -189,7 +189,7 @@ If all went well you should be able to register an account and sign in using you
 
 This app also supports mailbox verification emails (via Passlock):
 
-![Verifying mailbox ownership](https://github.com/passlock-dev/svelte-passkeys/assets/208345/2f7c06d6-c2a9-40f2-a8db-0a44fa378281)
+![Verifying mailbox ownership](https://passlock-assets.b-cdn.net/images/verify-mailbox.png)
 
 You can choose to verify an email address during passkey registration. Take a look at `src/routes/(other)/+page.svelte`:
 
@@ -224,18 +224,19 @@ Please file an [issue][issues] and I'll respond ASAP.
 [passlock]: https://passlock.dev
 [lucia]: https://lucia-auth.com
 [tailwind]: https://tailwindcss.com
-[preline]: https://preline.co
-[daisy]: https://daisyui.com
-[prisma]: https://www.prisma.io/orm
 [meltui]: https://melt-ui.com
-[shadcn]: https://www.shadcn-svelte.com
 [passlock-signup]: https://console.passlock.dev/register
 [passlock-console]: https://console.passlock.dev
 [passlock-settings]: https://console.passlock.dev/settings
 [passlock-apikeys]: https://console.passlock.dev/apikeys
-[google-signin]: https://developers.google.com/identity/gsi/web/guides/overview
 [google-client-id]: https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#get_your_google_api_client_id
-[issues]: https://github.com/passlock-dev/svelte-passkeys/issues
+[issues]: https://github.com/passlock-dev/passlock/issues
 [superforms]: https://superforms.rocks
 [apple-verification-codes]: https://www.cultofmac.com/819421/ios-17-autofill-verification-codes-safari-mail-app/
 [google-passkeys]: https://safety.google/authentication/passkey/
+[apple-sign-in]: https://developer.apple.com/sign-in-with-apple/
+[google-sign-in]: https://developers.google.com/identity/gsi/web/guides/overview
+[prisma]: https://www.prisma.io/orm
+[daisy]: https://daisyui.com
+[preline]: https://preline.co
+[shadcn]: https://www.shadcn-svelte.com

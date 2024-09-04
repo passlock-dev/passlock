@@ -30,7 +30,7 @@ const outroNote =
   `\n\nStart the dev server:\n` +
   `pnpm run dev` +
   `\n\nIssues:\n` +
-  `https://github.com/passlock-dev/ts-clients/issues`
+  `https://github.com/passlock-dev/passlock/issues`
 
 async function main() {
   console.log()

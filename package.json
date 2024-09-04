@@ -1,11 +1,11 @@
 {
   "name": "public",
   "description": "Monorepo containing the JS/TS client libraries",
-  "version": "0.9.24",
+  "version": "0.9.25",
   "private": true,
   "type": "module",
   "scripts": {
-    "build:readme": "LATEST=${npm_package_version} tsx scripts/replace-readme-tokens.ts",
+    "build:readme": "LATEST=${npm_package_version} tsx ./packages/shared/scripts/replace-readme-tokens.ts .",
     "upgrade:deps": "ncu --peer -x effect -x @effect/* -x @passlock/* -i -u && pnpm -r run upgrade:deps",
     "upgrade:pnpm": "corepack use pnpm@latest"
   },

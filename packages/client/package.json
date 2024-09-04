@@ -1,6 +1,6 @@
 {
   "name": "@passlock/client",
-  "version": "0.9.24",
+  "version": "0.9.25",
   "description": "Passkey authentication and social login for web apps (Typescript). Framework agnostic",
   "keywords": [
     "passkey",
@@ -24,11 +24,11 @@
   "homepage": "https://passlock.dev",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/passlock-dev/ts-clients.git",
+    "url": "git+https://github.com/passlock-dev/passlock.git",
     "directory": "packages/client"
   },
   "bugs": {
-    "url": "https://github.com/passlock-dev/ts-clients/issues",
+    "url": "https://github.com/passlock-dev/passlock/issues",
     "email": "team@passlock.dev"
   },
   "type": "module",

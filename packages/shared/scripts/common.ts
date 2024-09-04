@@ -12,8 +12,8 @@ export const STATIC_VARS = {
   SHADCN_DEMO_SITE: 'https://dbr4qrmypnl85.cloudfront.net',
   DOCS: 'https://docs.passlock.dev',
   TUTORIAL: 'https://docs.passlock.dev/docs/tutorial/introduction',
-  PASSLOCK_LOGO:
-    'https://github.com/passlock-dev/passkeys-frontend/assets/208345/53ee00d3-8e6c-49ea-b43c-3f901450c73b',
+  PASSLOCK_LOGO: 'https://passlock-assets.b-cdn.net/images/passlock-logo.svg',
+  ASSETS_CDN: 'https://passlock-assets.b-cdn.net',
 } as Record<string, string>
 
 // no-op the console methods

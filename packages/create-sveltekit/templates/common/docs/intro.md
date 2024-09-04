@@ -138,6 +138,6 @@ Passlock will send the user to this route, appending a `?code=xxx` query paramet
 [passlock-apikeys]: https://console.passlock.dev/apikeys
 [google-signin]: https://developers.google.com/identity/gsi/web/guides/overview
 [google-client-id]: https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid#get_your_google_api_client_id
-[issues]: https://github.com/passlock-dev/svelte-passkeys/issues
+[issues]: #{GITHUB_REPO}#/issues
 [superforms]: https://superforms.rocks
 [apple-verification-codes]: https://www.cultofmac.com/819421/ios-17-autofill-verification-codes-safari-mail-app/
