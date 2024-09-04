@@ -9,7 +9,7 @@ in README.template.md and outputs to README.md
 </div>
 
 <div>
-  <h1 align="center">SvelteKit starter app</h1>
+  <h1 align="center">SvelteKit Starter App</h1>
   <p align="center">
     Sveltekit starter template featuring Passkeys, Social Login (Apple & Google), CRUD operations and more...
     <br />
