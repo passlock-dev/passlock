@@ -13,8 +13,8 @@ in README.template.md and outputs to README.md
 <h1 align="center">SvelteKit Starter App</h1>
 <div align="center">
   <picture align="center">
-    <source srcset="https://passlock-assets.b-cdn.net/images/client-repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
-    <img align="center" width=550 height=50 src="https://passlock-assets.b-cdn.net/images/client-repo-banner.svg" />
+    <source srcset="https://passlock-assets.b-cdn.net/images/starter-app-banner.dark.svg" media="(prefers-color-scheme: dark)" />
+    <img align="center" width=550 height=50 src="https://passlock-assets.b-cdn.net/images/starter-app-banner.svg" />
   </picture>
 </div>
 <p align="center">
