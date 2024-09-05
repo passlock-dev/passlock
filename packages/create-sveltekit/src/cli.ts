@@ -1,15 +1,6 @@
 #!/usr/bin/env node
-import {
-  cancel,
-  confirm,
-  intro,
-  isCancel,
-  note,
-  outro,
-  select,
-  spinner,
-  text,
-} from '@clack/prompts'
+import { cancel, confirm, intro, isCancel, outro, select, spinner, text } from '@clack/prompts'
+import { blue, yellow, red, bold } from 'kleur/colors'
 import { exec } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -155,9 +146,25 @@ async function main() {
     s.stop('Database created.')
   }
 
-  note(outroNote, 'Important')
+  // note(outroNote, 'Important')
 
   outro('Done. 👌')
+
+  console.log(blue('Next steps:'))
+  console.log('Run the dev server:')
+  console.log('pnpm run dev')
+  console.log('')
+
+  console.log(red(bold('Important!')))
+  console.log("Don't forget to update your .env file with real settings!")
+  console.log('')
+
+  console.log(blue('Getting started guide:'))
+  console.log('https://bit.ly/sveltekit')
+  console.log('')
+
+  console.log(yellow('Problems or questions?'))
+  console.log('https://github.com/passlock-dev/passlock/issues')
 }
 
 main().catch(console.error)
