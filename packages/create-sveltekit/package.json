@@ -1,6 +1,6 @@
 {
   "name": "@passlock/create-sveltekit",
-  "version": "0.9.26",
+  "version": "0.9.27",
   "description": "A CLI for creating new SvelteKit projects with Passkey authentication, Social Login and more",
   "keywords": [
     "create",
@@ -44,7 +44,7 @@
     "build:clean": "pnpm run clean && pnpm run build",
     "build:readme": "LATEST=${npm_package_version} tsx ../shared/scripts/replace-readme-tokens.ts ./packages/create-sveltekit",
     "replaceTokens": "LATEST=${npm_package_version} tsx ../shared/scripts/replace-tokens.ts ./packages/create-sveltekit",
-    "build:production": "pnpm run build:clean && pnpm run replaceTokens && echo '' && publint",
+    "build:production": "pnpm run build:clean && pnpm run build:readme && pnpm run replaceTokens && echo '' && publint",
     "format": "prettier --write \"(src|scripts)/**/*.+(js|ts|json)\"",
     "lint": "eslint ./src",
     "lint:fix": "pnpm run lint --fix",
@@ -59,9 +59,9 @@
   "devDependencies": {
     "@passlock/shared": "workspace:*",
     "@total-typescript/tsconfig": "^1.0.4",
-    "@types/node": "^22.4.0",
+    "@types/node": "^22.5.5",
     "globals": "^15.9.0",
-    "publint": "^0.2.10",
+    "publint": "^0.2.11",
     "rimraf": "^6.0.1"
   }
 }
