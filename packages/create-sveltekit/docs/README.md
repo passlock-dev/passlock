@@ -33,6 +33,10 @@ in README.template.md and outputs to README.md
 6. 🌘 Dark mode with theme selection (light/dark/system)
 7. 🚀 [Daisy UI][daisy], [Preline][preline] & [Shadcn/UI][shadcn] variants
 
+## Screen recording
+
+https://github.com/user-attachments/assets/f1c21242-74cb-4739-8eff-fddb19cb3256
+
 ## Screenshots
 
 ![Register a passkey](./assets/preline.webp)
