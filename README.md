@@ -34,7 +34,7 @@ in README.template.md and outputs to README.md
 <br />
 
 > [!IMPORTANT]  
-> **Looking for the SvelteKit templates?** Use the [@passlock/create-sveltekit](./packages/create-sveltekit/docs) script to create a new project
+> **Looking for the SvelteKit templates?** Run `pnpm create @passlock/sveltekit` and follow the prompts. For more details please see the [README](./packages/create-sveltekit/docs)
 
 ## Features
 
