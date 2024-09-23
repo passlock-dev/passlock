@@ -34,7 +34,7 @@ in README.template.md and outputs to README.md
 <br />
 
 > [!IMPORTANT]  
-> **Looking for the SvelteKit templates?** Run `pnpm create @passlock/sveltekit` and follow the prompts. For more details please see the [README](./packages/create-sveltekit/docs)
+> **Building a SvelteKit app?** Run `pnpm create @passlock/sveltekit` and follow the prompts. The CLI wizard will create a skeleton app with support for passkeys, social login, CRUD operations and much more. Choose from Daisy UI, Preline or Shadcn templates. For more details please see the starter app's [README](./packages/create-sveltekit/docs)
 
 ## Features
 
