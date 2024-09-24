@@ -1,7 +1,7 @@
 {
   "name": "@passlock/node",
   "type": "module",
-  "version": "0.9.28",
+  "version": "0.9.29",
   "description": "Passkey authentication and social login for node.js/express apps",
   "keywords": [
     "passkey",
@@ -57,10 +57,10 @@
   },
   "dependencies": {
     "@passlock/shared": "workspace:*",
-    "effect": "3.6.4"
+    "effect": "3.8.3"
   },
   "devDependencies": {
-    "@effect/schema": "0.71.0",
+    "@effect/schema": "0.74.0",
     "@qetza/replacetokens": "^1.7.0",
     "@total-typescript/tsconfig": "^1.0.4",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",

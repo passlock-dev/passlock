@@ -5,8 +5,8 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  effect: 3.6.4
-  '@effect/schema': 0.71.0
+  effect: 3.8.3
+  '@effect/schema': 0.74.0
   '@passlock/sveltekit': workspace:*
   '@passlock/client': workspace:*
   '@passlock/shared': workspace:*
@@ -45,8 +45,8 @@ importers:
   packages/client:
     dependencies:
       '@effect/schema':
-        specifier: 0.71.0
-        version: 0.71.0(effect@3.6.4)
+        specifier: 0.74.0
+        version: 0.74.0(effect@3.8.3)
       '@github/webauthn-json':
         specifier: ^2.1.1
         version: 2.1.1
@@ -54,8 +54,8 @@ importers:
         specifier: workspace:*
         version: link:../shared
       effect:
-        specifier: 3.6.4
-        version: 3.6.4
+        specifier: 3.8.3
+        version: 3.8.3
     devDependencies:
       '@qetza/replacetokens':
         specifier: ^1.7.0
@@ -158,12 +158,12 @@ importers:
         specifier: workspace:*
         version: link:../shared
       effect:
-        specifier: 3.6.4
-        version: 3.6.4
+        specifier: 3.8.3
+        version: 3.8.3
     devDependencies:
       '@effect/schema':
-        specifier: 0.71.0
-        version: 0.71.0(effect@3.6.4)
+        specifier: 0.74.0
+        version: 0.74.0(effect@3.8.3)
       '@qetza/replacetokens':
         specifier: ^1.7.0
         version: 1.7.0
@@ -225,11 +225,11 @@ importers:
   packages/shared:
     dependencies:
       '@effect/schema':
-        specifier: 0.71.0
-        version: 0.71.0(effect@3.6.4)
+        specifier: 0.74.0
+        version: 0.74.0(effect@3.8.3)
       effect:
-        specifier: 3.6.4
-        version: 3.6.4
+        specifier: 3.8.3
+        version: 3.8.3
     devDependencies:
       '@qetza/replacetokens':
         specifier: ^1.7.0
@@ -465,10 +465,10 @@ packages:
     bundledDependencies:
       - is-unicode-supported
 
-  '@effect/schema@0.71.0':
-    resolution: {integrity: sha512-rw2AP16bXaejUHAdUm6n86KSzhvZCZA/OYpCoZV+Q1gXNe65lQ2aRYaiSpMUxqK49j6FkcY3MvwehJ8jP7suTA==}
+  '@effect/schema@0.74.0':
+    resolution: {integrity: sha512-o7rBmUH6JSTyyJTIUyXb79I47DjxRBZZ/QAZgEh9loDlPxX2OPw9Fx10cYrthEY8FBIoXFsJ6JwVo3hwRUeMaQ==}
     peerDependencies:
-      effect: 3.6.4
+      effect: 3.8.3
 
   '@esbuild/aix-ppc64@0.21.5':
     resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
@@ -1377,8 +1377,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  effect@3.6.4:
-    resolution: {integrity: sha512-nNsn+Uw/n4bHKR8w45IIuYGLCgHsQodjRPB+BHreylQJ89W3iLc/Av9CiL9uvtO/ERp4e3oy5wrTO2J2pkbRRw==}
+  effect@3.8.3:
+    resolution: {integrity: sha512-ZHTNRik0mJWK+g12/HHwsouOux0OE2v+qRD7zsEJLtZ1RJdrlxvCpSXdJ+KgOqJ4wigIToDSb5e5HG885uKs/w==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -1509,10 +1509,6 @@ packages:
   esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
-
-  fast-check@3.21.0:
-    resolution: {integrity: sha512-QpmbiqRFRZ+SIlBJh6xi5d/PgXciUc/xWKc4Vi2RWEHHIRx6oM3f0fWNna++zP9VB5HUBTObUK9gTKQP3vVcrQ==}
-    engines: {node: '>=8.0.0'}
 
   fast-check@3.22.0:
     resolution: {integrity: sha512-8HKz3qXqnHYp/VCNn2qfjHdAdcI8zcSqOyX64GOMukp7SL2bfzfeDKjSd+UyECtejccaZv3LcvZTm9YDD22iCQ==}
@@ -2707,10 +2703,10 @@ snapshots:
       picocolors: 1.0.1
       sisteransi: 1.0.5
 
-  '@effect/schema@0.71.0(effect@3.6.4)':
+  '@effect/schema@0.74.0(effect@3.8.3)':
     dependencies:
-      effect: 3.6.4
-      fast-check: 3.21.0
+      effect: 3.8.3
+      fast-check: 3.22.0
 
   '@esbuild/aix-ppc64@0.21.5':
     optional: true
@@ -3524,7 +3520,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  effect@3.6.4: {}
+  effect@3.8.3: {}
 
   emoji-regex@8.0.0: {}
 
@@ -3720,10 +3716,6 @@ snapshots:
       '@types/estree': 1.0.5
 
   esutils@2.0.3: {}
-
-  fast-check@3.21.0:
-    dependencies:
-      pure-rand: 6.1.0
 
   fast-check@3.22.0:
     dependencies:
