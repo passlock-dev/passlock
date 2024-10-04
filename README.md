@@ -21,8 +21,6 @@ in README.template.md and outputs to README.md
     <br />
     <a href="https://passlock.dev"><strong>Project website »</strong></a>
     <br />
-    <a href="https://github.com/passlock-dev/passlock">GitHub</a>
-    ·
     <a href="https://d1rl0ue18b0151.cloudfront.net">Demo</a>
     ·
     <a href="https://docs.passlock.dev">Documentation</a>
