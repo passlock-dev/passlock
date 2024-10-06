@@ -59,8 +59,8 @@
   "devDependencies": {
     "@passlock/shared": "workspace:*",
     "@total-typescript/tsconfig": "^1.0.4",
-    "@types/node": "^22.5.5",
-    "globals": "^15.9.0",
+    "@types/node": "^22.7.4",
+    "globals": "^15.10.0",
     "publint": "^0.2.11",
     "rimraf": "^6.0.1"
   }
