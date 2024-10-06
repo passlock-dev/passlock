@@ -6,6 +6,9 @@ import {
 	type UserPrincipal
 } from '@passlock/client';
 import { PASSLOCK_CLIENT_VERSION } from './version.js';
+import { decodePrincipal } from '@passlock/shared/dist/schema/principal.js';
+import { Effect as E, pipe } from 'effect'
+import { TreeFormatter } from '@effect/schema';
 
 export type TokenVerifierProps = {
 	readonly tenancyId: string;
@@ -59,8 +62,28 @@ export class TokenVerifier {
 				errorMessage
 			);
 		} else {
-			const principal = await response.json();
-			return principal as Principal;
+      return pipe(
+        E.tryPromise(() => response.json()),
+        E.mapError(() => new PasslockError(
+          'Unable to exchange token with Passlock backend',
+          ErrorCode.InternalServerError,
+        )),
+        E.flatMap(json =>
+          pipe(
+            decodePrincipal(json),
+            E.mapError((err) => new PasslockError(
+              'Unable to exchange token with Passlock backend',
+              ErrorCode.InternalServerError,
+              TreeFormatter.formatErrorSync(err)
+            ))
+          )
+        ),
+        E.match({
+          onFailure: (err) => err,
+          onSuccess: (value) => value
+        }),
+        E.runPromise
+      )
 		}
 	};
 

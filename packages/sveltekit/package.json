@@ -73,6 +73,7 @@
 		"!dist/**/*.spec.*"
 	],
 	"peerDependencies": {
+		"@sveltejs/kit": "^2.6.2",
 		"svelte": "^4.0.0",
 		"sveltekit-superforms": "^2.15.2"
 	},
@@ -82,10 +83,12 @@
 		}
 	},
 	"dependencies": {
-		"@passlock/client": "workspace:*"
+		"@effect/schema": "0.74.1",
+		"@passlock/client": "workspace:*",
+		"@passlock/shared": "workspace:*",
+		"effect": "3.8.4"
 	},
 	"devDependencies": {
-		"@passlock/shared": "workspace:*",
 		"@qetza/replacetokens": "^1.7.0",
 		"@sveltejs/adapter-auto": "^3.2.5",
 		"@sveltejs/kit": "^2.6.2",

@@ -40,15 +40,6 @@ const BasePrincipal = S.Struct({
   authType: AuthType,
   authId: S.String,
   // legacy
-  user: optional(
-    S.Struct({
-      id: S.String,
-      givenName: S.String,
-      familyName: S.String,
-      email: S.String,
-      emailVerified: S.Boolean,
-    }),
-  ),
   authStatement: S.Struct({
     authType: AuthType,
     userVerified: S.Boolean,
@@ -63,6 +54,16 @@ export const Principal = S.Struct({
   familyName: optional(S.String),
   email: optional(S.String),
   emailVerified: optional(S.Boolean),
+  // legacy
+  user: optional(
+    S.Struct({
+      id: S.String,
+      givenName: S.String,
+      familyName: S.String,
+      email: S.String,
+      emailVerified: S.Boolean,
+    }),
+  ),
 })
 
 export type Principal = S.Schema.Type<typeof Principal>
@@ -73,6 +74,18 @@ export const UserPrincipal = S.Struct({
   familyName: S.String,
   email: S.String,
   emailVerified: S.Boolean,
+  // legacy
+  user: S.Struct({
+    id: S.String,
+    givenName: S.String,
+    familyName: S.String,
+    email: S.String,
+    emailVerified: S.Boolean,
+  }),
 })
 
 export type UserPrincipal = S.Schema.Type<typeof UserPrincipal>
+
+export const decodePrincipal = S.decodeUnknown(S.Union(Principal, UserPrincipal))
+export const isPrincipal = S.is(Principal)
+export const isUserPrincipal = S.is(UserPrincipal)

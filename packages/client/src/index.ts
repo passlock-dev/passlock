@@ -13,7 +13,12 @@ import type {
 import { ErrorCode } from '@passlock/shared/dist/error/error.js'
 import type { VerifyEmail } from '@passlock/shared/dist/schema/email.js'
 import type { UserVerification } from '@passlock/shared/dist/schema/passkey.js'
-import type { Principal, UserPrincipal } from '@passlock/shared/dist/schema/principal.js'
+import {
+  type Principal,
+  type UserPrincipal,
+  isPrincipal,
+  isUserPrincipal,
+} from '@passlock/shared/dist/schema/principal.js'
 
 import type { AuthenticationService } from './authentication/authenticate.js'
 import type { Capabilities } from './capabilities/capabilities.js'
@@ -240,14 +245,8 @@ export class PasslockUnsafe {
     E.runSync(E.logDebug(`Passlock version: ${PASSLOCK_CLIENT_VERSION}`))
   }
 
-  static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {
-    return (
-      principal.givenName !== undefined &&
-      principal.familyName !== undefined &&
-      principal.email !== undefined &&
-      principal.emailVerified !== undefined
-    )
-  }
+  static isPrincipal = (value: unknown): value is Principal => isPrincipal(value)
+  static isUserPrincipal = (value: unknown): value is UserPrincipal => isUserPrincipal(value)
 
   private readonly runPromise: {
     <A, R extends Requirements>(
@@ -327,14 +326,8 @@ export class Passlock {
     E.runSync(E.logDebug(`Passlock version: ${PASSLOCK_CLIENT_VERSION}`))
   }
 
-  static isUserPrincipal = (principal: Principal): principal is UserPrincipal => {
-    return (
-      principal.givenName !== undefined &&
-      principal.familyName !== undefined &&
-      principal.email !== undefined &&
-      principal.emailVerified !== undefined
-    )
-  }
+  static isPrincipal = (value: unknown): value is Principal => isPrincipal(value)
+  static isUserPrincipal = (value: unknown): value is UserPrincipal => isUserPrincipal(value)
 
   private readonly runPromise: {
     <A, R extends Requirements>(

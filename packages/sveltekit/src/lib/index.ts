@@ -1,6 +1,8 @@
 export * from '@passlock/client';
 export * from './token.js';
 export * from './utils.js';
+export * from './register.js';
+export * from './login.js';
 
 import type { VerifyEmail } from '@passlock/client';
 
