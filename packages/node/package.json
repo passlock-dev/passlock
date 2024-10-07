@@ -1,7 +1,7 @@
 {
   "name": "@passlock/node",
   "type": "module",
-  "version": "0.9.29",
+  "version": "0.9.30",
   "description": "Passkey authentication and social login for node.js/express apps",
   "keywords": [
     "passkey",

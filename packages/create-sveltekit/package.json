@@ -1,6 +1,6 @@
 {
   "name": "@passlock/create-sveltekit",
-  "version": "0.9.29",
+  "version": "0.9.30",
   "description": "A CLI for creating new SvelteKit projects with Passkey authentication, Social Login and more",
   "keywords": [
     "create",
