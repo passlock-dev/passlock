@@ -60,6 +60,10 @@
 			"import": "./dist/superforms/index.js",
 			"svelte": "./dist/superforms/index.js"
 		},
+    "./session": {
+			"types": "./dist/session/index.d.ts",
+			"import": "./dist/session/index.js"
+		},
 		"./components/social": {
 			"types": "./dist/components/social/index.d.ts",
 			"import": "./dist/components/social/index.js",
@@ -84,6 +88,8 @@
 	},
 	"dependencies": {
 		"@effect/schema": "0.74.1",
+		"@oslojs/crypto": "^1.0.1",
+		"@oslojs/encoding": "^1.1.0",
 		"@passlock/client": "workspace:*",
 		"@passlock/shared": "workspace:*",
 		"effect": "3.8.4"
