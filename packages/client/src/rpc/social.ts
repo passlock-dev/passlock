@@ -1,12 +1,14 @@
 import { Context, Effect as E, Layer } from 'effect'
 
 import {
-  AuthOidcErrors,
-  AuthOidcReq,
-  PrincipalRes,
-  RegisterOidcErrors,
-  RegisterOidcReq,
-  type SocialService,
+  OIDCRegistrationRequest,
+  OIDCRegistrationErrors,
+  OIDCAuthenticationRequest,
+  OIDCAuthenticationErrors,
+  OIDC_REGISTRATION_ENDPOINT,
+  OIDC_AUTHENTICATION_ENDPOINT,
+  PrincipalResponse,
+  type SocialService
 } from '@passlock/shared/dist/rpc/social.js'
 
 import { Dispatcher, makePostRequest } from './client.js'
@@ -24,22 +26,30 @@ export const SocialClientLive = Layer.effect(
     const dispatcher = yield* _(Dispatcher)
 
     const registerResolver = makePostRequest(
-      RegisterOidcReq,
-      PrincipalRes,
-      RegisterOidcErrors,
+      OIDCRegistrationRequest,
+      PrincipalResponse,
+      OIDCRegistrationErrors,
       dispatcher,
     )
 
     const authenticateResolver = makePostRequest(
-      AuthOidcReq,
-      PrincipalRes,
-      AuthOidcErrors,
+      OIDCAuthenticationRequest,
+      PrincipalResponse,
+      OIDCAuthenticationErrors,
       dispatcher,
     )
 
     return {
-      registerOidc: req => registerResolver(OIDC_REGISTER_ENDPOINT, req),
-      authenticateOidc: req => authenticateResolver(OIDC_AUTH_ENDPOINT, req),
+      oidcRegistration: req => registerResolver(OIDC_REGISTRATION_ENDPOINT, req),
+      oidcAuthentication: req => authenticateResolver(OIDC_AUTHENTICATION_ENDPOINT, req),
     }
   }),
 )
+
+export {
+  OIDCRegistrationRequest,
+  OIDCRegistrationErrors,
+  OIDCAuthenticationRequest,
+  OIDCAuthenticationErrors,
+  PrincipalResponse,
+} from '@passlock/shared/dist/rpc/social.js'

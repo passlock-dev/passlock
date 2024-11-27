@@ -8,25 +8,19 @@ import {
 import { Context, Effect as E, Layer, flow, pipe } from 'effect'
 
 import { InternalBrowserError, type NotSupported } from '@passlock/shared/dist/error/error.js'
-import {
-  type OptionsErrors,
-  type OptionsReq,
-  type VerificationErrors,
-  VerificationReq,
-} from '@passlock/shared/dist/rpc/authentication.js'
+import * as RPC from '../rpc/passkey/authentication.js'
 import type { AuthenticationCredential } from '@passlock/shared/dist/schema/passkey.js'
 import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 
 import { Capabilities } from '../capabilities/capabilities.js'
-import { AuthenticationClient } from '../rpc/authentication.js'
 import { StorageService } from '../storage/storage.js'
 
 /* Requests */
 
-export type AuthenticationRequest = OptionsReq
+export type AuthenticationRequest = RPC.OptionsRequest
 /* Errors */
 
-export type AuthenticationErrors = NotSupported | OptionsErrors | VerificationErrors
+export type AuthenticationErrors = NotSupported | RPC.OptionsErrors | RPC.VerificationErrors
 
 /* Dependencies */
 
@@ -52,11 +46,11 @@ export class AuthenticationService extends Context.Tag('@services/Authentication
 
 /* Utilities */
 
-const fetchOptions = (request: OptionsReq) => {
+const fetchOptions = (request: RPC.OptionsRequest) => {
   return E.gen(function* (_) {
     yield* _(E.logDebug('Making request'))
 
-    const rpcClient = yield* _(AuthenticationClient)
+    const rpcClient = yield* _(RPC.AuthenticationClient)
     const { publicKey, session } = yield* _(rpcClient.getAuthenticationOptions(request))
 
     yield* _(E.logDebug('Converting Passlock options to CredentialRequestOptions'))
@@ -79,11 +73,11 @@ const toRequestOptions = (request: CredentialRequestOptionsJSON) => {
   )
 }
 
-const verifyCredential = (request: VerificationReq) => {
+const verifyCredential = (request: RPC.VerificationRequest) => {
   return E.gen(function* (_) {
     yield* _(E.logDebug('Making request'))
 
-    const rpcClient = yield* _(AuthenticationClient)
+    const rpcClient = yield* _(RPC.AuthenticationClient)
     const { principal } = yield* _(rpcClient.verifyAuthenticationCredential(request))
 
     return principal
@@ -92,7 +86,7 @@ const verifyCredential = (request: VerificationReq) => {
 
 /* Effects */
 
-type Dependencies = GetCredential | Capabilities | StorageService | AuthenticationClient
+type Dependencies = GetCredential | Capabilities | StorageService | RPC.AuthenticationClient
 
 export const authenticatePasskey = (
   request: AuthenticationRequest,
@@ -111,7 +105,7 @@ export const authenticatePasskey = (
     const credential = yield* _(getCredential(options))
 
     yield* _(E.logInfo('Verifying credential with Passlock'))
-    const principal = yield* _(verifyCredential(new VerificationReq({ credential, session })))
+    const principal = yield* _(verifyCredential(new RPC.VerificationRequest({ credential, session })))
 
     const storageService = yield* _(StorageService)
     yield* _(storageService.storeToken(principal))
@@ -138,7 +132,7 @@ export const AuthenticateServiceLive = Layer.effect(
   AuthenticationService,
   E.gen(function* (_) {
     const context = yield* _(
-      E.context<GetCredential | AuthenticationClient | Capabilities | StorageService>(),
+      E.context<GetCredential | RPC.AuthenticationClient | Capabilities | StorageService>(),
     )
 
     return AuthenticationService.of({

@@ -5,7 +5,7 @@ import { Context, Effect as E, Layer, Option as O, flow, identity, pipe } from '
 
 import { BadRequest } from '@passlock/shared/dist/error/error.js'
 import type { VerifyEmailErrors as RpcErrors } from '@passlock/shared/dist/rpc/user.js'
-import { VerifyEmailReq } from '@passlock/shared/dist/rpc/user.js'
+import { VerifyEmailRequest } from '@passlock/shared/dist/rpc/user.js'
 import type { Principal } from '@passlock/shared/dist/schema/principal.js'
 
 import { type AuthenticationErrors, AuthenticationService } from '../authentication/authenticate.js'
@@ -112,7 +112,7 @@ export const verifyEmail = (
     yield* _(E.logDebug('Making request'))
     const client = yield* _(UserClient)
     const { principal } = yield* _(
-      client.verifyEmail(new VerifyEmailReq({ token, code: request.code })),
+      client.verifyEmail(new VerifyEmailRequest({ token, code: request.code })),
     )
 
     return principal

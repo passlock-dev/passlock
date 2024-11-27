@@ -5,7 +5,7 @@ import { mock } from 'vitest-mock-extended'
 import { Duplicate, InternalBrowserError } from '@passlock/shared/dist/error/error.js'
 
 import * as Fixture from './register.fixture.js'
-import { RegistrationClient } from '../rpc/registration.js'
+import { RegistrationClient } from '../rpc/passkey/registration.js'
 import { CreateCredential, RegistrationService, RegistrationServiceLive } from './register.js'
 
 describe('register should', () => {

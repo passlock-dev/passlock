@@ -2,26 +2,23 @@
  * Passkey authentication effects
  */
 import { Context, Effect as E, Layer, flow } from 'effect'
-
-import * as RPC from '@passlock/shared/dist/rpc/social.js'
+import * as RPC from '../rpc/social.js'
 import { type BadRequest, type NotSupported } from '@passlock/shared/dist/error/error.js'
 import type { Principal } from '@passlock/shared/dist/schema/principal.js'
-
-import { SocialClient } from '../rpc/social.js'
 
 /* Requests */
 
 export type Provider = 'apple' | 'google'
 
-export type RegisterOidcReq = RPC.RegisterOidcReq
+export type RegisterOidcReq = RPC.OIDCRegistrationRequest
 
-export type AuthenticateOidcReq = RPC.AuthOidcReq
+export type AuthenticateOidcReq = RPC.OIDCAuthenticationRequest
 
 /* Errors */
 
-export type RegistrationErrors = NotSupported | BadRequest | RPC.RegisterOidcErrors
+export type RegistrationErrors = NotSupported | BadRequest | RPC.OIDCRegistrationErrors
 
-export type AuthenticationErrors = NotSupported | BadRequest | RPC.AuthOidcErrors
+export type AuthenticationErrors = NotSupported | BadRequest | RPC.OIDCAuthenticationErrors
 
 /* Service */
 
@@ -35,7 +32,7 @@ export class SocialService extends Context.Tag('@services/SocialService')<
 
 /* Effects */
 
-type Dependencies = SocialClient
+type Dependencies = RPC.SocialClient
 
 export const registerOidc = (
   request: RegisterOidcReq,
@@ -43,9 +40,9 @@ export const registerOidc = (
   return E.gen(function* (_) {
     yield* _(E.logInfo('Registering social account'))
 
-    const rpcClient = yield* _(SocialClient)
-    const rpcRequest = new RPC.RegisterOidcReq(request)
-    const { principal } = yield* _(rpcClient.registerOidc(rpcRequest))
+    const rpcClient = yield* _(RPC.SocialClient)
+    const rpcRequest = new RPC.OIDCRegistrationRequest(request)
+    const { principal } = yield* _(rpcClient.oidcRegistration(rpcRequest))
 
     return principal
   })
@@ -57,9 +54,9 @@ export const authenticateOidc = (
   return E.gen(function* (_) {
     yield* _(E.logInfo('Authenticating with social account'))
 
-    const rpcClient = yield* _(SocialClient)
-    const rpcRequest = new RPC.AuthOidcReq(request)
-    const { principal } = yield* _(rpcClient.authenticateOidc(rpcRequest))
+    const rpcClient = yield* _(RPC.SocialClient)
+    const rpcRequest = new RPC.OIDCAuthenticationRequest(request)
+    const { principal } = yield* _(rpcClient.oidcAuthentication(rpcRequest))
 
     return principal
   })
@@ -71,7 +68,7 @@ export const authenticateOidc = (
 export const SocialServiceLive = Layer.effect(
   SocialService,
   E.gen(function* (_) {
-    const context = yield* _(E.context<SocialClient>())
+    const context = yield* _(E.context<RPC.SocialClient>())
 
     return SocialService.of({
       registerOidc: flow(registerOidc, E.provide(context)),

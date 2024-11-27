@@ -13,13 +13,15 @@ import { Principal } from '../schema/principal.js'
 
 const Provider = S.Literal('apple', 'google')
 
-/* Registration */
-
-export class PrincipalRes extends S.Class<PrincipalRes>('@social/principalRes')({
+export class PrincipalResponse extends S.Class<PrincipalResponse>('@social/principal/response')({
   principal: Principal,
 }) {}
 
-export class RegisterOidcReq extends S.Class<RegisterOidcReq>('@social/oidc/registerReq')({
+/* Registration */
+
+export class OIDCRegistrationRequest extends S.Class<OIDCRegistrationRequest>(
+  '@social/oidc/registration/request',
+)({
   provider: Provider,
   idToken: S.String,
   givenName: S.OptionFromUndefinedOr(S.String),
@@ -27,32 +29,50 @@ export class RegisterOidcReq extends S.Class<RegisterOidcReq>('@social/oidc/regi
   nonce: S.String,
 }) {}
 
-export const RegisterOidcErrors = S.Union(BadRequest, Unauthorized, Forbidden, Disabled, Duplicate)
+export const OIDCRegistrationErrors = S.Union(
+  BadRequest,
+  Unauthorized,
+  Forbidden,
+  Disabled,
+  Duplicate,
+)
 
-export type RegisterOidcErrors = S.Schema.Type<typeof RegisterOidcErrors>
+export type OIDCRegistrationErrors = S.Schema.Type<typeof OIDCRegistrationErrors>
 
 /* Authentication */
 
-export class AuthOidcReq extends S.Class<AuthOidcReq>('@social/oidc/authReq')({
+export class OIDCAuthenticationRequest extends S.Class<OIDCAuthenticationRequest>(
+  '@social/oidc/authentication/request',
+)({
   provider: Provider,
   idToken: S.String,
   nonce: S.String,
 }) {}
 
-export const AuthOidcErrors = S.Union(BadRequest, Unauthorized, Forbidden, Disabled, NotFound)
+export const OIDCAuthenticationErrors = S.Union(
+  BadRequest,
+  Unauthorized,
+  Forbidden,
+  Disabled,
+  NotFound,
+)
 
-export type AuthOidcErrors = S.Schema.Type<typeof AuthOidcErrors>
+export type OIDCAuthenticationErrors = S.Schema.Type<typeof OIDCAuthenticationErrors>
 
 /* Endpoints */
 
-export const OIDC_REGISTER_ENDPOINT = '/social/oidc/register'
-export const OIDC_AUTH_ENDPOINT = '/social/oidc/auth'
+export const OIDC_REGISTRATION_ENDPOINT = '/social/oidc/registration'
+export const OIDC_AUTHENTICATION_ENDPOINT = '/social/oidc/authentication'
 
 /* Service */
 
 export type SocialService = {
-  registerOidc: (req: RegisterOidcReq) => E.Effect<PrincipalRes, RegisterOidcErrors>
-  authenticateOidc: (req: AuthOidcReq) => E.Effect<PrincipalRes, AuthOidcErrors>
+  oidcRegistration: (
+    req: OIDCRegistrationRequest,
+  ) => E.Effect<PrincipalResponse, OIDCRegistrationErrors>
+  oidcAuthentication: (
+    req: OIDCAuthenticationRequest,
+  ) => E.Effect<PrincipalResponse, OIDCAuthenticationErrors>
 }
 
 /* Handler */

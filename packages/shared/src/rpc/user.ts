@@ -7,23 +7,27 @@ import { Principal } from '../schema/principal.js'
 
 /* Is existing user */
 
-export class IsExistingUserReq extends S.Class<IsExistingUserReq>('@user/isExistingUserReq')({
+export class IsExistingUserRequest extends S.Class<IsExistingUserRequest>(
+  '@user/isExistingUser/request',
+)({
   email: S.String,
 }) {}
 
-export class IsExistingUserRes extends S.Class<IsExistingUserRes>('@user/isExistingUserRes')({
+export class IsExistingUserResponse extends S.Class<IsExistingUserResponse>(
+  '@user/isExistingUser/response',
+)({
   existingUser: S.Boolean,
   detail: S.OptionFromUndefinedOr(S.String),
 }) {}
 
 /* Verify email */
 
-export class VerifyEmailReq extends S.Class<VerifyEmailReq>('@user/verifyEmailReq')({
+export class VerifyEmailRequest extends S.Class<VerifyEmailRequest>('@user/verifyEmail/request')({
   code: S.String,
   token: S.String,
 }) {}
 
-export class VerifyEmailRes extends S.Class<VerifyEmailRes>('@user/verifyEmailRes')({
+export class VerifyEmailResponse extends S.Class<VerifyEmailResponse>('@user/verifyEmail/response')({
   principal: Principal,
 }) {}
 
@@ -33,12 +37,14 @@ export type VerifyEmailErrors = S.Schema.Type<typeof VerifyEmailErrors>
 
 /* Resend email */
 
-export class ResendEmailReq extends S.Class<ResendEmailReq>('@user/resendEmailReq')({
+export class ResendEmailRequest extends S.Class<ResendEmailRequest>('@user/resendEmail/request')({
   userId: S.String,
   verifyEmail: VerifyEmail,
 }) {}
 
-export class ResendEmailRes extends S.Class<ResendEmailRes>('@user/resendEmailRes')({}) {}
+export class ResendEmailResponse extends S.Class<ResendEmailResponse>('@user/resendEmail/response')(
+  {},
+) {}
 
 export const ResendEmailErrors = S.Union(BadRequest, NotFound, Disabled)
 
@@ -53,9 +59,11 @@ export const RESEND_EMAIL_ENDPOINT = '/user/verify-email/resend'
 /* Service */
 
 export type UserService = {
-  isExistingUser: (req: IsExistingUserReq) => E.Effect<IsExistingUserRes, BadRequest>
-  verifyEmail: (req: VerifyEmailReq) => E.Effect<VerifyEmailRes, VerifyEmailErrors>
-  resendVerificationEmail: (req: ResendEmailReq) => E.Effect<ResendEmailRes, ResendEmailErrors>
+  isExistingUser: (req: IsExistingUserRequest) => E.Effect<IsExistingUserResponse, BadRequest>
+  verifyEmail: (req: VerifyEmailRequest) => E.Effect<VerifyEmailResponse, VerifyEmailErrors>
+  resendVerificationEmail: (
+    req: ResendEmailRequest,
+  ) => E.Effect<ResendEmailResponse, ResendEmailErrors>
 }
 
 /* Handler */

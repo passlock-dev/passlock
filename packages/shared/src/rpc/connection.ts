@@ -3,7 +3,7 @@ import { Context, type Effect as E } from 'effect'
 
 /* Pre connect */
 
-export class ConnectRes extends S.Class<ConnectRes>('@connection/preConnectRes')({
+export class ConnectResponse extends S.Class<ConnectResponse>('@connection/connect/response')({
   warmed: S.Boolean,
 }) {}
 
@@ -14,7 +14,7 @@ export const CONNECT_ENDPOINT = '/connection/pre-connect'
 /* Service */
 
 export type ConnectionService = {
-  preConnect: () => E.Effect<ConnectRes>
+  preConnect: () => E.Effect<ConnectResponse>
 }
 
 /* Handler */

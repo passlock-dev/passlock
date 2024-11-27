@@ -5,7 +5,7 @@ import { Context, Effect as E, Layer, flow, pipe } from 'effect'
 
 import { Dispatcher } from '../rpc/client.js'
 import type { RpcConfig } from '../rpc/config.js'
-import { ConnectionClient } from '../rpc/connection.js'
+import * as RPC from '../rpc/connection.js'
 
 /* Service */
 
@@ -28,7 +28,7 @@ const hitPrincipal = pipe(
 
 const hitRpc = pipe(
   E.logInfo('Pre-connecting to RPC endpoint'),
-  E.zipRight(ConnectionClient),
+  E.zipRight(RPC.ConnectionClient),
   E.flatMap(rpcClient => rpcClient.preConnect()),
   E.asVoid,
 )
@@ -41,7 +41,7 @@ export const preConnect = () => pipe(E.all([hitPrincipal, hitRpc], { concurrency
 export const ConnectionServiceLive = Layer.effect(
   ConnectionService,
   E.gen(function* (_) {
-    const context = yield* _(E.context<ConnectionClient | Dispatcher | RpcConfig>())
+    const context = yield* _(E.context<RPC.ConnectionClient | Dispatcher | RpcConfig>())
 
     return ConnectionService.of({
       preConnect: flow(preConnect, E.provide(context)),

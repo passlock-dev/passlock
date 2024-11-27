@@ -32,12 +32,12 @@ import {
   RegistrationService,
   RegistrationServiceLive,
 } from './registration/register.js'
-import { AuthenticationClientLive } from './rpc/authentication.js'
+import { AuthenticationClientLive } from './rpc/passkey/authentication.js'
 import { DispatcherLive } from './rpc/client.js'
 import type { RpcConfig } from './rpc/config.js'
 import { RetrySchedule } from './rpc/config.js'
 import { ConnectionClientLive } from './rpc/connection.js'
-import { RegistrationClientLive } from './rpc/registration.js'
+import { RegistrationClientLive } from './rpc/passkey/registration.js'
 import { SocialClientLive } from './rpc/social.js'
 import { UserClientLive } from './rpc/user.js'
 import {

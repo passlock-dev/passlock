@@ -1,15 +1,15 @@
 import { Effect as E, Layer as L, Option as O } from 'effect'
 
 import {
-  OptionsReq,
-  OptionsRes,
-  VerificationReq,
-  VerificationRes,
-} from '@passlock/shared/dist/rpc/registration.js'
+  OptionsRequest,
+  OptionsResponse,
+  VerificationRequest,
+  VerificationResponse,
+} from '@passlock/shared/dist/rpc/passkey/registration.js'
 import type { RegistrationCredential } from '@passlock/shared/dist/schema/passkey.js'
 
 import * as Fixtures from '../test/fixtures.js'
-import { RegistrationClient } from '../rpc/registration.js'
+import { RegistrationClient } from '../rpc/passkey/registration.js'
 import { UserService } from '../user/user.js'
 import { CreateCredential, type RegistrationRequest } from './register.js'
 
@@ -27,9 +27,9 @@ export const registrationRequest: RegistrationRequest = {
   verifyEmail: O.none(),
 }
 
-export const rpcOptionsReq = new OptionsReq(registrationRequest)
+export const rpcOptionsReq = new OptionsRequest(registrationRequest)
 
-export const registrationOptions: OptionsRes = {
+export const registrationOptions: OptionsResponse = {
   session,
   publicKey: {
     rp: {
@@ -46,7 +46,7 @@ export const registrationOptions: OptionsRes = {
   },
 }
 
-export const rpcOptionsRes = new OptionsRes(registrationOptions)
+export const rpcOptionsRes = new OptionsResponse(registrationOptions)
 
 export const credential: RegistrationCredential = {
   type: 'public-key',
@@ -60,13 +60,13 @@ export const credential: RegistrationCredential = {
   clientExtensionResults: {},
 }
 
-export const rpcVerificationReq = new VerificationReq({
+export const rpcVerificationReq = new VerificationRequest({
   session,
   credential,
   verifyEmail: O.none(),
 })
 
-export const rpcVerificationRes = new VerificationRes({ principal: Fixtures.principal })
+export const rpcVerificationRes = new VerificationResponse({ principal: Fixtures.principal })
 
 export const createCredentialTest = L.succeed(
   CreateCredential,

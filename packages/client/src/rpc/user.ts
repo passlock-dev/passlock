@@ -2,18 +2,18 @@ import * as S from '@effect/schema/Schema'
 import { Context, Effect as E, Layer } from 'effect'
 
 import {
-  IsExistingUserReq,
-  IsExistingUserRes,
+  IsExistingUserRequest,
+  IsExistingUserResponse,
   RESEND_EMAIL_ENDPOINT,
   ResendEmailErrors,
-  ResendEmailReq,
-  ResendEmailRes,
+  ResendEmailRequest,
+  ResendEmailResponse,
   USER_STATUS_ENDPOINT,
   type UserService,
   VERIFY_EMAIL_ENDPOINT,
   VerifyEmailErrors,
-  VerifyEmailReq,
-  VerifyEmailRes,
+  VerifyEmailRequest,
+  VerifyEmailResponse,
 } from '@passlock/shared/dist/rpc/user.js'
 
 import { Dispatcher, makePostRequest } from './client.js'
@@ -28,22 +28,22 @@ export const UserClientLive = Layer.effect(
     const dispatcher = yield* _(Dispatcher)
 
     const isExistingUserResolver = makePostRequest(
-      IsExistingUserReq,
-      IsExistingUserRes,
+      IsExistingUserRequest,
+      IsExistingUserResponse,
       S.Never,
       dispatcher,
     )
 
     const verifyEmailResolver = makePostRequest(
-      VerifyEmailReq,
-      VerifyEmailRes,
+      VerifyEmailRequest,
+      VerifyEmailResponse,
       VerifyEmailErrors,
       dispatcher,
     )
 
     const resendEmailResolver = makePostRequest(
-      ResendEmailReq,
-      ResendEmailRes,
+      ResendEmailRequest,
+      ResendEmailResponse,
       ResendEmailErrors,
       dispatcher,
     )
@@ -55,3 +55,14 @@ export const UserClientLive = Layer.effect(
     }
   }),
 )
+
+export {
+  IsExistingUserRequest,
+  IsExistingUserResponse,
+  ResendEmailErrors,
+  ResendEmailRequest,
+  ResendEmailResponse,
+  VerifyEmailErrors,
+  VerifyEmailRequest,
+  VerifyEmailResponse,
+} from '@passlock/shared/dist/rpc/user.js'

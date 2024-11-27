@@ -21,7 +21,7 @@ describe('registerOidc should', () => {
       E.sync(() => {
         const rpcMock = mock<SocialClient['Type']>()
 
-        rpcMock.registerOidc.mockReturnValue(E.succeed(Fixture.rpcRegisterRes))
+        rpcMock.oidcRegistration.mockReturnValue(E.succeed(Fixture.rpcRegisterRes))
 
         return rpcMock
       }),
@@ -41,7 +41,7 @@ describe('registerOidc should', () => {
       yield* _(service.registerOidc(Fixture.registerOidcReq))
 
       const rpcClient = yield* _(SocialClient)
-      expect(rpcClient.registerOidc).toHaveBeenCalledWith(Fixture.registerOidcReq)
+      expect(rpcClient.oidcRegistration).toHaveBeenCalledWith(Fixture.registerOidcReq)
     })
 
     const rpcClientTest = L.effect(
@@ -49,7 +49,7 @@ describe('registerOidc should', () => {
       E.sync(() => {
         const rpcMock = mock<SocialClient['Type']>()
 
-        rpcMock.registerOidc.mockReturnValue(E.succeed(Fixture.rpcRegisterRes))
+        rpcMock.oidcRegistration.mockReturnValue(E.succeed(Fixture.rpcRegisterRes))
 
         return rpcMock
       }),
@@ -77,7 +77,7 @@ describe('registerOidc should', () => {
       E.sync(() => {
         const rpcMock = mock<SocialClient['Type']>()
 
-        rpcMock.registerOidc.mockReturnValue(E.fail(new Duplicate({ message: 'Duplicate user' })))
+        rpcMock.oidcRegistration.mockReturnValue(E.fail(new Duplicate({ message: 'Duplicate user' })))
 
         return rpcMock
       }),
@@ -105,7 +105,7 @@ describe('authenticateIodc should', () => {
       E.sync(() => {
         const rpcMock = mock<SocialClient['Type']>()
 
-        rpcMock.authenticateOidc.mockReturnValue(E.succeed(Fixture.rpcRegisterRes))
+        rpcMock.oidcAuthentication.mockReturnValue(E.succeed(Fixture.rpcRegisterRes))
 
         return rpcMock
       }),
@@ -125,7 +125,7 @@ describe('authenticateIodc should', () => {
       yield* _(service.authenticateOidc(Fixture.authOidcReq))
 
       const rpcClient = yield* _(SocialClient)
-      expect(rpcClient.authenticateOidc).toHaveBeenCalledWith(Fixture.authOidcReq)
+      expect(rpcClient.oidcAuthentication).toHaveBeenCalledWith(Fixture.authOidcReq)
     })
 
     const rpcClientTest = L.effect(
@@ -133,7 +133,7 @@ describe('authenticateIodc should', () => {
       E.sync(() => {
         const rpcMock = mock<SocialClient['Type']>()
 
-        rpcMock.authenticateOidc.mockReturnValue(E.succeed(Fixture.rpcAuthenticateRes))
+        rpcMock.oidcAuthentication.mockReturnValue(E.succeed(Fixture.rpcAuthenticateRes))
 
         return rpcMock
       }),
@@ -161,7 +161,7 @@ describe('authenticateIodc should', () => {
       E.sync(() => {
         const rpcMock = mock<SocialClient['Type']>()
 
-        rpcMock.authenticateOidc.mockReturnValue(
+        rpcMock.oidcAuthentication.mockReturnValue(
           E.fail(new NotFound({ message: 'User not found' })),
         )
 

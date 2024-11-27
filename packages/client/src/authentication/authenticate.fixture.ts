@@ -1,15 +1,15 @@
 import { Effect as E, Layer as L, Option as O } from 'effect'
 
 import {
-  OptionsRes,
-  VerificationReq,
-  VerificationRes,
-} from '@passlock/shared/dist/rpc/authentication.js'
-import { IsExistingUserRes, VerifyEmailRes } from '@passlock/shared/dist/rpc/user.js'
+  OptionsResponse,
+  VerificationRequest,
+  VerificationResponse,
+} from '@passlock/shared/dist/rpc/passkey/authentication.js'
+import { IsExistingUserResponse, VerifyEmailResponse } from '@passlock/shared/dist/rpc/user.js'
 import type { AuthenticationCredential } from '@passlock/shared/dist/schema/passkey.js'
 
 import * as Fixtures from '../test/fixtures.js'
-import { AuthenticationClient } from '../rpc/authentication.js'
+import { AuthenticationClient } from '../rpc/passkey/authentication.js'
 import { type AuthenticationRequest, GetCredential } from './authenticate.js'
 
 export const session = 'session'
@@ -23,7 +23,7 @@ export const request: AuthenticationRequest = {
   email: O.none(),
 }
 
-export const rpcOptionsRes = new OptionsRes({
+export const rpcOptionsRes = new OptionsResponse({
   session,
   publicKey: {
     rpId: 'passlock.dev',
@@ -47,13 +47,13 @@ export const credential: AuthenticationCredential = {
   authenticatorAttachment: null,
 }
 
-export const rpcVerificationReq = new VerificationReq({ session, credential })
+export const rpcVerificationReq = new VerificationRequest({ session, credential })
 
-export const rpcVerificationRes = new VerificationRes({ principal: Fixtures.principal })
+export const rpcVerificationRes = new VerificationResponse({ principal: Fixtures.principal })
 
-export const rpcIsExistingUserRes = new IsExistingUserRes({ existingUser: true, detail: O.none() })
+export const rpcIsExistingUserRes = new IsExistingUserResponse({ existingUser: true, detail: O.none() })
 
-export const rpcVerifyEmailRes = new VerifyEmailRes({ principal: Fixtures.principal })
+export const rpcVerifyEmailRes = new VerifyEmailResponse({ principal: Fixtures.principal })
 
 export const getCredentialTest = L.succeed(
   GetCredential,

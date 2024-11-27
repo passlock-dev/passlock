@@ -3,7 +3,7 @@ import { describe, expect, test, vi } from 'vitest'
 import { mock } from 'vitest-mock-extended'
 
 import * as Fixture from './authenticate.fixture.js'
-import { AuthenticationClient } from '../rpc/authentication.js'
+import { AuthenticationClient } from '../rpc/passkey/authentication.js'
 import { StorageService } from '../storage/storage.js'
 import { AuthenticateServiceLive, AuthenticationService, GetCredential } from './authenticate.js'
 

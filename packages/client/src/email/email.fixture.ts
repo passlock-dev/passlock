@@ -1,6 +1,6 @@
 import { Effect as E, Layer as L, Option as O } from 'effect'
 
-import { VerifyEmailReq, VerifyEmailRes } from '@passlock/shared/dist/rpc/user.js'
+import { VerifyEmailRequest, VerifyEmailResponse } from '@passlock/shared/dist/rpc/user.js'
 
 import * as Fixtures from '../test/fixtures.js'
 import { AuthenticationService } from '../authentication/authenticate.js'
@@ -24,9 +24,9 @@ export const authenticationServiceTest = L.succeed(
   }),
 )
 
-export const rpcVerifyEmailReq = new VerifyEmailReq({ token, code })
+export const rpcVerifyEmailReq = new VerifyEmailRequest({ token, code })
 
-export const rpcVerifyEmailRes = new VerifyEmailRes({ principal: Fixtures.principal })
+export const rpcVerifyEmailRes = new VerifyEmailResponse({ principal: Fixtures.principal })
 
 export const rpcClientTest = L.succeed(
   UserClient,

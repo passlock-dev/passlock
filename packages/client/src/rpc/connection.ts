@@ -3,7 +3,7 @@ import { Context, Effect as E, Layer } from 'effect'
 
 import {
   CONNECT_ENDPOINT,
-  ConnectRes,
+  ConnectResponse,
   type ConnectionService,
 } from '@passlock/shared/dist/rpc/connection.js'
 
@@ -21,10 +21,12 @@ export const ConnectionClientLive = Layer.effect(
   E.gen(function* (_) {
     const dispatcher = yield* _(Dispatcher)
 
-    const preConnectResolver = makeGetRequest(ConnectRes, S.Never, dispatcher)
+    const preConnectResolver = makeGetRequest(ConnectResponse, S.Never, dispatcher)
 
     return {
       preConnect: () => preConnectResolver(CONNECT_ENDPOINT),
     }
   }),
 )
+
+export { ConnectResponse } from '@passlock/shared/dist/rpc/connection.js'
