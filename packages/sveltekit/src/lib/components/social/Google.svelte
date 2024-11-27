@@ -42,7 +42,7 @@
 
 <script lang="ts">
 	import { Passlock, PasslockError, type Principal } from '@passlock/client';
-	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import type { Context } from './context.js';
 
 	const dispatch = createEventDispatcher<{ principal: Principal }>();
@@ -55,7 +55,6 @@
 	let error = '';
 
 	const passlock = new Passlock(options);
-	let timer: number;
 
 	// We need to poll as on:load doesn't currently work for scripts
 	// see https://github.com/sveltejs/svelte/issues/8301
@@ -134,17 +133,13 @@
 
 	onMount(initialize);
 
-	onDestroy(() => {
-		if (timer) window.clearTimeout(timer);
-	});
-
 	const click = () => {
 		error = '';
 		googleBtn?.click();
 	};
 </script>
 
-<div bind:this={googleBtnWrapper} class="hidden" />
+<div bind:this={googleBtnWrapper} class="hidden"></div>
 
 <slot {click} {submitting} />
 

@@ -2,6 +2,8 @@ import {
 	Passlock as Client,
 	ErrorCode,
 	PasslockError,
+	type Email,
+	type Options,
 	type PasslockProps,
 	type Principal,
 	type VerifyEmail
@@ -48,7 +50,17 @@ export class Passlock {
 		await this.passlock.preConnect();
 	};
 
-	readonly register = async <T extends RegistrationData>(options: SuperformData<T>) => {
+	readonly isPasskeySupport = (): Promise<boolean> => {
+		return this.passlock.isPasskeySupport();
+	};
+
+	readonly isExistingUser = (email: Email, options?: Options): Promise<boolean | PasslockError> => {
+		return this.passlock.isExistingUser(email, options);
+	};
+
+	readonly register = async <T extends RegistrationData>(
+		options: SuperformData<T>
+	): Promise<void> => {
 		const { cancel, formData, form, verifyEmail } = options;
 		const { email, givenName, familyName, token, authType } = get(form.form);
 
@@ -104,7 +116,7 @@ export class Passlock {
 		}
 	};
 
-	readonly login = async <T extends LoginData>(options: SuperformData<T>) => {
+	readonly login = async <T extends LoginData>(options: SuperformData<T>): Promise<void> => {
 		const { cancel, formData, form } = options;
 		const { email, token, authType } = get(form.form);
 
@@ -140,7 +152,9 @@ export class Passlock {
 		}
 	};
 
-	readonly verifyEmail = async <T extends VerifyEmailData>(options: SuperformData<T>) => {
+	readonly verifyEmail = async <T extends VerifyEmailData>(
+		options: SuperformData<T>
+	): Promise<void> => {
 		const { cancel, formData, form } = options;
 		const { code } = get(form.form);
 
@@ -159,13 +173,15 @@ export class Passlock {
 		}
 	};
 
-	readonly autoVerifyEmail = async <T extends VerifyEmailData>(form: SuperForm<T>) => {
+	readonly autoVerifyEmail = async <T extends VerifyEmailData>(
+		form: SuperForm<T>
+	): Promise<void> => {
 		if (await this.passlock.getSessionToken('passkey')) {
 			form.submit();
 		}
 	};
 
-	readonly resendEmail = async (options: ResendEmail) => {
+	readonly resendEmail = async (options: ResendEmail): Promise<void> => {
 		await this.passlock.resendVerificationEmail(options);
 	};
 }
@@ -188,3 +204,13 @@ export const updateForm =
 	};
 
 export { getLocalEmail, saveEmailLocally };
+
+export {
+	ErrorCode,
+	PasslockError,
+	type Email,
+	type Options,
+	type PasslockProps,
+	type Principal,
+	type VerifyEmail
+} from '@passlock/client';

@@ -1,7 +1,5 @@
-import { test } from 'vitest'
+import { test } from 'vitest';
 
 // TODO test me!
 
-test("it works", () => {
-
-})
+test('it works', () => {});
