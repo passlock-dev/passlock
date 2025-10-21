@@ -12,7 +12,7 @@ const Principal = Schema.Struct({
     }),
     {
       nullable: true,
-    }
+    },
   ),
   createdAt: Schema.DateFromNumber,
   expiresAt: Schema.DateFromNumber,
@@ -33,7 +33,7 @@ const IdToken = Schema.Struct({
 });
 
 const Response = Schema.Struct({
-  _tag: Schema.tag('Success'),
+  _tag: Schema.tag("Success"),
   principal: Principal,
 });
 
@@ -60,17 +60,15 @@ export const exchangeCode = ({
     const response = yield* client.get(url);
 
     const encoded = yield* HttpClientResponse.matchStatus(response, {
-      "2xx": () =>
-        HttpClientResponse.schemaBodyJson(Response)(response),
-      orElse: () =>
-        HttpClientResponse.schemaBodyJson(ResponseError)(response),
+      "2xx": () => HttpClientResponse.schemaBodyJson(Response)(response),
+      orElse: () => HttpClientResponse.schemaBodyJson(ResponseError)(response),
     });
 
     return yield* pipe(
       Match.value(encoded),
       Match.tag("Success", (data) => Effect.succeed(data)),
       Match.tag("InvalidCodeError", (err) => Effect.fail(err)),
-      Match.exhaustive
+      Match.exhaustive,
     );
   });
 
@@ -91,7 +89,7 @@ export const verifyIdToken = ({
     const baseUrl = endpoint ?? "https://api.passlock.dev";
     const JWKS = jose.createRemoteJWKSet(new URL("/jwks", baseUrl));
 
-    const { payload, protectedHeader } = yield* Effect.tryPromise({
+    const { payload } = yield* Effect.tryPromise({
       try: () =>
         jose.jwtVerify(id_token, JWKS, {
           issuer: "passlock.dev",
@@ -112,8 +110,8 @@ export const verifyIdToken = ({
       passkey: {
         userVerified: idToken["pk:uv"],
       },
-      createdAt: new Date(idToken["iat"] * 1000),
-      expiresAt: new Date(idToken["exp"] * 1000),
+      createdAt: new Date(idToken.iat * 1000),
+      expiresAt: new Date(idToken.exp * 1000),
     };
 
     return { principal, id_token: idToken };

@@ -1,4 +1,4 @@
-import { Context, Micro } from "effect"
+import { Context, Micro } from "effect";
 
 const DefaultEndpoint = "https://api.passlock.dev";
 
@@ -7,12 +7,16 @@ export class Endpoint extends Context.Tag("Endpoint")<
   { readonly endpoint: string }
 >() {}
 
-export const buildEndpoint = ({ endpoint = DefaultEndpoint } : { endpoint?: string }) => Endpoint.of({ endpoint })
+export const buildEndpoint = ({
+  endpoint = DefaultEndpoint,
+}: {
+  endpoint?: string;
+}) => Endpoint.of({ endpoint });
 
 export class NetworkError extends Micro.TaggedError("@error/NetworkError")<{
-  readonly message: string
-  readonly isRetryAble: boolean
-  readonly url: string
+  readonly message: string;
+  readonly isRetryAble: boolean;
+  readonly url: string;
 }> {}
 
 interface ErrorResponse {
@@ -33,14 +37,14 @@ const isErrorResponse = (payload: unknown): payload is ErrorResponse => {
   return true;
 };
 
-export const makeRequest = <Req extends object, Res extends object>({
+export const makeRequest = <Res extends object>({
   url,
   payload,
   operation,
   responsePredicate,
 }: {
   url: URL;
-  payload: Req;
+  payload: object;
   operation: string;
   responsePredicate: (res: unknown) => res is Res;
 }) =>
@@ -77,11 +81,9 @@ export const makeRequest = <Req extends object, Res extends object>({
 
     if (!fetchResponse.ok) {
       const apiError = yield* Micro.tryPromise({
-        try: () => fetchResponse.json(),
+        try: () => fetchResponse.json() as Promise<unknown>,
         catch: () => parseError,
       });
-
-      console.log(apiError)
 
       return isErrorResponse(apiError)
         ? yield* new NetworkError({
@@ -93,7 +95,7 @@ export const makeRequest = <Req extends object, Res extends object>({
     }
 
     const json = yield* Micro.tryPromise({
-      try: () => fetchResponse.json(),
+      try: () => fetchResponse.json() as Promise<unknown>,
       catch: () => parseError,
     });
 

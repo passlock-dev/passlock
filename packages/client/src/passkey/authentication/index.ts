@@ -7,5 +7,6 @@ import {
 } from "./micro";
 
 export const authenticatePasskey = (
-  options: AuthenticationOptions
-): Promise<AuthenticationResponse> => pipe(options, authenticatePasskeyM, runToPromise);
+  options: AuthenticationOptions,
+): Promise<AuthenticationResponse> =>
+  pipe(options, authenticatePasskeyM, runToPromise);

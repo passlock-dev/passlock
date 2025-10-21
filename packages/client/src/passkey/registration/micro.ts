@@ -5,11 +5,15 @@ import {
 } from "@simplewebauthn/browser";
 import { Micro, pipe } from "effect";
 import { buildTenancyId, TenancyId } from "../../tenancy";
-import { buildEndpoint, Endpoint, makeRequest, NetworkError } from "../../network";
-import { boolean } from "effect/FastCheck";
+import {
+  buildEndpoint,
+  Endpoint,
+  makeRequest,
+  type NetworkError,
+} from "../../network";
 
 export class RegistrationError extends Micro.TaggedError(
-  "@error/RegistrationError"
+  "@error/RegistrationError",
 )<{
   readonly error: unknown;
 }> {}
@@ -54,7 +58,7 @@ export interface RegistrationResponse {
 }
 
 const isRegistrationResponse = (
-  payload: unknown
+  payload: unknown,
 ): payload is RegistrationResponse => {
   if (typeof payload !== "object") return false;
   if (payload === null) return false;
@@ -70,7 +74,7 @@ const isRegistrationResponse = (
 
 const verifyCredential = (
   sessionToken: string,
-  response: RegistrationResponseJSON
+  response: RegistrationResponseJSON,
 ) =>
   Micro.gen(function* () {
     const { endpoint } = yield* Micro.service(Endpoint);
@@ -78,7 +82,7 @@ const verifyCredential = (
 
     const url = new URL(
       `${tenancyId}/passkey/registration/verification`,
-      endpoint
+      endpoint,
     );
 
     return yield* makeRequest({
@@ -90,7 +94,7 @@ const verifyCredential = (
   });
 
 const startRegistration = (
-  optionsJSON: PublicKeyCredentialCreationOptionsJSON
+  optionsJSON: PublicKeyCredentialCreationOptionsJSON,
 ) =>
   Micro.gen(function* () {
     return yield* Micro.tryPromise({
@@ -106,7 +110,7 @@ export interface RegistrationOptions {
 }
 
 export const registerPasskey = (
-  options: RegistrationOptions
+  options: RegistrationOptions,
 ): Micro.Micro<RegistrationResponse, RegistrationError | NetworkError> => {
   const tenancyId = buildTenancyId(options);
   const endpoint = buildEndpoint(options);
@@ -120,6 +124,6 @@ export const registerPasskey = (
   return pipe(
     effect,
     Micro.provideService(TenancyId, tenancyId),
-    Micro.provideService(Endpoint, endpoint)
+    Micro.provideService(Endpoint, endpoint),
   );
 };
