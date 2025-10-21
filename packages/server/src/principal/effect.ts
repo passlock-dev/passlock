@@ -87,7 +87,7 @@ export const verifyIdToken = ({
 }) =>
   Effect.gen(function* () {
     const baseUrl = endpoint ?? "https://api.passlock.dev";
-    const JWKS = jose.createRemoteJWKSet(new URL("/jwks", baseUrl));
+    const JWKS = jose.createRemoteJWKSet(new URL("/.well-known/jwks.json", baseUrl));
 
     const { payload } = yield* Effect.tryPromise({
       try: () =>
