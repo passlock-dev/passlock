@@ -1,0 +1,35 @@
+{
+  "name": "@passlock2/client",
+  "version": "1.0.0",
+  "type": "module",                 
+  "module": "./dist/index.js",      
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./passkey": {
+      "import": "./dist/passkey/index.js",
+      "types": "./dist/passkey/index.d.ts",
+      "default": "./dist/passkey/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],                
+  "sideEffects": false,            
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "rimraf": "^6.0.0"
+  },
+  "dependencies": {
+    "@simplewebauthn/browser": "^13.2.2",
+    "effect": "^3.18.4"
+  },
+  "packageManager": "pnpm@10.18.2"
+}
+

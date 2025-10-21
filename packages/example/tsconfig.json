@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    /* Language & environment */
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",       // matches how Vite/Rollup/Webpack resolve
+    "verbatimModuleSyntax": true,        // preserves import/export for tree-shaking
+    "useDefineForClassFields": true,
+
+    /* Declarations & maps */
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    /* Strictness */
+    "strict": true,
+    "noImplicitAny": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+
+    /* Module interop / ergonomics */
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+
+    /* Output */
+    "rootDir": "src",
+    "outDir": "dist",
+    "noEmit": false,
+    "stripInternal": true,
+
+    /* Performance */
+    "skipLibCheck": true
+  },
+  "include": ["src"],
+  "exclude": ["**/*.test.*", "**/*.spec.*", "node_modules", "dist"]
+}

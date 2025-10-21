@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + TS</title>
+  </head>
+  <body>
+    <main class="max-w-2xl mx-auto">
+      <div class="flex gap-3">
+        <fieldset class="fieldset grow">
+          <legend class="fieldset-legend">Tenancy ID</legend>
+          <input id="tenancyId" type="text" class="input w-full" value="myTenancyId" />
+        </fieldset>
+        
+        <fieldset class="fieldset grow">
+          <legend class="fieldset-legend">Username</legend>
+          <input id="userName" type="text" class="input w-full" value="jdoe@gmail.com" />
+        </fieldset>      
+      </div>
+
+      <div class="mt-3 flex gap-3">
+        <button class="btn btn-primary grow" id="register">Register passkey</button>
+        <button class="btn btn-secondary grow" id="authenticate">Authenticate</button>
+      </div>
+
+      <div id="response" class="mt-6">
+        <div>
+          <div class="flex gap-2 items-center">
+            <h3 class="text-lg font-semibold">ID Token</h3>
+            <button class="text-primary underline text-lg" id="copyJwt">Copy</button>
+            <button class="text-primary underline text-lg" id="verifyJwt">Verify</button>
+            <div id="jwtStatus" class="text-lg"></div>
+          </div>
+          <div id="jwt" class="mt-2 text-xs font-mono text-wrap break-all"></div>
+          <pre id="jwtVerification" class="mt-2 text-xs font-mono text-wrap break-all"></pre>
+        </div>
+        <div class="mt-3">
+          <div class="flex gap-2 items-center">
+            <h3 class="text-lg font-semibold">Code</h3>
+            <button class="text-primary underline text-lg" id="copyCode">Copy</button>
+            <button class="text-primary underline text-lg" id="verifyCode">Verify</button>
+            <div id="codeStatus" class="text-lg"></div>
+          </div>          
+          <div id="code" class="mt-2 text-xs font-mono text-wrap break-all"></div>
+          <pre id="codeVerification" class="mt-2 text-xs font-mono"></pre>
+        </div>  
+      </div>
+
+      <div id="error" class="mt-6 text-error" hidden></div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
