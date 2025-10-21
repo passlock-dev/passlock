@@ -11,6 +11,8 @@ const getTextField = (id: string) => document.querySelector<HTMLInputElement>(id
 
 const tenancyIdField = getTextField("#tenancyId");
 
+const usernameField = getTextField("#username");
+
 const registerBtn = getBtn("#register");
 
 const authenticateBtn = getBtn("#authenticate");
@@ -39,7 +41,6 @@ const codeStatus = getBtn("#codeStatus");
 
 const codeVerificationDiv = getDiv("#codeVerification")
 
-const userName = "jdoe@gmail.com";
 const endpoint = "http://localhost:3000";
 
 const resetUI = () => {
@@ -51,16 +52,52 @@ const resetUI = () => {
   errorDiv.innerText = "";
 }
 
+const saveTenancyId = () => {
+  if (tenancyIdField === null || tenancyIdField.value.length < 5) {
+    alert("TenancyID required")
+    throw false;
+  }
+  
+  localStorage.setItem("tenancyId", tenancyIdField.value)
+  
+  return tenancyIdField.value;
+}
+
+const restoreTenancyId = () => {
+  const tenancyId = localStorage.getItem("tenancyId")
+
+  console.log({ tenancyId })
+
+  if (tenancyId) {
+    tenancyIdField.value = tenancyId
+  }
+}
+
+const saveUserName = () => {
+  if (usernameField === null || usernameField.value.length < 5) {
+    alert("Username required")
+    throw false;
+  }
+  
+  localStorage.setItem("username", usernameField.value)
+  
+  return usernameField.value;
+}
+
+const restoreUserName = () => {
+  const username = localStorage.getItem("username")
+
+  if (username) {
+    usernameField.value = username
+  }
+}
+
 registerBtn.addEventListener("click", async () => {
   resetUI();
 
-  if (tenancyIdField === null || tenancyIdField.value.length < 5) {
-    alert("TenancyID required")
-    return;
-  }
-
   try {
-    const tenancyId = tenancyIdField.value;
+    const tenancyId = saveTenancyId()
+    const userName = saveUserName()
     const data = await registerPasskey({ tenancyId, userName, endpoint })
 
     jwtDiv.innerText = data.id_token;
@@ -75,13 +112,9 @@ registerBtn.addEventListener("click", async () => {
 authenticateBtn.addEventListener("click", async () => {
   resetUI();
 
-  if (tenancyIdField === null || tenancyIdField.value.length < 5) {
-    alert("TenancyID required")
-    return;
-  }
-
   try {
-    const tenancyId = tenancyIdField.value;
+    const tenancyId = saveTenancyId()
+    const userName = saveUserName()
     const data = await authenticatePasskey({ tenancyId, userName, endpoint })
 
     jwtDiv.innerText = data.id_token;
@@ -142,3 +175,12 @@ verifyCode.addEventListener("click", async () => {
     errorDiv.hidden = false;
   }
 });
+
+if (document.readyState === "complete" || document.readyState === "interactive") {
+  restoreTenancyId()
+  restoreUserName()
+} else document.addEventListener('load', () => {
+  restoreTenancyId()
+  restoreUserName()
+})
+
