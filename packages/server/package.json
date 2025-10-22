@@ -24,8 +24,9 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "clean": "rimraf dist",
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "clean:all": "rimraf dist tsconfig.tsbuildinfo",
     "dev": "tsx src/index.ts",
     "format": "prettier . --write",
     "lint": "prettier --check . && eslint ."

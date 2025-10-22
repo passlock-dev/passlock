@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    /* Projects */
+    "incremental": true,
+    "composite": true,
+        
     /* Language & environment */
     "target": "ES2022",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
@@ -35,5 +39,9 @@
     "skipLibCheck": true
   },
   "include": ["src"],
-  "exclude": ["**/*.test.*", "**/*.spec.*", "node_modules", "dist"]
+  "exclude": ["**/*.test.*", "**/*.spec.*", "node_modules", "dist"],
+  "references": [
+    { "path": "../client" }, 
+    { "path": "../server" }
+  ]
 }

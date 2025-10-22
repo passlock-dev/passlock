@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "clean:all": "rimraf dist tsconfig.tsbuildinfo",
     "preview": "vite preview",
     "format": "prettier . --write",
     "lint": "prettier --check . && eslint ."    

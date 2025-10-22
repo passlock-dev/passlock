@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    /* Projects */
+    "incremental": true,
+    "composite": true,
+        
     // Platform & modules
     "target": "ES2022", // Node 20+ supports this natively
     "lib": ["ES2024"], // built-ins/Promise APIs, etc.
