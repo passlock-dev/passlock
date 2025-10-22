@@ -94,25 +94,22 @@ export class VerificationError extends Data.TaggedError("VerificationError")<{
 }> {}
 
 export interface VerifyIdToken {
-  id_token: string;
+  idToken: string;
   tenancyId: string;
   endpoint?: string;
 }
 
 export interface VerificationSuccess {
   principal: Principal;
-  id_token: IdToken;
+  idToken: IdToken;
 }
 
-export const verifyIdToken = ({
-  id_token,
-  tenancyId,
-  endpoint,
-}: VerifyIdToken): Effect.Effect<
+export const verifyIdToken = (command: VerifyIdToken): Effect.Effect<
   VerificationSuccess,
   VerificationError | ParseError
 > =>
   Effect.gen(function* () {
+    const { tenancyId, endpoint } = command
     const baseUrl = endpoint ?? "https://api.passlock.dev";
     const JWKS = jose.createRemoteJWKSet(
       new URL("/.well-known/jwks.json", baseUrl),
@@ -120,7 +117,7 @@ export const verifyIdToken = ({
 
     const { payload } = yield* Effect.tryPromise({
       try: () =>
-        jose.jwtVerify(id_token, JWKS, {
+        jose.jwtVerify(command.idToken, JWKS, {
           issuer: "passlock.dev",
           audience: tenancyId,
         }),
@@ -144,5 +141,5 @@ export const verifyIdToken = ({
       expiresAt: new Date(idToken.exp * 1000),
     };
 
-    return { principal, id_token: idToken };
+    return { principal, idToken };
   });

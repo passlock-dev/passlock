@@ -56,7 +56,7 @@ const fetchOptions = (username?: string) =>
   });
 
 export interface AuthenticationResponse {
-  id_token: string;
+  idToken: string;
   code: string;
 }
 
@@ -66,8 +66,8 @@ const isAuthenticationResponse = (
   if (typeof payload !== "object") return false;
   if (payload === null) return false;
 
-  if (!("id_token" in payload)) return false;
-  if (typeof payload.id_token !== "string") return false;
+  if (!("idToken" in payload)) return false;
+  if (typeof payload.idToken !== "string") return false;
 
   if (!("code" in payload)) return false;
   if (typeof payload.code !== "string") return false;

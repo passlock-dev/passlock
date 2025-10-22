@@ -50,6 +50,8 @@ const resetUI = () => {
   codeDiv.innerText = '';
   codeVerificationDiv.innerText = '';
   errorDiv.innerText = "";
+  jwtVerificationDiv.innerText = "";
+  codeVerificationDiv.innerText = "";
 }
 
 const saveTenancyId = () => {
@@ -100,7 +102,7 @@ registerBtn.addEventListener("click", async () => {
     const username = saveUserName()
     const data = await registerPasskey({ tenancyId, username, endpoint })
 
-    jwtDiv.innerText = data.id_token;
+    jwtDiv.innerText = data.idToken;
     codeDiv.innerText = data.code;
     responseDiv.hidden = false;
   } catch (err) {
@@ -117,7 +119,7 @@ authenticateBtn.addEventListener("click", async () => {
     const username = saveUserName()
     const data = await authenticatePasskey({ tenancyId, username, endpoint })
 
-    jwtDiv.innerText = data.id_token;
+    jwtDiv.innerText = data.idToken;
     codeDiv.innerText = data.code;
     responseDiv.hidden = false;
   } catch (err) {
@@ -143,7 +145,7 @@ verifyJwt.addEventListener("click", async () => {
   const tenancyId = tenancyIdField.value.trim()
   
   try {
-    const response = await verifyIdToken({ tenancyId, id_token: jwt, endpoint })
+    const response = await verifyIdToken({ tenancyId, idToken: jwt, endpoint })
     jwtVerificationDiv.innerText = JSON.stringify(response, null, 2);
   } catch (err) {
     errorDiv.innerText = String(err);
