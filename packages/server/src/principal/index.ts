@@ -1,12 +1,10 @@
 import { FetchHttpClient } from "@effect/platform";
 import { Effect, Either, pipe } from "effect";
-import * as PrincipalEffect from "./effect.js";
-
-interface ExchangeCodeCommand {
-  tenancyId: string;
-  code: string;
-  endpoint?: string;
-}
+import {
+  exchangeCode as exchangeCodeE,
+  verifyIdToken as verifyIdTokenE,
+} from "./effect.js";
+import type { ExchangeCode, VerifyIdToken } from "./effect.js";
 
 export class ServerError extends Error {
   readonly _tag: string;
@@ -19,17 +17,18 @@ export class ServerError extends Error {
   override readonly toString = () => `${this.message} (_tag: ${this._tag})`;
 }
 
-export const exchangeCode = ({
-  tenancyId,
-  code,
-  endpoint,
-}: ExchangeCodeCommand) =>
+export type {
+  ExchangeCode,
+  VerifyIdToken,
+  Principal,
+  IdToken,
+  VerificationSuccess,
+  VerificationError,
+} from "./effect.js";
+
+export const exchangeCode = (cmd: ExchangeCode) =>
   pipe(
-    PrincipalEffect.exchangeCode({
-      tenancyId,
-      code,
-      ...(endpoint ? { endpoint } : {}),
-    }),
+    exchangeCodeE(cmd),
     Effect.either,
     Effect.provide(FetchHttpClient.layer),
     Effect.runPromise,
@@ -42,23 +41,9 @@ export const exchangeCode = ({
       ),
   );
 
-interface VerificationCommand {
-  id_token: string;
-  tenancyId: string;
-  endpoint?: string;
-}
-
-export const verifyIdToken = ({
-  tenancyId,
-  id_token,
-  endpoint,
-}: VerificationCommand) =>
+export const verifyIdToken = (cmd: VerifyIdToken) =>
   pipe(
-    PrincipalEffect.verifyIdToken({
-      tenancyId,
-      id_token,
-      ...(endpoint ? { endpoint } : {}),
-    }),
+    verifyIdTokenE(cmd),
     Effect.either,
     Effect.provide(FetchHttpClient.layer),
     Effect.runPromise,

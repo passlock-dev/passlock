@@ -1,5 +1,10 @@
 import { HttpClient, HttpClientResponse } from "@effect/platform";
+import type {
+  RequestError,
+  ResponseError,
+} from "@effect/platform/HttpClientError";
 import { Data, Effect, Match, pipe, Schema } from "effect";
+import type { ParseError } from "effect/ParseResult";
 import * as jose from "jose";
 
 const Principal = Schema.Struct({
@@ -19,7 +24,7 @@ const Principal = Schema.Struct({
   expiresAt: Schema.DateFromNumber,
 });
 
-type Principal = typeof Principal.Type;
+export type Principal = typeof Principal.Type;
 
 const IdToken = Schema.Struct({
   "a:id": Schema.String,
@@ -33,27 +38,37 @@ const IdToken = Schema.Struct({
   exp: Schema.Number,
 });
 
+export type IdToken = typeof IdToken.Type;
+
 const Response = Schema.Struct({
   _tag: Schema.tag("Success"),
   principal: Principal,
 });
+
+type Response = typeof Response.Type;
 
 const InvalidCodeError = Schema.Struct({
   _tag: Schema.tag("InvalidCodeError"),
   message: Schema.String,
 });
 
-const ResponseError = Schema.Union(InvalidCodeError);
+export type InvalidCodeError = typeof InvalidCodeError.Type;
+
+export interface ExchangeCode {
+  tenancyId: string;
+  code: string;
+  endpoint?: string;
+}
 
 export const exchangeCode = ({
   tenancyId,
   code,
   endpoint,
-}: {
-  tenancyId: string;
-  code: string;
-  endpoint?: string;
-}) =>
+}: ExchangeCode): Effect.Effect<
+  Principal,
+  InvalidCodeError | ParseError | RequestError | ResponseError,
+  HttpClient.HttpClient
+> =>
   Effect.gen(function* () {
     const client = yield* HttpClient.HttpClient;
     const baseUrl = endpoint ?? "https://api.passlock.dev";
@@ -62,12 +77,13 @@ export const exchangeCode = ({
 
     const encoded = yield* HttpClientResponse.matchStatus(response, {
       "2xx": () => HttpClientResponse.schemaBodyJson(Response)(response),
-      orElse: () => HttpClientResponse.schemaBodyJson(ResponseError)(response),
+      orElse: () =>
+        HttpClientResponse.schemaBodyJson(InvalidCodeError)(response),
     });
 
     return yield* pipe(
       Match.value(encoded),
-      Match.tag("Success", (data) => Effect.succeed(data)),
+      Match.tag("Success", ({ principal }) => Effect.succeed(principal)),
       Match.tag("InvalidCodeError", (err) => Effect.fail(err)),
       Match.exhaustive,
     );
@@ -77,15 +93,25 @@ export class VerificationError extends Data.TaggedError("VerificationError")<{
   message: string;
 }> {}
 
+export interface VerifyIdToken {
+  id_token: string;
+  tenancyId: string;
+  endpoint?: string;
+}
+
+export interface VerificationSuccess {
+  principal: Principal;
+  id_token: IdToken;
+}
+
 export const verifyIdToken = ({
   id_token,
   tenancyId,
   endpoint,
-}: {
-  id_token: string;
-  tenancyId: string;
-  endpoint?: string;
-}) =>
+}: VerifyIdToken): Effect.Effect<
+  VerificationSuccess,
+  VerificationError | ParseError
+> =>
   Effect.gen(function* () {
     const baseUrl = endpoint ?? "https://api.passlock.dev";
     const JWKS = jose.createRemoteJWKSet(
