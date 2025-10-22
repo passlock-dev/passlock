@@ -104,12 +104,11 @@ export interface VerificationSuccess {
   idToken: IdToken;
 }
 
-export const verifyIdToken = (command: VerifyIdToken): Effect.Effect<
-  VerificationSuccess,
-  VerificationError | ParseError
-> =>
+export const verifyIdToken = (
+  command: VerifyIdToken,
+): Effect.Effect<VerificationSuccess, VerificationError | ParseError> =>
   Effect.gen(function* () {
-    const { tenancyId, endpoint } = command
+    const { tenancyId, endpoint } = command;
     const baseUrl = endpoint ?? "https://api.passlock.dev";
     const JWKS = jose.createRemoteJWKSet(
       new URL("/.well-known/jwks.json", baseUrl),
