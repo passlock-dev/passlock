@@ -37,7 +37,7 @@ const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {
   return true;
 };
 
-const fetchOptions = (userName?: string) =>
+const fetchOptions = (username?: string) =>
   Micro.gen(function* () {
     const { endpoint } = yield* Micro.service(Endpoint);
     const { tenancyId } = yield* Micro.service(TenancyId);
@@ -49,7 +49,7 @@ const fetchOptions = (userName?: string) =>
 
     return yield* makeRequest({
       url,
-      payload: { userName },
+      payload: { username },
       operation: "options",
       responsePredicate: isOptionsResponse,
     });
@@ -109,7 +109,7 @@ const startAuthentication = (
 export interface AuthenticationOptions {
   tenancyId: string;
   endpoint?: string;
-  userName?: string;
+  username?: string;
 }
 
 export const authenticatePasskey = (
@@ -119,7 +119,7 @@ export const authenticatePasskey = (
   const endpoint = buildEndpoint(options);
 
   const effect = Micro.gen(function* () {
-    const { sessionToken, optionsJSON } = yield* fetchOptions(options.userName);
+    const { sessionToken, optionsJSON } = yield* fetchOptions(options.username);
     const response = yield* startAuthentication(optionsJSON);
     return yield* verifyCredential(sessionToken, response);
   });

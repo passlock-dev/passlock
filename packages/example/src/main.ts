@@ -97,8 +97,8 @@ registerBtn.addEventListener("click", async () => {
 
   try {
     const tenancyId = saveTenancyId()
-    const userName = saveUserName()
-    const data = await registerPasskey({ tenancyId, userName, endpoint })
+    const username = saveUserName()
+    const data = await registerPasskey({ tenancyId, username, endpoint })
 
     jwtDiv.innerText = data.id_token;
     codeDiv.innerText = data.code;
@@ -114,8 +114,8 @@ authenticateBtn.addEventListener("click", async () => {
 
   try {
     const tenancyId = saveTenancyId()
-    const userName = saveUserName()
-    const data = await authenticatePasskey({ tenancyId, userName, endpoint })
+    const username = saveUserName()
+    const data = await authenticatePasskey({ tenancyId, username, endpoint })
 
     jwtDiv.innerText = data.id_token;
     codeDiv.innerText = data.code;

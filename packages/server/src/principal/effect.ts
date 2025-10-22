@@ -4,6 +4,7 @@ import * as jose from "jose";
 
 const Principal = Schema.Struct({
   tenancyId: Schema.String,
+  userId: Schema.String,
   code: Schema.String,
   authenticatorId: Schema.String,
   passkey: Schema.optionalWith(
@@ -87,7 +88,9 @@ export const verifyIdToken = ({
 }) =>
   Effect.gen(function* () {
     const baseUrl = endpoint ?? "https://api.passlock.dev";
-    const JWKS = jose.createRemoteJWKSet(new URL("/.well-known/jwks.json", baseUrl));
+    const JWKS = jose.createRemoteJWKSet(
+      new URL("/.well-known/jwks.json", baseUrl),
+    );
 
     const { payload } = yield* Effect.tryPromise({
       try: () =>
@@ -105,6 +108,7 @@ export const verifyIdToken = ({
 
     const principal: Principal = {
       tenancyId,
+      userId: idToken.sub,
       code: idToken.jti,
       authenticatorId: idToken["a:id"],
       passkey: {
