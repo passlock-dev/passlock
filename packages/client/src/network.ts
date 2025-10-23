@@ -11,7 +11,7 @@ export const buildEndpoint = ({
   endpoint = DefaultEndpoint,
 }: {
   endpoint?: string;
-}) => Endpoint.of({ endpoint });
+}): Endpoint["Type"] => Endpoint.of({ endpoint });
 
 export class NetworkError extends Micro.TaggedError("@error/NetworkError")<{
   readonly message: string;
@@ -47,7 +47,7 @@ export const makeRequest = <Res extends object>({
   payload: object;
   operation: string;
   responsePredicate: (res: unknown) => res is Res;
-}) =>
+}): Micro.Micro<Res, NetworkError> =>
   Micro.gen(function* () {
     const headers = {
       "Content-Type": "application/json",

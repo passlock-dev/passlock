@@ -54,25 +54,26 @@ const InvalidCodeError = Schema.Struct({
 
 export type InvalidCodeError = typeof InvalidCodeError.Type;
 
-export interface ExchangeCode {
+export interface PasslockOptions {
   tenancyId: string;
-  code: string;
+  /**
+   * @default https://api.passlock.dev
+   */
   endpoint?: string;
 }
 
-export const exchangeCode = ({
-  tenancyId,
-  code,
-  endpoint,
-}: ExchangeCode): Effect.Effect<
+export const exchangeCode = (
+  code: string,
+  options: PasslockOptions,
+): Effect.Effect<
   Principal,
   InvalidCodeError | ParseError | RequestError | ResponseError,
   HttpClient.HttpClient
 > =>
   Effect.gen(function* () {
     const client = yield* HttpClient.HttpClient;
-    const baseUrl = endpoint ?? "https://api.passlock.dev";
-    const url = new URL(`/${tenancyId}/principal/${code}`, baseUrl);
+    const baseUrl = options.endpoint ?? "https://api.passlock.dev";
+    const url = new URL(`/${options.tenancyId}/principal/${code}`, baseUrl);
     const response = yield* client.get(url);
 
     const encoded = yield* HttpClientResponse.matchStatus(response, {
@@ -93,32 +94,26 @@ export class VerificationError extends Data.TaggedError("VerificationError")<{
   message: string;
 }> {}
 
-export interface VerifyIdToken {
-  idToken: string;
-  tenancyId: string;
-  endpoint?: string;
-}
-
 export interface VerificationSuccess {
   principal: Principal;
   idToken: IdToken;
 }
 
 export const verifyIdToken = (
-  command: VerifyIdToken,
+  token: string,
+  options: PasslockOptions,
 ): Effect.Effect<VerificationSuccess, VerificationError | ParseError> =>
   Effect.gen(function* () {
-    const { tenancyId, endpoint } = command;
-    const baseUrl = endpoint ?? "https://api.passlock.dev";
+    const baseUrl = options.endpoint ?? "https://api.passlock.dev";
     const JWKS = jose.createRemoteJWKSet(
       new URL("/.well-known/jwks.json", baseUrl),
     );
 
     const { payload } = yield* Effect.tryPromise({
       try: () =>
-        jose.jwtVerify(command.idToken, JWKS, {
+        jose.jwtVerify(token, JWKS, {
           issuer: "passlock.dev",
-          audience: tenancyId,
+          audience: options.tenancyId,
         }),
       catch: (err) =>
         err instanceof Error
@@ -129,7 +124,7 @@ export const verifyIdToken = (
     const idToken = yield* Schema.decodeUnknown(IdToken)(payload);
 
     const principal: Principal = {
-      tenancyId,
+      tenancyId: options.tenancyId,
       userId: idToken.sub,
       code: idToken.jti,
       authenticatorId: idToken["a:id"],

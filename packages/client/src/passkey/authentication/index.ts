@@ -2,11 +2,12 @@ import { pipe } from "effect";
 import { runToPromise } from "../../promise";
 import {
   authenticatePasskey as authenticatePasskeyM,
-  type AuthenticationOptions,
   type AuthenticationResponse,
 } from "./micro";
+import type { PasslockOptions } from "../../shared";
 
 export const authenticatePasskey = (
-  options: AuthenticationOptions,
+  username: string,
+  options: PasslockOptions,
 ): Promise<AuthenticationResponse> =>
-  pipe(options, authenticatePasskeyM, runToPromise);
+  pipe(authenticatePasskeyM(username, options), runToPromise);

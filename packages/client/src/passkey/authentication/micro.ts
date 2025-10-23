@@ -4,13 +4,14 @@ import {
   startAuthentication as simpleAuthentication,
 } from "@simplewebauthn/browser";
 import { Micro, pipe } from "effect";
-import { buildTenancyId, TenancyId } from "../../tenancy";
+import { TenancyId } from "../../tenancy";
 import {
   buildEndpoint,
   Endpoint,
   makeRequest,
   type NetworkError,
 } from "../../network";
+import type { PasslockOptions } from "../../shared";
 
 export class AuthenticationError extends Micro.TaggedError(
   "@error/AuthenticationError",
@@ -106,27 +107,21 @@ const startAuthentication = (
     });
   });
 
-export interface AuthenticationOptions {
-  tenancyId: string;
-  endpoint?: string;
-  username?: string;
-}
-
 export const authenticatePasskey = (
-  options: AuthenticationOptions,
+  username: string,
+  options: PasslockOptions,
 ): Micro.Micro<AuthenticationResponse, NetworkError | AuthenticationError> => {
-  const tenancyId = buildTenancyId(options);
   const endpoint = buildEndpoint(options);
 
   const effect = Micro.gen(function* () {
-    const { sessionToken, optionsJSON } = yield* fetchOptions(options.username);
+    const { sessionToken, optionsJSON } = yield* fetchOptions(username);
     const response = yield* startAuthentication(optionsJSON);
     return yield* verifyCredential(sessionToken, response);
   });
 
   return pipe(
     effect,
-    Micro.provideService(TenancyId, tenancyId),
+    Micro.provideService(TenancyId, options),
     Micro.provideService(Endpoint, endpoint),
   );
 };

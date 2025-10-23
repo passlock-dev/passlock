@@ -100,7 +100,7 @@ registerBtn.addEventListener("click", async () => {
   try {
     const tenancyId = saveTenancyId()
     const username = saveUserName()
-    const data = await registerPasskey({ tenancyId, username, endpoint })
+    const data = await registerPasskey(username, { tenancyId, endpoint })
 
     jwtDiv.innerText = data.idToken;
     codeDiv.innerText = data.code;
@@ -117,7 +117,7 @@ authenticateBtn.addEventListener("click", async () => {
   try {
     const tenancyId = saveTenancyId()
     const username = saveUserName()
-    const data = await authenticatePasskey({ tenancyId, username, endpoint })
+    const data = await authenticatePasskey(username, { tenancyId, endpoint })
 
     jwtDiv.innerText = data.idToken;
     codeDiv.innerText = data.code;
@@ -145,7 +145,7 @@ verifyJwt.addEventListener("click", async () => {
   const tenancyId = tenancyIdField.value.trim()
   
   try {
-    const response = await verifyIdToken({ tenancyId, idToken: jwt, endpoint })
+    const response = await verifyIdToken(jwt, { tenancyId, endpoint })
     jwtVerificationDiv.innerText = JSON.stringify(response, null, 2);
   } catch (err) {
     errorDiv.innerText = String(err);
@@ -170,7 +170,7 @@ verifyCode.addEventListener("click", async () => {
   const tenancyId = tenancyIdField.value.trim()
   
   try {
-    const response = await exchangeCode({ tenancyId, code, endpoint })
+    const response = await exchangeCode(code, { tenancyId, endpoint })
     codeVerificationDiv.innerText = JSON.stringify(response, null, 2);
   } catch (err) {
     errorDiv.innerText = String(err);

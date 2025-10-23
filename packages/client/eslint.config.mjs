@@ -30,8 +30,6 @@ export default defineConfig(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-  },
-  {
     rules: {
       "@typescript-eslint/no-unnecessary-condition": "off",
       "@typescript-eslint/array-type": ["error", { default: "generic" }],
@@ -39,6 +37,7 @@ export default defineConfig(
       "@typescript-eslint/consistent-generic-constructors": "error",
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/consistent-type-exports": "error",
+      "@typescript-eslint/explicit-module-boundary-types": "error",
       "@typescript-eslint/no-for-in-array": "error",
       "@typescript-eslint/no-non-null-assertion": "error",
       "@typescript-eslint/prefer-as-const": "error",

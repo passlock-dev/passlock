@@ -2,11 +2,12 @@ import { pipe } from "effect";
 import { runToPromise } from "../../promise";
 import {
   registerPasskey as registerPasskeyM,
-  type RegistrationOptions,
   type RegistrationResponse,
 } from "./micro";
+import type { PasslockOptions } from "../../shared";
 
 export const registerPasskey = async (
-  options: RegistrationOptions,
+  username: string,
+  options: PasslockOptions,
 ): Promise<RegistrationResponse> =>
-  pipe(options, registerPasskeyM, runToPromise);
+  pipe(registerPasskeyM(username, options), runToPromise);

@@ -4,13 +4,14 @@ import {
   startRegistration as simpleRegistration,
 } from "@simplewebauthn/browser";
 import { Micro, pipe } from "effect";
-import { buildTenancyId, TenancyId } from "../../tenancy";
+import { TenancyId } from "../../tenancy";
 import {
   buildEndpoint,
   Endpoint,
   makeRequest,
   type NetworkError,
 } from "../../network";
+import type { PasslockOptions } from "../../shared";
 
 export class RegistrationError extends Micro.TaggedError(
   "@error/RegistrationError",
@@ -103,27 +104,21 @@ const startRegistration = (
     });
   });
 
-export interface RegistrationOptions {
-  tenancyId: string;
-  username: string;
-  endpoint?: string;
-}
-
 export const registerPasskey = (
-  options: RegistrationOptions,
+  username: string,
+  options: PasslockOptions,
 ): Micro.Micro<RegistrationResponse, RegistrationError | NetworkError> => {
-  const tenancyId = buildTenancyId(options);
   const endpoint = buildEndpoint(options);
 
   const effect = Micro.gen(function* () {
-    const { sessionToken, optionsJSON } = yield* fetchOptions(options.username);
+    const { sessionToken, optionsJSON } = yield* fetchOptions(username);
     const response = yield* startRegistration(optionsJSON);
     return yield* verifyCredential(sessionToken, response);
   });
 
   return pipe(
     effect,
-    Micro.provideService(TenancyId, tenancyId),
+    Micro.provideService(TenancyId, options),
     Micro.provideService(Endpoint, endpoint),
   );
 };
