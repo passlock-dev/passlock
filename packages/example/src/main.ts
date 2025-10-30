@@ -94,13 +94,23 @@ const restoreUserName = () => {
   }
 }
 
+const saveUserMapping = (username: string, userId: string) => {
+  localStorage.setItem(`mappings:${username}`, userId)
+}
+
+const getUserMappping = (username: string) => {
+  return localStorage.getItem(`mappings:${username}`) ?? undefined
+}
+
 registerBtn.addEventListener("click", async () => {
   resetUI();
 
   try {
     const tenancyId = saveTenancyId()
     const username = saveUserName()
-    const data = await registerPasskey(username, { tenancyId, endpoint })
+    const data = await registerPasskey({ username, tenancyId, endpoint })
+
+    saveUserMapping(username, data.principal.userId);
 
     jwtDiv.innerText = data.idToken;
     codeDiv.innerText = data.code;
@@ -116,8 +126,9 @@ authenticateBtn.addEventListener("click", async () => {
 
   try {
     const tenancyId = saveTenancyId()
-    const username = saveUserName()
-    const data = await authenticatePasskey(username, { tenancyId, endpoint })
+    const username = usernameField.value.length > 5 ? usernameField.value : undefined
+    const userId = username ? getUserMappping(username) : undefined
+    const data = await authenticatePasskey({ userId, tenancyId, endpoint })
 
     jwtDiv.innerText = data.idToken;
     codeDiv.innerText = data.code;

@@ -38,7 +38,11 @@ const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {
   return true;
 };
 
-const fetchOptions = (username: string) =>
+export interface RegistrationOptions extends PasslockOptions {
+  username?: string | undefined;
+}
+
+const fetchOptions = ({ username }: RegistrationOptions) =>
   Micro.gen(function* () {
     const { endpoint } = yield* Micro.service(Endpoint);
     const { tenancyId } = yield* Micro.service(TenancyId);
@@ -56,6 +60,10 @@ const fetchOptions = (username: string) =>
 export interface RegistrationResponse {
   idToken: string;
   code: string;
+  principal: {
+    authenticatorId: string;
+    userId: string
+  }
 }
 
 const isRegistrationResponse = (
@@ -69,6 +77,16 @@ const isRegistrationResponse = (
 
   if (!("code" in payload)) return false;
   if (typeof payload.code !== "string") return false;
+
+  if (!("principal" in payload)) return false;
+  if (typeof payload.principal !== "object") return false;  
+  if (payload.principal === null) return false;
+
+  if (!("userId" in payload.principal)) return false;
+  if (typeof payload.principal.userId !== "string") return false;  
+
+  if (!("authenticatorId" in payload.principal)) return false;
+  if (typeof payload.principal.authenticatorId !== "string") return false;    
 
   return true;
 };
@@ -105,13 +123,12 @@ const startRegistration = (
   });
 
 export const registerPasskey = (
-  username: string,
-  options: PasslockOptions,
+  options: RegistrationOptions,
 ): Micro.Micro<RegistrationResponse, RegistrationError | NetworkError> => {
   const endpoint = buildEndpoint(options);
 
   const effect = Micro.gen(function* () {
-    const { sessionToken, optionsJSON } = yield* fetchOptions(username);
+    const { sessionToken, optionsJSON } = yield* fetchOptions(options);
     const response = yield* startRegistration(optionsJSON);
     return yield* verifyCredential(sessionToken, response);
   });

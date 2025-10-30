@@ -38,7 +38,11 @@ const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {
   return true;
 };
 
-const fetchOptions = (username?: string) =>
+export interface AuthenticationOptions extends PasslockOptions {
+  userId?: string | undefined;
+}
+
+const fetchOptions = ({ userId }: AuthenticationOptions) =>
   Micro.gen(function* () {
     const { endpoint } = yield* Micro.service(Endpoint);
     const { tenancyId } = yield* Micro.service(TenancyId);
@@ -50,7 +54,7 @@ const fetchOptions = (username?: string) =>
 
     return yield* makeRequest({
       url,
-      payload: { username },
+      payload: { userId },
       operation: "options",
       responsePredicate: isOptionsResponse,
     });
@@ -59,6 +63,10 @@ const fetchOptions = (username?: string) =>
 export interface AuthenticationResponse {
   idToken: string;
   code: string;
+  principal: {
+    authenticatorId: string;
+    userId: string;
+  }
 }
 
 const isAuthenticationResponse = (
@@ -72,6 +80,16 @@ const isAuthenticationResponse = (
 
   if (!("code" in payload)) return false;
   if (typeof payload.code !== "string") return false;
+
+  if (!("principal" in payload)) return false;
+  if (typeof payload.principal !== "object") return false;  
+  if (payload.principal === null) return false;
+
+  if (!("userId" in payload.principal)) return false;
+  if (typeof payload.principal.userId !== "string") return false;    
+
+  if (!("authenticatorId" in payload.principal)) return false;
+  if (typeof payload.principal.authenticatorId !== "string") return false;     
 
   return true;
 };
@@ -108,20 +126,21 @@ const startAuthentication = (
   });
 
 export const authenticatePasskey = (
-  username: string,
-  options: PasslockOptions,
+  authenticationOptions: AuthenticationOptions,
 ): Micro.Micro<AuthenticationResponse, NetworkError | AuthenticationError> => {
-  const endpoint = buildEndpoint(options);
+  const endpoint = buildEndpoint(authenticationOptions);
 
   const effect = Micro.gen(function* () {
-    const { sessionToken, optionsJSON } = yield* fetchOptions(username);
+    const { sessionToken, optionsJSON } = yield* fetchOptions(
+      authenticationOptions,
+    );
     const response = yield* startAuthentication(optionsJSON);
     return yield* verifyCredential(sessionToken, response);
   });
 
   return pipe(
     effect,
-    Micro.provideService(TenancyId, options),
+    Micro.provideService(TenancyId, authenticationOptions),
     Micro.provideService(Endpoint, endpoint),
   );
 };
