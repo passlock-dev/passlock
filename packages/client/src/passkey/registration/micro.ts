@@ -62,8 +62,8 @@ export interface RegistrationResponse {
   code: string;
   principal: {
     authenticatorId: string;
-    userId: string
-  }
+    userId: string;
+  };
 }
 
 const isRegistrationResponse = (
@@ -79,14 +79,14 @@ const isRegistrationResponse = (
   if (typeof payload.code !== "string") return false;
 
   if (!("principal" in payload)) return false;
-  if (typeof payload.principal !== "object") return false;  
+  if (typeof payload.principal !== "object") return false;
   if (payload.principal === null) return false;
 
   if (!("userId" in payload.principal)) return false;
-  if (typeof payload.principal.userId !== "string") return false;  
+  if (typeof payload.principal.userId !== "string") return false;
 
   if (!("authenticatorId" in payload.principal)) return false;
-  if (typeof payload.principal.authenticatorId !== "string") return false;    
+  if (typeof payload.principal.authenticatorId !== "string") return false;
 
   return true;
 };

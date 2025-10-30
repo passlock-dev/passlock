@@ -59,11 +59,11 @@ export const exchangeCode = (
  * Decode and verify a Passlock idToken.
  * Note: This will make a network call to the passlock.dev/.well-known/jwks.json
  * endpoint to fetch the relevant public key. The response will be cached, however
- * bear in mind that for something like AWS lambda it will make the call on every 
+ * bear in mind that for something like AWS lambda it will make the call on every
  * cold start so might actually be slower than {@link exchangeCode}
- * @param token 
- * @param options 
- * @returns 
+ * @param token
+ * @param options
+ * @returns
  */
 export const verifyIdToken = (
   token: string,

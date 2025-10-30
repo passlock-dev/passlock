@@ -66,7 +66,7 @@ export interface AuthenticationResponse {
   principal: {
     authenticatorId: string;
     userId: string;
-  }
+  };
 }
 
 const isAuthenticationResponse = (
@@ -82,14 +82,14 @@ const isAuthenticationResponse = (
   if (typeof payload.code !== "string") return false;
 
   if (!("principal" in payload)) return false;
-  if (typeof payload.principal !== "object") return false;  
+  if (typeof payload.principal !== "object") return false;
   if (payload.principal === null) return false;
 
   if (!("userId" in payload.principal)) return false;
-  if (typeof payload.principal.userId !== "string") return false;    
+  if (typeof payload.principal.userId !== "string") return false;
 
   if (!("authenticatorId" in payload.principal)) return false;
-  if (typeof payload.principal.authenticatorId !== "string") return false;     
+  if (typeof payload.principal.authenticatorId !== "string") return false;
 
   return true;
 };
