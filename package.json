@@ -1,0 +1,16 @@
+{
+  "name": "passlock2",
+  "version": "2.0.0-alpha",
+  "description": "",
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.20.0",
+  "scripts": {
+    "ncu": "pnpm exec ncu --jsonUpgraded --deep"
+  },
+  "devDependencies": {
+    "npm-check-updates": "^19.1.2"
+  }
+}

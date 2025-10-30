@@ -1,8 +1,34 @@
 {
   "name": "@passlock2/client",
-  "version": "1.0.0",
+  "version": "2.0.0-alpha",
+  "description": "",
   "type": "module",
-  "module": "./dist/index.js",
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.20.0",
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "clean:all": "rimraf dist tsconfig.tsbuildinfo",
+    "format": "prettier . --write",
+    "lint": "prettier --check . && eslint ."
+  },
+  "dependencies": {
+    "@simplewebauthn/browser": "^13.2.2",
+    "effect": "^3.18.4"
+  },
+  "devDependencies": {
+    "@eslint/compat": "catalog:",
+    "@eslint/js": "catalog:",
+    "eslint": "catalog:",
+    "globals": "catalog:",
+    "prettier": "catalog:",
+    "rimraf": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -15,31 +41,9 @@
       "default": "./dist/passkey/index.js"
     }
   },
-  "types": "./dist/index.d.ts",
   "files": [
     "dist"
-  ],
-  "sideEffects": false,
-  "scripts": {
-    "build": "tsc --build",
-    "clean": "tsc --build --clean",
-    "clean:all": "rimraf dist tsconfig.tsbuildinfo",
-    "format": "prettier . --write",
-    "lint": "prettier --check . && eslint ."
-  },
-  "devDependencies": {
-    "@eslint/compat": "^1.4.0",
-    "@eslint/js": "^9.38.0",
-    "eslint": "^9.38.0",
-    "globals": "^16.4.0",
-    "prettier": "^3.6.2",
-    "rimraf": "^6.0.0",
-    "typescript": "^5.6.0",
-    "typescript-eslint": "^8.46.2"
-  },
-  "dependencies": {
-    "@simplewebauthn/browser": "^13.2.2",
-    "effect": "^3.18.4"
-  },
-  "packageManager": "pnpm@10.18.2"
+  ],  
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts"
 }

@@ -1,5 +1,15 @@
 packages:
   - packages/*
 
+catalog:
+  '@eslint/compat': ^1.4.0
+  '@eslint/js': ^9.38.0
+  eslint: ^9.38.0
+  globals: ^16.4.0
+  prettier: ^3.6.2
+  rimraf: ^6.0.0
+  typescript: ^5.6.0
+  typescript-eslint: ^8.46.2
+
 onlyBuiltDependencies:
   - msgpackr-extract
