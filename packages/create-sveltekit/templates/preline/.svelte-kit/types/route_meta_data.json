@@ -1,0 +1,34 @@
+{
+	"/(other)": [
+		"src/routes/(other)/+page.ts"
+	],
+	"/(app)": [
+		"src/routes/(app)/+layout.server.ts"
+	],
+	"/": [],
+	"/(other)/login": [
+		"src/routes/(other)/login/+page.ts"
+	],
+	"/(other)/login/action": [
+		"src/routes/(other)/login/action/+page.server.ts"
+	],
+	"/(other)/logout/action": [
+		"src/routes/(other)/logout/action/+page.server.ts"
+	],
+	"/(other)/register/action": [
+		"src/routes/(other)/register/action/+page.server.ts"
+	],
+	"/(app)/todos": [
+		"src/routes/(app)/todos/+page.server.ts",
+		"src/routes/(app)/+layout.server.ts"
+	],
+	"/(other)/verify-email/awaiting-link": [
+		"src/routes/(other)/verify-email/awaiting-link/+page.server.ts"
+	],
+	"/(other)/verify-email/code": [
+		"src/routes/(other)/verify-email/code/+page.server.ts"
+	],
+	"/(other)/verify-email/link": [
+		"src/routes/(other)/verify-email/link/+page.server.ts"
+	]
+}

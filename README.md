@@ -31,10 +31,36 @@ in README.template.md and outputs to README.md
 
 <br />
 
-> [!IMPORTANT]  
-> **Building a SvelteKit app?** Run `pnpm create @passlock/sveltekit` and follow the prompts. The CLI wizard will create a skeleton app with support for passkeys, social login, CRUD operations and much more. Choose from Daisy UI, Preline or Shadcn templates. For more details please see the starter app's [README](./packages/create-sveltekit/docs)
+> [!NOTE]  
+> **V2 coming soon!** I'm currently working on v2 of the Passlock framework. This will offer a finer-grained feature set, in particular the ability to manage passkeys and social logins independently of user accounts. More info below...
 
-## Features
+## Passlock v2
+
+Developers never get it right first time! Based on valuable feedback and my own experience, I've realised the features need to more fine-grained. The major limitation with v1 is the requirement to create a Passlock user alongside a passkey or social login. This results in a few challenges:
+
+1. The requirement to supply Personally Identifiable Information (PII) when creating a passkey.
+2. The inability to link accounts or authenticators (without hacks).
+3. A tight coupling between Passlock and the **R**elying **P**arty (your app).
+
+### Standalone authenticators
+
+With this in mind I've been working on v2, which essentially breaks the one to one link between authenticators (passkeys, social logins etc) and user accounts. v2 will allow you to:
+
+1. Create a standalone passkey or other authenticator. 
+3. Associate authenticators with local user accounts at the RP level. i.e. you will maintain the join table linking passkey id with a local user id.
+3. _Optionally_ manage user accounts in Passlock, linking multiple authenticators to a single account.
+
+### Other changes
+
+Mailbox verification is not directly related to authenication and will be dropped. In it's place, I'm introducing email one time codes. I've found that one time codes togther with passkeys are a great way of delivering secure, yet frictionless account registration and authentication.
+
+I'm dropping support for the various SvelteKit templates. The majority of code, and therefore ongoing maintenance is unrelated to Passlock or authentication in general. No template is able to encompass all the features and technology choices available in a modern app. Instead, my focus will be on providing code samples, illustrating how to integrate Passlock with other frameworks. 
+
+### Release date
+
+I'll be going live with v2 sometime in December 2025.
+
+## Features (v1)
 
 Passkeys and the WebAuthn API are quite complex. I've taken an opinionated approach to simplify things for you. Following the 80/20 principle, I've tried to focus on the features most valuable to developers and users.
 

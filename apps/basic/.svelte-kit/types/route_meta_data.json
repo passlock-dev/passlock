@@ -1,0 +1,18 @@
+{
+	"/": [
+		"src/routes/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/login": [
+		"src/routes/login/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/logout": [
+		"src/routes/logout/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/register": [
+		"src/routes/register/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	]
+}
