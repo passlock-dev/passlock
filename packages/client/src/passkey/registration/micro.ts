@@ -2,6 +2,7 @@ import {
   type PublicKeyCredentialCreationOptionsJSON,
   type RegistrationResponseJSON,
   startRegistration as simpleRegistration,
+  WebAuthnError,
 } from "@simplewebauthn/browser";
 import { Micro, pipe } from "effect";
 import { TenancyId } from "../../tenancy";
@@ -12,11 +13,13 @@ import {
   type NetworkError,
 } from "../../network";
 import type { PasslockOptions } from "../../shared";
+import { Logger, EventLogger } from "../../logger";
 
 export class RegistrationError extends Micro.TaggedError(
   "@error/RegistrationError",
 )<{
   readonly error: unknown;
+  readonly message: string;
 }> {}
 
 interface OptionsResponse {
@@ -44,11 +47,13 @@ export interface RegistrationOptions extends PasslockOptions {
 
 const fetchOptions = ({ username }: RegistrationOptions) =>
   Micro.gen(function* () {
+    const logger = yield* Micro.service(Logger);
     const { endpoint } = yield* Micro.service(Endpoint);
     const { tenancyId } = yield* Micro.service(TenancyId);
 
     const url = new URL(`${tenancyId}/passkey/registration/options`, endpoint);
 
+    yield* logger.logInfo("Fetching passkey registration options from Passlock");
     return yield* makeRequest({
       url,
       payload: { username },
@@ -96,6 +101,7 @@ const verifyCredential = (
   response: RegistrationResponseJSON,
 ) =>
   Micro.gen(function* () {
+    const logger = yield* Micro.service(Logger);
     const { endpoint } = yield* Micro.service(Endpoint);
     const { tenancyId } = yield* Micro.service(TenancyId);
 
@@ -104,21 +110,38 @@ const verifyCredential = (
       endpoint,
     );
 
-    return yield* makeRequest({
+    yield* logger.logInfo("Registering passkey in Passlock vault");
+
+    const registrationResponse = yield* makeRequest({
       url,
       payload: { sessionToken, response },
       responsePredicate: isRegistrationResponse,
       operation: "verification",
     });
+
+    yield* logger.logInfo(
+      `Passkey registered with id ${registrationResponse.principal.authenticatorId}`
+    );
+
+    return registrationResponse;
   });
 
 const startRegistration = (
   optionsJSON: PublicKeyCredentialCreationOptionsJSON,
 ) =>
   Micro.gen(function* () {
+    const logger = yield* Micro.service(Logger);
+    yield* logger.logInfo("Registering passkey on device");
+
     return yield* Micro.tryPromise({
       try: () => simpleRegistration({ optionsJSON }),
-      catch: (error) => new RegistrationError({ error }),
+      catch: (error) => { 
+        if (error instanceof WebAuthnError) {
+         return new RegistrationError({ error: error.cause, message: error.message }) 
+        } else {
+          return new RegistrationError({ error, message: "Unexpected error" }) 
+        }
+      },
     });
   });
 
@@ -137,5 +160,6 @@ export const registerPasskey = (
     effect,
     Micro.provideService(TenancyId, options),
     Micro.provideService(Endpoint, endpoint),
+    Micro.provideService(Logger, EventLogger)
   );
 };

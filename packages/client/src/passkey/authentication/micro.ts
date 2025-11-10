@@ -1,6 +1,7 @@
 import {
   type PublicKeyCredentialRequestOptionsJSON,
   type AuthenticationResponseJSON,
+  WebAuthnError,
   startAuthentication as simpleAuthentication,
 } from "@simplewebauthn/browser";
 import { Micro, pipe } from "effect";
@@ -12,11 +13,13 @@ import {
   type NetworkError,
 } from "../../network";
 import type { PasslockOptions } from "../../shared";
+import { Logger, EventLogger } from "../../logger";
 
 export class AuthenticationError extends Micro.TaggedError(
   "@error/AuthenticationError",
 )<{
   readonly error: unknown;
+  readonly message: string;
 }> {}
 
 interface OptionsResponse {
@@ -44,6 +47,7 @@ export interface AuthenticationOptions extends PasslockOptions {
 
 const fetchOptions = ({ userId }: AuthenticationOptions) =>
   Micro.gen(function* () {
+    const logger = yield* Micro.service(Logger);
     const { endpoint } = yield* Micro.service(Endpoint);
     const { tenancyId } = yield* Micro.service(TenancyId);
 
@@ -52,6 +56,7 @@ const fetchOptions = ({ userId }: AuthenticationOptions) =>
       endpoint,
     );
 
+    yield* logger.logInfo('Fetching passkey authentication options from Passlock');
     return yield* makeRequest({
       url,
       payload: { userId },
@@ -99,6 +104,7 @@ const verifyCredential = (
   response: AuthenticationResponseJSON,
 ) =>
   Micro.gen(function* () {
+    const logger = yield* Micro.service(Logger);
     const { endpoint } = yield* Micro.service(Endpoint);
     const { tenancyId } = yield* Micro.service(TenancyId);
 
@@ -107,21 +113,38 @@ const verifyCredential = (
       endpoint,
     );
 
-    return yield* makeRequest({
+    yield* logger.logInfo("Verifying passkey in Passlock vault");
+
+    const authenticationResponse = yield* makeRequest({
       url,
       payload: { sessionToken, response },
       operation: "verification",
       responsePredicate: isAuthenticationResponse,
     });
+
+    yield* logger.logInfo(
+      `Passkey with id ${authenticationResponse.principal.authenticatorId} successfully authenticated`
+    );
+
+    return authenticationResponse;
   });
 
 const startAuthentication = (
   optionsJSON: PublicKeyCredentialRequestOptionsJSON,
 ) =>
   Micro.gen(function* () {
+    const logger = yield* Micro.service(Logger);
+
+    yield* logger.logInfo("Requesting passkey authentication on device")
     return yield* Micro.tryPromise({
       try: () => simpleAuthentication({ optionsJSON }),
-      catch: (error) => new AuthenticationError({ error }),
+      catch: (error) => { 
+        if (error instanceof WebAuthnError) {
+         return new AuthenticationError({ error: error.cause, message: error.message }) 
+        } else {
+          return new AuthenticationError({ error, message: "Unexpected error" }) 
+        }
+      },
     });
   });
 
@@ -142,5 +165,6 @@ export const authenticatePasskey = (
     effect,
     Micro.provideService(TenancyId, authenticationOptions),
     Micro.provideService(Endpoint, endpoint),
+    Micro.provideService(Logger, EventLogger)
   );
 };

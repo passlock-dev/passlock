@@ -20,5 +20,6 @@ export const runToPromise = async <A, E>(
   if (Micro.exitIsInterrupt(exit)) throw new Error(exit.cause.message);
 
   if (Micro.exitIsFailure(exit)) throw new Error(exit.cause.message);
+  
   else throw new Error("Unexpected error");
 };

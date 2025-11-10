@@ -1,5 +1,5 @@
 import { FetchHttpClient } from "@effect/platform";
-import { Effect, Either, pipe } from "effect";
+import { Effect, Either, Match, pipe } from "effect";
 
 import {
   exchangeCode as exchangeCodeE,
@@ -7,6 +7,7 @@ import {
 } from "./effect.js";
 
 import type {
+  AuthenticatedPasslockOptions,
   PasslockOptions,
   Principal,
   VerificationSuccess,
@@ -39,7 +40,7 @@ export class ServerError extends Error {
  */
 export const exchangeCode = (
   code: string,
-  options: PasslockOptions,
+  options: AuthenticatedPasslockOptions,
 ): Promise<Principal> =>
   pipe(
     exchangeCodeE(code, options),
@@ -49,7 +50,20 @@ export const exchangeCode = (
     (p) =>
       p.then((response) =>
         Either.match(response, {
-          onLeft: (err) => Promise.reject(new ServerError(err)),
+          onLeft: (err) =>
+            pipe(
+              Match.value(err),
+              Match.tag("ParseError", (err) => new ServerError(err)),
+              Match.tag("RequestError", (err) => new ServerError(err)),
+              Match.tag("ResponseError", (err) => new ServerError(err)),
+              Match.tag("InvalidCodeError", (err) => new ServerError(err)),
+              Match.tag(
+                "Forbidden",
+                ({ _tag }) => new ServerError({ _tag, message: "Forbidden" }),
+              ),
+              Match.exhaustive,
+              (serverError) => Promise.reject(serverError),
+            ),
           onRight: (success) => Promise.resolve(success),
         }),
       ),

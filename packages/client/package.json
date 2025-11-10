@@ -1,5 +1,5 @@
 {
-  "name": "@passlock2/client",
+  "name": "@passlock/client",
   "version": "2.0.0-alpha",
   "description": "",
   "type": "module",
@@ -39,6 +39,11 @@
       "import": "./dist/passkey/index.js",
       "types": "./dist/passkey/index.d.ts",
       "default": "./dist/passkey/index.js"
+    },
+    "./logger": {
+      "import": "./dist/logger/index.js",
+      "types": "./dist/logger/index.d.ts",
+      "default": "./dist/logger/index.js"
     }
   },
   "files": [

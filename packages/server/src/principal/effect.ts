@@ -1,4 +1,4 @@
-import { HttpClient, HttpClientResponse } from "@effect/platform";
+import { HttpClient, HttpClientRequest, HttpClientResponse } from "@effect/platform";
 import type {
   RequestError,
   ResponseError,
@@ -54,6 +54,13 @@ const InvalidCodeError = Schema.Struct({
 
 export type InvalidCodeError = typeof InvalidCodeError.Type;
 
+const ForbiddenError = Schema.Struct({
+  _tag: Schema.tag("Forbidden"),
+  // message: Schema.String,
+});
+
+export type ForbiddenError = typeof ForbiddenError.Type;
+
 export interface PasslockOptions {
   tenancyId: string;
   /**
@@ -62,30 +69,40 @@ export interface PasslockOptions {
   endpoint?: string;
 }
 
+export interface AuthenticatedPasslockOptions extends PasslockOptions {
+  apiKey: string;
+}
+
 export const exchangeCode = (
   code: string,
-  options: PasslockOptions,
+  options: AuthenticatedPasslockOptions,
 ): Effect.Effect<
   Principal,
-  InvalidCodeError | ParseError | RequestError | ResponseError,
+  InvalidCodeError | ForbiddenError | ParseError | RequestError | ResponseError,
   HttpClient.HttpClient
 > =>
   Effect.gen(function* () {
     const client = yield* HttpClient.HttpClient;
     const baseUrl = options.endpoint ?? "https://api.passlock.dev";
     const url = new URL(`/${options.tenancyId}/principal/${code}`, baseUrl);
-    const response = yield* client.get(url);
+
+    const response = yield* pipe(
+      client.get(url, { 
+        headers: { 'Authorization': `Bearer ${options.apiKey}` } 
+      }),
+    );
 
     const encoded = yield* HttpClientResponse.matchStatus(response, {
       "2xx": () => HttpClientResponse.schemaBodyJson(Response)(response),
       orElse: () =>
-        HttpClientResponse.schemaBodyJson(InvalidCodeError)(response),
+        HttpClientResponse.schemaBodyJson(Schema.Union(InvalidCodeError, ForbiddenError))(response),
     });
 
     return yield* pipe(
       Match.value(encoded),
       Match.tag("Success", ({ principal }) => Effect.succeed(principal)),
       Match.tag("InvalidCodeError", (err) => Effect.fail(err)),
+      Match.tag("Forbidden", (err) => Effect.fail(err)),
       Match.exhaustive,
     );
   });

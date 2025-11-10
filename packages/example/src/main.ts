@@ -1,3 +1,4 @@
+import { LogEvent, LogLevel } from "@passlock2/client/logger";
 import "./style.css";
 
 import { authenticatePasskey, registerPasskey } from '@passlock2/client/passkey';
@@ -10,6 +11,8 @@ const getDiv = (id: string) => document.querySelector<HTMLDivElement>(id)!;
 const getTextField = (id: string) => document.querySelector<HTMLInputElement>(id)!;
 
 const tenancyIdField = getTextField("#tenancyId");
+
+const apiKeyField = getTextField("#apiKey");
 
 const usernameField = getTextField("#username");
 
@@ -75,6 +78,27 @@ const restoreTenancyId = () => {
   }
 }
 
+const saveApiKey = () => {
+  if (apiKeyField === null || apiKeyField.value.length < 5) {
+    alert("API Key required")
+    throw false;
+  }
+  
+  localStorage.setItem("apiKey", apiKeyField.value)
+  
+  return apiKeyField.value;
+}
+
+const restoreApiKey = () => {
+  const apiKey = localStorage.getItem("apiKey")
+
+  console.log({ apiKey })
+
+  if (apiKey) {
+    apiKeyField.value = apiKey
+  }
+}
+
 const saveUserName = () => {
   if (usernameField === null || usernameField.value.length < 5) {
     alert("Username required")
@@ -128,7 +152,7 @@ authenticateBtn.addEventListener("click", async () => {
     const tenancyId = saveTenancyId()
     const username = usernameField.value.length > 5 ? usernameField.value : undefined
     const userId = username ? getUserMappping(username) : undefined
-    const data = await authenticatePasskey({ userId, tenancyId, endpoint })
+    const data = await authenticatePasskey({ userId, tenancyId, endpoint, userVerification: 'required' })
 
     jwtDiv.innerText = data.idToken;
     codeDiv.innerText = data.code;
@@ -177,11 +201,12 @@ verifyCode.addEventListener("click", async () => {
   errorDiv.hidden = true;
   codeVerificationDiv.innerText = '';
 
+  const apiKey = saveApiKey()
   const code = codeDiv.innerText.trim()
   const tenancyId = tenancyIdField.value.trim()
   
   try {
-    const response = await exchangeCode(code, { tenancyId, endpoint })
+    const response = await exchangeCode(code, { tenancyId, apiKey, endpoint })
     codeVerificationDiv.innerText = JSON.stringify(response, null, 2);
   } catch (err) {
     errorDiv.innerText = String(err);
@@ -192,8 +217,13 @@ verifyCode.addEventListener("click", async () => {
 if (document.readyState === "complete" || document.readyState === "interactive") {
   restoreTenancyId()
   restoreUserName()
+  restoreApiKey()
 } else document.addEventListener('load', () => {
   restoreTenancyId()
   restoreUserName()
 })
+
+window.addEventListener(LogEvent.name, ((event: LogEvent) => {
+  if (event.level === LogLevel.INFO) console.log(event.message)
+}) as EventListener);
 
