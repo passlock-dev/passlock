@@ -10,17 +10,10 @@ import {
   buildEndpoint,
   Endpoint,
   makeRequest,
-  type NetworkError,
 } from "../../network";
 import type { PasslockOptions } from "../../shared";
 import { Logger, EventLogger } from "../../logger";
-
-export class RegistrationError extends Micro.TaggedError(
-  "@error/RegistrationError",
-)<{
-  readonly error: unknown;
-  readonly message: string;
-}> {}
+import { NetworkError, RegistrationError } from "../../error";
 
 interface OptionsResponse {
   sessionToken: string;
@@ -137,7 +130,7 @@ const startRegistration = (
       try: () => simpleRegistration({ optionsJSON }),
       catch: (error) => { 
         if (error instanceof WebAuthnError) {
-         return new RegistrationError({ error: error.cause, message: error.message }) 
+         return new RegistrationError({ error: error.cause, message: error.message, code: error.code }) 
         } else {
           return new RegistrationError({ error, message: "Unexpected error" }) 
         }

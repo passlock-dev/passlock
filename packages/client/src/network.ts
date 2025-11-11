@@ -1,4 +1,5 @@
 import { Context, Micro } from "effect";
+import { NetworkError } from "./error";
 
 const DefaultEndpoint = "https://api.passlock.dev";
 
@@ -12,12 +13,6 @@ export const buildEndpoint = ({
 }: {
   endpoint?: string;
 }): Endpoint["Type"] => Endpoint.of({ endpoint });
-
-export class NetworkError extends Micro.TaggedError("@error/NetworkError")<{
-  readonly message: string;
-  readonly isRetryAble: boolean;
-  readonly url: string;
-}> {}
 
 interface ErrorResponse {
   message: string;

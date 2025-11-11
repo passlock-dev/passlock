@@ -10,17 +10,10 @@ import {
   buildEndpoint,
   Endpoint,
   makeRequest,
-  type NetworkError,
 } from "../../network";
 import type { PasslockOptions } from "../../shared";
 import { Logger, EventLogger } from "../../logger";
-
-export class AuthenticationError extends Micro.TaggedError(
-  "@error/AuthenticationError",
-)<{
-  readonly error: unknown;
-  readonly message: string;
-}> {}
+import { AuthenticationError, NetworkError } from "../../error";
 
 interface OptionsResponse {
   sessionToken: string;
@@ -140,7 +133,7 @@ const startAuthentication = (
       try: () => simpleAuthentication({ optionsJSON }),
       catch: (error) => { 
         if (error instanceof WebAuthnError) {
-         return new AuthenticationError({ error: error.cause, message: error.message }) 
+          return new AuthenticationError({ error: error.cause, message: error.message, code: error.code }) 
         } else {
           return new AuthenticationError({ error, message: "Unexpected error" }) 
         }
@@ -150,14 +143,16 @@ const startAuthentication = (
 
 export const authenticatePasskey = (
   authenticationOptions: AuthenticationOptions,
-): Micro.Micro<AuthenticationResponse, NetworkError | AuthenticationError> => {
+): Micro.Micro<AuthenticationResponse, AuthenticationError | NetworkError> => {
   const endpoint = buildEndpoint(authenticationOptions);
 
   const effect = Micro.gen(function* () {
     const { sessionToken, optionsJSON } = yield* fetchOptions(
       authenticationOptions,
     );
+
     const response = yield* startAuthentication(optionsJSON);
+    
     return yield* verifyCredential(sessionToken, response);
   });
 

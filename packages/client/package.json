@@ -44,7 +44,12 @@
       "import": "./dist/logger/index.js",
       "types": "./dist/logger/index.d.ts",
       "default": "./dist/logger/index.js"
-    }
+    },
+    "./error": {
+      "import": "./dist/error/index.js",
+      "types": "./dist/error/index.d.ts",
+      "default": "./dist/error/index.js"
+    }    
   },
   "files": [
     "dist"
