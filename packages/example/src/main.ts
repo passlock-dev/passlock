@@ -1,8 +1,8 @@
 import { LogEvent, LogLevel } from "@passlock2/client/logger";
 import "./style.css";
 
-import { authenticatePasskey, registerPasskey } from '@passlock2/client/passkey';
-import { exchangeCode, verifyIdToken } from "@passlock2/server/principal"
+import { authenticatePasskeyUnsafe, registerPasskeyUnsafe } from '@passlock2/client/passkey';
+import { exchangeCodeUnsafe, verifyIdTokenUnsafe } from "@passlock2/server/principal"
 
 const getBtn = (id: string) => document.querySelector<HTMLButtonElement>(id)!;
 
@@ -132,7 +132,7 @@ registerBtn.addEventListener("click", async () => {
   try {
     const tenancyId = saveTenancyId()
     const username = saveUserName()
-    const data = await registerPasskey({ username, tenancyId, endpoint })
+    const data = await registerPasskeyUnsafe({ username, tenancyId, endpoint })
 
     saveUserMapping(username, data.principal.userId);
 
@@ -152,7 +152,7 @@ authenticateBtn.addEventListener("click", async () => {
     const tenancyId = saveTenancyId()
     const username = usernameField.value.length > 5 ? usernameField.value : undefined
     const userId = username ? getUserMappping(username) : undefined
-    const data = await authenticatePasskey({ userId, tenancyId, endpoint, userVerification: 'required' })
+    const data = await authenticatePasskeyUnsafe({ userId, tenancyId, endpoint, userVerification: 'required' })
 
     jwtDiv.innerText = data.idToken;
     codeDiv.innerText = data.code;
@@ -180,7 +180,7 @@ verifyJwt.addEventListener("click", async () => {
   const tenancyId = tenancyIdField.value.trim()
   
   try {
-    const response = await verifyIdToken(jwt, { tenancyId, endpoint })
+    const response = await verifyIdTokenUnsafe(jwt, { tenancyId, endpoint })
     jwtVerificationDiv.innerText = JSON.stringify(response, null, 2);
   } catch (err) {
     errorDiv.innerText = String(err);
@@ -206,7 +206,7 @@ verifyCode.addEventListener("click", async () => {
   const tenancyId = tenancyIdField.value.trim()
   
   try {
-    const response = await exchangeCode(code, { tenancyId, apiKey, endpoint })
+    const response = await exchangeCodeUnsafe(code, { tenancyId, apiKey, endpoint })
     codeVerificationDiv.innerText = JSON.stringify(response, null, 2);
   } catch (err) {
     errorDiv.innerText = String(err);

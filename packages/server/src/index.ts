@@ -1,4 +1,4 @@
-export { exchangeCode, verifyIdToken } from "./principal/index.js";
+export { exchangeCodeUnsafe, verifyIdTokenUnsafe } from "./principal/index.js";
 
 export type {
   Principal,

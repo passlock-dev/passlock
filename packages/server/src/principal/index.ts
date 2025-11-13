@@ -38,7 +38,7 @@ export class ServerError extends Error {
  * @package options
  * @returns
  */
-export const exchangeCode = (
+export const exchangeCodeUnsafe = (
   code: string,
   options: AuthenticatedPasslockOptions,
 ): Promise<Principal> =>
@@ -79,7 +79,7 @@ export const exchangeCode = (
  * @param options
  * @returns
  */
-export const verifyIdToken = (
+export const verifyIdTokenUnsafe = (
   token: string,
   options: PasslockOptions,
 ): Promise<VerificationSuccess> =>

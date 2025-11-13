@@ -14,6 +14,7 @@ import {
 import type { PasslockOptions } from "../../shared";
 import { Logger, EventLogger } from "../../logger";
 import { AuthenticationError, NetworkError } from "../../error";
+import type { UserVerification } from "../types";
 
 interface OptionsResponse {
   sessionToken: string;
@@ -36,6 +37,8 @@ const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {
 
 export interface AuthenticationOptions extends PasslockOptions {
   userId?: string | undefined;
+  // TODO implement this
+  userVerification: UserVerification
 }
 
 const fetchOptions = ({ userId }: AuthenticationOptions) =>

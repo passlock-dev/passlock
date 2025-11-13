@@ -1,3 +1,9 @@
+
+export type UserVerification = 
+| "discouraged"
+| "preferred"
+| "required"
+
 /**
  * https://w3c.github.io/webauthn/#enumdef-publickeycredentialhint
  */
