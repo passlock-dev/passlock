@@ -105,7 +105,7 @@ if (!PasslockError.isError(result)) {
 
 ### Backend verification
 
-Verify the token and obtain the passkey registration or authentication details. You can make a simple GET request to `https://api.passlock.dev/{tenancyId}/token/{token}` or use the [@passlock/node][node] library:
+Verify the token and obtain the passkey registration or authentication details. You can make a simple GET request to `https://api.v1.passlock.dev/{tenancyId}/token/{token}` or use the [@passlock/node][node] library:
 
 ```typescript
 import { Passlock } from '@passlock/node'

@@ -1,6 +1,6 @@
 {
   "name": "@passlock/client",
-  "version": "0.9.30",
+  "version": "0.9.32",
   "description": "Passkey authentication and social login for web apps (Typescript). Framework agnostic",
   "keywords": [
     "passkey",

@@ -40,7 +40,7 @@ export class PrincipalService extends Context.Tag('@services/PrincipalService')<
 /* Effects */
 
 const buildHostname = (endpoint: string | undefined) => {
-  return new URL(endpoint || 'https://api.passlock.dev').hostname
+  return new URL(endpoint || 'https://api.v1.passlock.dev').hostname
 }
 
 const buildOptions = (token: string) =>

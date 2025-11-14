@@ -37,7 +37,7 @@ export class TokenVerifier {
 		token: string,
 		retryCount = 0
 	): Promise<Principal | PasslockError> => {
-		const endpoint = this.endpoint ?? 'https://api.passlock.dev';
+		const endpoint = this.endpoint ?? 'https://api.v1.passlock.dev';
 		const url = `${endpoint}/${this.tenancyId}/token/${token}`;
 
 		const headers = {

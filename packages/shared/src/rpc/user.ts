@@ -27,9 +27,11 @@ export class VerifyEmailRequest extends S.Class<VerifyEmailRequest>('@user/verif
   token: S.String,
 }) {}
 
-export class VerifyEmailResponse extends S.Class<VerifyEmailResponse>('@user/verifyEmail/response')({
-  principal: Principal,
-}) {}
+export class VerifyEmailResponse extends S.Class<VerifyEmailResponse>('@user/verifyEmail/response')(
+  {
+    principal: Principal,
+  },
+) {}
 
 export const VerifyEmailErrors = S.Union(BadRequest, NotFound, Disabled, Unauthorized, Forbidden)
 

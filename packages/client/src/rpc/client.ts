@@ -62,7 +62,7 @@ export const DispatcherLive = Layer.effect(
     }
 
     const buildUrl = (_path: string) => {
-      const endpoint = maybeEndpoint || 'https://api.passlock.dev'
+      const endpoint = maybeEndpoint || 'https://api.v1.passlock.dev'
       // drop leading /
       const path = _path.replace(/^\//, '')
       return `${endpoint}/${tenancyId}/${path}`
