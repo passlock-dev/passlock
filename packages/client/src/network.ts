@@ -1,7 +1,15 @@
 import { Context, Micro } from "effect";
-import { NetworkError } from "./error";
 
 const DefaultEndpoint = "https://api.passlock.dev";
+
+export const isNetworkError = (err: unknown): err is NetworkError => err instanceof NetworkError;
+
+export class NetworkError extends Micro.TaggedError("NetworkError")<{
+  readonly message: string;
+  readonly url: string;
+}> {
+  static isNetworkError = isNetworkError;
+}
 
 export class Endpoint extends Context.Tag("Endpoint")<
   Endpoint,
@@ -35,13 +43,13 @@ const isErrorResponse = (payload: unknown): payload is ErrorResponse => {
 export const makeRequest = <Res extends object>({
   url,
   payload,
-  operation,
   responsePredicate,
+  label,
 }: {
   url: URL;
   payload: object;
-  operation: string;
   responsePredicate: (res: unknown) => res is Res;
+  label: string;
 }): Micro.Micro<Res, NetworkError> =>
   Micro.gen(function* () {
     const headers = {
@@ -54,19 +62,16 @@ export const makeRequest = <Res extends object>({
     const networkError = new NetworkError({
       message: "Fetch failed",
       url: String(url),
-      isRetryAble: false,
     });
 
     const parseError = new NetworkError({
       message: "Unable to parse JSON response",
       url: String(url),
-      isRetryAble: false,
     });
 
     const invalidResponsePayload = new NetworkError({
-      message: `Invalid ${operation} response`,
+      message: `Invalid ${label} response`,
       url: String(url),
-      isRetryAble: false,
     });
 
     const fetchResponse = yield* Micro.tryPromise({
@@ -83,7 +88,6 @@ export const makeRequest = <Res extends object>({
       return isErrorResponse(apiError)
         ? yield* new NetworkError({
             ...apiError,
-            isRetryAble: false,
             url: String(url),
           })
         : yield* networkError;

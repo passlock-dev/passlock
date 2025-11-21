@@ -2,17 +2,33 @@ import { pipe } from "effect";
 import { runToPromise, runToPromiseUnsafe } from "../../promise";
 import {
   authenticatePasskey as authenticatePasskeyM,
+  type AuthenticationError,
   type AuthenticationOptions,
-  type AuthenticationResponse,
+  type AuthenticationSuccess,
 } from "./micro";
-import type { NetworkError, AuthenticationError } from "../../error";
 
+/**
+ * Trigger local passkey authentication then verify the passkey in the Passlock vault.
+ * Returns a code and id_token that can be exchanged/decoded in your backend.
+ * 
+ * @param options 
+ * @returns 
+ */
 export const authenticatePasskeyUnsafe = (
   options: AuthenticationOptions,
-): Promise<AuthenticationResponse> =>
+): Promise<AuthenticationSuccess> =>
   pipe(authenticatePasskeyM(options), runToPromiseUnsafe);
 
+/**
+ * Trigger local passkey authentication then verify the passkey in the Passlock vault.
+ * Returns a code and id_token that can be exchanged/decoded in your backend.
+ * 
+ * @param options 
+ * @returns 
+ */  
 export const authenticatePasskey = (
   options: AuthenticationOptions,
-): Promise<AuthenticationResponse | AuthenticationError | NetworkError> =>
+): Promise<AuthenticationSuccess | AuthenticationError> =>
   pipe(authenticatePasskeyM(options), runToPromise);
+
+export { isAuthenticationSuccess } from "./micro";

@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
+  "packageManager": "pnpm@10.23.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc --build",
@@ -13,10 +14,10 @@
     "lint": "prettier --check . && eslint ."    
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.16",
-    "daisyui": "^5.3.10",
-    "tailwindcss": "^4.1.16",
-    "vite": "^7.1.12",
+    "@tailwindcss/vite": "^4.1.17",
+    "daisyui": "^5.5.5",
+    "tailwindcss": "^4.1.17",
+    "vite": "^7.2.4",
     "@eslint/compat": "catalog:",
     "@eslint/js": "catalog:",
     "eslint": "catalog:",
@@ -27,8 +28,8 @@
     "typescript-eslint": "catalog:"    
   },
   "dependencies": {
-    "@passlock2/client": "workspace:*",
-    "@passlock2/server": "workspace:*",
+    "@passlock/client": "workspace:*",
+    "@passlock/node": "workspace:*",
     "@simplewebauthn/browser": "^13.2.2"
   }
 }

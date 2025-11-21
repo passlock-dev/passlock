@@ -1,12 +1,12 @@
 {
-  "name": "@passlock2/server",
+  "name": "@passlock/node",
   "version": "2.0.0-alpha",
   "description": "",
   "type": "module",
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
-  "packageManager": "pnpm@10.20.0",
+  "packageManager": "pnpm@10.23.0",
   "sideEffects": false,
   "engines": {
     "node": ">=22"
@@ -21,11 +21,12 @@
   },
   "dependencies": {
     "@effect/platform": "^0.92.1",
-    "effect": "^3.18.4",
-    "jose": "^6.1.0"
+    "@effect/platform-node": "^0.98.4",
+    "effect": "catalog:",
+    "jose": "^6.1.2"
   },
   "devDependencies": {
-    "@types/node": "^24.9.2",
+    "@types/node": "^24.10.1",
     "tsx": "^4.20.6",
     "@eslint/compat": "catalog:",
     "@eslint/js": "catalog:",
@@ -46,7 +47,12 @@
       "import": "./dist/principal/index.js",
       "types": "./dist/principal/index.d.ts",
       "default": "./dist/principal/index.js"
-    }
+    },
+    "./authenticator": {
+      "import": "./dist/authenticator/index.js",
+      "types": "./dist/authenticator/index.d.ts",
+      "default": "./dist/authenticator/index.js"
+    }    
   },
   "files": [
     "dist"

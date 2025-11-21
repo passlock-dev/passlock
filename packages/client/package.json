@@ -6,7 +6,7 @@
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
-  "packageManager": "pnpm@10.20.0",
+  "packageManager": "pnpm@10.23.0",
   "sideEffects": false,
   "scripts": {
     "build": "tsc --build",
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@simplewebauthn/browser": "^13.2.2",
-    "effect": "^3.18.4"
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@eslint/compat": "catalog:",

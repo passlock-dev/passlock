@@ -1,36 +1,50 @@
 import { FetchHttpClient } from "@effect/platform";
-import { Effect, Either, Match, pipe } from "effect";
+import { Effect, Either, identity, Match, pipe } from "effect";
 
 import {
   exchangeCode as exchangeCodeE,
   verifyIdToken as verifyIdTokenE,
+  Principal
 } from "./effect.js";
 
 import type {
-  AuthenticatedPasslockOptions,
-  PasslockOptions,
-  Principal,
-  VerificationSuccess,
+  InvalidCodeError,
+  VerificationError,
 } from "./effect.js";
+
+import { ForbiddenError, ServerError, type ApiOptions, type AuthorizedApiOptions } from "../shared.js";
 
 export type {
-  IdToken,
-  Principal,
   VerificationError,
-  VerificationSuccess,
+  Principal
 } from "./effect.js";
 
-export class ServerError extends Error {
-  readonly _tag: string;
+export { isPrincipal } from "./effect.js";
 
-  constructor(data: { _tag: string; message: string }) {
-    super(data.message);
-    this._tag = data._tag;
-  }
-
-  override readonly toString = (): string =>
-    `${this.message} (_tag: ${this._tag})`;
-}
+/**
+ * Call the Passlock backend API to exchange a code for a Principal
+ * @param code
+ * @package options
+ * @returns
+ */
+export const exchangeCode = (
+  code: string,
+  options: AuthorizedApiOptions,
+): Promise<Principal | ForbiddenError | InvalidCodeError> =>
+  pipe(
+    exchangeCodeE(code, options),
+    Effect.catchTags({
+      'ParseError': (err) => Effect.die(err),
+      'RequestError': (err) => Effect.die(err),
+      'ResponseError': (err) => Effect.die(err)
+    }),
+    Effect.match({
+      onSuccess: identity,
+      onFailure: identity
+    }),
+    Effect.provide(FetchHttpClient.layer),
+    Effect.runPromise,
+  );
 
 /**
  * Call the Passlock backend API to exchange a code for a Principal
@@ -40,7 +54,7 @@ export class ServerError extends Error {
  */
 export const exchangeCodeUnsafe = (
   code: string,
-  options: AuthenticatedPasslockOptions,
+  options: AuthorizedApiOptions,
 ): Promise<Principal> =>
   pipe(
     exchangeCodeE(code, options),
@@ -56,7 +70,7 @@ export const exchangeCodeUnsafe = (
               Match.tag("ParseError", (err) => new ServerError(err)),
               Match.tag("RequestError", (err) => new ServerError(err)),
               Match.tag("ResponseError", (err) => new ServerError(err)),
-              Match.tag("InvalidCodeError", (err) => new ServerError(err)),
+              Match.tag("InvalidCode", (err) => new ServerError(err)),
               Match.tag(
                 "Forbidden",
                 ({ _tag }) => new ServerError({ _tag, message: "Forbidden" }),
@@ -79,10 +93,37 @@ export const exchangeCodeUnsafe = (
  * @param options
  * @returns
  */
+export const verifyIdToken = (
+  token: string,
+  options: ApiOptions,
+): Promise<Principal | VerificationError> =>
+  pipe(
+      verifyIdTokenE(token, options),
+      Effect.catchTags({
+        'ParseError': (err) => Effect.die(err),
+      }),
+      Effect.match({
+        onSuccess: identity,
+        onFailure: identity
+      }),
+      Effect.provide(FetchHttpClient.layer),
+      Effect.runPromise,
+    );
+
+/**
+ * Decode and verify a Passlock idToken.
+ * Note: This will make a network call to the passlock.dev/.well-known/jwks.json
+ * endpoint to fetch the relevant public key. The response will be cached, however
+ * bear in mind that for something like AWS lambda it will make the call on every
+ * cold start so might actually be slower than {@link exchangeCode}
+ * @param token
+ * @param options
+ * @returns
+ */
 export const verifyIdTokenUnsafe = (
   token: string,
-  options: PasslockOptions,
-): Promise<VerificationSuccess> =>
+  options: ApiOptions,
+): Promise<Principal> =>
   pipe(
     verifyIdTokenE(token, options),
     Effect.either,

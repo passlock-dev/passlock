@@ -1,8 +1,8 @@
-import { LogEvent, LogLevel } from "@passlock2/client/logger";
+import { LogEvent, LogLevel } from "@passlock/client/logger";
 import "./style.css";
 
-import { authenticatePasskeyUnsafe, registerPasskeyUnsafe } from '@passlock2/client/passkey';
-import { exchangeCodeUnsafe, verifyIdTokenUnsafe } from "@passlock2/server/principal"
+import { registerPasskeyUnsafe, authenticatePasskeyUnsafe } from '@passlock/client/passkey';
+import { exchangeCode, verifyIdToken, isPrincipal } from "@passlock/node/principal";
 
 const getBtn = (id: string) => document.querySelector<HTMLButtonElement>(id)!;
 
@@ -132,11 +132,14 @@ registerBtn.addEventListener("click", async () => {
   try {
     const tenancyId = saveTenancyId()
     const username = saveUserName()
-    const data = await registerPasskeyUnsafe({ username, tenancyId, endpoint })
+    const userVerification = "discouraged" as const;
+    const data = await registerPasskeyUnsafe({ username, userVerification, tenancyId, endpoint });
+
+    console.log(data);
 
     saveUserMapping(username, data.principal.userId);
 
-    jwtDiv.innerText = data.idToken;
+    jwtDiv.innerText = data.id_token;
     codeDiv.innerText = data.code;
     responseDiv.hidden = false;
   } catch (err) {
@@ -154,7 +157,7 @@ authenticateBtn.addEventListener("click", async () => {
     const userId = username ? getUserMappping(username) : undefined
     const data = await authenticatePasskeyUnsafe({ userId, tenancyId, endpoint, userVerification: 'required' })
 
-    jwtDiv.innerText = data.idToken;
+    jwtDiv.innerText = data.id_token;
     codeDiv.innerText = data.code;
     responseDiv.hidden = false;
   } catch (err) {
@@ -178,13 +181,13 @@ verifyJwt.addEventListener("click", async () => {
 
   const jwt = jwtDiv.innerText.trim()
   const tenancyId = tenancyIdField.value.trim()
-  
-  try {
-    const response = await verifyIdTokenUnsafe(jwt, { tenancyId, endpoint })
-    jwtVerificationDiv.innerText = JSON.stringify(response, null, 2);
-  } catch (err) {
-    errorDiv.innerText = String(err);
-    errorDiv.hidden = false;
+
+  const result = await verifyIdToken(jwt, { tenancyId, endpoint });
+  if (isPrincipal(result)) {
+    jwtVerificationDiv.innerText = JSON.stringify(result, null, 2);
+  } else {
+    errorDiv.innerText = String(result.message);
+    errorDiv.hidden = false;    
   }
 });
 
@@ -204,12 +207,12 @@ verifyCode.addEventListener("click", async () => {
   const apiKey = saveApiKey()
   const code = codeDiv.innerText.trim()
   const tenancyId = tenancyIdField.value.trim()
-  
-  try {
-    const response = await exchangeCodeUnsafe(code, { tenancyId, apiKey, endpoint })
-    codeVerificationDiv.innerText = JSON.stringify(response, null, 2);
-  } catch (err) {
-    errorDiv.innerText = String(err);
+
+  const result = await exchangeCode(code, { tenancyId, apiKey, endpoint });
+  if (isPrincipal(result)) {
+     codeVerificationDiv.innerText = JSON.stringify(result, null, 2);
+  } else {
+    errorDiv.innerText = result.message
     errorDiv.hidden = false;
   }
 });
@@ -226,4 +229,3 @@ if (document.readyState === "complete" || document.readyState === "interactive")
 window.addEventListener(LogEvent.name, ((event: LogEvent) => {
   if (event.level === LogLevel.INFO) console.log(event.message)
 }) as EventListener);
-

@@ -1,5 +1,4 @@
 import { Either, identity, Micro, pipe } from "effect";
-import { isPasslockError } from "./error";
 import { error } from "effect/Brand";
 
 export const runToPromise = async <A, E>(
@@ -28,9 +27,7 @@ export const runToPromiseUnsafe = async <A, E>(
   if (Micro.exitIsSuccess(exit)) return exit.value;
 
   if (Micro.exitIsFail(exit)) {
-    if (isPasslockError(exit.cause)) {
-      throw exit.cause;
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
       throw exit.cause;
     } else throw new Error(String(exit.cause.error))
   }

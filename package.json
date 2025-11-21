@@ -6,7 +6,7 @@
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
-  "packageManager": "pnpm@10.20.0",
+  "packageManager": "pnpm@10.23.0",
   "scripts": {
     "ncu": "pnpm exec ncu --jsonUpgraded --deep"
   },

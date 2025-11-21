@@ -42,6 +42,6 @@
   "exclude": ["**/*.test.*", "**/*.spec.*", "node_modules", "dist"],
   "references": [
     { "path": "../client" }, 
-    { "path": "../server" }
+    { "path": "../node" }
   ]
 }

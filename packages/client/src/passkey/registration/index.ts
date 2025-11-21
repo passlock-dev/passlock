@@ -2,17 +2,31 @@ import { pipe } from "effect";
 import { runToPromise, runToPromiseUnsafe } from "../../promise";
 import {
   registerPasskey as registerPasskeyM,
+  type RegistrationErrors,
   type RegistrationOptions,
-  type RegistrationResponse,
+  type RegistrationSuccess,
 } from "./micro";
-import type { NetworkError, RegistrationError } from "../../error";
 
+/**
+ * Register a passkey on the local device and store the 
+ * associated public key in your Passlock vault. 
+ * @param options 
+ * @returns 
+ */
 export const registerPasskeyUnsafe = async (
   options: RegistrationOptions,
-): Promise<RegistrationResponse> =>
+): Promise<RegistrationSuccess> =>
   pipe(registerPasskeyM(options), runToPromiseUnsafe);
 
+/**
+ * Register a passkey on the local device and store the 
+ * associated public key in your Passlock vault. 
+ * @param options 
+ * @returns 
+ */
 export const registerPasskey = async (
   options: RegistrationOptions,
-): Promise<RegistrationResponse | RegistrationError | NetworkError> =>
+): Promise<RegistrationSuccess | RegistrationErrors> =>
   pipe(registerPasskeyM(options), runToPromise);  
+
+export { isRegistrationSuccess } from "./micro";

@@ -2,14 +2,18 @@ export type { PasslockOptions } from "../shared";
 
 export type {
   RegistrationOptions,
-  RegistrationResponse,
+  RegistrationSuccess as RegistrationResponse,
 } from "./registration/micro";
 
-export { registerPasskeyUnsafe, registerPasskey } from "./registration/index";
+export { registerPasskeyUnsafe, registerPasskey, isRegistrationSuccess } from "./registration/index";
 
 export type {
   AuthenticationOptions,
-  AuthenticationResponse,
+  AuthenticationSuccess as AuthenticationResponse,
 } from "./authentication/micro";
 
-export { authenticatePasskeyUnsafe, authenticatePasskey } from "./authentication/index";
+export { authenticatePasskeyUnsafe, authenticatePasskey, isAuthenticationSuccess } from "./authentication/index";
+
+export { isPasskeySupport, isAutofillSupport } from "./support";
+
+export { PasskeysUnsupportedError } from "./shared";
