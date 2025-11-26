@@ -60,13 +60,15 @@ const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {
  */
 export interface RegistrationOptions extends PasslockOptions {
   /**
-   * The local username associated with the newly reguistered passkey.
-   * Note: this is NOT a unique, server side identifier - multiple users
-   * could choose the same local passkey username.
+   * The username associated with the newly reguistered passkey..
    * 
    * @see {@link https://passlock.dev/getting-started/passkey-registration/#passkey-username|username}
    */
-  username: string | undefined;
+  username: string;
+  /**
+   * Human palateable username
+   */
+  userDisplayName?: string | undefined;  
   /**
    * Passlock userId. Essentially a shortcut to look up any 
    * currently registered passkeys (excludeCredentials) for a given user.
@@ -88,7 +90,14 @@ export interface RegistrationOptions extends PasslockOptions {
   timeout?: number | undefined;
 }
 
-const fetchOptions = ({ username, userId, excludeCredentials, userVerification, timeout }: RegistrationOptions) =>
+const fetchOptions = ({ 
+  username, 
+  userDisplayName, 
+  userId, 
+  excludeCredentials, 
+  userVerification, 
+  timeout 
+}: RegistrationOptions) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger);
     const { endpoint } = yield* Micro.service(Endpoint);
@@ -101,6 +110,7 @@ const fetchOptions = ({ username, userId, excludeCredentials, userVerification, 
       url,
       payload: { 
         username, 
+        userDisplayName,
         userId, 
         excludeCredentials, 
         userVerification, 

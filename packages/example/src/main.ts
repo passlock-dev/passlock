@@ -30,11 +30,11 @@ const verifyJwt = getBtn("#verifyJwt");
 
 const jwtStatus = getBtn("#jwtStatus");
 
-const jwtVerificationDiv = getDiv("#jwtVerification")
+const jwtVerificationDiv = getDiv("#jwtVerification");
 
 const codeDiv = getDiv("#code");
 
-const errorDiv = getDiv("#error")
+const errorDiv = getDiv("#error");
 
 const copyCode = getBtn("#copyCode");
 
@@ -42,9 +42,10 @@ const verifyCode = getBtn("#verifyCode");
 
 const codeStatus = getBtn("#codeStatus");
 
-const codeVerificationDiv = getDiv("#codeVerification")
+const codeVerificationDiv = getDiv("#codeVerification");
 
-const endpoint = "http://localhost:3000";
+// const endpoint = "http://localhost:3000";
+const endpointField = getTextField("#endpoint");
 
 const resetUI = () => {
   responseDiv.hidden = true;
@@ -57,9 +58,29 @@ const resetUI = () => {
   codeVerificationDiv.innerText = "";
 }
 
+const saveEndpoint = () => {
+  if (endpointField === null || endpointField.value.length < 5) {
+    localStorage.setItem("endpoint", "http://localhost:3000");
+    return "http://localhost:3000";
+  } else {
+    localStorage.setItem("tenancyId", tenancyIdField.value);
+    return endpointField.value;
+  }
+}
+
+const restoreEndpoint = () => {
+  const endpoint = localStorage.getItem("endpoint");
+
+  if (endpoint) {
+    endpointField.value = endpoint;
+  } else {
+    endpointField.value = "http://localhost:3000";
+  }
+}
+
 const saveTenancyId = () => {
   if (tenancyIdField === null || tenancyIdField.value.length < 5) {
-    alert("TenancyID required")
+    alert("TenancyID required");
     throw false;
   }
   
@@ -69,9 +90,7 @@ const saveTenancyId = () => {
 }
 
 const restoreTenancyId = () => {
-  const tenancyId = localStorage.getItem("tenancyId")
-
-  console.log({ tenancyId })
+  const tenancyId = localStorage.getItem("tenancyId");
 
   if (tenancyId) {
     tenancyIdField.value = tenancyId
@@ -80,62 +99,59 @@ const restoreTenancyId = () => {
 
 const saveApiKey = () => {
   if (apiKeyField === null || apiKeyField.value.length < 5) {
-    alert("API Key required")
+    alert("API Key required");
     throw false;
   }
   
-  localStorage.setItem("apiKey", apiKeyField.value)
+  localStorage.setItem("apiKey", apiKeyField.value);
   
   return apiKeyField.value;
 }
 
 const restoreApiKey = () => {
-  const apiKey = localStorage.getItem("apiKey")
-
-  console.log({ apiKey })
+  const apiKey = localStorage.getItem("apiKey");
 
   if (apiKey) {
-    apiKeyField.value = apiKey
+    apiKeyField.value = apiKey;
   }
 }
 
 const saveUserName = () => {
   if (usernameField === null || usernameField.value.length < 5) {
-    alert("Username required")
+    alert("Username required");
     throw false;
   }
   
-  localStorage.setItem("username", usernameField.value)
+  localStorage.setItem("username", usernameField.value);
   
   return usernameField.value;
 }
 
 const restoreUserName = () => {
-  const username = localStorage.getItem("username")
+  const username = localStorage.getItem("username");
 
   if (username) {
-    usernameField.value = username
+    usernameField.value = username;
   }
 }
 
 const saveUserMapping = (username: string, userId: string) => {
-  localStorage.setItem(`mappings:${username}`, userId)
+  localStorage.setItem(`mappings:${username}`, userId);
 }
 
 const getUserMappping = (username: string) => {
-  return localStorage.getItem(`mappings:${username}`) ?? undefined
+  return localStorage.getItem(`mappings:${username}`) ?? undefined;
 }
 
 registerBtn.addEventListener("click", async () => {
   resetUI();
 
   try {
-    const tenancyId = saveTenancyId()
-    const username = saveUserName()
+    const endpoint = saveEndpoint();
+    const tenancyId = saveTenancyId();
+    const username = saveUserName();
     const userVerification = "discouraged" as const;
-    const data = await registerPasskeyUnsafe({ username, userVerification, tenancyId, endpoint });
-
-    console.log(data);
+    const data = await registerPasskeyUnsafe({ username, userDisplayName: "Toby Hobson", userVerification, tenancyId, endpoint });
 
     saveUserMapping(username, data.principal.userId);
 
@@ -152,10 +168,11 @@ authenticateBtn.addEventListener("click", async () => {
   resetUI();
 
   try {
-    const tenancyId = saveTenancyId()
-    const username = usernameField.value.length > 5 ? usernameField.value : undefined
-    const userId = username ? getUserMappping(username) : undefined
-    const data = await authenticatePasskeyUnsafe({ userId, tenancyId, endpoint, userVerification: 'required' })
+    const endpoint = saveEndpoint();
+    const tenancyId = saveTenancyId();
+    const username = usernameField.value.length > 5 ? usernameField.value : undefined;
+    const userId = username ? getUserMappping(username) : undefined;
+    const data = await authenticatePasskeyUnsafe({ userId, tenancyId, endpoint, userVerification: 'required' });
 
     jwtDiv.innerText = data.id_token;
     codeDiv.innerText = data.code;
@@ -179,8 +196,9 @@ verifyJwt.addEventListener("click", async () => {
   errorDiv.hidden = true;
   jwtVerificationDiv.innerText = '';
 
-  const jwt = jwtDiv.innerText.trim()
-  const tenancyId = tenancyIdField.value.trim()
+  const jwt = jwtDiv.innerText.trim();
+  const endpoint = saveEndpoint();
+  const tenancyId = saveTenancyId();
 
   const result = await verifyIdToken(jwt, { tenancyId, endpoint });
   if (isPrincipal(result)) {
@@ -204,28 +222,31 @@ verifyCode.addEventListener("click", async () => {
   errorDiv.hidden = true;
   codeVerificationDiv.innerText = '';
 
-  const apiKey = saveApiKey()
-  const code = codeDiv.innerText.trim()
-  const tenancyId = tenancyIdField.value.trim()
+  const apiKey = saveApiKey();
+  const code = codeDiv.innerText.trim();
+  const endpoint = saveEndpoint();
+  const tenancyId = saveTenancyId();
 
   const result = await exchangeCode(code, { tenancyId, apiKey, endpoint });
   if (isPrincipal(result)) {
      codeVerificationDiv.innerText = JSON.stringify(result, null, 2);
   } else {
-    errorDiv.innerText = result.message
+    errorDiv.innerText = result.message;
     errorDiv.hidden = false;
   }
 });
 
+const restoreAll = () => {
+  restoreEndpoint();
+  restoreTenancyId();
+  restoreUserName();
+  restoreApiKey();
+}
+
 if (document.readyState === "complete" || document.readyState === "interactive") {
-  restoreTenancyId()
-  restoreUserName()
-  restoreApiKey()
-} else document.addEventListener('load', () => {
-  restoreTenancyId()
-  restoreUserName()
-})
+  restoreAll();
+} else document.addEventListener('load', restoreAll);
 
 window.addEventListener(LogEvent.name, ((event: LogEvent) => {
-  if (event.level === LogLevel.INFO) console.log(event.message)
+  if (event.level === LogLevel.INFO) console.log(event.message);
 }) as EventListener);
