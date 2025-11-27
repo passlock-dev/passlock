@@ -14,6 +14,7 @@
 
     // Emission
     "outDir": "./dist",
+    "rootDir": ".",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -38,6 +39,6 @@
     "resolveJsonModule": true,
     "preserveSymlinks": false
   },
-  "include": ["src"],
+  "include": ["src", "scripts"],
   "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.spec.ts"]
 }

@@ -1,19 +1,77 @@
 {
   "name": "@passlock/client",
   "version": "2.0.0-alpha",
-  "description": "",
+  "description": "Flexible passkey authentication for SvelteKit, React, NextJS and other frameworks",
+  "keywords": [
+    "passkey",
+    "webauthn",
+    "svelte",
+    "sveltekit",
+    "react",
+    "next",
+    "vue",
+    "nuxt"
+  ],
+  "homepage": "https://passlock.dev",
+  "bugs": {
+    "url": "https://github.com/passlock-dev/passlock/issues",
+    "email": "team@passlock.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/passlock-dev/passlock.git",
+    "directory": "packages/client"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Toby Hobson",
+    "email": "toby@passlock.dev"
+  },
   "type": "module",
-  "keywords": [],
-  "author": "",
-  "license": "Apache-2.0",
-  "packageManager": "pnpm@10.23.0",
-  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./passkey": {
+      "types": "./dist/passkey/index.d.ts",
+      "import": "./dist/passkey/index.js",
+      "default": "./dist/passkey/index.js"
+    },
+    "./logger": {
+      "types": "./dist/logger/index.d.ts",
+      "import": "./dist/logger/index.js",
+      "default": "./dist/logger/index.js"
+    },
+    "./error": {
+      "types": "./dist/error/index.d.ts",
+      "import": "./dist/error/index.js",
+      "default": "./dist/error/index.js"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc --build",
+    "build:clean": "$npm_execpath run clean:full && $npm_execpath run build",
+    "build:production": "$npm_execpath run build:clean && $npm_execpath run build:readme && $npm_execpath run replaceTokens && echo '' && publint",
+    "build:readme": "LATEST=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/client",
     "clean": "tsc --build --clean",
-    "clean:all": "rimraf dist tsconfig.tsbuildinfo",
-    "format": "prettier . --write",
-    "lint": "prettier --check . && eslint ."
+    "clean:full": "rimraf dist tsconfig.tsbuildinfo",
+    "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
+    "lint": "prettier --check \"src/**/*.+(js|ts|json)\" && eslint ./src",
+    "lint:fix": "prettier --check \"src/**/*.+(js|ts|json)\" && eslint ./src --fix",
+    "prepublishOnly": "pnpm run build:production",
+    "replaceTokens": "LATEST=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/client",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --coverage.enabled=true --ui",
+    "test:watch": "vitest dev",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@simplewebauthn/browser": "^13.2.2",
@@ -24,36 +82,13 @@
     "@eslint/js": "catalog:",
     "eslint": "catalog:",
     "globals": "catalog:",
+    "npm-check-updates": "catalog:",
     "prettier": "catalog:",
+    "publint": "catalog:",
     "rimraf": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    },
-    "./passkey": {
-      "import": "./dist/passkey/index.js",
-      "types": "./dist/passkey/index.d.ts",
-      "default": "./dist/passkey/index.js"
-    },
-    "./logger": {
-      "import": "./dist/logger/index.js",
-      "types": "./dist/logger/index.d.ts",
-      "default": "./dist/logger/index.js"
-    },
-    "./error": {
-      "import": "./dist/error/index.js",
-      "types": "./dist/error/index.d.ts",
-      "default": "./dist/error/index.js"
-    }    
-  },
-  "files": [
-    "dist"
-  ],
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts"
+  "packageManager": "pnpm@10.24.0"
 }

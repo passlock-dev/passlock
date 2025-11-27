@@ -2,22 +2,21 @@ import { FetchHttpClient } from "@effect/platform";
 import { Effect, Either, identity, Match, pipe } from "effect";
 
 import {
+  type Principal,
   exchangeCode as exchangeCodeE,
   verifyIdToken as verifyIdTokenE,
-  Principal
 } from "./effect.js";
 
-import type {
-  InvalidCodeError,
-  VerificationError,
-} from "./effect.js";
+import type { InvalidCodeError, VerificationError } from "./effect.js";
 
-import { ForbiddenError, ServerError, type ApiOptions, type AuthorizedApiOptions } from "../shared.js";
+import {
+  type ForbiddenError,
+  ServerError,
+  type ApiOptions,
+  type AuthorizedApiOptions,
+} from "../shared.js";
 
-export type {
-  VerificationError,
-  Principal
-} from "./effect.js";
+export type { VerificationError, Principal } from "./effect.js";
 
 export { isPrincipal } from "./effect.js";
 
@@ -34,13 +33,13 @@ export const exchangeCode = (
   pipe(
     exchangeCodeE(code, options),
     Effect.catchTags({
-      'ParseError': (err) => Effect.die(err),
-      'RequestError': (err) => Effect.die(err),
-      'ResponseError': (err) => Effect.die(err)
+      ParseError: (err) => Effect.die(err),
+      RequestError: (err) => Effect.die(err),
+      ResponseError: (err) => Effect.die(err),
     }),
     Effect.match({
       onSuccess: identity,
-      onFailure: identity
+      onFailure: identity,
     }),
     Effect.provide(FetchHttpClient.layer),
     Effect.runPromise,
@@ -98,17 +97,17 @@ export const verifyIdToken = (
   options: ApiOptions,
 ): Promise<Principal | VerificationError> =>
   pipe(
-      verifyIdTokenE(token, options),
-      Effect.catchTags({
-        'ParseError': (err) => Effect.die(err),
-      }),
-      Effect.match({
-        onSuccess: identity,
-        onFailure: identity
-      }),
-      Effect.provide(FetchHttpClient.layer),
-      Effect.runPromise,
-    );
+    verifyIdTokenE(token, options),
+    Effect.catchTags({
+      ParseError: (err) => Effect.die(err),
+    }),
+    Effect.match({
+      onSuccess: identity,
+      onFailure: identity,
+    }),
+    Effect.provide(FetchHttpClient.layer),
+    Effect.runPromise,
+  );
 
 /**
  * Decode and verify a Passlock idToken.

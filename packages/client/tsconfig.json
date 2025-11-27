@@ -39,5 +39,8 @@
     "skipLibCheck": true
   },
   "include": ["src"],
-  "exclude": ["**/*.test.*", "**/*.spec.*", "node_modules", "dist"]
+  "exclude": ["**/*.test.*", "**/*.spec.*", "node_modules", "dist"],
+  "references": [
+    { "path": "../shared" }, 
+  ]
 }

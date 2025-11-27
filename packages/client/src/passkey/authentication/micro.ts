@@ -10,10 +10,10 @@ import { Micro, pipe } from "effect";
 import { TenancyId } from "../../tenancy";
 
 import {
+  type NetworkError,
   buildEndpoint,
   Endpoint,
   makeRequest,
-  NetworkError
 } from "../../network";
 
 import { PasskeyError, PasskeysUnsupportedError } from "../shared";
@@ -42,21 +42,21 @@ const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {
 
 export interface AuthenticationOptions extends PasslockOptions {
   /**
-   * Passlock userId. Essentially a shortcut to look up any 
+   * Passlock userId. Essentially a shortcut to look up any
    * registered passkeys (allowCredentials) for a given user.
    */
   userId?: string | undefined;
   /**
-   * Restrict the passkey(s) the device presents to the user to a given set 
-   * 
+   * Restrict the passkey(s) the device presents to the user to a given set
+   *
    * @see {@link https://passlock.dev/passkeys/authentication/#allowcredentials|allowCredentials}
    */
   allowCredentials?: Array<string> | undefined;
   /**
    * Whether the device should re-authenticate the user locally before registering the passkey.
-   * 
+   *
    * @see {@link https://passlock.dev/passkeys/user-verification/|userVerification}
-   */    
+   */
   userVerification?: UserVerification | undefined;
   timeout?: number | undefined;
 }
@@ -72,7 +72,9 @@ const fetchOptions = ({ userId, userVerification }: AuthenticationOptions) =>
       endpoint,
     );
 
-    yield* logger.logInfo('Fetching passkey authentication options from Passlock');
+    yield* logger.logInfo(
+      "Fetching passkey authentication options from Passlock",
+    );
     return yield* makeRequest({
       url,
       payload: { userId, userVerification },
@@ -89,10 +91,10 @@ type AuthenticationSuccessTag = typeof AuthenticationSuccessTag;
  * Submit the code and/or id_token to your backend, then either
  * exchange the code with the passlock REST API or decode and
  * verify the id_token (JWT).
- * 
+ *
  * Note: The @passlock/node library includes utilities to do this
  * for you.
- */  
+ */
 export interface AuthenticationSuccess {
   _tag: AuthenticationSuccessTag;
   principal: {
@@ -103,16 +105,16 @@ export interface AuthenticationSuccess {
    * A signed JWT representing the newly registered passkey.
    * Decode and verify this in your backend or use one of the @passlock/node
    * helper utilities.
-   * 
+   *
    * @see {@link https://passlock.dev/principal/idtoken-verification/|id_token}
    */
   id_token: string;
   /**
-   * Call the Passlock API to exchange this code for details about the newly 
+   * Call the Passlock API to exchange this code for details about the newly
    * registered passkey.
-   * 
+   *
    * @see {@link https://passlock.dev/principal/code-exchange//|code exchange}
-   */  
+   */
   code: string;
 }
 
@@ -153,7 +155,7 @@ const verifyCredential = (
     });
 
     yield* logger.logInfo(
-      `Passkey with id ${authenticationResponse.principal.authenticatorId} successfully authenticated`
+      `Passkey with id ${authenticationResponse.principal.authenticatorId} successfully authenticated`,
     );
 
     return authenticationResponse;
@@ -164,33 +166,41 @@ const startAuthentication = (
 ) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger);
-    yield* logger.logInfo("Requesting passkey authentication on device")
+    yield* logger.logInfo("Requesting passkey authentication on device");
 
-    const isSupport = browserSupportsWebAuthn()
-    if (!isSupport) yield* new PasskeysUnsupportedError({ 
-      message: "Device does not support passkeys" 
-    })    
+    const isSupport = browserSupportsWebAuthn();
+    if (!isSupport)
+      yield* new PasskeysUnsupportedError({
+        message: "Device does not support passkeys",
+      });
 
     return yield* Micro.tryPromise({
       try: () => simpleAuthentication({ optionsJSON }),
-      catch: (error) => { 
+      catch: (error) => {
         if (error instanceof WebAuthnError) {
-          return new PasskeyError({ error: error.cause, message: error.message, code: error.code }) 
+          return new PasskeyError({
+            error: error.cause,
+            message: error.message,
+            code: error.code,
+          });
         } else {
-          return new PasskeyError({ error, message: "Unexpected error" }) 
+          return new PasskeyError({ error, message: "Unexpected error" });
         }
       },
     });
   });
 
-export type AuthenticationError = PasskeysUnsupportedError | PasskeyError | NetworkError;  
+export type AuthenticationError =
+  | PasskeysUnsupportedError
+  | PasskeyError
+  | NetworkError;
 
 /**
  * Trigger local passkey authentication then verify the passkey in the Passlock vault.
  * Returns a code and id_token that can be exchanged/decoded in your backend.
- * 
- * @param options 
- * @returns 
+ *
+ * @param options
+ * @returns
  */
 export const authenticatePasskey = (
   options: AuthenticationOptions,
@@ -198,12 +208,10 @@ export const authenticatePasskey = (
   const endpoint = buildEndpoint(options);
 
   const effect = Micro.gen(function* () {
-    const { sessionToken, optionsJSON } = yield* fetchOptions(
-      options,
-    );
+    const { sessionToken, optionsJSON } = yield* fetchOptions(options);
 
     const response = yield* startAuthentication(optionsJSON);
-    
+
     return yield* verifyCredential(sessionToken, response);
   });
 
@@ -211,6 +219,6 @@ export const authenticatePasskey = (
     effect,
     Micro.provideService(TenancyId, options),
     Micro.provideService(Endpoint, endpoint),
-    Micro.provideService(Logger, EventLogger)
+    Micro.provideService(Logger, EventLogger),
   );
 };

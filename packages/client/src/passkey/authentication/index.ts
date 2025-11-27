@@ -10,9 +10,9 @@ import {
 /**
  * Trigger local passkey authentication then verify the passkey in the Passlock vault.
  * Returns a code and id_token that can be exchanged/decoded in your backend.
- * 
- * @param options 
- * @returns 
+ *
+ * @param options
+ * @returns
  */
 export const authenticatePasskeyUnsafe = (
   options: AuthenticationOptions,
@@ -22,10 +22,10 @@ export const authenticatePasskeyUnsafe = (
 /**
  * Trigger local passkey authentication then verify the passkey in the Passlock vault.
  * Returns a code and id_token that can be exchanged/decoded in your backend.
- * 
- * @param options 
- * @returns 
- */  
+ *
+ * @param options
+ * @returns
+ */
 export const authenticatePasskey = (
   options: AuthenticationOptions,
 ): Promise<AuthenticationSuccess | AuthenticationError> =>

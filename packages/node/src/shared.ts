@@ -12,20 +12,20 @@ export interface AuthorizedApiOptions extends ApiOptions {
   apiKey: string;
 }
 
-export class ForbiddenError extends Schema.TaggedError<ForbiddenError>("Forbidden")(
+export class ForbiddenError extends Schema.TaggedError<ForbiddenError>(
   "Forbidden",
-  {}
-) {
-  static isForbiddenError = (payload: unknown): payload is ForbiddenError => Schema.is(ForbiddenError)(payload)
+)("Forbidden", {}) {
+  static isForbiddenError = (payload: unknown): payload is ForbiddenError =>
+    Schema.is(ForbiddenError)(payload);
 }
 
-export class NotFoundError extends Schema.TaggedError<NotFoundError>("NotFound")(
+export class NotFoundError extends Schema.TaggedError<NotFoundError>(
   "NotFound",
-  {
-    message: Schema.String
-  }
-) {
-  static isNotFoundError = (payload: unknown): payload is NotFoundError => Schema.is(NotFoundError)(payload)
+)("NotFound", {
+  message: Schema.String,
+}) {
+  static isNotFoundError = (payload: unknown): payload is NotFoundError =>
+    Schema.is(NotFoundError)(payload);
 }
 
 export class ServerError extends Error {

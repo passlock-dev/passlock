@@ -6,7 +6,11 @@ import type {
 import { Data, Effect, Match, pipe, Schema } from "effect";
 import type { ParseError } from "effect/ParseResult";
 import * as jose from "jose";
-import { ForbiddenError, type ApiOptions, type AuthorizedApiOptions } from "../shared.js";
+import {
+  ForbiddenError,
+  type ApiOptions,
+  type AuthorizedApiOptions,
+} from "../shared.js";
 
 export const Principal = Schema.TaggedStruct("Principal", {
   tenancyId: Schema.String,
@@ -27,7 +31,8 @@ export const Principal = Schema.TaggedStruct("Principal", {
 
 export type Principal = typeof Principal.Type;
 
-export const isPrincipal = (payload: unknown): payload is Principal => Schema.is(Principal)(payload)
+export const isPrincipal = (payload: unknown): payload is Principal =>
+  Schema.is(Principal)(payload);
 
 export const IdToken = Schema.TaggedStruct("IdToken", {
   "a:id": Schema.String,
@@ -43,13 +48,13 @@ export const IdToken = Schema.TaggedStruct("IdToken", {
 
 export type IdToken = typeof IdToken.Type;
 
-export class InvalidCodeError extends Schema.TaggedError<InvalidCodeError>("InvalidCode")(
+export class InvalidCodeError extends Schema.TaggedError<InvalidCodeError>(
   "InvalidCode",
-  {
-    message: Schema.String
-  }
-) {
-  static isInvalidCodeError = (payload: unknown): payload is InvalidCodeError => Schema.is(InvalidCodeError)(payload)
+)("InvalidCode", {
+  message: Schema.String,
+}) {
+  static isInvalidCodeError = (payload: unknown): payload is InvalidCodeError =>
+    Schema.is(InvalidCodeError)(payload);
 }
 
 export const exchangeCode = (
@@ -66,15 +71,17 @@ export const exchangeCode = (
     const url = new URL(`/${options.tenancyId}/principal/${code}`, baseUrl);
 
     const response = yield* pipe(
-      client.get(url, { 
-        headers: { 'Authorization': `Bearer ${options.apiKey}` } 
+      client.get(url, {
+        headers: { Authorization: `Bearer ${options.apiKey}` },
       }),
     );
 
     const encoded = yield* HttpClientResponse.matchStatus(response, {
       "2xx": () => HttpClientResponse.schemaBodyJson(Principal)(response),
       orElse: () =>
-        HttpClientResponse.schemaBodyJson(Schema.Union(InvalidCodeError, ForbiddenError))(response),
+        HttpClientResponse.schemaBodyJson(
+          Schema.Union(InvalidCodeError, ForbiddenError),
+        )(response),
     });
 
     return yield* pipe(
@@ -112,7 +119,10 @@ export const verifyIdToken = (
           : new VerificationError({ message: String(err) }),
     });
 
-    const idToken = yield* Schema.decodeUnknown(IdToken)({ ...payload, _tag: "IdToken" });
+    const idToken = yield* Schema.decodeUnknown(IdToken)({
+      ...payload,
+      _tag: "IdToken",
+    });
 
     const principal: Principal = {
       _tag: "Principal",

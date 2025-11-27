@@ -13,7 +13,11 @@ import type { HttpBodyError } from "@effect/platform/HttpBody";
 
 import { Effect, Match, pipe, Schema } from "effect";
 import type { ParseError } from "effect/ParseResult";
-import { ForbiddenError, NotFoundError, type AuthorizedApiOptions } from "../shared.js";
+import {
+  ForbiddenError,
+  NotFoundError,
+  type AuthorizedApiOptions,
+} from "../shared.js";
 
 export const AssignedUser = Schema.Struct({
   userId: Schema.String,

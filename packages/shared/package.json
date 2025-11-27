@@ -1,11 +1,9 @@
 {
-  "name": "@passlock/node",
+  "name": "@passlock/shared",
   "version": "2.0.0-alpha",
-  "description": "Passkey authentication for NodeJS backends",
+  "description": "Shared code use by Passlock frontend libraries & backend SDKs",
   "keywords": [
-    "passkey",
-    "webauthn",
-    "node"
+    "passlock"
   ],
   "homepage": "https://passlock.dev",
   "bugs": {
@@ -15,7 +13,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/passlock-dev/passlock.git",
-    "directory": "packages/client"
+    "directory": "packages/shared"
   },
   "license": "MIT",
   "author": {
@@ -23,26 +21,8 @@
     "email": "toby@passlock.dev"
   },
   "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    },
-    "./principal": {
-      "types": "./dist/principal/index.d.ts",
-      "import": "./dist/principal/index.js",
-      "default": "./dist/principal/index.js"
-    },
-    "./authenticator": {
-      "types": "./dist/authenticator/index.d.ts",
-      "import": "./dist/authenticator/index.js",
-      "default": "./dist/authenticator/index.js"
-    }
-  },
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "files": [
+    "src",
     "dist",
     "!dist/**/*.test.*",
     "!dist/**/*.spec.*"
@@ -51,14 +31,14 @@
     "build": "tsc --build",
     "build:clean": "$npm_execpath run clean:full && $npm_execpath run build",
     "build:production": "$npm_execpath run build:clean && $npm_execpath run build:readme && $npm_execpath run replaceTokens && echo '' && publint",
-    "build:readme": "LATEST=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/node",
+    "build:readme": "LATEST=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/shared",
     "clean": "tsc --build --clean",
     "clean:full": "rimraf dist tsconfig.tsbuildinfo",
     "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
     "lint": "prettier --check \"src/**/*.+(js|ts|json)\" && eslint ./src",
     "lint:fix": "prettier --check \"src/**/*.+(js|ts|json)\" && eslint ./src --fix",
     "prepublishOnly": "pnpm run build:production",
-    "replaceTokens": "LATEST=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/node",
+    "replaceTokens": "LATEST=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/shared",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --coverage.enabled=true --ui",
@@ -66,26 +46,20 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@effect/platform": "^0.93.4",
-    "@effect/platform-node": "^0.101.2",
-    "effect": "catalog:",
-    "jose": "^6.1.2"
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@eslint/compat": "catalog:",
     "@eslint/js": "catalog:",
-    "@types/node": "^24.10.1",
+    "@types/node": "catalog:",
     "eslint": "catalog:",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
     "prettier": "catalog:",
+    "publint": "catalog:",
     "rimraf": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
-  },
-  "packageManager": "pnpm@10.24.0",
-  "engines": {
-    "node": ">=21"
   }
 }

@@ -8,10 +8,10 @@ import {
 } from "./micro";
 
 /**
- * Register a passkey on the local device and store the 
- * associated public key in your Passlock vault. 
- * @param options 
- * @returns 
+ * Register a passkey on the local device and store the
+ * associated public key in your Passlock vault.
+ * @param options
+ * @returns
  */
 export const registerPasskeyUnsafe = async (
   options: RegistrationOptions,
@@ -19,14 +19,14 @@ export const registerPasskeyUnsafe = async (
   pipe(registerPasskeyM(options), runToPromiseUnsafe);
 
 /**
- * Register a passkey on the local device and store the 
- * associated public key in your Passlock vault. 
- * @param options 
- * @returns 
+ * Register a passkey on the local device and store the
+ * associated public key in your Passlock vault.
+ * @param options
+ * @returns
  */
 export const registerPasskey = async (
   options: RegistrationOptions,
 ): Promise<RegistrationSuccess | RegistrationErrors> =>
-  pipe(registerPasskeyM(options), runToPromise);  
+  pipe(registerPasskeyM(options), runToPromise);
 
 export { isRegistrationSuccess } from "./micro";

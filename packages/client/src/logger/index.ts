@@ -10,31 +10,34 @@ export class Logger extends Context.Tag("Logger")<
 >() {}
 
 export const LoggerLive: typeof Logger.Service = {
-  logDebug: (message: string) => Micro.sync(() => {
-    console.log('debug')
-    console.debug(message)
-  }),
+  logDebug: (message: string) =>
+    Micro.sync(() => {
+      console.log("debug");
+      console.debug(message);
+    }),
 
-  logInfo: (message: string) => Micro.sync(() => { 
-    console.log('info')
-    console.info(message);
-  }),
+  logInfo: (message: string) =>
+    Micro.sync(() => {
+      console.log("info");
+      console.info(message);
+    }),
 
-  logError: (message: string) => Micro.sync(() => { 
-    console.log('error')
-    console.error(message);
-  }),
+  logError: (message: string) =>
+    Micro.sync(() => {
+      console.log("error");
+      console.error(message);
+    }),
 };
 
 export enum LogLevel {
-  DEBUG = "DEBUG", 
-  INFO = "INFO", 
-  ERROR = "ERROR"
+  DEBUG = "DEBUG",
+  INFO = "INFO",
+  ERROR = "ERROR",
 }
 
 export class LogEvent extends Event {
-  readonly #message: string
-  readonly #level: LogLevel
+  readonly #message: string;
+  readonly #level: LogLevel;
 
   static name = "PasslockLogEvent";
 
@@ -47,22 +50,25 @@ export class LogEvent extends Event {
   get message(): string {
     return this.#message;
   }
-  
+
   get level(): LogLevel {
     return this.#level;
-  } 
+  }
 }
 
 export const EventLogger: typeof Logger.Service = {
-  logDebug: (message: string) => Micro.sync(() => {
-    window.dispatchEvent(new LogEvent(message, LogLevel.DEBUG))
-  }),
+  logDebug: (message: string) =>
+    Micro.sync(() => {
+      window.dispatchEvent(new LogEvent(message, LogLevel.DEBUG));
+    }),
 
-  logInfo: (message: string) => Micro.sync(() => { 
-    window.dispatchEvent(new LogEvent(message, LogLevel.INFO))
-  }),
+  logInfo: (message: string) =>
+    Micro.sync(() => {
+      window.dispatchEvent(new LogEvent(message, LogLevel.INFO));
+    }),
 
-  logError: (message: string) => Micro.sync(() => { 
-    window.dispatchEvent(new LogEvent(message, LogLevel.ERROR))
-  }),
+  logError: (message: string) =>
+    Micro.sync(() => {
+      window.dispatchEvent(new LogEvent(message, LogLevel.ERROR));
+    }),
 };

@@ -2,7 +2,8 @@ import { Context, Micro } from "effect";
 
 const DefaultEndpoint = "https://api.passlock.dev";
 
-export const isNetworkError = (err: unknown): err is NetworkError => err instanceof NetworkError;
+export const isNetworkError = (err: unknown): err is NetworkError =>
+  err instanceof NetworkError;
 
 export class NetworkError extends Micro.TaggedError("NetworkError")<{
   readonly message: string;

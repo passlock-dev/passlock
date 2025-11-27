@@ -1,12 +1,12 @@
 import { FetchHttpClient } from "@effect/platform";
 import { Effect, Either, Match, pipe } from "effect";
 import type { AssignedUser, AssignUserOptions } from "./effect.js";
-import { ServerError, type AuthorizedApiOptions } from "../shared.js";
+import { ServerError } from "../shared.js";
 import { assignUser as assignUserE } from "./effect.js";
 
-export { 
+export {
   type AssignUserOptions as AssignUserRequest,
-  type AssignedUser
+  type AssignedUser,
 } from "./effect.js";
 
 /**
