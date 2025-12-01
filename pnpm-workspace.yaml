@@ -17,4 +17,6 @@ catalog:
   typescript-eslint: ^8.48.0
 
 onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - esbuild
   - msgpackr-extract

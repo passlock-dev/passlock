@@ -4,17 +4,23 @@ import "./style.css";
 import { registerPasskeyUnsafe, authenticatePasskeyUnsafe } from '@passlock/client/passkey';
 import { exchangeCode, verifyIdToken, isPrincipal } from "@passlock/node/principal";
 
+/* Lookup HTML elements */
+
 const getBtn = (id: string) => document.querySelector<HTMLButtonElement>(id)!;
 
 const getDiv = (id: string) => document.querySelector<HTMLDivElement>(id)!;
 
 const getTextField = (id: string) => document.querySelector<HTMLInputElement>(id)!;
 
+/* HTML elements */
+
 const tenancyIdField = getTextField("#tenancyId");
 
 const apiKeyField = getTextField("#apiKey");
 
 const usernameField = getTextField("#username");
+
+const displayNameField = getTextField("#displayName");
 
 const registerBtn = getBtn("#register");
 
@@ -44,7 +50,6 @@ const codeStatus = getBtn("#codeStatus");
 
 const codeVerificationDiv = getDiv("#codeVerification");
 
-// const endpoint = "http://localhost:3000";
 const endpointField = getTextField("#endpoint");
 
 const resetUI = () => {
@@ -58,6 +63,10 @@ const resetUI = () => {
   codeVerificationDiv.innerText = "";
 }
 
+/**
+ * Save the endpoint to local storage
+ * @returns 
+ */
 const saveEndpoint = () => {
   if (endpointField === null || endpointField.value.length < 5) {
     localStorage.setItem("endpoint", "http://localhost:3000");
@@ -68,6 +77,9 @@ const saveEndpoint = () => {
   }
 }
 
+/**
+ * Fetch the value from local storage and update the UI
+ */
 const restoreEndpoint = () => {
   const endpoint = localStorage.getItem("endpoint");
 
@@ -135,6 +147,30 @@ const restoreUserName = () => {
   }
 }
 
+const saveDisplayName = () => {
+  if (displayNameField === null || displayNameField.value.length < 5) {
+    return undefined;
+  }
+  
+  localStorage.setItem("displayName", displayNameField.value);
+  
+  return displayNameField.value;
+}
+
+const restoreDisplayName = () => {
+  const displayName = localStorage.getItem("displayName");
+
+  if (displayName) {
+    displayNameField.value = displayName;
+  }
+}
+
+/**
+ * Needed so we can pass the userId during authentication calls,
+ * although the user only presents the username.
+ * @param username 
+ * @param userId 
+ */
 const saveUserMapping = (username: string, userId: string) => {
   localStorage.setItem(`mappings:${username}`, userId);
 }
@@ -150,8 +186,9 @@ registerBtn.addEventListener("click", async () => {
     const endpoint = saveEndpoint();
     const tenancyId = saveTenancyId();
     const username = saveUserName();
+    const userDisplayName = saveDisplayName();
     const userVerification = "discouraged" as const;
-    const data = await registerPasskeyUnsafe({ username, userDisplayName: "Toby Hobson", userVerification, tenancyId, endpoint });
+    const data = await registerPasskeyUnsafe({ username, userDisplayName, userVerification, tenancyId, endpoint });
 
     saveUserMapping(username, data.principal.userId);
 
@@ -240,6 +277,7 @@ const restoreAll = () => {
   restoreEndpoint();
   restoreTenancyId();
   restoreUserName();
+  restoreDisplayName();
   restoreApiKey();
 }
 
