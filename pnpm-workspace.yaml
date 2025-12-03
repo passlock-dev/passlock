@@ -1,22 +1,25 @@
-packages:
-  - packages/*
-
-catalog:
-  '@eslint/compat': ^2.0.0
-  '@eslint/js': ^9.39.1
-  '@types/node': 24.10.1
-  effect: 3.19.7
-  eslint: ^9.39.1
-  globals: ^16.5.0
-  npm-check-updates: 19.1.2
-  prettier: ^3.7.1
-  publint: ^0.3.15
-  rimraf: ^6.1.2
-  tsx: 4.20.6
-  typescript: ^5.9.3
-  typescript-eslint: ^8.48.0
-
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - esbuild
-  - msgpackr-extract
+{
+  "packages": [
+    "packages/*"
+  ],
+  "catalog": {
+    "@eslint/compat": "^2.0.0",
+    "@eslint/js": "^9.39.1",
+    "@types/node": "24.10.1",
+    "effect": "3.19.8",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "npm-check-updates": "19.1.2",
+    "prettier": "^3.7.4",
+    "publint": "^0.3.15",
+    "rimraf": "^6.1.2",
+    "tsx": "4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.1"
+  },
+  "onlyBuiltDependencies": [
+    "@parcel/watcher",
+    "esbuild",
+    "msgpackr-extract"
+  ]
+}
