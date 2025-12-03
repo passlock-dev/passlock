@@ -13,4 +13,4 @@ export {
   type AssignUserRequest,
   type AssignedUser,
   assignUserUnsafe,
-} from "./authenticator/index.js";
+} from "./user/index.js";

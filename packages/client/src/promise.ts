@@ -1,6 +1,12 @@
 import { Either, identity, Micro, pipe } from "effect";
 import { error } from "effect/Brand";
 
+/**
+ * Run a Micro and return a success or failure.
+ * Note: function could still throw for an unexpected error.
+ * @param micro
+ * @returns
+ */
 export const runToPromise = async <A, E>(
   micro: Micro.Micro<A, E>,
 ): Promise<A | E> => {
@@ -12,6 +18,11 @@ export const runToPromise = async <A, E>(
   });
 };
 
+/**
+ * Run a Micro and return a success or throw an error
+ * @param micro
+ * @returns
+ */
 export const runToPromiseUnsafe = async <A, E>(
   micro: Micro.Micro<A, E>,
 ): Promise<A> => {

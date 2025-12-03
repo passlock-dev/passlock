@@ -1,8 +1,8 @@
-import { exec } from 'node:child_process'
 import fs from 'node:fs'
+import util from 'node:util'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import util from 'node:util'
+import { exec } from 'node:child_process'
 
 export const STATIC_VARS = {
   PASSLOCK_SITE: 'https://passlock.dev',
@@ -10,7 +10,7 @@ export const STATIC_VARS = {
   DOCS: 'https://passlock.dev',
   TUTORIAL: 'https://passlock.dev/getting-started/',
   PASSLOCK_LOGO: 'https://passlock-assets.b-cdn.net/images/passlock-logo.svg',
-  ASSETS_CDN: 'https://passlock-assets.b-cdn.net',
+  ASSETS: 'https://passlock-assets.b-cdn.net',
 } as Record<string, string>
 
 // no-op the console methods

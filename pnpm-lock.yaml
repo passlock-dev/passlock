@@ -16,7 +16,7 @@ catalogs:
       specifier: 24.10.1
       version: 24.10.1
     effect:
-      specifier: ^3.19.7
+      specifier: 3.19.7
       version: 3.19.7
     eslint:
       specifier: ^9.39.1
@@ -169,6 +169,9 @@ importers:
       '@effect/platform-node':
         specifier: ^0.101.2
         version: 0.101.2(@effect/cluster@0.53.6(@effect/platform@0.93.4(effect@3.19.7))(@effect/rpc@0.72.2(@effect/platform@0.93.4(effect@3.19.7))(effect@3.19.7))(@effect/sql@0.48.3(@effect/experimental@0.57.6(@effect/platform@0.93.4(effect@3.19.7))(effect@3.19.7))(@effect/platform@0.93.4(effect@3.19.7))(effect@3.19.7))(@effect/workflow@0.13.0(@effect/experimental@0.57.6(@effect/platform@0.93.4(effect@3.19.7))(effect@3.19.7))(@effect/platform@0.93.4(effect@3.19.7))(@effect/rpc@0.72.2(@effect/platform@0.93.4(effect@3.19.7))(effect@3.19.7))(effect@3.19.7))(effect@3.19.7))(@effect/platform@0.93.4(effect@3.19.7))(@effect/rpc@0.72.2(@effect/platform@0.93.4(effect@3.19.7))(effect@3.19.7))(@effect/sql@0.48.3(@effect/experimental@0.57.6(@effect/platform@0.93.4(effect@3.19.7))(effect@3.19.7))(@effect/platform@0.93.4(effect@3.19.7))(effect@3.19.7))(effect@3.19.7)
+      '@passlock/shared':
+        specifier: workspace:*
+        version: link:../shared
       effect:
         specifier: 'catalog:'
         version: 3.19.7

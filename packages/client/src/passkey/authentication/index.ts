@@ -1,4 +1,4 @@
-import { pipe } from "effect";
+import { Micro, pipe } from "effect";
 import { runToPromise, runToPromiseUnsafe } from "../../promise";
 import {
   authenticatePasskey as authenticatePasskeyM,
@@ -6,6 +6,7 @@ import {
   type AuthenticationOptions,
   type AuthenticationSuccess,
 } from "./micro";
+import { EventLogger, Logger } from "../../logger";
 
 /**
  * Trigger local passkey authentication then verify the passkey in the Passlock vault.
@@ -16,8 +17,13 @@ import {
  */
 export const authenticatePasskeyUnsafe = (
   options: AuthenticationOptions,
+  logger: typeof Logger.Service = EventLogger,
 ): Promise<AuthenticationSuccess> =>
-  pipe(authenticatePasskeyM(options), runToPromiseUnsafe);
+  pipe(
+    authenticatePasskeyM(options),
+    Micro.provideService(Logger, logger),
+    runToPromiseUnsafe,
+  );
 
 /**
  * Trigger local passkey authentication then verify the passkey in the Passlock vault.
@@ -28,7 +34,13 @@ export const authenticatePasskeyUnsafe = (
  */
 export const authenticatePasskey = (
   options: AuthenticationOptions,
+  logger: typeof Logger.Service = EventLogger,
 ): Promise<AuthenticationSuccess | AuthenticationError> =>
-  pipe(authenticatePasskeyM(options), runToPromise);
+  pipe(
+    authenticatePasskeyM(options),
+    Micro.provideService(Logger, logger),
+    runToPromise,
+  );
 
+export type { AuthenticationSuccess, AuthenticationError } from "./micro";
 export { isAuthenticationSuccess } from "./micro";

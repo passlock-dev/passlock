@@ -12,8 +12,8 @@ in README.template.md and outputs to README.md
 
 <div align="center">
   <picture align="center">
-    <source srcset="#{ASSETS_CDN}#/images/client-repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
-    <img align="center" width=550 height=50 src="#{ASSETS_CDN}#/images/client-repo-banner.svg" />
+    <source srcset="#{ASSETS}#/images/client-repo-banner.dark.svg" media="(prefers-color-scheme: dark)" />
+    <img align="center" width=550 height=50 src="#{ASSETS}#/images/client-repo-banner.svg" />
   </picture>
   <p align="center">
     Next generation passkey authentication for React, Svelte, Angular and other frameworks. 

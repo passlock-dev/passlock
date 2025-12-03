@@ -13,11 +13,7 @@ import type { HttpBodyError } from "@effect/platform/HttpBody";
 
 import { Effect, Match, pipe, Schema } from "effect";
 import type { ParseError } from "effect/ParseResult";
-import {
-  ForbiddenError,
-  NotFoundError,
-  type AuthorizedApiOptions,
-} from "../shared.js";
+import { Forbidden, NotFound, type AuthorizedApiOptions } from "../shared.js";
 
 export const AssignedUser = Schema.Struct({
   userId: Schema.String,
@@ -43,8 +39,8 @@ export const assignUser = (
   options: AssignUserOptions,
 ): Effect.Effect<
   AssignedUser,
-  | NotFoundError
-  | ForbiddenError
+  | NotFound
+  | Forbidden
   | ParseError
   | RequestError
   | HttpBodyError
@@ -72,16 +68,16 @@ export const assignUser = (
       "2xx": () =>
         HttpClientResponse.schemaBodyJson(AssignUserResponse)(response),
       orElse: () =>
-        HttpClientResponse.schemaBodyJson(
-          Schema.Union(NotFoundError, ForbiddenError),
-        )(response),
+        HttpClientResponse.schemaBodyJson(Schema.Union(NotFound, Forbidden))(
+          response,
+        ),
     });
 
     return yield* pipe(
       Match.value(encoded),
       Match.tag("Success", ({ data }) => Effect.succeed(data)),
-      Match.tag("NotFound", (err) => Effect.fail(err)),
-      Match.tag("Forbidden", (err) => Effect.fail(err)),
+      Match.tag("@error/NotFound", (err) => Effect.fail(err)),
+      Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
       Match.exhaustive,
     );
   });

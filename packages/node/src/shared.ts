@@ -1,5 +1,3 @@
-import { Schema } from "effect";
-
 export interface ApiOptions {
   tenancyId: string;
   /**
@@ -12,23 +10,9 @@ export interface AuthorizedApiOptions extends ApiOptions {
   apiKey: string;
 }
 
-export class ForbiddenError extends Schema.TaggedError<ForbiddenError>(
-  "Forbidden",
-)("Forbidden", {}) {
-  static isForbiddenError = (payload: unknown): payload is ForbiddenError =>
-    Schema.is(ForbiddenError)(payload);
-}
+export { Unauthorized, Forbidden, NotFound } from "@passlock/shared/error";
 
-export class NotFoundError extends Schema.TaggedError<NotFoundError>(
-  "NotFound",
-)("NotFound", {
-  message: Schema.String,
-}) {
-  static isNotFoundError = (payload: unknown): payload is NotFoundError =>
-    Schema.is(NotFoundError)(payload);
-}
-
-export class ServerError extends Error {
+export class UnexpectedError extends Error {
   readonly _tag: string;
 
   constructor(data: { _tag: string; message: string }) {

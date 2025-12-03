@@ -1,17 +1,33 @@
 import { Context, Micro } from "effect";
 
+/**
+ * Make a request to the Passlock API endpoint.
+ * Assumes the response is JSON and any errors
+ * have a non-200 status code, are also JSON and
+ * include message and _tag fields.
+ */
+
+/**
+ * TODO Consider Effect RPC/HttpClient
+ */
+
 const DefaultEndpoint = "https://api.passlock.dev";
 
-export const isNetworkError = (err: unknown): err is NetworkError =>
-  err instanceof NetworkError;
+export const isUnexpectedError = (err: unknown): err is UnexpectedError =>
+  err instanceof UnexpectedError;
 
-export class NetworkError extends Micro.TaggedError("NetworkError")<{
+export class UnexpectedError extends Micro.TaggedError(
+  "@error/UnexpectedError",
+)<{
   readonly message: string;
   readonly url: string;
 }> {
-  static isNetworkError = isNetworkError;
+  static isUnexpectedError = isUnexpectedError;
 }
 
+/**
+ * Passlock API endpoint
+ */
 export class Endpoint extends Context.Tag("Endpoint")<
   Endpoint,
   { readonly endpoint: string }
@@ -41,6 +57,12 @@ const isErrorResponse = (payload: unknown): payload is ErrorResponse => {
   return true;
 };
 
+/**
+ * Make a fetch request and parse the response using the provided
+ * responsePredicate function.
+ * @param param0
+ * @returns
+ */
 export const makeRequest = <Res extends object>({
   url,
   payload,
@@ -48,10 +70,13 @@ export const makeRequest = <Res extends object>({
   label,
 }: {
   url: URL;
+  /** Request payload */
   payload: object;
+  /** Response type guard */
   responsePredicate: (res: unknown) => res is Res;
+  /** For logging/error reporting */
   label: string;
-}): Micro.Micro<Res, NetworkError> =>
+}): Micro.Micro<Res, UnexpectedError> =>
   Micro.gen(function* () {
     const headers = {
       "Content-Type": "application/json",
@@ -60,17 +85,17 @@ export const makeRequest = <Res extends object>({
 
     const body = JSON.stringify(payload);
 
-    const networkError = new NetworkError({
+    const networkError = new UnexpectedError({
       message: "Fetch failed",
       url: String(url),
     });
 
-    const parseError = new NetworkError({
+    const parseError = new UnexpectedError({
       message: "Unable to parse JSON response",
       url: String(url),
     });
 
-    const invalidResponsePayload = new NetworkError({
+    const invalidResponsePayload = new UnexpectedError({
       message: `Invalid ${label} response`,
       url: String(url),
     });
@@ -87,11 +112,11 @@ export const makeRequest = <Res extends object>({
       });
 
       return isErrorResponse(apiError)
-        ? yield* new NetworkError({
+        ? yield* new UnexpectedError({
             ...apiError,
             url: String(url),
           })
-        : yield* networkError;
+        : yield* parseError;
     }
 
     const json = yield* Micro.tryPromise({

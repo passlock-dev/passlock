@@ -43,11 +43,6 @@
       "types": "./dist/logger/index.d.ts",
       "import": "./dist/logger/index.js",
       "default": "./dist/logger/index.js"
-    },
-    "./error": {
-      "types": "./dist/error/index.d.ts",
-      "import": "./dist/error/index.js",
-      "default": "./dist/error/index.js"
     }
   },
   "module": "./dist/index.js",

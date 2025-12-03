@@ -10,15 +10,15 @@ import { Micro, pipe } from "effect";
 import { TenancyId } from "../../tenancy";
 
 import {
-  type NetworkError,
+  type UnexpectedError,
   buildEndpoint,
   Endpoint,
   makeRequest,
 } from "../../network";
 
-import { PasskeyError, PasskeysUnsupportedError } from "../shared";
+import { OtherPasskeyError, PasskeysUnsupportedError } from "../shared";
 import { type PasslockOptions } from "../../shared";
-import { Logger, EventLogger } from "../../logger";
+import { Logger } from "../../logger";
 import type { UserVerification } from "../types";
 
 interface OptionsResponse {
@@ -178,13 +178,13 @@ const startAuthentication = (
       try: () => simpleAuthentication({ optionsJSON }),
       catch: (error) => {
         if (error instanceof WebAuthnError) {
-          return new PasskeyError({
+          return new OtherPasskeyError({
             error: error.cause,
             message: error.message,
             code: error.code,
           });
         } else {
-          return new PasskeyError({ error, message: "Unexpected error" });
+          return new OtherPasskeyError({ error, message: "Unexpected error" });
         }
       },
     });
@@ -192,8 +192,8 @@ const startAuthentication = (
 
 export type AuthenticationError =
   | PasskeysUnsupportedError
-  | PasskeyError
-  | NetworkError;
+  | OtherPasskeyError
+  | UnexpectedError;
 
 /**
  * Trigger local passkey authentication then verify the passkey in the Passlock vault.
@@ -204,7 +204,7 @@ export type AuthenticationError =
  */
 export const authenticatePasskey = (
   options: AuthenticationOptions,
-): Micro.Micro<AuthenticationSuccess, AuthenticationError> => {
+): Micro.Micro<AuthenticationSuccess, AuthenticationError, Logger> => {
   const endpoint = buildEndpoint(options);
 
   const effect = Micro.gen(function* () {
@@ -219,6 +219,5 @@ export const authenticatePasskey = (
     effect,
     Micro.provideService(TenancyId, options),
     Micro.provideService(Endpoint, endpoint),
-    Micro.provideService(Logger, EventLogger),
   );
 };

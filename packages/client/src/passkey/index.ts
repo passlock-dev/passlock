@@ -1,8 +1,8 @@
-export type { PasslockOptions } from "../shared";
-
 export type {
   RegistrationOptions,
-  RegistrationSuccess as RegistrationResponse,
+  RegistrationSuccess,
+  RegistrationError,
+  DuplicatePasskeyError,
 } from "./registration/micro";
 
 export {
@@ -13,7 +13,8 @@ export {
 
 export type {
   AuthenticationOptions,
-  AuthenticationSuccess as AuthenticationResponse,
+  AuthenticationSuccess,
+  AuthenticationError,
 } from "./authentication/micro";
 
 export {
@@ -24,4 +25,4 @@ export {
 
 export { isPasskeySupport, isAutofillSupport } from "./support";
 
-export { PasskeysUnsupportedError } from "./shared";
+export { PasskeysUnsupportedError, OtherPasskeyError } from "./shared";

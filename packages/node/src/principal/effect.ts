@@ -6,8 +6,10 @@ import type {
 import { Data, Effect, Match, pipe, Schema } from "effect";
 import type { ParseError } from "effect/ParseResult";
 import * as jose from "jose";
+import { InvalidCode } from "@passlock/shared/error";
+
 import {
-  ForbiddenError,
+  Forbidden,
   type ApiOptions,
   type AuthorizedApiOptions,
 } from "../shared.js";
@@ -48,21 +50,12 @@ export const IdToken = Schema.TaggedStruct("IdToken", {
 
 export type IdToken = typeof IdToken.Type;
 
-export class InvalidCodeError extends Schema.TaggedError<InvalidCodeError>(
-  "InvalidCode",
-)("InvalidCode", {
-  message: Schema.String,
-}) {
-  static isInvalidCodeError = (payload: unknown): payload is InvalidCodeError =>
-    Schema.is(InvalidCodeError)(payload);
-}
-
 export const exchangeCode = (
   code: string,
   options: AuthorizedApiOptions,
 ): Effect.Effect<
   Principal,
-  InvalidCodeError | ForbiddenError | ParseError | RequestError | ResponseError,
+  InvalidCode | Forbidden | ParseError | RequestError | ResponseError,
   HttpClient.HttpClient
 > =>
   Effect.gen(function* () {
@@ -79,16 +72,16 @@ export const exchangeCode = (
     const encoded = yield* HttpClientResponse.matchStatus(response, {
       "2xx": () => HttpClientResponse.schemaBodyJson(Principal)(response),
       orElse: () =>
-        HttpClientResponse.schemaBodyJson(
-          Schema.Union(InvalidCodeError, ForbiddenError),
-        )(response),
+        HttpClientResponse.schemaBodyJson(Schema.Union(InvalidCode, Forbidden))(
+          response,
+        ),
     });
 
     return yield* pipe(
       Match.value(encoded),
       Match.tag("Principal", (principal) => Effect.succeed(principal)),
-      Match.tag("InvalidCode", (err) => Effect.fail(err)),
-      Match.tag("Forbidden", (err) => Effect.fail(err)),
+      Match.tag("@error/InvalidCode", (err) => Effect.fail(err)),
+      Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
       Match.exhaustive,
     );
   });

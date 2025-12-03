@@ -10,15 +10,18 @@ import { Micro, pipe } from "effect";
 import { TenancyId } from "../../tenancy";
 
 import {
-  type NetworkError,
+  type UnexpectedError,
   buildEndpoint,
   Endpoint,
   makeRequest,
 } from "../../network";
 
-import { PasskeyError, PasskeysUnsupportedError } from "../shared";
+import {
+  OtherPasskeyError as OtherPasskeyError,
+  PasskeysUnsupportedError,
+} from "../shared";
 import { type PasslockOptions } from "../../shared";
-import { Logger, EventLogger } from "../../logger";
+import { Logger } from "../../logger";
 import type { UserVerification } from "../types";
 
 interface OptionsResponse {
@@ -36,7 +39,7 @@ export const isDuplicatePasskeyError = (
  * has a passkey registered on the current device for a given userId.
  */
 export class DuplicatePasskeyError extends Micro.TaggedError(
-  "DuplicatePasskeyError",
+  "@error/DuplicatePasskeyError",
 )<{
   readonly message: string;
 }> {
@@ -225,13 +228,13 @@ const startRegistration = (
         ) {
           return new DuplicatePasskeyError({ message: error.message });
         } else if (error instanceof WebAuthnError) {
-          return new PasskeyError({
+          return new OtherPasskeyError({
             error: error.cause,
             message: error.message,
             code: error.code,
           });
         } else {
-          return new PasskeyError({ error, message: "Unexpected error" });
+          return new OtherPasskeyError({ error, message: "Unexpected error" });
         }
       },
     });
@@ -240,21 +243,21 @@ const startRegistration = (
 /**
  * Potential errors associated with Passkey registration
  */
-export type RegistrationErrors =
+export type RegistrationError =
   | PasskeysUnsupportedError
   | DuplicatePasskeyError
-  | PasskeyError
-  | NetworkError;
+  | OtherPasskeyError
+  | UnexpectedError;
 
 /**
  * Register a passkey on the local device and store the
- * associated public key in your Passlock vault.
+ * associated public key in the Passlock vault.
  * @param options
  * @returns
  */
 export const registerPasskey = (
   options: RegistrationOptions,
-): Micro.Micro<RegistrationSuccess, RegistrationErrors> => {
+): Micro.Micro<RegistrationSuccess, RegistrationError, Logger> => {
   const endpoint = buildEndpoint(options);
 
   const effect = Micro.gen(function* () {
@@ -267,6 +270,5 @@ export const registerPasskey = (
     effect,
     Micro.provideService(TenancyId, options),
     Micro.provideService(Endpoint, endpoint),
-    Micro.provideService(Logger, EventLogger),
   );
 };

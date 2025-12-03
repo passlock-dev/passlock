@@ -7,11 +7,12 @@ import {
   verifyIdToken as verifyIdTokenE,
 } from "./effect.js";
 
-import type { InvalidCodeError, VerificationError } from "./effect.js";
+import type { VerificationError } from "./effect.js";
+import type { InvalidCode } from "@passlock/shared/error";
 
 import {
-  type ForbiddenError,
-  ServerError,
+  type Forbidden,
+  UnexpectedError,
   type ApiOptions,
   type AuthorizedApiOptions,
 } from "../shared.js";
@@ -29,7 +30,7 @@ export { isPrincipal } from "./effect.js";
 export const exchangeCode = (
   code: string,
   options: AuthorizedApiOptions,
-): Promise<Principal | ForbiddenError | InvalidCodeError> =>
+): Promise<Principal | Forbidden | InvalidCode> =>
   pipe(
     exchangeCodeE(code, options),
     Effect.catchTags({
@@ -66,13 +67,17 @@ export const exchangeCodeUnsafe = (
           onLeft: (err) =>
             pipe(
               Match.value(err),
-              Match.tag("ParseError", (err) => new ServerError(err)),
-              Match.tag("RequestError", (err) => new ServerError(err)),
-              Match.tag("ResponseError", (err) => new ServerError(err)),
-              Match.tag("InvalidCode", (err) => new ServerError(err)),
+              Match.tag("ParseError", (err) => new UnexpectedError(err)),
+              Match.tag("RequestError", (err) => new UnexpectedError(err)),
+              Match.tag("ResponseError", (err) => new UnexpectedError(err)),
               Match.tag(
-                "Forbidden",
-                ({ _tag }) => new ServerError({ _tag, message: "Forbidden" }),
+                "@error/InvalidCode",
+                (err) => new UnexpectedError(err),
+              ),
+              Match.tag(
+                "@error/Forbidden",
+                ({ _tag }) =>
+                  new UnexpectedError({ _tag, message: "Forbidden" }),
               ),
               Match.exhaustive,
               (serverError) => Promise.reject(serverError),
@@ -131,7 +136,7 @@ export const verifyIdTokenUnsafe = (
     (p) =>
       p.then((response) =>
         Either.match(response, {
-          onLeft: (err) => Promise.reject(new ServerError(err)),
+          onLeft: (err) => Promise.reject(new UnexpectedError(err)),
           onRight: (success) => Promise.resolve(success),
         }),
       ),

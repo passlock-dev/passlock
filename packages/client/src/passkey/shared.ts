@@ -6,7 +6,7 @@ export const isPasskeysUnsupportedError = (
   error instanceof PasskeysUnsupportedError;
 
 export class PasskeysUnsupportedError extends Micro.TaggedError(
-  "PasskeysUnsupportedError",
+  "@error/PasskeysUnsupportedError",
 )<{
   readonly message: string;
 }> {
@@ -27,13 +27,16 @@ export type ErrorCode =
   | "ERROR_AUTO_REGISTER_USER_VERIFICATION_FAILURE"
   | "ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY";
 
-export const isPasskeyError = (error: unknown): error is PasskeyError =>
-  error instanceof PasskeyError;
+export const isOtherPasskeyError = (
+  error: unknown,
+): error is OtherPasskeyError => error instanceof OtherPasskeyError;
 
-export class PasskeyError extends Micro.TaggedError("PasskeyError")<{
+export class OtherPasskeyError extends Micro.TaggedError(
+  "@error/OtherPasskeyError",
+)<{
   readonly error: unknown;
   readonly message: string;
   readonly code?: ErrorCode;
 }> {
-  static isPasskeyError = isPasskeyError;
+  static isOtherPasskeyError = isOtherPasskeyError;
 }

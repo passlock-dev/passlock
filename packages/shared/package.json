@@ -21,11 +21,22 @@
     "email": "toby@passlock.dev"
   },
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./error": {
+      "types": "./dist/error.d.ts",
+      "import": "./dist/error.js",
+      "default": "./dist/error.js"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "src",
-    "dist",
-    "!dist/**/*.test.*",
-    "!dist/**/*.spec.*"
+    "dist"
   ],
   "scripts": {
     "build": "tsc --build",

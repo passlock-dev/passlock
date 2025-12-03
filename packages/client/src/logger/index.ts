@@ -9,23 +9,20 @@ export class Logger extends Context.Tag("Logger")<
   }
 >() {}
 
-export const LoggerLive: typeof Logger.Service = {
-  logDebug: (message: string) =>
+export const ConsoleLogger: typeof Logger.Service = {
+  logDebug: (message: string | object, ...optionalArgs: Array<unknown>) =>
     Micro.sync(() => {
-      console.log("debug");
-      console.debug(message);
+      console.debug(message, optionalArgs);
     }),
 
-  logInfo: (message: string) =>
+  logInfo: (message: string | object, ...optionalArgs: Array<unknown>) =>
     Micro.sync(() => {
-      console.log("info");
-      console.info(message);
+      console.info(message, optionalArgs);
     }),
 
-  logError: (message: string) =>
+  logError: (message: string | object, ...optionalArgs: Array<unknown>) =>
     Micro.sync(() => {
-      console.log("error");
-      console.error(message);
+      console.error(message, optionalArgs);
     }),
 };
 
@@ -56,19 +53,15 @@ export class LogEvent extends Event {
   }
 }
 
+const logEvent = (level: LogLevel) => (message: string) =>
+  Micro.sync(() => {
+    if (typeof message === "string") {
+      window.dispatchEvent(new LogEvent(message, level));
+    }
+  });
+
 export const EventLogger: typeof Logger.Service = {
-  logDebug: (message: string) =>
-    Micro.sync(() => {
-      window.dispatchEvent(new LogEvent(message, LogLevel.DEBUG));
-    }),
-
-  logInfo: (message: string) =>
-    Micro.sync(() => {
-      window.dispatchEvent(new LogEvent(message, LogLevel.INFO));
-    }),
-
-  logError: (message: string) =>
-    Micro.sync(() => {
-      window.dispatchEvent(new LogEvent(message, LogLevel.ERROR));
-    }),
+  logDebug: logEvent(LogLevel.DEBUG),
+  logInfo: logEvent(LogLevel.INFO),
+  logError: logEvent(LogLevel.ERROR),
 };
