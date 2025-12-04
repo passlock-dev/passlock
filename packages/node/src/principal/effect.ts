@@ -6,13 +6,19 @@ import type {
 import { Data, Effect, Match, pipe, Schema } from "effect";
 import type { ParseError } from "effect/ParseResult";
 import * as jose from "jose";
-import { InvalidCode } from "@passlock/shared/error";
 
 import {
   Forbidden,
   type ApiOptions,
   type AuthorizedApiOptions,
 } from "../shared.js";
+
+export class InvalidCode extends Schema.TaggedError<InvalidCode>(
+  "@error/InvalidCode",
+)("@error/InvalidCode", { message: Schema.String }) {
+  static isInvalidCode = (payload: unknown): payload is InvalidCode =>
+    Schema.is(InvalidCode)(payload);
+}
 
 export const Principal = Schema.TaggedStruct("Principal", {
   tenancyId: Schema.String,

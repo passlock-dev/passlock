@@ -26,11 +26,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
-    },
-    "./error": {
-      "types": "./dist/error.d.ts",
-      "import": "./dist/error.js",
-      "default": "./dist/error.js"
     }
   },
   "module": "./dist/index.js",

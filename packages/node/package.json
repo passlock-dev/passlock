@@ -68,7 +68,6 @@
   "dependencies": {
     "@effect/platform": "^0.93.6",
     "@effect/platform-node": "^0.103.0",
-    "@passlock/shared": "workspace:*",
     "effect": "catalog:",
     "jose": "^6.1.3"
   },

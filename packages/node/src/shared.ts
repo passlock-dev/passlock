@@ -1,3 +1,5 @@
+import { Schema } from "effect";
+
 export interface ApiOptions {
   tenancyId: string;
   /**
@@ -10,7 +12,27 @@ export interface AuthorizedApiOptions extends ApiOptions {
   apiKey: string;
 }
 
-export { Unauthorized, Forbidden, NotFound } from "@passlock/shared/error";
+export class NotFound extends Schema.TaggedError<NotFound>("@error/NotFound")(
+  "@error/NotFound",
+  {
+    message: Schema.String,
+  },
+) {
+  static isNotFound = (payload: unknown): payload is NotFound =>
+    Schema.is(NotFound)(payload);
+}
+
+// Define a schema for the "Unauthorized" error
+export class Unauthorized extends Schema.TaggedError<Unauthorized>()(
+  "@error/Unauthorized",
+  {},
+) {}
+
+// Define a schema for the "Unauthorized" error
+export class Forbidden extends Schema.TaggedError<Forbidden>()(
+  "@error/Forbidden",
+  {},
+) {}
 
 export class UnexpectedError extends Error {
   readonly _tag: string;

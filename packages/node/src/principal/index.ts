@@ -7,8 +7,7 @@ import {
   verifyIdToken as verifyIdTokenE,
 } from "./effect.js";
 
-import type { VerificationError } from "./effect.js";
-import type { InvalidCode } from "@passlock/shared/error";
+import type { VerificationError, InvalidCode } from "./effect.js";
 
 import {
   type Forbidden,
