@@ -1,11 +1,22 @@
 #!/usr/bin/env node
 
 import { Command, Options } from "@effect/cli";
-import { NodeContext, NodeRuntime } from "@effect/platform-node";
-import { Console, Context, Effect, pipe } from "effect";
-import init, { Endpoint } from "./init.js";
+import { HttpClient, HttpClientRequest } from "@effect/platform";
+import {
+  NodeContext,
+  NodeHttpClient,
+  NodeRuntime,
+} from "@effect/platform-node";
+import { Console, Effect, Layer, pipe } from "effect";
+import { init } from "./init.js";
 
-const doStuff = Console.log("Doing stuff");
+// prepend the correct endpoint
+const mapClient = (endpoint: string) =>
+  pipe(
+    HttpClient.HttpClient,
+    Effect.map(HttpClient.mapRequest(HttpClientRequest.prependUrl(endpoint))),
+    Layer.effect(HttpClient.HttpClient),
+  );
 
 const endpoint = Options.text("endpoint")
   .pipe(Options.withAlias("e"))
@@ -14,13 +25,13 @@ const endpoint = Options.text("endpoint")
 
 const initCmd = pipe(
   Command.make("init", { endpoint }, ({ endpoint }) =>
-    pipe(init, Effect.provideService(Endpoint, endpoint)),
+    pipe(init, Effect.provide(mapClient(endpoint))),
   ),
   Command.withDescription("Setup a new Passlock cloud instance"),
 );
 
 const mainCmd = pipe(
-  Command.make("passlock", {}, () => doStuff),
+  Command.make("passlock", {}, () => Console.log("Passlock CLI tools\nRun with --help for commands and options")),
   Command.withDescription("Passlock CLI tools"),
 );
 
@@ -33,4 +44,9 @@ const cli = Command.run(command, {
 });
 
 // Prepare and run the CLI application
-pipe(cli(process.argv), Effect.provide(NodeContext.layer), NodeRuntime.runMain);
+pipe(
+  cli(process.argv),
+  Effect.provide(NodeHttpClient.layer),
+  Effect.provide(NodeContext.layer),
+  NodeRuntime.runMain,
+);
