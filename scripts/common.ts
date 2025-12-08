@@ -6,6 +6,7 @@ import { exec } from 'node:child_process'
 
 export const STATIC_VARS = {
   PASSLOCK_SITE: 'https://passlock.dev',
+  DEMO: 'https://passlock.dev/#demo',
   GITHUB_REPO: 'https://github.com/passlock-dev/passlock',
   DOCS: 'https://passlock.dev',
   TUTORIAL: 'https://passlock.dev/getting-started/',

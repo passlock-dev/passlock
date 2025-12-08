@@ -8,7 +8,7 @@ in README.template.md and outputs to README.md
   </a>
 </div>
 
-<h1 align="center">Passkey Authentication Framework</h1>
+<h1 align="center">Passkey login for Astro, SvelteKit and other frameworks</h1>
 
 <a name="readme-top"></a>
 <div align="center">
@@ -24,31 +24,35 @@ in README.template.md and outputs to README.md
     <a href="#{DOCS}#">Documentation</a>
     ·
     <a href="#{TUTORIAL}#">Quick start</a>
+    ·
+    <a href="#{DEMO}#">Demo</a>    
   </p>
 </div>
 
 <br />
 
 > [!TIP]  
-> **Not using a Node backend?** The examples in this README use our `@passlock/node` server side library, but **this is not required**. Passlock works similarly to Oauth2/OpenID Connect, so you can make vanilla HTTP calls in your backend to exchange the `code` or use any suitable JWT library to verify our `id_token`.
+> **Not using a Node backend?** The examples in this README use our `@passlock/node` server library, but **this is not required**. Passlock works similarly to Oauth2/OpenID Connect, so you can make vanilla HTTP calls or use any suitable JWT library to verify the `id_token`.
 
 ## Features
 
-Passkeys and the WebAuthn API are quite complex. We've tried to simplify things for you, whilst still offering you the power and flexibility of the underlying APIs.
+Passlock abstracts the complex and ever changing WebAuthn APIs into simple browser and server APIs. Sensible defaults are chosen, but can be overridden if required, giving you a powerful authentication toolkit.
 
-1. **🔐 Replace passwords** - Replace passwords with the next generation authentication technology
+1. **:muscle: Powerful** - We expose the full WebAuthn/Passkey featureset including user verification, autofil, backup/sync and more
 
-2. **💪 Multi-factor authentication** - Use passkeys alongside other authentication mechanisms to deliver fast, frictionless 2FA
+2. **:ok_hand: Headless components** - Giving you 100% control over the UI
 
-3. **☝🏻 Biometrics** - Frictionless facial or fingerprint recognition for your webapps
+3. **:toolbox: Framework agnostic** - Passlock works with all major frontend & backend frameworks 
 
-4. **🖥️ Management console** - Suspend or revoke access for users and passkeys and more..
+4. **:woman_technologist: Dev console** - Something not working? check the unified client/server dev console
 
-5. **🕵️ Audit trail** - View a full audit trail for each passkey and user
+5. **:desktop_computer: Management console** - Suspend or revoke access for users, passkeys and more..
 
-6. **🖥️ Dev console** - Something not working? check the web console for details
+6. **:male_detective: Audit trail** - View a full audit trail for each passkey and user
 
-7. **👌 Headless components** - You have 100% control over the UI
+## Quick start
+
+This is a really basic introduction. Please check out the [documentation](#{DOCS}#) for detailed explanations, examples and framework integration guides.
 
 ## Register a passkey
 
@@ -57,6 +61,7 @@ Passkey registration is a two step process. First you use this library to regist
 ### Register a passkey (frontend)
 
 ```typescript
+// unsafe means the function can throw errors
 import { registerPasskeyUnsafe } from "@passlock/client/passkey";
 
 // get this from your dev tenancy settings in the Passlock console
@@ -78,6 +83,7 @@ console.log({ code: result.code, id_token: result.id_token });
 Use the `@passlock/node` library to verify the new passkey:
 
 ```typescript
+// unsafe means the function can throw errors
 import { exchangeCodeUnsafe } from "@passlock/node/principal";
 
 // get these from your development tenancy settings
