@@ -14,7 +14,7 @@ in README.template.md and outputs to README.md
     <img align="center" width=550 height=50 src="https://passlock-assets.b-cdn.net/images/client-repo-banner.svg" />
   </picture>
   <p align="center">
-    Common code, shared by the client and backend packages
+    Backend NodeJS library to accompany the <a href="https://www.npmjs.com/package/@passlock/client">@passlock/client</a> package
     <br />
     <a href="https://passlock.dev"><strong>Project website »</strong></a>
     <br />
@@ -24,14 +24,23 @@ in README.template.md and outputs to README.md
     ·
     <a href="https://passlock.dev/getting-started/">Quick start</a>
     ·
-    <a href="https://passlock.dev/#demo">Demo</a>    
+    <a href="https://passlock.dev/#demo">Demo</a>   
   </p>
 </div>
 
 <br />
 
-Common code and scripts used by the [@passlock/client][client] and [@passlock/node][node] packages.
+## See also
+
+For frontend usage please see the accompanying [@passlock/client][client] package
+
+## Requirements
+
+Node 22+
+
+## Usage
+
+Please see the [Quick start guide](https://passlock.dev/getting-started/)
 
 [contact]: https://passlock.dev/contact
 [client]: https://www.npmjs.com/package/@passlock/client
-[node]: https://www.npmjs.com/package/@passlock/node

@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    /* Projects */
+    "incremental": true,
+    "composite": true,
+
+    // Platform & modules
+    "target": "ES2022", // Node 20+ supports this natively
+    "lib": ["ES2024"], // built-ins/Promise APIs, etc.
+    "module": "NodeNext", // ESM for Node
+    "moduleResolution": "NodeNext",
+    "moduleDetection": "force",
+    "types": ["node"],
+
+    // Emission
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "stripInternal": true, // hide @internal from .d.ts
+    "newLine": "lf",
+
+    // ESM/CJS interop
+    "verbatimModuleSyntax": true, // preserves import/export as written
+    "allowSyntheticDefaultImports": true,
+    // leave "esModuleInterop" false when using verbatimModuleSyntax
+
+    // Strictness & safety
+    "strict": true,
+    "skipLibCheck": true, // speed; safe for libs
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+
+    // QoL
+    "resolveJsonModule": true,
+    "preserveSymlinks": false,
+  },
+  "include": ["src"],
+  "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.spec.ts"]
+}
