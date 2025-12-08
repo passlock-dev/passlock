@@ -1,6 +1,6 @@
 {
   "name": "@passlock/node",
-  "version": "2.0.0-alpha",
+  "version": "2.0.0-beta.1",
   "description": "Passkey authentication for NodeJS backends",
   "keywords": [
     "passkey",
@@ -34,10 +34,10 @@
       "import": "./dist/principal/index.js",
       "default": "./dist/principal/index.js"
     },
-    "./authenticator": {
-      "types": "./dist/authenticator/index.d.ts",
-      "import": "./dist/authenticator/index.js",
-      "default": "./dist/authenticator/index.js"
+    "./user": {
+      "types": "./dist/user/index.d.ts",
+      "import": "./dist/user/index.js",
+      "default": "./dist/user/index.js"
     }
   },
   "module": "./dist/index.js",
@@ -57,7 +57,7 @@
     "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
     "lint": "prettier --check \"src/**/*.+(js|ts|json)\" && eslint ./src",
     "lint:fix": "prettier --check \"src/**/*.+(js|ts|json)\" && eslint ./src --fix",
-    "prepublishOnly": "pnpm run build:production",
+    "prepublishOnly": "$npm_execpath run build:production",
     "replaceTokens": "LATEST=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/node",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -79,6 +79,7 @@
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
     "prettier": "catalog:",
+    "publint": "catalog:",
     "rimraf": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",

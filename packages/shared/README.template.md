@@ -23,12 +23,14 @@ in README.template.md and outputs to README.md
     <a href="#{DOCS}#">Documentation</a>
     ·
     <a href="#{TUTORIAL}#">Quick start</a>
+    ·
+    <a href="#{DEMO}#">Demo</a>    
   </p>
 </div>
 
 <br />
 
-Common code used by the [@passlock/client][client] and [@passlock/node][node] packages.
+Common code and scripts used by the [@passlock/client][client] and [@passlock/node][node] packages.
 
 [contact]: https://passlock.dev/contact
 [client]: https://www.npmjs.com/package/@passlock/client

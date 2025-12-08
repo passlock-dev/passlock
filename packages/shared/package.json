@@ -1,6 +1,6 @@
 {
   "name": "@passlock/shared",
-  "version": "2.0.0-alpha",
+  "version": "2.0.0-beta.1",
   "description": "Shared code use by Passlock frontend libraries & backend SDKs",
   "keywords": [
     "passlock"
@@ -43,7 +43,7 @@
     "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
     "lint": "prettier --check \"src/**/*.+(js|ts|json)\" && eslint ./src",
     "lint:fix": "prettier --check \"src/**/*.+(js|ts|json)\" && eslint ./src --fix",
-    "prepublishOnly": "pnpm run build:production",
+    "prepublishOnly": "$npm_execpath run build:production",
     "replaceTokens": "LATEST=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/shared",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -67,5 +67,6 @@
     "tsx": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
-  }
+  },
+  "packageManager": "pnpm@10.24.0"  
 }

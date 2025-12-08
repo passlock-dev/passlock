@@ -23,6 +23,8 @@ in README.template.md and outputs to README.md
     <a href="https://passlock.dev">Documentation</a>
     ·
     <a href="https://passlock.dev/getting-started/">Quick start</a>
+    ·
+    <a href="https://passlock.dev/#demo">Demo</a>   
   </p>
 </div>
 
@@ -38,21 +40,7 @@ Node 22+
 
 ## Usage
 
-Generate a secure token in your frontend then use this API to obtain the passkey registration or authentication details:
-
-```typescript
-// unsafe just means the function could throw
-import { exchangeCodeUnsafe } from "@passlock/node/principal";
-
-// get these from your development tenancy settings
-const tenancyId = "myTenancyId";
-const apiKey = "myApiKey";
-
-const result = await exchangeCodeUnsafe(code, { tenancyId, apiKey });
-
-// includes the passkey id and details about the authentication
-console.log(result);
-```
+Please see the [Quick start guide](https://passlock.dev/getting-started/)
 
 [contact]: https://passlock.dev/contact
 [client]: https://www.npmjs.com/package/@passlock/client

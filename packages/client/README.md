@@ -16,7 +16,7 @@ in README.template.md and outputs to README.md
     <img align="center" width=550 height=50 src="https://passlock-assets.b-cdn.net/images/client-repo-banner.svg" />
   </picture>
   <p align="center">
-    Next generation passkey authentication for React, Svelte, Angular and other frameworks. 
+    Next generation passkey authentication for Astro, Svelte(kit), Angular and other frameworks. 
     <br />
     <a href="https://passlock.dev"><strong>Project website »</strong></a>
     <br />
@@ -25,6 +25,8 @@ in README.template.md and outputs to README.md
     <a href="https://passlock.dev">Documentation</a>
     ·
     <a href="https://passlock.dev/getting-started/">Quick start</a>
+    ·
+    <a href="https://passlock.dev/#demo">Demo</a>
   </p>
 </div>
 
@@ -34,19 +36,19 @@ in README.template.md and outputs to README.md
 
 Passkeys and the WebAuthn API are quite complex. We've tried to simplify things for you, whilst still offering you the power and flexibility of the underlying APIs.
 
-1. **🔐 Replace passwords** - Replace passwords with the next generation authentication technology
+1. **💪 Powerful** - We expose the full WebAuthn/Passkey featureset including user verification, autofil, backup/sync and more
 
-2. **💪 Multi-factor authentication** - Use passkeys alongside other authentication mechanisms to deliver fast, frictionless 2FA
+2. **🫆 Biometrics** - Passlock allows you to add biometric authentication to your webapps
 
-3. **☝🏻 Biometrics** - Frictionless facial or fingerprint recognition for your webapps
+3. **👌 Headless components** - Giving you 100% control over the UI
 
-4. **🖥️ Management console** - Suspend or revoke access for users and passkeys and more..
+4. **🧰 Framework agnostic** - Passlock works with all major frontend & backend frameworks 
 
-5. **🕵️ Audit trail** - View a full audit trail for each passkey and user
+5. **👩‍💻 Dev console** - Something not working? check the unified client/server dev console
 
-6. **🖥️ Dev console** - Something not working? check the web console for details
+6. **🖥️ Management console** - Suspend or revoke access for users, passkeys and more..
 
-7. **👌 Headless components** - You have 100% control over the UI
+7. **🕵️‍♂️ Audit trail** - View a full audit trail for each passkey and user
 
 ## More information
 

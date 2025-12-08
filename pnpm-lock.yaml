@@ -31,7 +31,7 @@ catalogs:
       specifier: ^3.7.4
       version: 3.7.4
     publint:
-      specifier: ^0.3.15
+      specifier: 0.3.15
       version: 0.3.15
     rimraf:
       specifier: ^6.1.2
@@ -197,6 +197,9 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.7.4
+      publint:
+        specifier: 'catalog:'
+        version: 0.3.15
       rimraf:
         specifier: 'catalog:'
         version: 6.1.2

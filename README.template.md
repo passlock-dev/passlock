@@ -40,6 +40,8 @@ Passlock abstracts the complex and ever changing WebAuthn APIs into simple brows
 
 1. **:muscle: Powerful** - We expose the full WebAuthn/Passkey featureset including user verification, autofil, backup/sync and more
 
+2. **:closed_lock_with_key: Biometrics** - Passlock allows you to add biometric authentication to your webapps
+
 2. **:ok_hand: Headless components** - Giving you 100% control over the UI
 
 3. **:toolbox: Framework agnostic** - Passlock works with all major frontend & backend frameworks 
