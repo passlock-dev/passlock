@@ -1,9 +1,9 @@
 {
   "name": "demo",
   "private": true,
- "version": "2.0.0-beta.1",
+ "version": "2.0.0-beta.2",
   "type": "module",
-  "packageManager": "pnpm@10.24.0",
+  "packageManager": "pnpm@10.25.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc --build",
@@ -15,9 +15,9 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.17",
-    "daisyui": "^5.5.5",
+    "daisyui": "^5.5.8",
     "tailwindcss": "^4.1.17",
-    "vite": "^7.2.6",
+    "vite": "^7.2.7",
     "@eslint/compat": "catalog:",
     "@eslint/js": "catalog:",
     "eslint": "catalog:",

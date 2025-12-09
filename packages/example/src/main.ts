@@ -1,8 +1,18 @@
 import { LogEvent, LogLevel } from "@passlock/client/logger";
 import "./style.css";
 
-import { registerPasskeyUnsafe, authenticatePasskeyUnsafe } from '@passlock/client/passkey';
-import { exchangeCode, verifyIdToken, isPrincipal } from "@passlock/node/principal";
+import {
+  registerPasskey,
+  isRegistrationSuccess,
+  authenticatePasskey,
+  isAuthenticationSuccess,
+} from "@passlock/client/passkey";
+
+import {
+  exchangeCode,
+  verifyIdToken,
+  isPrincipal,
+} from "@passlock/node/principal";
 
 /* Lookup HTML elements */
 
@@ -10,7 +20,8 @@ const getBtn = (id: string) => document.querySelector<HTMLButtonElement>(id)!;
 
 const getDiv = (id: string) => document.querySelector<HTMLDivElement>(id)!;
 
-const getTextField = (id: string) => document.querySelector<HTMLInputElement>(id)!;
+const getTextField = (id: string) =>
+  document.querySelector<HTMLInputElement>(id)!;
 
 /* HTML elements */
 
@@ -55,17 +66,17 @@ const endpointField = getTextField("#endpoint");
 const resetUI = () => {
   responseDiv.hidden = true;
   errorDiv.hidden = true;
-  jwtDiv.innerText = '';
-  codeDiv.innerText = '';
-  codeVerificationDiv.innerText = '';
+  jwtDiv.innerText = "";
+  codeDiv.innerText = "";
+  codeVerificationDiv.innerText = "";
   errorDiv.innerText = "";
   jwtVerificationDiv.innerText = "";
   codeVerificationDiv.innerText = "";
-}
+};
 
 /**
  * Save the endpoint to local storage
- * @returns 
+ * @returns
  */
 const saveEndpoint = () => {
   if (endpointField === null || endpointField.value.length < 5) {
@@ -75,7 +86,7 @@ const saveEndpoint = () => {
     localStorage.setItem("tenancyId", tenancyIdField.value);
     return endpointField.value;
   }
-}
+};
 
 /**
  * Fetch the value from local storage and update the UI
@@ -88,37 +99,37 @@ const restoreEndpoint = () => {
   } else {
     endpointField.value = "http://localhost:3000";
   }
-}
+};
 
 const saveTenancyId = () => {
   if (tenancyIdField === null || tenancyIdField.value.length < 5) {
     alert("TenancyID required");
     throw false;
   }
-  
-  localStorage.setItem("tenancyId", tenancyIdField.value)
-  
+
+  localStorage.setItem("tenancyId", tenancyIdField.value);
+
   return tenancyIdField.value;
-}
+};
 
 const restoreTenancyId = () => {
   const tenancyId = localStorage.getItem("tenancyId");
 
   if (tenancyId) {
-    tenancyIdField.value = tenancyId
+    tenancyIdField.value = tenancyId;
   }
-}
+};
 
 const saveApiKey = () => {
   if (apiKeyField === null || apiKeyField.value.length < 5) {
     alert("API Key required");
     throw false;
   }
-  
+
   localStorage.setItem("apiKey", apiKeyField.value);
-  
+
   return apiKeyField.value;
-}
+};
 
 const restoreApiKey = () => {
   const apiKey = localStorage.getItem("apiKey");
@@ -126,18 +137,18 @@ const restoreApiKey = () => {
   if (apiKey) {
     apiKeyField.value = apiKey;
   }
-}
+};
 
 const saveUserName = () => {
   if (usernameField === null || usernameField.value.length < 5) {
     alert("Username required");
     throw false;
   }
-  
+
   localStorage.setItem("username", usernameField.value);
-  
+
   return usernameField.value;
-}
+};
 
 const restoreUserName = () => {
   const username = localStorage.getItem("username");
@@ -145,17 +156,17 @@ const restoreUserName = () => {
   if (username) {
     usernameField.value = username;
   }
-}
+};
 
 const saveDisplayName = () => {
   if (displayNameField === null || displayNameField.value.length < 5) {
     return undefined;
   }
-  
+
   localStorage.setItem("displayName", displayNameField.value);
-  
+
   return displayNameField.value;
-}
+};
 
 const restoreDisplayName = () => {
   const displayName = localStorage.getItem("displayName");
@@ -163,75 +174,88 @@ const restoreDisplayName = () => {
   if (displayName) {
     displayNameField.value = displayName;
   }
-}
+};
 
 /**
  * Needed so we can pass the userId during authentication calls,
  * although the user only presents the username.
- * @param username 
- * @param userId 
+ * @param username
+ * @param userId
  */
 const saveUserMapping = (username: string, userId: string) => {
   localStorage.setItem(`mappings:${username}`, userId);
-}
+};
 
 const getUserMappping = (username: string) => {
   return localStorage.getItem(`mappings:${username}`) ?? undefined;
-}
+};
 
 registerBtn.addEventListener("click", async () => {
   resetUI();
 
-  try {
-    const endpoint = saveEndpoint();
-    const tenancyId = saveTenancyId();
-    const username = saveUserName();
-    const userDisplayName = saveDisplayName();
-    const userVerification = "discouraged" as const;
-    const data = await registerPasskeyUnsafe({ username, userDisplayName, userVerification, tenancyId, endpoint });
+  const endpoint = saveEndpoint();
+  const tenancyId = saveTenancyId();
+  const username = saveUserName();
+  const userDisplayName = saveDisplayName();
+  const userVerification = "discouraged" as const;
+  const data = await registerPasskey({
+    username,
+    userDisplayName,
+    userVerification,
+    tenancyId,
+    endpoint,
+  });
 
+  if (isRegistrationSuccess(data)) {
     saveUserMapping(username, data.principal.userId);
-
     jwtDiv.innerText = data.id_token;
     codeDiv.innerText = data.code;
-    responseDiv.hidden = false;
-  } catch (err) {
-    errorDiv.innerText = String(err);
+  } else {
+    errorDiv.innerText = data.message;
     errorDiv.hidden = false;
   }
+
+  responseDiv.hidden = false;
 });
 
 authenticateBtn.addEventListener("click", async () => {
   resetUI();
 
-  try {
-    const endpoint = saveEndpoint();
-    const tenancyId = saveTenancyId();
-    const username = usernameField.value.length > 5 ? usernameField.value : undefined;
-    const userId = username ? getUserMappping(username) : undefined;
-    const data = await authenticatePasskeyUnsafe({ userId, tenancyId, endpoint, userVerification: 'required' });
+  const endpoint = saveEndpoint();
+  const tenancyId = saveTenancyId();
+  const username =
+    usernameField.value.length > 5 ? usernameField.value : undefined;
+  const userId = username ? getUserMappping(username) : undefined;
+  const data = await authenticatePasskey({
+    userId,
+    tenancyId,
+    endpoint,
+    userVerification: "required",
+  });
 
+  if (isAuthenticationSuccess(data)) {
     jwtDiv.innerText = data.id_token;
     codeDiv.innerText = data.code;
-    responseDiv.hidden = false;
-  } catch (err) {
-    errorDiv.innerText = String(err);
+  } else {
+    errorDiv.innerText = data.message;
     errorDiv.hidden = false;
   }
+
+  responseDiv.hidden = false;
 });
 
 copyJwt.addEventListener("click", () => {
   navigator.clipboard.writeText(jwtDiv.innerText);
   jwtStatus.innerText = "Copied";
   setTimeout(() => {
-    jwtStatus.innerText = '';
-  }, 1000)
+    jwtStatus.innerText = "";
+  }, 1000);
 });
 
 verifyJwt.addEventListener("click", async () => {
-  errorDiv.innerHTML = '';
+  errorDiv.innerHTML = "";
   errorDiv.hidden = true;
-  jwtVerificationDiv.innerText = '';
+  jwtVerificationDiv.innerText = "";
 
   const jwt = jwtDiv.innerText.trim();
   const endpoint = saveEndpoint();
@@ -242,7 +266,7 @@ verifyJwt.addEventListener("click", async () => {
     jwtVerificationDiv.innerText = JSON.stringify(result, null, 2);
   } else {
     errorDiv.innerText = String(result.message);
-    errorDiv.hidden = false;    
+    errorDiv.hidden = false;
   }
 });
 
@@ -250,14 +274,14 @@ copyCode.addEventListener("click", () => {
   navigator.clipboard.writeText(codeDiv.innerText);
   codeStatus.innerText = "Copied";
   setTimeout(() => {
-    codeStatus.innerText = '';
-  }, 1000)
+    codeStatus.innerText = "";
+  }, 1000);
 });
 
 verifyCode.addEventListener("click", async () => {
-  errorDiv.innerHTML = '';
+  errorDiv.innerHTML = "";
   errorDiv.hidden = true;
-  codeVerificationDiv.innerText = '';
+  codeVerificationDiv.innerText = "";
 
   const apiKey = saveApiKey();
   const code = codeDiv.innerText.trim();
@@ -266,7 +290,7 @@ verifyCode.addEventListener("click", async () => {
 
   const result = await exchangeCode(code, { tenancyId, apiKey, endpoint });
   if (isPrincipal(result)) {
-     codeVerificationDiv.innerText = JSON.stringify(result, null, 2);
+    codeVerificationDiv.innerText = JSON.stringify(result, null, 2);
   } else {
     errorDiv.innerText = result.message;
     errorDiv.hidden = false;
@@ -279,11 +303,14 @@ const restoreAll = () => {
   restoreUserName();
   restoreDisplayName();
   restoreApiKey();
-}
+};
 
-if (document.readyState === "complete" || document.readyState === "interactive") {
+if (
+  document.readyState === "complete" ||
+  document.readyState === "interactive"
+) {
   restoreAll();
-} else document.addEventListener('load', restoreAll);
+} else document.addEventListener("load", restoreAll);
 
 window.addEventListener(LogEvent.name, ((event: LogEvent) => {
   if (event.level === LogLevel.INFO) console.log(event.message);

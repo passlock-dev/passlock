@@ -158,9 +158,7 @@ export const init: Effect.Effect<void, never, HttpClient.HttpClient> = pipe(
     );
     s.stop("Instance ready");
 
-    log.success(
-      "Here are your instance credentials\nPlease keep them secure",
-    );
+    log.success("Here are your instance credentials\nPlease keep them secure");
 
     log.message(
       `Tenancy ID: ${kleur.blue(tenancyId)}\n` +
@@ -168,7 +166,7 @@ export const init: Effect.Effect<void, never, HttpClient.HttpClient> = pipe(
     );
 
     log.message(
-      "Please refer to the quick start at" +
+      "Please refer to the quick start at\n" +
         "https://passlock.dev/getting-started/",
     );
 

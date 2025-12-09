@@ -1,6 +1,6 @@
 {
   "name": "@passlock/node",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-beta.2",
   "description": "Passkey authentication for NodeJS backends",
   "keywords": [
     "passkey",
@@ -85,7 +85,7 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
-  "packageManager": "pnpm@10.24.0",
+  "packageManager": "pnpm@10.25.0",
   "engines": {
     "node": ">=22"
   }

@@ -6,7 +6,7 @@
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
-  "packageManager": "pnpm@10.24.0",
+  "packageManager": "pnpm@10.25.0",
   "scripts": {
     "ncu": "pnpm exec ncu --workspaces",
     "build:readme": "LATEST=${npm_package_version} tsx ./scripts/replace-readme-tokens.ts ."

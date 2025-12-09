@@ -31,7 +31,9 @@ const initCmd = pipe(
 );
 
 const mainCmd = pipe(
-  Command.make("passlock", {}, () => Console.log("Passlock CLI tools\nRun with --help for commands and options")),
+  Command.make("passlock", {}, () =>
+    Console.log("Passlock CLI tools\nRun with --help for commands and options"),
+  ),
   Command.withDescription("Passlock CLI tools"),
 );
 

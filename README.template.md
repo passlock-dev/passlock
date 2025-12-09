@@ -63,8 +63,7 @@ Passkey registration is a two step process. First you use this library to regist
 ### Register a passkey (frontend)
 
 ```typescript
-// unsafe means the function can throw errors
-import { registerPasskeyUnsafe } from "@passlock/client/passkey";
+import { registerPasskey, isRegistrationSuccess } from "@passlock/client/passkey";
 
 // get this from your dev tenancy settings in the Passlock console
 const tenancyId = "myTenancyId";
@@ -73,11 +72,15 @@ const tenancyId = "myTenancyId";
 const username = "jdoe@gmail.com";
 
 // call this in a button click handler or similar action
-// NOTE unsafe just means the function could throw an error
-const result = await registerPasskeyUnsafe({ tenancyId, username });
+const result = await registerPasskey({ tenancyId, username });
 
-// send this to your backend
-console.log({ code: result.code, id_token: result.id_token });
+// TS type guard
+if (isRegistrationSuccess(result)) {
+  // send this to your backend
+  console.log({ code: result.code, id_token: result.id_token });
+} else {
+  console.error(result.message);
+}
 ```
 
 ### Register a passkey (backend)
@@ -85,22 +88,25 @@ console.log({ code: result.code, id_token: result.id_token });
 Use the `@passlock/node` library to verify the new passkey:
 
 ```typescript
-// unsafe means the function can throw errors
-import { exchangeCodeUnsafe } from "@passlock/node/principal";
+import { exchangeCode, isPrincipal } from "@passlock/node/principal";
 
 // get these from your development tenancy settings
 const tenancyId = "myTenancyId";
 const apiKey = "myApiKey";
 
 // get details about the new passkey
-// NOTE unsafe just means the function could throw an error
-const result = await exchangeCodeUnsafe(code, { tenancyId, apiKey });
+const result = await exchangeCode(code, { tenancyId, apiKey });
 
-// includes details about the new passkey
-console.log(result);
-
-// your function
-await linkPasskey(userId, result.authenticatorId);
+// TS type guard
+if (isPrincipal(result)) {
+  // includes details about the new passkey
+  console.log(result);
+  
+  // your function
+  await linkPasskey(userId, result.authenticatorId);
+} else {
+  console.error(result.message);
+}
 ```
 
 ## Authenticate a passkey
@@ -110,17 +116,21 @@ Passkey authentication is very similar to registration. You use the client libra
 ### Authenticate a passkey (frontend)
 
 ```typescript
-import { authenticatePasskeyUnsafe } from "@passlock/client/passkey";
+import { authenticatePasskey, isAuthenticationSuccess } from "@passlock/client/passkey";
 
 // get this from your dev tenancy settings in the Passlock console
 const tenancyId = "myTenancyId";
 
 // call this in a button click handler or similar action
-// NOTE unsafe just means the function could throw an error
-const result = await authenticatePasskeyUnsafe({ tenancyId });
+const result = await authenticatePasskey({ tenancyId });
 
-// send this to your backend
-console.log({ code: result.code, id_token: result.id_token });
+// TS type guard
+if (isAuthenticationSuccess(result)) {
+  // send this to your backend
+  console.log({ code: result.code, id_token: result.id_token });
+} else {
+  console.error(result.message);
+}
 ```
 
 ### Authenticate a passkey (backend)
@@ -128,21 +138,24 @@ console.log({ code: result.code, id_token: result.id_token });
 Use the `@passlock/node` library to verify authentication:
 
 ```typescript
-import { exchangeCodeUnsafe } from "@passlock/node/principal";
+import { exchangeCode, isPrincipal } from "@passlock/node/principal";
 
 // get these from your development tenancy settings
 const tenancyId = "myTenancyId";
 const apiKey = "myApiKey";
 
 // get details about the new passkey
-// NOTE unsafe just means the function could throw an error
-const result = await exchangeCodeUnsafe(code, { tenancyId, apiKey });
+const result = await exchangeCode(code, { tenancyId, apiKey });
 
-// includes details about the new passkey
-console.log(result);
-
-// your function
-const user = await lookupUser(result.authenticatorId);
+if (isPrincipal(result)) {
+  // includes details about the new passkey
+  console.log(result);
+  
+  // your function
+  const user = await lookupUser(result.authenticatorId);
+} else {
+  console.error(result.message);
+}
 ```
 
 ## More information
