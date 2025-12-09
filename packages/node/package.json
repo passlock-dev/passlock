@@ -66,15 +66,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@effect/platform": "^0.93.6",
-    "@effect/platform-node": "^0.103.0",
+    "@effect/platform": "catalog:",
+    "@effect/platform-node": "catalog:",
     "effect": "catalog:",
     "jose": "^6.1.3"
   },
   "devDependencies": {
     "@eslint/compat": "catalog:",
     "@eslint/js": "catalog:",
-    "@types/node": "^24.10.1",
+    "@types/node": "catalog:",
     "eslint": "catalog:",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
@@ -87,6 +87,6 @@
   },
   "packageManager": "pnpm@10.24.0",
   "engines": {
-    "node": ">=21"
+    "node": ">=22"
   }
 }

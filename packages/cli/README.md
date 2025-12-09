@@ -14,7 +14,7 @@ in README.template.md and outputs to README.md
     <img align="center" width=550 height=50 src="https://passlock-assets.b-cdn.net/images/client-repo-banner.svg" />
   </picture>
   <p align="center">
-    Backend NodeJS library to accompany the <a href="https://www.npmjs.com/package/@passlock/client">@passlock/client</a> package
+    CLI wrapper around the Passlock API
     <br />
     <a href="https://passlock.dev"><strong>Project website »</strong></a>
     <br />
@@ -30,17 +30,29 @@ in README.template.md and outputs to README.md
 
 <br />
 
-## See also
-
-For frontend usage please see the accompanying [@passlock/client][client] package
-
 ## Requirements
 
 Node 22+
 
 ## Usage
 
-Please see the [Quick start guide](https://passlock.dev/getting-started/)
+Install the CLI globally:
+
+`npm install -g @passlock/cli`
+
+or
+
+`pnpm add -g @passlock/api`
+
+### Create a cloud instance
+
+`passlock init`
+
+Follow the prompts
+
+### Help
+
+`passlock --help`
 
 [contact]: https://passlock.dev/contact
 [client]: https://www.npmjs.com/package/@passlock/client
