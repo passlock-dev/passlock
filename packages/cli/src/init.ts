@@ -156,18 +156,25 @@ export const init: Effect.Effect<void, never, HttpClient.HttpClient> = pipe(
         }),
       ),
     );
-    s.stop("Instance ready");
+    s.stop("Instance ready 🎉");
 
-    log.success("Here are your instance credentials\nPlease keep them secure");
-
-    log.message(
-      `Tenancy ID: ${kleur.blue(tenancyId)}\n` +
-        `API Key: ${kleur.blue(apiKey)}`,
+    log.success(
+      "Here are your development instance credentials.\nPlease keep them secure:",
     );
 
     log.message(
-      "Please refer to the quick start at\n" +
-        "https://passlock.dev/getting-started/",
+      `Tenancy ID: ${kleur.green(tenancyId)}\n` +
+        `API Key: ${kleur.green(apiKey)}`,
+    );
+
+    log.message(
+      `Login to your Passlock console at\n` +
+        kleur.blue().underline("https://console.passlock.dev"),
+    );
+
+    log.message(
+      "Check out the quick start guide at\n" +
+        kleur.blue().underline("https://passlock.dev/getting-started/"),
     );
 
     outro("You're all set!");

@@ -5,6 +5,7 @@ export class Logger extends Context.Tag("Logger")<
   {
     readonly logDebug: (message: string) => Micro.Micro<void>;
     readonly logInfo: (message: string) => Micro.Micro<void>;
+    readonly logWarn: (message: string) => Micro.Micro<void>;
     readonly logError: (message: string) => Micro.Micro<void>;
   }
 >() {}
@@ -20,6 +21,11 @@ export const ConsoleLogger: typeof Logger.Service = {
       console.info(message, optionalArgs);
     }),
 
+  logWarn: (message: string | object, ...optionalArgs: Array<unknown>) =>
+    Micro.sync(() => {
+      console.warn(message, optionalArgs);
+    }),
+
   logError: (message: string | object, ...optionalArgs: Array<unknown>) =>
     Micro.sync(() => {
       console.error(message, optionalArgs);
@@ -30,6 +36,7 @@ export enum LogLevel {
   DEBUG = "DEBUG",
   INFO = "INFO",
   ERROR = "ERROR",
+  WARN = "WARN"
 }
 
 export class LogEvent extends Event {
@@ -63,5 +70,6 @@ const logEvent = (level: LogLevel) => (message: string) =>
 export const EventLogger: typeof Logger.Service = {
   logDebug: logEvent(LogLevel.DEBUG),
   logInfo: logEvent(LogLevel.INFO),
+  logWarn: logEvent(LogLevel.WARN),
   logError: logEvent(LogLevel.ERROR),
 };

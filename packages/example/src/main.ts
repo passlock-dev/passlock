@@ -180,10 +180,10 @@ const restoreDisplayName = () => {
  * Needed so we can pass the userId during authentication calls,
  * although the user only presents the username.
  * @param username
- * @param userId
+ * @param passkeyId
  */
-const saveUserMapping = (username: string, userId: string) => {
-  localStorage.setItem(`mappings:${username}`, userId);
+const saveUserMapping = (username: string, passkeyId: string) => {
+  localStorage.setItem(`mappings:${username}`, passkeyId);
 };
 
 const getUserMappping = (username: string) => {
@@ -207,7 +207,7 @@ registerBtn.addEventListener("click", async () => {
   });
 
   if (isRegistrationSuccess(data)) {
-    saveUserMapping(username, data.principal.userId);
+    saveUserMapping(username, data.principal.authenticatorId);
     jwtDiv.innerText = data.id_token;
     codeDiv.innerText = data.code;
   } else {
@@ -225,9 +225,9 @@ authenticateBtn.addEventListener("click", async () => {
   const tenancyId = saveTenancyId();
   const username =
     usernameField.value.length > 5 ? usernameField.value : undefined;
-  const userId = username ? getUserMappping(username) : undefined;
+  const passkeyId = username ? getUserMappping(username) : undefined;
   const data = await authenticatePasskey({
-    userId,
+    allowCredentials: passkeyId ? [passkeyId] : undefined,
     tenancyId,
     endpoint,
     userVerification: "required",

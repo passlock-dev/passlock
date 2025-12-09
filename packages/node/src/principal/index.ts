@@ -1,24 +1,22 @@
 import { FetchHttpClient } from "@effect/platform";
-import { Effect, Either, identity, Match, pipe } from "effect";
+import { Effect, identity, pipe } from "effect";
 
 import {
-  type Principal,
   exchangeCode as exchangeCodeE,
   verifyIdToken as verifyIdTokenE,
+  type ExchangeCodeOptions,
+  type VerifyTokenOptions,
 } from "./effect.js";
 
-import type { VerificationError, InvalidCode } from "./effect.js";
+import type { VerificationFailure } from "../shared.js";
 
-import {
-  type Forbidden,
-  UnexpectedError,
-  type ApiOptions,
-  type AuthorizedApiOptions,
-} from "../shared.js";
+import type { Forbidden, InvalidCode } from "../schemas/errors.js";
+import type { Principal } from "../schemas/principal.js";
 
-export type { VerificationError, Principal } from "./effect.js";
+export * from "../schemas/principal.js";
 
-export { isPrincipal } from "./effect.js";
+export type { InvalidCode } from "../schemas/errors.js";
+export type { ExchangeCodeOptions, Principal } from "./effect.js";
 
 /**
  * Call the Passlock backend API to exchange a code for a Principal
@@ -28,19 +26,11 @@ export { isPrincipal } from "./effect.js";
  */
 export const exchangeCode = (
   code: string,
-  options: AuthorizedApiOptions,
+  options: ExchangeCodeOptions,
 ): Promise<Principal | Forbidden | InvalidCode> =>
   pipe(
     exchangeCodeE(code, options),
-    Effect.catchTags({
-      ParseError: (err) => Effect.die(err),
-      RequestError: (err) => Effect.die(err),
-      ResponseError: (err) => Effect.die(err),
-    }),
-    Effect.match({
-      onSuccess: identity,
-      onFailure: identity,
-    }),
+    Effect.match({ onFailure: identity, onSuccess: identity }),
     Effect.provide(FetchHttpClient.layer),
     Effect.runPromise,
   );
@@ -53,38 +43,16 @@ export const exchangeCode = (
  */
 export const exchangeCodeUnsafe = (
   code: string,
-  options: AuthorizedApiOptions,
+  options: ExchangeCodeOptions,
 ): Promise<Principal> =>
   pipe(
     exchangeCodeE(code, options),
-    Effect.either,
     Effect.provide(FetchHttpClient.layer),
     Effect.runPromise,
-    (p) =>
-      p.then((response) =>
-        Either.match(response, {
-          onLeft: (err) =>
-            pipe(
-              Match.value(err),
-              Match.tag("ParseError", (err) => new UnexpectedError(err)),
-              Match.tag("RequestError", (err) => new UnexpectedError(err)),
-              Match.tag("ResponseError", (err) => new UnexpectedError(err)),
-              Match.tag(
-                "@error/InvalidCode",
-                (err) => new UnexpectedError(err),
-              ),
-              Match.tag(
-                "@error/Forbidden",
-                ({ _tag }) =>
-                  new UnexpectedError({ _tag, message: "Forbidden" }),
-              ),
-              Match.exhaustive,
-              (serverError) => Promise.reject(serverError),
-            ),
-          onRight: (success) => Promise.resolve(success),
-        }),
-      ),
   );
+
+export { VerificationFailure } from "../shared.js";
+export type { VerifyTokenOptions } from "./effect.js";
 
 /**
  * Decode and verify a Passlock idToken.
@@ -98,18 +66,11 @@ export const exchangeCodeUnsafe = (
  */
 export const verifyIdToken = (
   token: string,
-  options: ApiOptions,
-): Promise<Principal | VerificationError> =>
+  options: VerifyTokenOptions,
+): Promise<Principal | VerificationFailure> =>
   pipe(
     verifyIdTokenE(token, options),
-    Effect.catchTags({
-      ParseError: (err) => Effect.die(err),
-    }),
-    Effect.match({
-      onSuccess: identity,
-      onFailure: identity,
-    }),
-    Effect.provide(FetchHttpClient.layer),
+    Effect.match({ onFailure: identity, onSuccess: identity }),
     Effect.runPromise,
   );
 
@@ -125,18 +86,10 @@ export const verifyIdToken = (
  */
 export const verifyIdTokenUnsafe = (
   token: string,
-  options: ApiOptions,
+  options: VerifyTokenOptions,
 ): Promise<Principal> =>
   pipe(
     verifyIdTokenE(token, options),
-    Effect.either,
     Effect.provide(FetchHttpClient.layer),
     Effect.runPromise,
-    (p) =>
-      p.then((response) =>
-        Either.match(response, {
-          onLeft: (err) => Promise.reject(new UnexpectedError(err)),
-          onRight: (success) => Promise.resolve(success),
-        }),
-      ),
   );

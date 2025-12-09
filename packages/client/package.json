@@ -76,6 +76,7 @@
   "devDependencies": {
     "@eslint/compat": "catalog:",
     "@eslint/js": "catalog:",
+    "@typescript/lib-dom": "npm:@types/web@^0.0.303",
     "eslint": "catalog:",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",

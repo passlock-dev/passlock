@@ -1,25 +1,26 @@
 import {
-  type PublicKeyCredentialRequestOptionsJSON,
   type AuthenticationResponseJSON,
+  type PublicKeyCredentialRequestOptionsJSON,
   WebAuthnError,
-  startAuthentication as simpleAuthentication,
   browserSupportsWebAuthn,
+  startAuthentication as simpleAuthentication,
 } from "@simplewebauthn/browser";
 
 import { Micro, pipe } from "effect";
 import { TenancyId } from "../../tenancy";
 
 import {
+  Endpoint,
   type UnexpectedError,
   buildEndpoint,
-  Endpoint,
   makeRequest,
 } from "../../network";
 
-import { OtherPasskeyError, PasskeysUnsupportedError } from "../shared";
-import { type PasslockOptions } from "../../shared";
 import { Logger } from "../../logger";
+import { type PasslockOptions } from "../../shared";
+import { OtherPasskeyError, PasskeysUnsupportedError } from "../shared";
 import type { UserVerification } from "../types";
+import { signalCredentialRemoval } from "../signals/micro";
 
 interface OptionsResponse {
   sessionToken: string;
@@ -40,6 +41,16 @@ const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {
   return true;
 };
 
+export const authenticationEvent = [
+  "optionsRequest",
+  "getCredential",
+  "verifyCredential",
+] as const;
+
+export type AuthenticationEvent = (typeof authenticationEvent)[number];
+
+export type OnEventFn = (event: AuthenticationEvent) => void;
+
 export interface AuthenticationOptions extends PasslockOptions {
   /**
    * Passlock userId. Essentially a shortcut to look up any
@@ -58,26 +69,42 @@ export interface AuthenticationOptions extends PasslockOptions {
    * @see {@link https://passlock.dev/passkeys/user-verification/|userVerification}
    */
   userVerification?: UserVerification | undefined;
+  /**
+   * Use browser autofill.
+   */
+  autofill?: boolean;
+  /**
+   * Receive notifications about key stages in the authentication process.
+   * For example, you might use event notifications to toggle loading icons or
+   * to disable certain form fields.
+   * @param event
+   * @returns
+   */
+  onEvent?: OnEventFn;
   timeout?: number | undefined;
 }
 
-const fetchOptions = ({ userId, userVerification }: AuthenticationOptions) =>
+const fetchOptions = (options: AuthenticationOptions) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger);
     const { endpoint } = yield* Micro.service(Endpoint);
     const { tenancyId } = yield* Micro.service(TenancyId);
+
+    const { userId, userVerification, allowCredentials, onEvent } = options;
 
     const url = new URL(
       `${tenancyId}/passkey/authentication/options`,
       endpoint,
     );
 
+    onEvent?.("optionsRequest");
     yield* logger.logInfo(
       "Fetching passkey authentication options from Passlock",
     );
+
     return yield* makeRequest({
       url,
-      payload: { userId, userVerification },
+      payload: { userId, userVerification, allowCredentials },
       label: "authentication options",
       responsePredicate: isOptionsResponse,
     });
@@ -131,40 +158,47 @@ export const isAuthenticationSuccess = (
   return true;
 };
 
-const verifyCredential = (
-  sessionToken: string,
-  response: AuthenticationResponseJSON,
-) =>
-  Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger);
-    const { endpoint } = yield* Micro.service(Endpoint);
-    const { tenancyId } = yield* Micro.service(TenancyId);
+export interface PasskeyNotFound {
+  _tag: "@error/PasskeyNotFound";
+  message: string;
+  credentialId: string;
+  rpId: string;
+}
 
-    const url = new URL(
-      `${tenancyId}/passkey/authentication/verification`,
-      endpoint,
-    );
+export const isPasskeyNotFound = (
+  payload: unknown,
+): payload is PasskeyNotFound => {
+  if (typeof payload !== "object") return false;
+  if (payload === null) return false;
 
-    yield* logger.logInfo("Verifying passkey in Passlock vault");
+  if (!("_tag" in payload)) return false;
+  if (typeof payload._tag !== "string") return false;
+  if (payload._tag !== "@error/PasskeyNotFound") return false;
 
-    const authenticationResponse = yield* makeRequest({
-      url,
-      payload: { sessionToken, response },
-      label: "authentication verification",
-      responsePredicate: isAuthenticationSuccess,
-    });
+  if (!("message" in payload)) return false;
+  if (typeof payload.message !== "string") return false;
 
-    yield* logger.logInfo(
-      `Passkey with id ${authenticationResponse.principal.authenticatorId} successfully authenticated`,
-    );
+  if (!("credentialId" in payload)) return false;
+  if (typeof payload.credentialId !== "string") return false;
 
-    return authenticationResponse;
-  });
+  if (!("rpId" in payload)) return false;
+  if (typeof payload.rpId !== "string") return false;
+
+  return true;
+};
 
 const startAuthentication = (
   optionsJSON: PublicKeyCredentialRequestOptionsJSON,
+  {
+    useBrowserAutofill,
+    onEvent,
+  }: {
+    useBrowserAutofill: boolean;
+    onEvent?: OnEventFn | undefined;
+  },
 ) =>
   Micro.gen(function* () {
+    onEvent?.("getCredential");
     const logger = yield* Micro.service(Logger);
     yield* logger.logInfo("Requesting passkey authentication on device");
 
@@ -175,7 +209,7 @@ const startAuthentication = (
       });
 
     return yield* Micro.tryPromise({
-      try: () => simpleAuthentication({ optionsJSON }),
+      try: () => simpleAuthentication({ optionsJSON, useBrowserAutofill }),
       catch: (error) => {
         if (error instanceof WebAuthnError) {
           return new OtherPasskeyError({
@@ -190,9 +224,54 @@ const startAuthentication = (
     });
   });
 
+const verifyCredential = (
+  sessionToken: string,
+  response: AuthenticationResponseJSON,
+  { onEvent }: { onEvent?: OnEventFn | undefined },
+) =>
+  Micro.gen(function* () {
+    const logger = yield* Micro.service(Logger);
+    const { endpoint } = yield* Micro.service(Endpoint);
+    const { tenancyId } = yield* Micro.service(TenancyId);
+
+    const url = new URL(
+      `${tenancyId}/passkey/authentication/verification`,
+      endpoint,
+    );
+
+    onEvent?.("verifyCredential");
+    yield* logger.logInfo("Verifying passkey in Passlock vault");
+
+    const authenticationResponse = yield* makeRequest({
+      url,
+      payload: { sessionToken, response },
+      label: "authentication verification",
+      responsePredicate: isAuthenticationSuccess,
+      errorPredicate: (res) => isPasskeyNotFound(res) ? res : null,
+    });
+
+    yield* logger.logInfo(
+      `Passkey with id ${authenticationResponse.principal.authenticatorId} successfully authenticated`,
+    );
+
+    return authenticationResponse;
+  });
+
+interface UnknownCredentialOptions {
+  rpId: string;
+  credentialId: string;
+}
+
+interface PublicKeyCredentialFuture {
+  signalUnknownCredential?: (
+    options: UnknownCredentialOptions,
+  ) => Promise<void>;
+}
+
 export type AuthenticationError =
   | PasskeysUnsupportedError
   | OtherPasskeyError
+  | PasskeyNotFound
   | UnexpectedError;
 
 /**
@@ -210,13 +289,39 @@ export const authenticatePasskey = (
   const effect = Micro.gen(function* () {
     const { sessionToken, optionsJSON } = yield* fetchOptions(options);
 
-    const response = yield* startAuthentication(optionsJSON);
+    const go = (useBrowserAutofill: boolean) =>
+      Micro.gen(function* () {
+        yield* Micro.sleep(100);
 
-    return yield* verifyCredential(sessionToken, response);
+        const response = yield* startAuthentication(optionsJSON, {
+          useBrowserAutofill,
+          onEvent: options.onEvent,
+        });
+
+        options.onEvent?.("verifyCredential");
+        return yield* verifyCredential(sessionToken, response, {
+          onEvent: options.onEvent,
+        });
+      });
+
+    if (options.autofill === true) {
+      return yield* go(options.autofill);
+    } else {
+      return yield* go(false);
+    }
   });
 
-  return pipe(
+  const withNotFoundHandling = pipe(
     effect,
+    Micro.tapError((err) =>
+      err._tag === "@error/PasskeyNotFound"
+        ? signalCredentialRemoval(err)
+        : Micro.void,
+    ),
+  );
+
+  return pipe(
+    withNotFoundHandling,
     Micro.provideService(TenancyId, options),
     Micro.provideService(Endpoint, endpoint),
   );

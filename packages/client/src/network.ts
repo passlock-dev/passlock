@@ -63,20 +63,23 @@ const isErrorResponse = (payload: unknown): payload is ErrorResponse => {
  * @param param0
  * @returns
  */
-export const makeRequest = <Res extends object>({
+export const makeRequest = <A extends object, E = never>({
   url,
   payload,
   responsePredicate,
+  errorPredicate = () => null,
   label,
 }: {
   url: URL;
   /** Request payload */
   payload: object;
   /** Response type guard */
-  responsePredicate: (res: unknown) => res is Res;
+  responsePredicate: (res: unknown) => res is A;
+  /** Error response type guard */
+  errorPredicate?: (res: unknown, status: number) => E | null;
   /** For logging/error reporting */
   label: string;
-}): Micro.Micro<Res, UnexpectedError> =>
+}): Micro.Micro<A, E | UnexpectedError> =>
   Micro.gen(function* () {
     const headers = {
       "Content-Type": "application/json",
@@ -111,12 +114,18 @@ export const makeRequest = <Res extends object>({
         catch: () => parseError,
       });
 
-      return isErrorResponse(apiError)
-        ? yield* new UnexpectedError({
-            ...apiError,
-            url: String(url),
-          })
-        : yield* parseError;
+      const maybeExpectedError = errorPredicate(apiError, fetchResponse.status);
+
+      if (maybeExpectedError) {
+        return yield* Micro.fail(maybeExpectedError);
+      } else if (isErrorResponse(apiError)) {
+        return yield* new UnexpectedError({
+          ...apiError,
+          url: String(url),
+        });
+      } else {
+        return yield* parseError;
+      }
     }
 
     const json = yield* Micro.tryPromise({

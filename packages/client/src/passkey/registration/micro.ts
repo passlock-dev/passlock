@@ -60,6 +60,16 @@ const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {
   return true;
 };
 
+export const registrationEvent = [
+  "optionsRequest",
+  "createCredential",
+  "saveCredential",
+] as const;
+
+export type RegistrationEvent = (typeof registrationEvent)[number];
+
+export type OnEventFn = (event: RegistrationEvent) => void;
+
 /**
  * Passkey registration options
  */
@@ -92,27 +102,40 @@ export interface RegistrationOptions extends PasslockOptions {
    * @see {@link https://passlock.dev/passkeys/user-verification/|userVerification}
    */
   userVerification?: UserVerification | undefined;
+  /**
+   * Receive notifications about key stages in the registration process.
+   * For example, you might use event notifications to toggle loading icons or
+   * to disable certain form fields.
+   * @param event
+   * @returns
+   */
+  onEvent?: OnEventFn;
   timeout?: number | undefined;
 }
 
-const fetchOptions = ({
-  username,
-  userDisplayName,
-  userId,
-  excludeCredentials,
-  userVerification,
-  timeout,
-}: RegistrationOptions) =>
+const fetchOptions = (options: RegistrationOptions) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger);
     const { endpoint } = yield* Micro.service(Endpoint);
     const { tenancyId } = yield* Micro.service(TenancyId);
 
+    const {
+      username,
+      userDisplayName,
+      userId,
+      excludeCredentials,
+      userVerification,
+      timeout,
+      onEvent,
+    } = options;
+
     const url = new URL(`${tenancyId}/passkey/registration/options`, endpoint);
 
+    onEvent?.("optionsRequest");
     yield* logger.logInfo(
       "Fetching passkey registration options from Passlock",
     );
+
     return yield* makeRequest({
       url,
       payload: {
@@ -176,40 +199,12 @@ export const isRegistrationSuccess = (
   return true;
 };
 
-const verifyCredential = (
-  sessionToken: string,
-  response: RegistrationResponseJSON,
-) =>
-  Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger);
-    const { endpoint } = yield* Micro.service(Endpoint);
-    const { tenancyId } = yield* Micro.service(TenancyId);
-
-    const url = new URL(
-      `${tenancyId}/passkey/registration/verification`,
-      endpoint,
-    );
-
-    yield* logger.logInfo("Registering passkey in Passlock vault");
-
-    const registrationResponse = yield* makeRequest({
-      url,
-      payload: { sessionToken, response },
-      responsePredicate: isRegistrationSuccess,
-      label: "registration verification",
-    });
-
-    yield* logger.logInfo(
-      `Passkey registered with id ${registrationResponse.principal.authenticatorId}`,
-    );
-
-    return registrationResponse;
-  });
-
 const startRegistration = (
   optionsJSON: PublicKeyCredentialCreationOptionsJSON,
+  { onEvent }: { onEvent?: OnEventFn | undefined },
 ) =>
   Micro.gen(function* () {
+    onEvent?.("createCredential");
     const logger = yield* Micro.service(Logger);
     yield* logger.logInfo("Registering passkey on device");
 
@@ -240,6 +235,38 @@ const startRegistration = (
     });
   });
 
+const verifyCredential = (
+  sessionToken: string,
+  response: RegistrationResponseJSON,
+  { onEvent }: { onEvent?: OnEventFn | undefined },
+) =>
+  Micro.gen(function* () {
+    const logger = yield* Micro.service(Logger);
+    const { endpoint } = yield* Micro.service(Endpoint);
+    const { tenancyId } = yield* Micro.service(TenancyId);
+
+    const url = new URL(
+      `${tenancyId}/passkey/registration/verification`,
+      endpoint,
+    );
+
+    onEvent?.("saveCredential");
+    yield* logger.logInfo("Registering passkey in Passlock vault");
+
+    const registrationResponse = yield* makeRequest({
+      url,
+      payload: { sessionToken, response },
+      responsePredicate: isRegistrationSuccess,
+      label: "registration verification",
+    });
+
+    yield* logger.logInfo(
+      `Passkey registered with id ${registrationResponse.principal.authenticatorId}`,
+    );
+
+    return registrationResponse;
+  });
+
 /**
  * Potential errors associated with Passkey registration
  */
@@ -262,8 +289,12 @@ export const registerPasskey = (
 
   const effect = Micro.gen(function* () {
     const { sessionToken, optionsJSON } = yield* fetchOptions(options);
-    const response = yield* startRegistration(optionsJSON);
-    return yield* verifyCredential(sessionToken, response);
+    const response = yield* startRegistration(optionsJSON, {
+      onEvent: options.onEvent,
+    });
+    return yield* verifyCredential(sessionToken, response, {
+      onEvent: options.onEvent,
+    });
   });
 
   return pipe(

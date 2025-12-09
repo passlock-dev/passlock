@@ -3,12 +3,12 @@
     "packages/*"
   ],
   "catalog": {
-    "@effect/platform": "^0.93.6",
-    "@effect/platform-node": "^0.103.0",
+    "@effect/platform": "^0.94.0",
+    "@effect/platform-node": "^0.104.0",
     "@eslint/compat": "^2.0.0",
     "@eslint/js": "^9.39.1",
     "@types/node": "24.10.2",
-    "effect": "3.19.10",
+    "effect": "3.19.13",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
     "npm-check-updates": "^19.1.2",

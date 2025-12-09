@@ -1,140 +1,116 @@
 import { HttpClient, HttpClientResponse } from "@effect/platform";
-import type {
-  RequestError,
-  ResponseError,
-} from "@effect/platform/HttpClientError";
-import { Data, Effect, Match, pipe, Schema } from "effect";
-import type { ParseError } from "effect/ParseResult";
+import { Effect, Match, pipe, Schema } from "effect";
 import * as jose from "jose";
 
 import {
-  Forbidden,
+  VerificationFailure,
   type ApiOptions,
   type AuthorizedApiOptions,
 } from "../shared.js";
 
-export class InvalidCode extends Schema.TaggedError<InvalidCode>(
-  "@error/InvalidCode",
-)("@error/InvalidCode", { message: Schema.String }) {
-  static isInvalidCode = (payload: unknown): payload is InvalidCode =>
-    Schema.is(InvalidCode)(payload);
-}
+import { Forbidden, InvalidCode } from "../schemas/errors.js";
+import { IdToken, Principal } from "../schemas/principal.js";
 
-export const Principal = Schema.TaggedStruct("Principal", {
-  tenancyId: Schema.String,
-  userId: Schema.String,
-  code: Schema.String,
-  authenticatorId: Schema.String,
-  passkey: Schema.optionalWith(
-    Schema.Struct({
-      userVerified: Schema.optionalWith(Schema.Boolean, { nullable: true }),
-    }),
-    {
-      nullable: true,
-    },
-  ),
-  createdAt: Schema.DateFromNumber,
-  expiresAt: Schema.DateFromNumber,
-});
-
-export type Principal = typeof Principal.Type;
-
-export const isPrincipal = (payload: unknown): payload is Principal =>
-  Schema.is(Principal)(payload);
-
-export const IdToken = Schema.TaggedStruct("IdToken", {
-  "a:id": Schema.String,
-  "a:typ": Schema.String,
-  iss: Schema.Literal("passlock.dev"),
-  "pk:uv": Schema.Boolean,
-  sub: Schema.String,
-  jti: Schema.String,
-  aud: Schema.String,
-  iat: Schema.Number,
-  exp: Schema.Number,
-});
-
-export type IdToken = typeof IdToken.Type;
+type ExchangeCodeOptions = AuthorizedApiOptions;
 
 export const exchangeCode = (
   code: string,
-  options: AuthorizedApiOptions,
-): Effect.Effect<
-  Principal,
-  InvalidCode | Forbidden | ParseError | RequestError | ResponseError,
-  HttpClient.HttpClient
-> =>
-  Effect.gen(function* () {
-    const client = yield* HttpClient.HttpClient;
-    const baseUrl = options.endpoint ?? "https://api.passlock.dev";
-    const url = new URL(`/${options.tenancyId}/principal/${code}`, baseUrl);
+  options: ExchangeCodeOptions,
+): Effect.Effect<Principal, InvalidCode | Forbidden, HttpClient.HttpClient> =>
+  pipe(
+    Effect.gen(function* () {
+      const client = yield* HttpClient.HttpClient;
+      const baseUrl = options.endpoint ?? "https://api.passlock.dev";
+      const { tenancyId } = options;
 
-    const response = yield* pipe(
-      client.get(url, {
-        headers: { Authorization: `Bearer ${options.apiKey}` },
-      }),
-    );
+      const url = new URL(`/${tenancyId}/principal/${code}`, baseUrl);
 
-    const encoded = yield* HttpClientResponse.matchStatus(response, {
-      "2xx": () => HttpClientResponse.schemaBodyJson(Principal)(response),
-      orElse: () =>
-        HttpClientResponse.schemaBodyJson(Schema.Union(InvalidCode, Forbidden))(
-          response,
-        ),
-    });
+      const response = yield* pipe(
+        client.get(url, {
+          headers: { Authorization: `Bearer ${options.apiKey}` },
+        }),
+      );
 
-    return yield* pipe(
-      Match.value(encoded),
-      Match.tag("Principal", (principal) => Effect.succeed(principal)),
-      Match.tag("@error/InvalidCode", (err) => Effect.fail(err)),
-      Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
-      Match.exhaustive,
-    );
+      const encoded = yield* HttpClientResponse.matchStatus(response, {
+        "2xx": () => HttpClientResponse.schemaBodyJson(Principal)(response),
+        orElse: () =>
+          HttpClientResponse.schemaBodyJson(
+            Schema.Union(InvalidCode, Forbidden),
+          )(response),
+      });
+
+      return yield* pipe(
+        Match.value(encoded),
+        Match.tag("Principal", (principal) => Effect.succeed(principal)),
+        Match.tag("@error/InvalidCode", (err) => Effect.fail(err)),
+        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
+        Match.exhaustive,
+      );
+    }),
+    Effect.catchTags({
+      ParseError: (err) => Effect.die(err),
+      RequestError: (err) => Effect.die(err),
+      ResponseError: (err) => Effect.die(err),
+    }),
+  );
+
+type VerifyTokenOptions = ApiOptions;
+
+const createJwks = (endpoint?: string) =>
+  Effect.sync(() => {
+    const baseUrl = endpoint ?? "https://api.passlock.dev";
+
+    return jose.createRemoteJWKSet(new URL("/.well-known/jwks.json", baseUrl));
   });
 
-export class VerificationError extends Data.TaggedError("VerificationError")<{
-  message: string;
-}> {}
+const createCachedRemoteJwks = pipe(
+  Effect.cachedFunction(createJwks),
+  Effect.runSync,
+);
 
 export const verifyIdToken = (
   token: string,
-  options: ApiOptions,
-): Effect.Effect<Principal, VerificationError | ParseError> =>
-  Effect.gen(function* () {
-    const baseUrl = options.endpoint ?? "https://api.passlock.dev";
-    const JWKS = jose.createRemoteJWKSet(
-      new URL("/.well-known/jwks.json", baseUrl),
-    );
+  options: VerifyTokenOptions,
+): Effect.Effect<Principal, VerificationFailure> =>
+  pipe(
+    Effect.gen(function* () {
+      const JWKS = yield* createCachedRemoteJwks(options.endpoint);
 
-    const { payload } = yield* Effect.tryPromise({
-      try: () =>
-        jose.jwtVerify(token, JWKS, {
-          issuer: "passlock.dev",
-          audience: options.tenancyId,
-        }),
-      catch: (err) =>
-        err instanceof Error
-          ? new VerificationError({ message: err.message })
-          : new VerificationError({ message: String(err) }),
-    });
+      const { payload } = yield* Effect.tryPromise({
+        try: () =>
+          jose.jwtVerify(token, JWKS, {
+            issuer: "passlock.dev",
+            audience: options.tenancyId,
+          }),
+        catch: (err) => {
+          console.error(err);
+          return err instanceof Error
+            ? new VerificationFailure({ message: err.message })
+            : new VerificationFailure({ message: String(err) });
+        },
+      });
 
-    const idToken = yield* Schema.decodeUnknown(IdToken)({
-      ...payload,
-      _tag: "IdToken",
-    });
+      const idToken = yield* Schema.decodeUnknown(IdToken)({
+        ...payload,
+        _tag: "IdToken",
+      });
 
-    const principal: Principal = {
-      _tag: "Principal",
-      tenancyId: options.tenancyId,
-      userId: idToken.sub,
-      code: idToken.jti,
-      authenticatorId: idToken["a:id"],
-      passkey: {
-        userVerified: idToken["pk:uv"],
-      },
-      createdAt: new Date(idToken.iat * 1000),
-      expiresAt: new Date(idToken.exp * 1000),
-    };
+      const principal: Principal = {
+        _tag: "Principal",
+        authenticatorType: "passkey",
+        userId: idToken.sub,
+        authenticatorId: idToken["a:id"],
+        passkey: {
+          verified: true,
+          userVerified: idToken["pk:uv"],
+        },
+        createdAt: idToken.iat * 1000,
+        expiresAt: idToken.exp * 1000,
+      };
 
-    return principal;
-  });
+      return principal;
+    }),
+    Effect.catchTag("ParseError", (err) => Effect.die(err)),
+  );
+
+export type { ExchangeCodeOptions, Principal, VerifyTokenOptions };

@@ -1,7 +1,12 @@
 export type { ApiOptions, AuthorizedApiOptions } from "./shared.js";
 
+export * from "./schemas/errors.js";
+
 export {
+  type ExchangeCodeOptions,
   type Principal,
+  type IdToken,
+  type VerifyTokenOptions,
   isPrincipal,
   exchangeCode,
   exchangeCodeUnsafe,
@@ -11,6 +16,14 @@ export {
 
 export {
   type AssignUserRequest,
-  type AssignedUser,
+  type DeleteAuthenticatorOptions,
+  type GetAuthenticatorOptions,
+  type Passkey,
+  assignUser,
   assignUserUnsafe,
-} from "./user/index.js";
+  isPasskey,
+  getPasskey as getAuthenticator,
+  getPasskeyUnsafe as getAuthenticatorUnsafe,
+  deletePasskey as deleteAuthenticator,
+  deletePasskeyUnsafe as deleteAuthenticatorUnsafe,
+} from "./passkey/index.js";

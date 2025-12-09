@@ -34,11 +34,16 @@
       "import": "./dist/principal/index.js",
       "default": "./dist/principal/index.js"
     },
-    "./user": {
-      "types": "./dist/user/index.d.ts",
-      "import": "./dist/user/index.js",
-      "default": "./dist/user/index.js"
-    }
+    "./authenticator": {
+      "types": "./dist/authenticator/index.d.ts",
+      "import": "./dist/authenticator/index.js",
+      "default": "./dist/authenticator/index.js"
+    },
+    "./effect": {
+      "types": "./dist/effect/index.d.ts",
+      "import": "./dist/effect/index.js",
+      "default": "./dist/effect/index.js"
+    }    
   },
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
