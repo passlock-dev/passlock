@@ -9,6 +9,6 @@ export interface PasslockOptions {
    * Please note this is environment specific, so your dev
    * environment will have a different tenancyId to prod.
    */
-  tenancyId: string;
-  endpoint?: string;
+  tenancyId: string
+  endpoint?: string
 }

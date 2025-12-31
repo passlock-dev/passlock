@@ -1,12 +1,13 @@
-import { Micro, pipe } from "effect";
-import { runToPromise, runToPromiseUnsafe } from "../../promise";
+import { Micro, pipe } from "effect"
+import { runToPromise, runToPromiseUnsafe } from "../../internal/promise"
+import { EventLogger, Logger } from "../../logger"
 import {
-  registerPasskey as registerPasskeyM,
   type RegistrationError,
+  RegistrationHelper,
   type RegistrationOptions,
   type RegistrationSuccess,
-} from "./micro";
-import { EventLogger, Logger } from "../../logger";
+  registerPasskey as registerPasskeyM,
+} from "./micro"
 
 /**
  * Register a passkey on the local device and store the
@@ -16,13 +17,14 @@ import { EventLogger, Logger } from "../../logger";
  */
 export const registerPasskeyUnsafe = async (
   options: RegistrationOptions,
-  logger: typeof Logger.Service = EventLogger,
+  logger: typeof Logger.Service = EventLogger
 ): Promise<RegistrationSuccess> =>
   pipe(
     registerPasskeyM(options),
     Micro.provideService(Logger, logger),
-    runToPromiseUnsafe,
-  );
+    Micro.provideService(RegistrationHelper, RegistrationHelper.Default),
+    runToPromiseUnsafe
+  )
 
 /**
  * Register a passkey on the local device and store the
@@ -32,13 +34,14 @@ export const registerPasskeyUnsafe = async (
  */
 export const registerPasskey = async (
   options: RegistrationOptions,
-  logger: typeof Logger.Service = EventLogger,
+  logger: typeof Logger.Service = EventLogger
 ): Promise<RegistrationSuccess | RegistrationError> =>
   pipe(
     registerPasskeyM(options),
     Micro.provideService(Logger, logger),
-    runToPromise,
-  );
+    Micro.provideService(RegistrationHelper, RegistrationHelper.Default),
+    runToPromise
+  )
 
-export type { RegistrationSuccess, RegistrationError } from "./micro";
-export { isRegistrationSuccess } from "./micro";
+export type { RegistrationError, RegistrationOptions, RegistrationSuccess } from "./micro"
+export { isRegistrationSuccess } from "./micro"

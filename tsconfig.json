@@ -40,5 +40,5 @@
     "preserveSymlinks": false
   },
   "include": ["src", "scripts"],
-  "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.spec.ts"]
+  "exclude": ["dist", "node_modules"]
 }

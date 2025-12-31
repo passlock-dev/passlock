@@ -1,31 +1,30 @@
 {
   "name": "demo",
   "private": true,
- "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "type": "module",
-  "packageManager": "pnpm@10.25.0",
+  "packageManager": "pnpm@10.27.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc --build",
     "clean": "tsc --build --clean",
     "clean:all": "rimraf dist tsconfig.tsbuildinfo",
     "preview": "vite preview",
-    "format": "prettier . --write",
-    "lint": "prettier --check . && eslint ."    
+    "lint": "biome check .",
+    "lint:fix": "biome check --fix .",
+    "lint:ci": "biome ci .",
+    "format": "biome format --fix .",
+    "format:check": "biome format ."
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.17",
-    "daisyui": "^5.5.8",
-    "tailwindcss": "^4.1.17",
-    "vite": "^7.2.7",
-    "@eslint/compat": "catalog:",
-    "@eslint/js": "catalog:",
-    "eslint": "catalog:",
+    "@tailwindcss/vite": "^4.1.18",
+    "@biomejs/biome": "catalog:",
+    "daisyui": "^5.5.14",
     "globals": "catalog:",
-    "prettier": "catalog:",
     "rimraf": "catalog:",
+    "tailwindcss": "^4.1.18",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:"    
+    "vite": "^7.3.0"
   },
   "dependencies": {
     "@passlock/client": "workspace:*",

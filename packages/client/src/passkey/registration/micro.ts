@@ -1,74 +1,68 @@
+import type { PasslockOptions } from "../../shared"
+import type { UserVerification } from "../types"
+import * as Helper from "@simplewebauthn/browser"
 import {
-  browserSupportsWebAuthn,
   type PublicKeyCredentialCreationOptionsJSON,
   type RegistrationResponseJSON,
-  startRegistration as simpleRegistration,
   WebAuthnError,
-} from "@simplewebauthn/browser";
-
-import { Micro, pipe } from "effect";
-import { TenancyId } from "../../tenancy";
-
-import {
-  type UnexpectedError,
-  buildEndpoint,
-  Endpoint,
-  makeRequest,
-} from "../../network";
-
-import {
-  OtherPasskeyError as OtherPasskeyError,
-  PasskeysUnsupportedError,
-} from "../shared";
-import { type PasslockOptions } from "../../shared";
-import { Logger } from "../../logger";
-import type { UserVerification } from "../types";
+} from "@simplewebauthn/browser"
+import { Context, Micro, pipe } from "effect"
+import { buildEndpoint, Endpoint, makeRequest, type UnexpectedError } from "../../internal/network"
+import { TenancyId } from "../../internal/tenancy"
+import { Logger } from "../../logger"
+import { OtherPasskeyError, PasskeysUnsupportedError } from "../errors"
 
 interface OptionsResponse {
-  sessionToken: string;
-  optionsJSON: PublicKeyCredentialCreationOptionsJSON;
+  sessionToken: string
+  optionsJSON: PublicKeyCredentialCreationOptionsJSON
 }
 
-export const isDuplicatePasskeyError = (
-  err: unknown,
-): err is DuplicatePasskeyError => err instanceof DuplicatePasskeyError;
+export class RegistrationHelper extends Context.Tag("RegistrationHelper")<
+  RegistrationHelper,
+  {
+    browserSupportsWebAuthn: typeof Helper.browserSupportsWebAuthn
+    startRegistration: typeof Helper.startRegistration
+  }
+>() {
+  static Default = {
+    browserSupportsWebAuthn: Helper.browserSupportsWebAuthn,
+    startRegistration: Helper.startRegistration,
+  } satisfies typeof RegistrationHelper.Service
+}
+
+export const isDuplicatePasskeyError = (err: unknown): err is DuplicatePasskeyError =>
+  err instanceof DuplicatePasskeyError
 
 /**
  * Raised if excludeCredentials or userId was provided and the
  * device recognises one of the passkey ids i.e. the user currently
  * has a passkey registered on the current device for a given userId.
  */
-export class DuplicatePasskeyError extends Micro.TaggedError(
-  "@error/DuplicatePasskeyError",
-)<{
-  readonly message: string;
+export class DuplicatePasskeyError extends Micro.TaggedError("@error/DuplicatePasskeyError")<{
+  readonly message: string
 }> {
-  static isDuplicatePasskeyError = isDuplicatePasskeyError;
+  static isDuplicatePasskeyError = isDuplicatePasskeyError
 }
 
 const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {
-  if (typeof payload !== "object") return false;
-  if (payload === null) return false;
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
 
-  if (!("optionsJSON" in payload)) return false;
-  if (typeof payload.optionsJSON !== "object") return false;
-  if (payload.optionsJSON === null) return false;
+  if (!("optionsJSON" in payload)) return false
+  if (typeof payload.optionsJSON !== "object") return false
+  if (payload.optionsJSON === null) return false
 
-  if (!("sessionToken" in payload)) return false;
-  if (typeof payload.sessionToken !== "string") return false;
+  if (!("sessionToken" in payload)) return false
+  if (typeof payload.sessionToken !== "string") return false
 
-  return true;
-};
+  return true
+}
 
-export const registrationEvent = [
-  "optionsRequest",
-  "createCredential",
-  "saveCredential",
-] as const;
+export const registrationEvent = ["optionsRequest", "createCredential", "saveCredential"] as const
 
-export type RegistrationEvent = (typeof registrationEvent)[number];
+export type RegistrationEvent = (typeof registrationEvent)[number]
 
-export type OnEventFn = (event: RegistrationEvent) => void;
+export type OnEventFn = (event: RegistrationEvent) => void
 
 /**
  * Passkey registration options
@@ -79,29 +73,29 @@ export interface RegistrationOptions extends PasslockOptions {
    *
    * @see {@link https://passlock.dev/getting-started/passkey-registration/#passkey-username|username}
    */
-  username: string;
+  username: string
   /**
    * Human palateable username
    */
-  userDisplayName?: string | undefined;
+  userDisplayName?: string | undefined
   /**
    * Passlock userId. Essentially a shortcut to look up any
    * currently registered passkeys (excludeCredentials) for a given user.
    */
-  userId?: string | undefined;
+  userId?: string | undefined
   /**
    * Prevents the user registering a passkey if they already have one
    * (for the same user account) registered on the current device.
    *
    * @see {@link https://passlock.dev/passkeys/registration/#excludecredentials|excludeCredentials}
    */
-  excludeCredentials?: Array<string> | undefined;
+  excludeCredentials?: Array<string> | undefined
   /**
    * Whether the device should re-authenticate the user locally before registering the passkey.
    *
    * @see {@link https://passlock.dev/passkeys/user-verification/|userVerification}
    */
-  userVerification?: UserVerification | undefined;
+  userVerification?: UserVerification | undefined
   /**
    * Receive notifications about key stages in the registration process.
    * For example, you might use event notifications to toggle loading icons or
@@ -109,15 +103,15 @@ export interface RegistrationOptions extends PasslockOptions {
    * @param event
    * @returns
    */
-  onEvent?: OnEventFn;
-  timeout?: number | undefined;
+  onEvent?: OnEventFn
+  timeout?: number | undefined
 }
 
-const fetchOptions = (options: RegistrationOptions) =>
+export const fetchOptions = (options: Omit<RegistrationOptions, keyof PasslockOptions>) =>
   Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger);
-    const { endpoint } = yield* Micro.service(Endpoint);
-    const { tenancyId } = yield* Micro.service(TenancyId);
+    const logger = yield* Micro.service(Logger)
+    const { endpoint } = yield* Micro.service(Endpoint)
+    const { tenancyId } = yield* Micro.service(TenancyId)
 
     const {
       username,
@@ -127,32 +121,32 @@ const fetchOptions = (options: RegistrationOptions) =>
       userVerification,
       timeout,
       onEvent,
-    } = options;
+    } = options
 
-    const url = new URL(`${tenancyId}/passkey/registration/options`, endpoint);
+    const url = new URL(`${tenancyId}/passkey/registration/options`, endpoint)
 
-    onEvent?.("optionsRequest");
-    yield* logger.logInfo(
-      "Fetching passkey registration options from Passlock",
-    );
+    onEvent?.("optionsRequest")
+    yield* logger.logInfo("Fetching passkey registration options from Passlock")
+
+    const payload = {
+      excludeCredentials,
+      timeout,
+      userDisplayName,
+      userId,
+      username,
+      userVerification,
+    }
 
     return yield* makeRequest({
-      url,
-      payload: {
-        username,
-        userDisplayName,
-        userId,
-        excludeCredentials,
-        userVerification,
-        timeout,
-      },
-      responsePredicate: isOptionsResponse,
       label: "registration options",
-    });
-  });
+      payload,
+      responsePredicate: isOptionsResponse,
+      url,
+    })
+  })
 
-const RegistrationSuccessTag = "RegistrationSuccess" as const;
-type RegistrationSuccessTag = typeof RegistrationSuccessTag;
+const RegistrationSuccessTag = "RegistrationSuccess" as const
+type RegistrationSuccessTag = typeof RegistrationSuccessTag
 
 /**
  * Represents the outcome of a successfull passkey registration.
@@ -164,11 +158,11 @@ type RegistrationSuccessTag = typeof RegistrationSuccessTag;
  * for you.
  */
 export interface RegistrationSuccess {
-  _tag: RegistrationSuccessTag;
+  _tag: RegistrationSuccessTag
   principal: {
-    authenticatorId: string;
-    userId: string;
-  };
+    authenticatorId: string
+    userId: string
+  }
   /**
    * A signed JWT representing the newly registered passkey.
    * Decode and verify this in your backend or use one of the @passlock/node
@@ -176,96 +170,98 @@ export interface RegistrationSuccess {
    *
    * @see {@link https://passlock.dev/principal/idtoken-verification/|id_token}
    */
-  id_token: string;
+  id_token: string
   /**
    * Call the Passlock API to exchange this code for details about the newly
    * registered passkey.
    *
    * @see {@link https://passlock.dev/principal/code-exchange//|code exchange}
    */
-  code: string;
+  code: string
 }
 
-export const isRegistrationSuccess = (
-  payload: unknown,
-): payload is RegistrationSuccess => {
-  if (typeof payload !== "object") return false;
-  if (payload === null) return false;
+export const isRegistrationSuccess = (payload: unknown): payload is RegistrationSuccess => {
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
 
-  if (!("_tag" in payload)) return false;
-  if (typeof payload._tag !== "string") return false;
-  if (payload._tag !== RegistrationSuccessTag) return false;
+  if (!("_tag" in payload)) return false
+  if (typeof payload._tag !== "string") return false
+  if (payload._tag !== RegistrationSuccessTag) return false
 
-  return true;
-};
+  return true
+}
 
-const startRegistration = (
+export const startRegistration = (
   optionsJSON: PublicKeyCredentialCreationOptionsJSON,
-  { onEvent }: { onEvent?: OnEventFn | undefined },
+  { onEvent }: { onEvent?: OnEventFn | undefined }
 ) =>
   Micro.gen(function* () {
-    onEvent?.("createCredential");
-    const logger = yield* Micro.service(Logger);
-    yield* logger.logInfo("Registering passkey on device");
+    onEvent?.("createCredential")
+    const logger = yield* Micro.service(Logger)
+    yield* logger.logInfo("Registering passkey on device")
 
-    const isSupport = browserSupportsWebAuthn();
+    const helper = yield* Micro.service(RegistrationHelper)
+
+    const isSupport = helper.browserSupportsWebAuthn()
     if (!isSupport)
       yield* new PasskeysUnsupportedError({
         message: "Device does not support passkeys",
-      });
+      })
 
     return yield* Micro.tryPromise({
-      try: () => simpleRegistration({ optionsJSON }),
       catch: (error) => {
         if (
           error instanceof WebAuthnError &&
           error.code === "ERROR_AUTHENTICATOR_PREVIOUSLY_REGISTERED"
         ) {
-          return new DuplicatePasskeyError({ message: error.message });
+          return new DuplicatePasskeyError({ message: error.message })
         } else if (error instanceof WebAuthnError) {
           return new OtherPasskeyError({
+            code: error.code,
             error: error.cause,
             message: error.message,
-            code: error.code,
-          });
+          })
         } else {
-          return new OtherPasskeyError({ error, message: "Unexpected error" });
+          return new OtherPasskeyError({ error, message: "Unexpected error" })
         }
       },
-    });
-  });
+      try: () => helper.startRegistration({ optionsJSON }),
+    })
+  })
 
-const verifyCredential = (
+export const verifyCredential = (
   sessionToken: string,
   response: RegistrationResponseJSON,
-  { onEvent }: { onEvent?: OnEventFn | undefined },
+  { onEvent }: { onEvent?: OnEventFn | undefined }
 ) =>
   Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger);
-    const { endpoint } = yield* Micro.service(Endpoint);
-    const { tenancyId } = yield* Micro.service(TenancyId);
+    const logger = yield* Micro.service(Logger)
+    const { endpoint } = yield* Micro.service(Endpoint)
+    const { tenancyId } = yield* Micro.service(TenancyId)
 
-    const url = new URL(
-      `${tenancyId}/passkey/registration/verification`,
-      endpoint,
-    );
+    const url = new URL(`${tenancyId}/passkey/registration/verification`, endpoint)
 
-    onEvent?.("saveCredential");
-    yield* logger.logInfo("Registering passkey in Passlock vault");
+    onEvent?.("saveCredential")
+    yield* logger.logInfo("Registering passkey in Passlock vault")
+
+    const payload = {
+      response,
+      sessionToken,
+    }
 
     const registrationResponse = yield* makeRequest({
-      url,
-      payload: { sessionToken, response },
-      responsePredicate: isRegistrationSuccess,
       label: "registration verification",
-    });
+      payload,
+      responsePredicate: isRegistrationSuccess,
+      url,
+    })
 
     yield* logger.logInfo(
-      `Passkey registered with id ${registrationResponse.principal.authenticatorId}`,
-    );
+      `Passkey registered with id ${registrationResponse.principal.authenticatorId}`
+    )
 
-    return registrationResponse;
-  });
+    return registrationResponse
+  })
 
 /**
  * Potential errors associated with Passkey registration
@@ -274,7 +270,7 @@ export type RegistrationError =
   | PasskeysUnsupportedError
   | DuplicatePasskeyError
   | OtherPasskeyError
-  | UnexpectedError;
+  | UnexpectedError
 
 /**
  * Register a passkey on the local device and store the
@@ -283,23 +279,23 @@ export type RegistrationError =
  * @returns
  */
 export const registerPasskey = (
-  options: RegistrationOptions,
-): Micro.Micro<RegistrationSuccess, RegistrationError, Logger> => {
-  const endpoint = buildEndpoint(options);
+  options: RegistrationOptions
+): Micro.Micro<RegistrationSuccess, RegistrationError, Logger | RegistrationHelper> => {
+  const endpoint = buildEndpoint(options)
 
   const effect = Micro.gen(function* () {
-    const { sessionToken, optionsJSON } = yield* fetchOptions(options);
+    const { sessionToken, optionsJSON } = yield* fetchOptions(options)
     const response = yield* startRegistration(optionsJSON, {
       onEvent: options.onEvent,
-    });
+    })
     return yield* verifyCredential(sessionToken, response, {
       onEvent: options.onEvent,
-    });
-  });
+    })
+  })
 
   return pipe(
     effect,
     Micro.provideService(TenancyId, options),
-    Micro.provideService(Endpoint, endpoint),
-  );
-};
+    Micro.provideService(Endpoint, endpoint)
+  )
+}

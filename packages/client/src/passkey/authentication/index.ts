@@ -1,12 +1,13 @@
-import { Micro, pipe } from "effect";
-import { runToPromise, runToPromiseUnsafe } from "../../promise";
+import { Micro, pipe } from "effect"
+import { runToPromise, runToPromiseUnsafe } from "../../internal/promise"
+import { EventLogger, Logger } from "../../logger"
 import {
-  authenticatePasskey as authenticatePasskeyM,
   type AuthenticationError,
+  AuthenticationHelper,
   type AuthenticationOptions,
   type AuthenticationSuccess,
-} from "./micro";
-import { EventLogger, Logger } from "../../logger";
+  authenticatePasskey as authenticatePasskeyM,
+} from "./micro"
 
 /**
  * Trigger local passkey authentication then verify the passkey in the Passlock vault.
@@ -17,13 +18,14 @@ import { EventLogger, Logger } from "../../logger";
  */
 export const authenticatePasskeyUnsafe = (
   options: AuthenticationOptions,
-  logger: typeof Logger.Service = EventLogger,
+  logger: typeof Logger.Service = EventLogger
 ): Promise<AuthenticationSuccess> =>
   pipe(
     authenticatePasskeyM(options),
     Micro.provideService(Logger, logger),
-    runToPromiseUnsafe,
-  );
+    Micro.provideService(AuthenticationHelper, AuthenticationHelper.Default),
+    runToPromiseUnsafe
+  )
 
 /**
  * Trigger local passkey authentication then verify the passkey in the Passlock vault.
@@ -34,13 +36,14 @@ export const authenticatePasskeyUnsafe = (
  */
 export const authenticatePasskey = (
   options: AuthenticationOptions,
-  logger: typeof Logger.Service = EventLogger,
+  logger: typeof Logger.Service = EventLogger
 ): Promise<AuthenticationSuccess | AuthenticationError> =>
   pipe(
     authenticatePasskeyM(options),
     Micro.provideService(Logger, logger),
-    runToPromise,
-  );
+    Micro.provideService(AuthenticationHelper, AuthenticationHelper.Default),
+    runToPromise
+  )
 
-export type { AuthenticationSuccess, AuthenticationError } from "./micro";
-export { isAuthenticationSuccess } from "./micro";
+export type { AuthenticationError, AuthenticationOptions, AuthenticationSuccess } from "./micro"
+export { isAuthenticationSuccess } from "./micro"

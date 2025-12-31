@@ -36,11 +36,8 @@
     "stripInternal": true,
 
     /* Performance */
-    "skipLibCheck": true,
+    "skipLibCheck": true
   },
   "include": ["src"],
-  "exclude": ["**/*.test.*", "**/*.spec.*", "node_modules", "dist"],
-  "references": [
-    { "path": "../shared" }, 
-  ]
+  "exclude": ["node_modules", "dist"]
 }

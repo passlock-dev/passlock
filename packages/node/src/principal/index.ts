@@ -1,22 +1,14 @@
-import { FetchHttpClient } from "@effect/platform";
-import { Effect, identity, pipe } from "effect";
-
+import type { Forbidden, InvalidCode } from "../schemas/errors.js"
+import type { ExtendedPrincipal, Principal } from "../schemas/principal.js"
+import { FetchHttpClient } from "@effect/platform"
+import { Effect, identity, pipe } from "effect"
 import {
-  exchangeCode as exchangeCodeE,
-  verifyIdToken as verifyIdTokenE,
   type ExchangeCodeOptions,
+  exchangeCode as exchangeCodeE,
+  type VerificationFailure,
   type VerifyTokenOptions,
-} from "./effect.js";
-
-import type { VerificationFailure } from "../shared.js";
-
-import type { Forbidden, InvalidCode } from "../schemas/errors.js";
-import type { Principal } from "../schemas/principal.js";
-
-export * from "../schemas/principal.js";
-
-export type { InvalidCode } from "../schemas/errors.js";
-export type { ExchangeCodeOptions, Principal } from "./effect.js";
+  verifyIdToken as verifyIdTokenE,
+} from "./effects.js"
 
 /**
  * Call the Passlock backend API to exchange a code for a Principal
@@ -26,14 +18,14 @@ export type { ExchangeCodeOptions, Principal } from "./effect.js";
  */
 export const exchangeCode = (
   code: string,
-  options: ExchangeCodeOptions,
-): Promise<Principal | Forbidden | InvalidCode> =>
+  options: ExchangeCodeOptions
+): Promise<ExtendedPrincipal | Forbidden | InvalidCode> =>
   pipe(
     exchangeCodeE(code, options),
     Effect.match({ onFailure: identity, onSuccess: identity }),
     Effect.provide(FetchHttpClient.layer),
-    Effect.runPromise,
-  );
+    Effect.runPromise
+  )
 
 /**
  * Call the Passlock backend API to exchange a code for a Principal
@@ -43,16 +35,9 @@ export const exchangeCode = (
  */
 export const exchangeCodeUnsafe = (
   code: string,
-  options: ExchangeCodeOptions,
-): Promise<Principal> =>
-  pipe(
-    exchangeCodeE(code, options),
-    Effect.provide(FetchHttpClient.layer),
-    Effect.runPromise,
-  );
-
-export { VerificationFailure } from "../shared.js";
-export type { VerifyTokenOptions } from "./effect.js";
+  options: ExchangeCodeOptions
+): Promise<ExtendedPrincipal> =>
+  pipe(exchangeCodeE(code, options), Effect.provide(FetchHttpClient.layer), Effect.runPromise)
 
 /**
  * Decode and verify a Passlock idToken.
@@ -66,13 +51,13 @@ export type { VerifyTokenOptions } from "./effect.js";
  */
 export const verifyIdToken = (
   token: string,
-  options: VerifyTokenOptions,
+  options: VerifyTokenOptions
 ): Promise<Principal | VerificationFailure> =>
   pipe(
     verifyIdTokenE(token, options),
     Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise,
-  );
+    Effect.runPromise
+  )
 
 /**
  * Decode and verify a Passlock idToken.
@@ -86,10 +71,15 @@ export const verifyIdToken = (
  */
 export const verifyIdTokenUnsafe = (
   token: string,
-  options: VerifyTokenOptions,
+  options: VerifyTokenOptions
 ): Promise<Principal> =>
-  pipe(
-    verifyIdTokenE(token, options),
-    Effect.provide(FetchHttpClient.layer),
-    Effect.runPromise,
-  );
+  pipe(verifyIdTokenE(token, options), Effect.provide(FetchHttpClient.layer), Effect.runPromise)
+
+export type { InvalidCode } from "../schemas/errors.js"
+export type {
+  ExchangeCodeOptions,
+  Principal,
+  VerificationFailure,
+  VerifyTokenOptions,
+} from "./effects.js"
+export * from "../schemas/principal.js"

@@ -2,7 +2,6 @@
   "compilerOptions": {
     /* Projects */
     "incremental": true,
-    "composite": true,
 
     // Platform & modules
     "target": "ES2022", // Node 20+ supports this natively
@@ -37,8 +36,8 @@
 
     // QoL
     "resolveJsonModule": true,
-    "preserveSymlinks": false,
+    "preserveSymlinks": false
   },
   "include": ["src"],
-  "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.spec.ts"]
+  "exclude": ["node_modules", "dist"]
 }

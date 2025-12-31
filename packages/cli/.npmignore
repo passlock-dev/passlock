@@ -1,0 +1,4 @@
+**/*.test.ts
+**/*.spec.ts
+test/
+src/

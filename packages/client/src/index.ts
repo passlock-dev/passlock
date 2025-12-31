@@ -1,5 +1,4 @@
-export * from "./passkey/index";
-
-export type { PasslockOptions } from "./shared";
-
-export { UnexpectedError, isUnexpectedError } from "./network";
+export type { PasslockOptions } from "./shared"
+export { isUnexpectedError, UnexpectedError } from "./internal/network"
+export * from "./logger/index"
+export * from "./passkey/index"

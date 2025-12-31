@@ -1,6 +1,6 @@
 {
   "name": "@passlock/cli",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "description": "CLI tooling support for the Passlock authentication framework",
   "keywords": [
     "passkey",
@@ -48,16 +48,18 @@
     "build:readme": "LATEST=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/cli",
     "clean": "tsc --build --clean",
     "clean:full": "rimraf dist tsconfig.tsbuildinfo",
-    "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
-    "lint": "prettier --check \"src/**/*.+(js|ts|json)\" && eslint ./src",
-    "lint:fix": "prettier --check \"src/**/*.+(js|ts|json)\" && eslint ./src --fix",
-    "prepublishOnly": "$npm_execpath run build:production",
     "replaceTokens": "LATEST=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/cli",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --coverage.enabled=true --ui",
     "test:watch": "vitest dev",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check --fix .",
+    "lint:ci": "biome ci .",
+    "format": "biome format --fix .",
+    "format:check": "biome format .",
+    "prepublishOnly": "$npm_execpath run build:production"
   },
   "dependencies": {
     "@clack/prompts": "^0.11.0",
@@ -68,20 +70,16 @@
     "kleur": "^4.1.5"
   },
   "devDependencies": {
-    "@eslint/compat": "catalog:",
-    "@eslint/js": "catalog:",
     "@types/node": "catalog:",
-    "eslint": "catalog:",
+    "@biomejs/biome": "catalog:",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
-    "prettier": "catalog:",
     "publint": "catalog:",
     "rimraf": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript": "catalog:"
   },
-  "packageManager": "pnpm@10.25.0",
+  "packageManager": "pnpm@10.27.0",
   "engines": {
     "node": ">=22"
   }

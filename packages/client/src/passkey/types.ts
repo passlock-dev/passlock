@@ -1,12 +1,9 @@
-export type UserVerification = "discouraged" | "preferred" | "required";
+export type UserVerification = "discouraged" | "preferred" | "required"
 
 /**
  * https://w3c.github.io/webauthn/#enumdef-publickeycredentialhint
  */
-export type PublicKeyCredentialHint =
-  | "hybrid"
-  | "security-key"
-  | "client-device";
+export type PublicKeyCredentialHint = "hybrid" | "security-key" | "client-device"
 
 /**
  * https://www.iana.org/assignments/webauthn/webauthn.xhtml#webauthn-attestation-statement-format-ids
@@ -18,21 +15,21 @@ export type AttestationFormat =
   | "android-key"
   | "tpm"
   | "apple"
-  | "none";
+  | "none"
 
 /**
  * https://w3c.github.io/webauthn/#dictdef-publickeycredentialcreationoptionsjson
  */
 export interface PublicKeyCredentialCreationOptionsJSON {
-  rp: PublicKeyCredentialRpEntity;
-  user: PublicKeyCredentialUserEntityJSON;
-  challenge: Base64URLString;
-  pubKeyCredParams: Array<PublicKeyCredentialParameters>;
-  timeout?: number;
-  excludeCredentials?: Array<PublicKeyCredentialDescriptorJSON>;
-  authenticatorSelection?: AuthenticatorSelectionCriteria;
-  hints?: Array<PublicKeyCredentialHint>;
-  attestation?: AttestationConveyancePreference;
-  attestationFormats?: Array<AttestationFormat>;
-  extensions?: AuthenticationExtensionsClientInputs;
+  rp: PublicKeyCredentialRpEntity
+  user: PublicKeyCredentialUserEntityJSON
+  challenge: Base64URLString
+  pubKeyCredParams: Array<PublicKeyCredentialParameters>
+  timeout?: number
+  excludeCredentials?: Array<PublicKeyCredentialDescriptorJSON>
+  authenticatorSelection?: AuthenticatorSelectionCriteria
+  hints?: Array<PublicKeyCredentialHint>
+  attestation?: AttestationConveyancePreference
+  attestationFormats?: Array<AttestationFormat>
+  extensions?: AuthenticationExtensionsClientInputs
 }

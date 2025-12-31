@@ -3,13 +3,13 @@
     /* Projects */
     "incremental": true,
     "composite": true,
-        
+
     /* Language & environment */
     "target": "ES2022",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "moduleResolution": "Bundler",       // matches how Vite/Rollup/Webpack resolve
-    "verbatimModuleSyntax": true,        // preserves import/export for tree-shaking
+    "moduleResolution": "Bundler", // matches how Vite/Rollup/Webpack resolve
+    "verbatimModuleSyntax": true, // preserves import/export for tree-shaking
     "useDefineForClassFields": true,
 
     /* Declarations & maps */
@@ -40,8 +40,5 @@
   },
   "include": ["src"],
   "exclude": ["**/*.test.*", "**/*.spec.*", "node_modules", "dist"],
-  "references": [
-    { "path": "../client" }, 
-    { "path": "../node" }
-  ]
+  "references": [{ "path": "../client" }, { "path": "../node" }]
 }

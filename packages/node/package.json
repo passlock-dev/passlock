@@ -1,6 +1,6 @@
 {
   "name": "@passlock/node",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "description": "Passkey authentication for NodeJS backends",
   "keywords": [
     "passkey",
@@ -29,21 +29,11 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./principal": {
-      "types": "./dist/principal/index.d.ts",
-      "import": "./dist/principal/index.js",
-      "default": "./dist/principal/index.js"
-    },
-    "./authenticator": {
-      "types": "./dist/authenticator/index.d.ts",
-      "import": "./dist/authenticator/index.js",
-      "default": "./dist/authenticator/index.js"
-    },
-    "./effect": {
-      "types": "./dist/effect/index.d.ts",
-      "import": "./dist/effect/index.js",
-      "default": "./dist/effect/index.js"
-    }    
+    "./effects": {
+      "types": "./dist/effects/index.d.ts",
+      "import": "./dist/effects/index.js",
+      "default": "./dist/effects/index.js"
+    }
   },
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -59,38 +49,42 @@
     "build:readme": "LATEST=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/node",
     "clean": "tsc --build --clean",
     "clean:full": "rimraf dist tsconfig.tsbuildinfo",
-    "format": "prettier --write \"src/**/*.+(js|ts|json)\"",
-    "lint": "prettier --check \"src/**/*.+(js|ts|json)\" && eslint ./src",
-    "lint:fix": "prettier --check \"src/**/*.+(js|ts|json)\" && eslint ./src --fix",
-    "prepublishOnly": "$npm_execpath run build:production",
     "replaceTokens": "LATEST=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/node",
-    "test": "vitest run",
+    "test": "vitest --project unit",
+    "test:it": "vitest --project integration",
+    "test:full": "vitest run --project unit --project integration",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --coverage.enabled=true --ui",
     "test:watch": "vitest dev",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check --fix .",
+    "lint:ci": "biome ci .",
+    "format": "biome format --fix .",
+    "format:check": "biome format .",
+    "prepublishOnly": "$npm_execpath run build:production"
   },
   "dependencies": {
     "@effect/platform": "catalog:",
     "@effect/platform-node": "catalog:",
-    "effect": "catalog:",
     "jose": "^6.1.3"
   },
   "devDependencies": {
-    "@eslint/compat": "catalog:",
-    "@eslint/js": "catalog:",
+    "@biomejs/biome": "catalog:",
+    "@effect/vitest": "^0.27.0",
     "@types/node": "catalog:",
-    "eslint": "catalog:",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
-    "prettier": "catalog:",
     "publint": "catalog:",
     "rimraf": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@10.25.0",
+  "peerDependencies": {
+    "effect": "catalog:"
+  },
+  "packageManager": "pnpm@10.27.0",
   "engines": {
     "node": ">=22"
   }

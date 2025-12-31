@@ -1,31 +1,22 @@
-import { Data } from "effect";
-
 export interface ApiOptions {
-  tenancyId: string;
+  tenancyId: string
   /**
    * @default https://api.passlock.dev
    */
-  endpoint?: string;
+  endpoint?: string
 }
 
 export interface AuthorizedApiOptions extends ApiOptions {
-  apiKey: string;
+  apiKey: string
 }
 
 export class UnexpectedError extends Error {
-  readonly _tag: string;
+  readonly _tag: string
 
   constructor(data: { _tag: string; message: string }) {
-    super(data.message);
-    this._tag = data._tag;
+    super(data.message)
+    this._tag = data._tag
   }
 
-  override readonly toString = (): string =>
-    `${this.message} (_tag: ${this._tag})`;
+  override readonly toString = (): string => `${this.message} (_tag: ${this._tag})`
 }
-
-export class VerificationFailure extends Data.TaggedError(
-  "@error/VerificationFailure",
-)<{
-  message: string;
-}> {}
