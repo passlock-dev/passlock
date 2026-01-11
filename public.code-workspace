@@ -1,0 +1,17 @@
+{
+  "folders": [
+    { "path": "./", "name": "public" },
+    { "path": "./packages/cli", "name": "public/cli" },
+    { "path": "./packages/client", "name": "public/client" },
+    { "path": "./packages/example", "name": "public/example" },
+    { "path": "./packages/node", "name": "public/node" }
+  ],
+  "settings": {
+    "window.title": "Passlock — PUBLIC",
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "typescript.inlayHints.functionLikeReturnTypes.enabled": false,
+    "typescript.inlayHints.parameterTypes.enabled": false,
+    "typescript.tsdk": "public/node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true
+  }  
+}

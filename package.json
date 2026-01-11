@@ -1,20 +1,23 @@
 {
   "name": "passlock",
-  "version": "2.0.0-beta.3",
+  "version": "2.0.0",
   "description": "",
   "type": "module",
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@10.28.1",
   "scripts": {
     "ncu": "pnpm exec ncu -x vitest --workspaces",
     "build:readme": "LATEST=${npm_package_version} tsx ./scripts/replace-readme-tokens.ts ."
   },
   "devDependencies": {
     "@qetza/replacetokens": "^1.9.0",
+    "@biomejs/biome": "catalog:",
     "@types/node": "catalog:",
+    "kleur": "^4.1.5",
     "npm-check-updates": "catalog:",
-    "tsx": "catalog:"
+    "tsx": "catalog:",
+    "typescript": "catalog:"
   }
 }

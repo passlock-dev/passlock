@@ -1,13 +1,22 @@
-import { LogEvent, LogLevel } from "@passlock/client"
 import "./style.css"
 
 import {
   authenticatePasskey,
+  type CredentialMapping,
+  deletePasskey,
   isAuthenticationSuccess,
   isRegistrationSuccess,
+  LogEvent,
+  LogLevel,
   registerPasskey,
 } from "@passlock/client"
-import { exchangeCode, isPrincipal, verifyIdToken } from "@passlock/node"
+
+const BASE_URL = "http://localhost:5174"
+
+const HEADERS = {
+  Accept: "application/json",
+  "Content-Type": "application/json",
+}
 
 /* Lookup HTML elements */
 
@@ -16,6 +25,8 @@ const getBtn = (id: string) => document.querySelector<HTMLButtonElement>(id)!
 const getDiv = (id: string) => document.querySelector<HTMLDivElement>(id)!
 
 const getTextField = (id: string) => document.querySelector<HTMLInputElement>(id)!
+
+const getDialog = (id: string) => document.querySelector<HTMLDialogElement>(id)!
 
 /* HTML elements */
 
@@ -30,6 +41,8 @@ const displayNameField = getTextField("#displayName")
 const registerBtn = getBtn("#register")
 
 const authenticateBtn = getBtn("#authenticate")
+
+const deleteBtn = getBtn("#deletePasskey")
 
 const responseDiv = getDiv("#response")
 
@@ -56,6 +69,8 @@ const codeStatus = getBtn("#codeStatus")
 const codeVerificationDiv = getDiv("#codeVerification")
 
 const endpointField = getTextField("#endpoint")
+
+const passkeyDeletedModal = getDialog("#passkeyDeleted")
 
 const resetUI = () => {
   responseDiv.hidden = true
@@ -237,6 +252,48 @@ authenticateBtn.addEventListener("click", async () => {
   responseDiv.hidden = false
 })
 
+deleteBtn.addEventListener("click", async () => {
+  resetUI()
+
+  const apiKey = saveApiKey()
+  const endpoint = saveEndpoint()
+  const tenancyId = saveTenancyId()
+
+  const username = usernameField.value.length > 5 ? usernameField.value : undefined
+  const passkeyId = username ? getUserMappping(username) : undefined
+  const data = await authenticatePasskey({
+    allowCredentials: passkeyId ? [passkeyId] : undefined,
+    endpoint,
+    tenancyId,
+    userVerification: "required",
+  })
+
+  if (isAuthenticationSuccess(data)) {
+    const passkeyId = data.principal.authenticatorId
+
+    const fetchResponse = await fetch(`${BASE_URL}/passkey/${passkeyId}`, {
+      method: "DELETE",
+      headers: HEADERS,
+      body: JSON.stringify({ tenancyId, apiKey, endpoint }),
+    })
+
+    if (fetchResponse.ok) {
+      const deletedPasskey = (await fetchResponse.json()) as CredentialMapping
+      const deleteResult = await deletePasskey(deletedPasskey, { tenancyId, endpoint })
+      if (typeof deleteResult === "boolean") {
+        passkeyDeletedModal.showModal()
+      } else {
+        errorDiv.innerText = deleteResult.message
+        errorDiv.hidden = false
+      }
+    } else {
+      const error = await fetchResponse.json()
+      errorDiv.innerText = error
+      errorDiv.hidden = false
+    }
+  }
+})
+
 copyJwt.addEventListener("click", () => {
   navigator.clipboard.writeText(jwtDiv.innerText)
   jwtStatus.innerText = "Copied"
@@ -250,15 +307,22 @@ verifyJwt.addEventListener("click", async () => {
   errorDiv.hidden = true
   jwtVerificationDiv.innerText = ""
 
-  const jwt = jwtDiv.innerText.trim()
+  const id_token = jwtDiv.innerText.trim()
   const endpoint = saveEndpoint()
   const tenancyId = saveTenancyId()
 
-  const result = await verifyIdToken(jwt, { endpoint, tenancyId })
-  if (isPrincipal(result, false)) {
-    jwtVerificationDiv.innerText = JSON.stringify(result, null, 2)
+  const response = await fetch(`${BASE_URL}/id_token`, {
+    method: "POST",
+    headers: HEADERS,
+    body: JSON.stringify({ id_token, endpoint, tenancyId }),
+  })
+
+  if (response.ok) {
+    const json = await response.json()
+    jwtVerificationDiv.innerText = JSON.stringify(json, null, 2)
   } else {
-    errorDiv.innerText = String(result.message)
+    const json = await response.json()
+    errorDiv.innerText = json
     errorDiv.hidden = false
   }
 })
@@ -281,11 +345,18 @@ verifyCode.addEventListener("click", async () => {
   const endpoint = saveEndpoint()
   const tenancyId = saveTenancyId()
 
-  const result = await exchangeCode(code, { apiKey, endpoint, tenancyId })
-  if (isPrincipal(result, true)) {
-    codeVerificationDiv.innerText = JSON.stringify(result, null, 2)
+  const response = await fetch(`${BASE_URL}/principal`, {
+    method: "POST",
+    headers: HEADERS,
+    body: JSON.stringify({ code, apiKey, endpoint, tenancyId }),
+  })
+
+  if (response.ok) {
+    const json = await response.json()
+    codeVerificationDiv.innerText = JSON.stringify(json, null, 2)
   } else {
-    errorDiv.innerText = result.message
+    const json = await response.json()
+    errorDiv.innerText = json
     errorDiv.hidden = false
   }
 })

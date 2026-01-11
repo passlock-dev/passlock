@@ -1,4 +1,7 @@
-export interface ApiOptions {
+import { Schema } from "effect"
+import { NotFound } from "./schemas/errors.js"
+
+export interface TenancyOptions {
   tenancyId: string
   /**
    * @default https://api.passlock.dev
@@ -6,7 +9,7 @@ export interface ApiOptions {
   endpoint?: string
 }
 
-export interface AuthorizedApiOptions extends ApiOptions {
+export interface AuthenticatedTenancyOptions extends TenancyOptions {
   apiKey: string
 }
 
@@ -20,3 +23,5 @@ export class UnexpectedError extends Error {
 
   override readonly toString = (): string => `${this.message} (_tag: ${this._tag})`
 }
+
+export const isNotFound = (payload: unknown): payload is NotFound => Schema.is(NotFound)(payload)

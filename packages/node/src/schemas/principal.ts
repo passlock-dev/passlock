@@ -3,13 +3,13 @@ import { Schema } from "effect"
 /* Principal */
 
 export const Principal = Schema.TaggedStruct("Principal", {
+  id: Schema.String,
   authenticatorId: Schema.String,
   authenticatorType: Schema.Literal("passkey"),
   createdAt: Schema.Number,
   expiresAt: Schema.Number,
   passkey: Schema.optional(
     Schema.Struct({
-      platformName: Schema.optional(Schema.String),
       userVerified: Schema.Boolean,
       verified: Schema.Boolean,
     })
@@ -19,7 +19,10 @@ export const Principal = Schema.TaggedStruct("Principal", {
 
 export type Principal = typeof Principal.Type
 
+export const isPrincipal = (payload: unknown): payload is Principal => Schema.is(Principal)(payload)
+
 export const ExtendedPrincipal = Schema.TaggedStruct("ExtendedPrincipal", {
+  id: Schema.String,
   authenticatorId: Schema.String,
   authenticatorType: Schema.Literal("passkey"),
   createdAt: Schema.Number,
@@ -40,14 +43,8 @@ export const ExtendedPrincipal = Schema.TaggedStruct("ExtendedPrincipal", {
 
 export type ExtendedPrincipal = typeof ExtendedPrincipal.Type
 
-export const isPrincipal = <I extends true | false>(
-  payload: unknown,
-  extended: I
-): payload is I extends true ? ExtendedPrincipal : Principal => {
-  return extended
-    ? Schema.is(ExtendedPrincipal)(payload)
-    : Schema.is(Schema.Union(Principal, ExtendedPrincipal))(payload)
-}
+export const isExtendedPrincipal = (payload: unknown): payload is ExtendedPrincipal =>
+  Schema.is(ExtendedPrincipal)(payload)
 
 export const IdToken = Schema.TaggedStruct("IdToken", {
   "a:id": Schema.String,

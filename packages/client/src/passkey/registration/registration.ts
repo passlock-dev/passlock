@@ -1,4 +1,4 @@
-import type { PasslockOptions } from "../../shared"
+import type { PasslockOptions } from "../../shared/options"
 import type { UserVerification } from "../types"
 import * as Helper from "@simplewebauthn/browser"
 import {
@@ -7,9 +7,9 @@ import {
   WebAuthnError,
 } from "@simplewebauthn/browser"
 import { Context, Micro, pipe } from "effect"
-import { buildEndpoint, Endpoint, makeRequest, type UnexpectedError } from "../../internal/network"
-import { TenancyId } from "../../internal/tenancy"
 import { Logger } from "../../logger"
+import { buildEndpoint, Endpoint, makeRequest, type UnexpectedError } from "../../shared/network"
+import { TenancyId } from "../../shared/tenancy"
 import { OtherPasskeyError, PasskeysUnsupportedError } from "../errors"
 
 interface OptionsResponse {
@@ -30,7 +30,7 @@ export class RegistrationHelper extends Context.Tag("RegistrationHelper")<
   } satisfies typeof RegistrationHelper.Service
 }
 
-export const isDuplicatePasskeyError = (err: unknown): err is DuplicatePasskeyError =>
+export const isDuplicatePasskey = (err: unknown): err is DuplicatePasskeyError =>
   err instanceof DuplicatePasskeyError
 
 /**
@@ -38,10 +38,10 @@ export const isDuplicatePasskeyError = (err: unknown): err is DuplicatePasskeyEr
  * device recognises one of the passkey ids i.e. the user currently
  * has a passkey registered on the current device for a given userId.
  */
-export class DuplicatePasskeyError extends Micro.TaggedError("@error/DuplicatePasskeyError")<{
+export class DuplicatePasskeyError extends Micro.TaggedError("@error/DuplicatePasskey")<{
   readonly message: string
 }> {
-  static isDuplicatePasskeyError = isDuplicatePasskeyError
+  static isDuplicatePasskey = isDuplicatePasskey
 }
 
 const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {

@@ -8,7 +8,7 @@ import {
   type VerificationFailure,
   type VerifyTokenOptions,
   verifyIdToken as verifyIdTokenE,
-} from "./effects.js"
+} from "./principal.js"
 
 /**
  * Call the Passlock backend API to exchange a code for a Principal
@@ -81,5 +81,5 @@ export type {
   Principal,
   VerificationFailure,
   VerifyTokenOptions,
-} from "./effects.js"
+} from "./principal.js"
 export * from "../schemas/principal.js"

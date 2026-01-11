@@ -40,8 +40,9 @@
       </div>
 
       <div class="mt-3 flex gap-3">
-        <button class="btn btn-primary grow" id="register">Register passkey</button>
-        <button class="btn btn-secondary grow" id="authenticate">Authenticate</button>
+        <button class="btn btn-primary grow" id="register">Register</button>
+        <button class="btn btn-accent grow" id="authenticate">Authenticate</button>
+        <button class="btn btn-secondary grow" id="deletePasskey">Delete</button>
       </div>
 
       <div id="response" class="mt-6">
@@ -68,6 +69,20 @@
       </div>
 
       <div id="error" class="mt-6 text-error" hidden></div>
+
+      <!-- Open the modal using ID.showModal() method -->
+      <dialog id="passkeyDeleted" class="modal">
+        <div class="modal-box">
+          <h3 class="text-lg font-bold">Passkey deleted!</h3>
+          <p class="py-4">Press ESC key or click the button below to close</p>
+          <div class="modal-action">
+            <form method="dialog">
+              <!-- if there is a button in form, it will close the modal -->
+              <button class="btn">Close</button>
+            </form>
+          </div>
+        </div>
+      </dialog>      
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

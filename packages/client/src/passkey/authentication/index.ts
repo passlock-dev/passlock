@@ -1,13 +1,13 @@
 import { Micro, pipe } from "effect"
-import { runToPromise, runToPromiseUnsafe } from "../../internal/promise"
 import { EventLogger, Logger } from "../../logger"
+import { runToPromise, runToPromiseUnsafe } from "../../shared/promise"
 import {
   type AuthenticationError,
   AuthenticationHelper,
   type AuthenticationOptions,
   type AuthenticationSuccess,
   authenticatePasskey as authenticatePasskeyM,
-} from "./micro"
+} from "./authentication"
 
 /**
  * Trigger local passkey authentication then verify the passkey in the Passlock vault.
@@ -45,5 +45,9 @@ export const authenticatePasskey = (
     runToPromise
   )
 
-export type { AuthenticationError, AuthenticationOptions, AuthenticationSuccess } from "./micro"
-export { isAuthenticationSuccess } from "./micro"
+export type {
+  AuthenticationError,
+  AuthenticationOptions,
+  AuthenticationSuccess,
+} from "./authentication"
+export { isAuthenticationSuccess } from "./authentication"

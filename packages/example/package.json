@@ -1,11 +1,11 @@
 {
   "name": "demo",
   "private": true,
-  "version": "2.0.0-beta.3",
+  "version": "2.0.0",
   "type": "module",
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@10.28.1",
   "scripts": {
-    "dev": "vite",
+    "dev": "tsx src/server.ts",
     "build": "tsc --build",
     "clean": "tsc --build --clean",
     "clean:all": "rimraf dist tsconfig.tsbuildinfo",
@@ -17,14 +17,19 @@
     "format:check": "biome format ."
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.18",
     "@biomejs/biome": "catalog:",
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/body-parser": "^1.19.6",
+    "@types/express": "^5.0.6",
+    "body-parser": "^2.2.2",
     "daisyui": "^5.5.14",
+    "express": "^5.2.1",
     "globals": "catalog:",
     "rimraf": "catalog:",
     "tailwindcss": "^4.1.18",
     "typescript": "catalog:",
-    "vite": "^7.3.0"
+    "vite": "^7.3.1",
+    "vite-express": "^0.22.0"
   },
   "dependencies": {
     "@passlock/client": "workspace:*",

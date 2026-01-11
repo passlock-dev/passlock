@@ -1,0 +1,2 @@
+isPasskeyRemovalSupport
+signalPasskeyRemoval

@@ -1,13 +1,13 @@
 import { Micro, pipe } from "effect"
-import { runToPromise, runToPromiseUnsafe } from "../../internal/promise"
 import { EventLogger, Logger } from "../../logger"
+import { runToPromise, runToPromiseUnsafe } from "../../shared/promise"
 import {
   type RegistrationError,
   RegistrationHelper,
   type RegistrationOptions,
   type RegistrationSuccess,
   registerPasskey as registerPasskeyM,
-} from "./micro"
+} from "./registration"
 
 /**
  * Register a passkey on the local device and store the
@@ -43,5 +43,5 @@ export const registerPasskey = async (
     runToPromise
   )
 
-export type { RegistrationError, RegistrationOptions, RegistrationSuccess } from "./micro"
-export { isRegistrationSuccess } from "./micro"
+export type { RegistrationError, RegistrationOptions, RegistrationSuccess } from "./registration"
+export { isRegistrationSuccess } from "./registration"

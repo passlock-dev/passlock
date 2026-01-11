@@ -1,6 +1,6 @@
 {
   "name": "@passlock/node",
-  "version": "2.0.0-beta.3",
+  "version": "2.0.0",
   "description": "Passkey authentication for NodeJS backends",
   "keywords": [
     "passkey",
@@ -52,7 +52,7 @@
     "replaceTokens": "LATEST=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/node",
     "test": "vitest --project unit",
     "test:it": "vitest --project integration",
-    "test:full": "vitest run --project unit --project integration",
+    "test:all": "vitest run --project unit --project integration",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --coverage.enabled=true --ui",
     "test:watch": "vitest dev",
@@ -84,7 +84,7 @@
   "peerDependencies": {
     "effect": "catalog:"
   },
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@10.28.1",
   "engines": {
     "node": ">=22"
   }

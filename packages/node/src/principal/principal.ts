@@ -1,11 +1,11 @@
-import type { ApiOptions, AuthorizedApiOptions } from "../shared.js"
+import type { AuthenticatedTenancyOptions, TenancyOptions } from "../shared.js"
 import { FetchHttpClient, HttpClient, HttpClientResponse } from "@effect/platform"
 import { Data, Effect, type Layer, Match, pipe, Schema } from "effect"
 import * as jose from "jose"
 import { Forbidden, InvalidCode } from "../schemas/errors.js"
 import { ExtendedPrincipal, IdToken, type Principal } from "../schemas/principal.js"
 
-type ExchangeCodeOptions = AuthorizedApiOptions
+type ExchangeCodeOptions = AuthenticatedTenancyOptions
 
 export const exchangeCode = (
   code: string,
@@ -48,7 +48,7 @@ export const exchangeCode = (
     Effect.provide(httpClient)
   )
 
-type VerifyTokenOptions = ApiOptions
+type VerifyTokenOptions = TenancyOptions
 
 const createJwks = (endpoint?: string) =>
   Effect.sync(() => {
@@ -92,6 +92,7 @@ export const verifyIdToken = (
 
       const principal: Principal = {
         _tag: "Principal",
+        id: idToken["jti"],
         authenticatorId: idToken["a:id"],
         authenticatorType: "passkey",
         createdAt: idToken.iat * 1000,

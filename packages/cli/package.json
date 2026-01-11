@@ -1,6 +1,6 @@
 {
   "name": "@passlock/cli",
-  "version": "2.0.0-beta.3",
+  "version": "2.0.0",
   "description": "CLI tooling support for the Passlock authentication framework",
   "keywords": [
     "passkey",
@@ -79,7 +79,7 @@
     "tsx": "catalog:",
     "typescript": "catalog:"
   },
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@10.28.1",
   "engines": {
     "node": ">=22"
   }

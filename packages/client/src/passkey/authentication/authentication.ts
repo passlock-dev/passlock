@@ -1,4 +1,4 @@
-import type { PasslockOptions } from "../../shared"
+import type { PasslockOptions } from "../../shared/options"
 import type { UserVerification } from "../types"
 import * as Helper from "@simplewebauthn/browser"
 import {
@@ -7,11 +7,10 @@ import {
   WebAuthnError,
 } from "@simplewebauthn/browser"
 import { Context, Micro, pipe } from "effect"
-import { buildEndpoint, Endpoint, makeRequest, type UnexpectedError } from "../../internal/network"
-import { TenancyId } from "../../internal/tenancy"
 import { Logger } from "../../logger"
+import { buildEndpoint, Endpoint, makeRequest, type UnexpectedError } from "../../shared/network"
+import { TenancyId } from "../../shared/tenancy"
 import { OtherPasskeyError, PasskeysUnsupportedError } from "../errors"
-import { signalCredentialRemoval } from "../signals/micro"
 
 interface OptionsResponse {
   sessionToken: string
@@ -157,6 +156,9 @@ export const isAuthenticationSuccess = (payload: unknown): payload is Authentica
   return true
 }
 
+/*
+ * Client tried to authenticate with a passkey that was deleted in the vault
+ */
 export interface PasskeyNotFound {
   _tag: "@error/PasskeyNotFound"
   message: string
@@ -214,6 +216,7 @@ export const startAuthentication = (
             code: error.code,
             error: error.cause,
             message: error.message,
+            cause: error.cause,
           })
         } else {
           return new OtherPasskeyError({ error, message: "Unexpected error" })
@@ -276,12 +279,12 @@ export const authenticatePasskey = (
 ): Micro.Micro<AuthenticationSuccess, AuthenticationError, Logger | AuthenticationHelper> => {
   const endpoint = buildEndpoint(options)
 
-  const effect = Micro.gen(function* () {
+  const micro = Micro.gen(function* () {
     const { sessionToken, optionsJSON } = yield* fetchOptions(options)
 
     const go = (useBrowserAutofill: boolean) =>
       Micro.gen(function* () {
-        yield* Micro.sleep(100)
+        if (useBrowserAutofill) yield* Micro.sleep(100)
 
         const response = yield* startAuthentication(optionsJSON, {
           onEvent: options.onEvent,
@@ -301,17 +304,8 @@ export const authenticatePasskey = (
     }
   })
 
-  // try to remove the passkey from the device
-  // if it doesnt exist in the vault
-  const withNotFoundHandling = pipe(
-    effect,
-    Micro.tapError((err) =>
-      err._tag === "@error/PasskeyNotFound" ? signalCredentialRemoval(err) : Micro.void
-    )
-  )
-
   return pipe(
-    withNotFoundHandling,
+    micro,
     Micro.provideService(TenancyId, options),
     Micro.provideService(Endpoint, endpoint)
   )

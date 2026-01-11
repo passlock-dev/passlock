@@ -1,15 +1,20 @@
 import type { Forbidden, NotFound } from "../schemas/errors.js"
+import type { DeletedPasskey, FindAllPasskeys, PasskeySummary } from "../schemas/passkey.js"
+import type { AuthenticatedTenancyOptions } from "../shared.js"
 import type {
   AssignUserRequest,
   DeleteAuthenticatorOptions,
   GetAuthenticatorOptions,
+  ListPasskeyOptions,
   Passkey,
 } from "./effects.js"
-import { Effect, identity, pipe } from "effect"
+import { Effect, identity, pipe, Stream } from "effect"
 import {
   assignUser as assignUserE,
   deletePasskey as deletePasskeyE,
   getPasskey as getPasskeyE,
+  listPasskeys as listPasskeysE,
+  listPasskeysStream as listPasskeysStreamE,
 } from "./effects.js"
 
 /**
@@ -43,10 +48,9 @@ export const assignUserUnsafe = (request: AssignUserRequest): Promise<Passkey> =
 export const deletePasskey = (
   passkeyId: string,
   options: DeleteAuthenticatorOptions
-): Promise<{ passkeyId: string } | Forbidden | NotFound> =>
+): Promise<DeletedPasskey | Forbidden | NotFound> =>
   pipe(
     deletePasskeyE(passkeyId, options),
-    Effect.as({ passkeyId }),
     Effect.match({ onFailure: identity, onSuccess: identity }),
     Effect.runPromise
   )
@@ -81,8 +85,8 @@ export const getPasskey = (
 
 /**
  * Call the Passlock backend API to fetch an authenticator
- * @param request
- * @param request
+ * @param authenticatorId
+ * @param options
  * @returns
  */
 export const getPasskeyUnsafe = (
@@ -96,3 +100,30 @@ export type {
   GetAuthenticatorOptions,
   Passkey,
 } from "./effects.js"
+
+/**
+ * List passkeys for the given tenancy. Note this could return a cursor, in which case the function chould be called with the given cursor.
+ * @param options
+ * @returns
+ */
+export const listPasskeys = (options: ListPasskeyOptions): Promise<FindAllPasskeys | Forbidden> =>
+  pipe(
+    listPasskeysE(options),
+    Effect.match({ onFailure: identity, onSuccess: identity }),
+    Effect.runPromise
+  )
+
+/**
+ * List passkeys for the given tenancy. Note this could return a cursor, in which case the function chould be called with the given cursor.
+ * @param options
+ * @returns
+ */
+export const listPasskeysUnsafe = (options: ListPasskeyOptions): Promise<FindAllPasskeys> =>
+  pipe(listPasskeysE(options), Effect.runPromise)
+
+export const listPasskeysStream = (
+  options: AuthenticatedTenancyOptions
+): ReadableStream<PasskeySummary> =>
+  pipe(listPasskeysStreamE(options), (stream) => Stream.toReadableStream(stream))
+
+export type { ListPasskeyOptions } from "./effects.js"

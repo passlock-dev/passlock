@@ -4,7 +4,7 @@ import { Effect, Layer, pipe } from "effect"
 import * as jose from "jose"
 import { expect } from "vitest"
 import { getHeaderValue } from "../testUtils.js"
-import { exchangeCode, verifyIdToken } from "./effects.js"
+import { exchangeCode, verifyIdToken } from "./principal.js"
 
 const code = "dummyCode"
 const tenancyId = "dummyTenancyId"
@@ -12,6 +12,7 @@ const apiKey = "dummyApiKey"
 
 const principalResponse = {
   _tag: "ExtendedPrincipal",
+  id: "dummyAuthenticatorId",
   authenticatorId: "dummyAuthenticatorId",
   authenticatorType: "passkey",
   createdAt: Date.now(),
@@ -50,6 +51,8 @@ describe(exchangeCode.name, () => {
         )
 
         const principal = yield* exchangeCode(code, { apiKey, tenancyId }, TestLayer)
+
+        console.error(principal)
 
         expect(principal._tag).toEqual("ExtendedPrincipal")
         expect(principal.metadata.ipAddress).toEqual("127.0.0.1")
