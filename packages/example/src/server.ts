@@ -57,4 +57,7 @@ app.delete("/passkey/:passkeyId", async (req, res) => {
   }
 })
 
-ViteExpress.listen(app, 5174, () => console.log("Server is listening..."))
+ViteExpress.listen(app, 5174, () => {
+  console.log("Server is listening...")
+  console.log("http://localhost:5174")
+})

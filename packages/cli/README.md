@@ -53,6 +53,3 @@ Follow the prompts
 ### Help
 
 `passlock --help`
-
-[contact]: https://passlock.dev/contact
-[client]: https://www.npmjs.com/package/@passlock/client

@@ -22,7 +22,7 @@ metadata:
 
 ## Tooling assumptions
 - Use pnpm for package management.
-- Run commands from the workspace root unless told otherwise.
+- Run commands from the relevant package root e.g. packages/core or packages/api unless told otherwise.
 - If a command would affect files outside this workspace, stop and ask first.
 
 ## Pre-change checks

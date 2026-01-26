@@ -1,6 +1,6 @@
 {
   "name": "@passlock/node",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Passkey authentication for NodeJS backends",
   "keywords": [
     "passkey",
@@ -15,7 +15,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/passlock-dev/passlock.git",
-    "directory": "packages/client"
+    "directory": "packages/node"
   },
   "license": "MIT",
   "author": {
@@ -29,10 +29,15 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./effects": {
-      "types": "./dist/effects/index.d.ts",
-      "import": "./dist/effects/index.js",
-      "default": "./dist/effects/index.js"
+    "./unsafe": {
+      "types": "./dist/unsafe.d.ts",
+      "import": "./dist/unsafe.js",
+      "default": "./dist/unsafe.js"
+    },
+    "./effect": {
+      "types": "./dist/effect.d.ts",
+      "import": "./dist/effect.js",
+      "default": "./dist/effect.js"
     }
   },
   "module": "./dist/index.js",
@@ -50,12 +55,10 @@
     "clean": "tsc --build --clean",
     "clean:full": "rimraf dist tsconfig.tsbuildinfo",
     "replaceTokens": "LATEST=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/node",
-    "test": "vitest --project unit",
-    "test:it": "vitest --project integration",
-    "test:all": "vitest run --project unit --project integration",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --coverage.enabled=true --ui",
-    "test:watch": "vitest dev",
+    "test:unit": "vitest --project unit run",
+    "test:unit:watch": "vitest --project unit",
+    "test:integration": "vitest --project integration run",
+    "test:all": "vitest --project unit --project integration run",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --fix .",
@@ -84,7 +87,7 @@
   "peerDependencies": {
     "effect": "catalog:"
   },
-  "packageManager": "pnpm@10.28.1",
+  "packageManager": "pnpm@10.28.2",
   "engines": {
     "node": ">=22"
   }

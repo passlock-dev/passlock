@@ -16,7 +16,7 @@ in README.template.md and outputs to README.md
     <img align="center" width=550 height=50 src="#{ASSETS}#/images/client-repo-banner.svg" />
   </picture>
   <p align="center">
-    Next generation passkey authentication for Astro, Svelte(kit), Angular and other frameworks. 
+    Next generation passkey authentication for Astro, Sveltekit, Angular and other frameworks. 
     <br />
     <a href="#{PASSLOCK_SITE}#"><strong>Project website »</strong></a>
     <br />
@@ -32,27 +32,25 @@ in README.template.md and outputs to README.md
 
 <br />
 
-## Features
+## Key Features
 
-Passkeys and the WebAuthn API are quite complex. We've tried to simplify things for you, whilst still offering you the power and flexibility of the underlying APIs.
+Powerful features including signals and related origin requests...
 
-1. **💪 Powerful** - We expose the full WebAuthn/Passkey featureset including user verification, autofil, backup/sync and more
+1. **🔓 No lock-in**
+Framework agnostic. Standards compliant.
 
-2. **🫆 Biometrics** - Passlock allows you to add biometric authentication to your webapps
+2. **🔑 Related origins (domain migration)**  
+Accept passkeys from other domains on your site (subject to security constraints).
 
-3. **👌 Headless components** - Giving you 100% control over the UI
+3. **🚀 Zero config passkeys**  
+Works out of the box with sensible defaults.
 
-4. **🧰 Framework agnostic** - Passlock works with all major frontend & backend frameworks 
+4. **📱 Credential management**  
+Programmatically manage passkeys on end user devices
 
-5. **👩‍💻 Dev console** - Something not working? check the unified client/server dev console
-
-6. **🖥️ Management console** - Suspend or revoke access for users, passkeys and more..
-
-7. **🕵️‍♂️ Audit trail** - View a full audit trail for each passkey and user
+5. **💪 Powerful**
+User verification, autofill, roaming authenticators and more.
 
 ## More information
 
 Please see the [tutorial](#{TUTORIAL}#) and [documentation](#{DOCS}#)
-
-[contact]: https://passlock.dev/contact
-[node]: https://www.npmjs.com/package/@passlock/node

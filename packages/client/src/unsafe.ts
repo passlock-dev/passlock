@@ -1,40 +1,31 @@
-import type {
-  AuthenticationError,
-  AuthenticationOptions,
-  AuthenticationSuccess,
-  PasskeyNotFound,
-} from "./passkey/authentication"
-import type {
-  CredentialMapping,
-  DeletionError,
-  SyncError,
-  UpdateError,
-  UpdateUserDetails,
-} from "./passkey/signals"
 import type { PasslockOptions } from "./shared/options"
 import { Micro, pipe } from "effect"
 import { EventLogger, Logger } from "./logger"
 import {
   AuthenticationHelper,
+  type AuthenticationOptions,
+  type AuthenticationSuccess,
   authenticatePasskey as authenticatePasskeyM,
+  type PasskeyNotFound,
 } from "./passkey/authentication"
 import {
-  type RegistrationError,
   RegistrationHelper,
   type RegistrationOptions,
   type RegistrationSuccess,
   registerPasskey as registerPasskeyM,
 } from "./passkey/registration"
 import {
+  type CredentialMapping,
   deletePasskey as deletePasskeyM,
   isPasskeyDeletionSupport as isPasskeyDeletionSupportM,
   isPasskeySyncSupport as isPasskeySyncSupportM,
   isPasskeyUpdateSupport as isPasskeyUpdateSupportM,
   signalCredentialRemoval,
   syncPasskeys as syncPasskeysM,
+  type UpdateUserDetails,
   updateUserDetails as updateUserDetailsM,
 } from "./passkey/signals"
-import { runToPromise } from "./shared/promise"
+import { runToPromiseUnsafe } from "./shared/promise"
 
 export type { PasslockOptions } from "./shared/options"
 export { ConsoleLogger, EventLogger, LogEvent, Logger, LogLevel } from "./logger"
@@ -50,12 +41,12 @@ export { ConsoleLogger, EventLogger, LogEvent, Logger, LogLevel } from "./logger
 export const registerPasskey = async (
   options: RegistrationOptions,
   logger: typeof Logger.Service = EventLogger
-): Promise<RegistrationSuccess | RegistrationError> =>
+): Promise<RegistrationSuccess> =>
   pipe(
     registerPasskeyM(options),
     Micro.provideService(Logger, logger),
     Micro.provideService(RegistrationHelper, RegistrationHelper.Default),
-    runToPromise
+    runToPromiseUnsafe
   )
 
 export type {
@@ -88,12 +79,12 @@ export { isUnexpectedError, UnexpectedError } from "./shared/network"
 export const authenticatePasskey = (
   options: AuthenticationOptions,
   logger: typeof Logger.Service = EventLogger
-): Promise<AuthenticationSuccess | AuthenticationError> =>
+): Promise<AuthenticationSuccess> =>
   pipe(
     authenticatePasskeyM(options),
     Micro.provideService(Logger, logger),
     Micro.provideService(AuthenticationHelper, AuthenticationHelper.Default),
-    runToPromise
+    runToPromiseUnsafe
   )
 
 export type {
@@ -117,13 +108,13 @@ export const deletePasskey = (
   identifiers: string | CredentialMapping | PasskeyNotFound,
   options: PasslockOptions,
   logger: typeof Logger.Service = EventLogger
-): Promise<boolean | DeletionError> => {
+): Promise<boolean> => {
   const micro =
     typeof identifiers === "string"
       ? deletePasskeyM(identifiers, options)
       : signalCredentialRemoval(identifiers)
 
-  return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
+  return pipe(micro, Micro.provideService(Logger, logger), runToPromiseUnsafe)
 }
 
 export type { CredentialMapping } from "./passkey/signals"
@@ -133,9 +124,9 @@ export const syncPasskeys = (
   passkeyIds: Array<string>,
   options: PasslockOptions,
   logger: typeof Logger.Service = EventLogger
-): Promise<boolean | SyncError> => {
+): Promise<boolean> => {
   const micro = syncPasskeysM(passkeyIds, options)
-  return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
+  return pipe(micro, Micro.provideService(Logger, logger), runToPromiseUnsafe)
 }
 
 export { isSyncError, SyncError } from "./passkey/signals"
@@ -143,9 +134,9 @@ export { isSyncError, SyncError } from "./passkey/signals"
 export const updateUserDetails = (
   options: UpdateUserDetails,
   logger: typeof Logger.Service = EventLogger
-): Promise<boolean | UpdateError> => {
+): Promise<boolean> => {
   const micro = updateUserDetailsM(options)
-  return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
+  return pipe(micro, Micro.provideService(Logger, logger), runToPromiseUnsafe)
 }
 
 export type { UpdateUserDetails } from "./passkey/signals"

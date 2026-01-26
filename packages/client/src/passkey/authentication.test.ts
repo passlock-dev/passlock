@@ -5,10 +5,9 @@ import type {
 import fetchMock from "@fetch-mock/vitest"
 import { Context, Micro, pipe } from "effect"
 import { afterAll, describe, expect, it, vi } from "vitest"
-import { Logger } from "../../logger"
-import { Endpoint } from "../../shared/network"
-import { TenancyId } from "../../shared/tenancy"
-import { PasskeysUnsupportedError } from "../errors"
+import { Logger } from "../logger"
+import { Endpoint } from "../shared/network"
+import { TenancyId } from "../shared/tenancy"
 import {
   AuthenticationHelper,
   authenticatePasskey,
@@ -16,6 +15,7 @@ import {
   startAuthentication,
   verifyCredential,
 } from "./authentication"
+import { PasskeyUnsupportedError } from "./errors"
 
 const loggerTest = {
   logDebug: () => Micro.void,
@@ -139,7 +139,7 @@ describe(startAuthentication.name, () => {
         Micro.runPromise
       )
 
-      expect(result).toBeInstanceOf(PasskeysUnsupportedError)
+      expect(result).toBeInstanceOf(PasskeyUnsupportedError)
     })
   })
 })

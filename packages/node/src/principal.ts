@@ -1,9 +1,9 @@
-import type { AuthenticatedTenancyOptions, TenancyOptions } from "../shared.js"
+import type { AuthenticatedTenancyOptions, TenancyOptions } from "./shared.js"
 import { FetchHttpClient, HttpClient, HttpClientResponse } from "@effect/platform"
 import { Data, Effect, type Layer, Match, pipe, Schema } from "effect"
 import * as jose from "jose"
-import { Forbidden, InvalidCode } from "../schemas/errors.js"
-import { ExtendedPrincipal, IdToken, type Principal } from "../schemas/principal.js"
+import { Forbidden, InvalidCode } from "./schemas/errors.js"
+import { ExtendedPrincipal, IdToken, type Principal } from "./schemas/principal.js"
 
 type ExchangeCodeOptions = AuthenticatedTenancyOptions
 

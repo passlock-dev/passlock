@@ -40,7 +40,7 @@ const captureData: Effect.Effect<SignupPayload, CancelError> = Effect.gen(functi
       placeholder: "jdoe@gmail.com",
 
       validate(value) {
-        if (value.length === 0) return `Value is required!`
+        if (!value || value.length === 0) return `Value is required!`
         if (!emailRegex.test(value)) return `Please provide a valid email address!`
       },
     })
@@ -55,7 +55,7 @@ const captureData: Effect.Effect<SignupPayload, CancelError> = Effect.gen(functi
       placeholder: "John",
 
       validate(value) {
-        if (value.length === 0) return `Value is required!`
+        if (!value || value.length === 0) return `Value is required!`
       },
     })
   )
@@ -69,7 +69,7 @@ const captureData: Effect.Effect<SignupPayload, CancelError> = Effect.gen(functi
       placeholder: "Doe",
 
       validate(value) {
-        if (value.length === 0) return `Value is required!`
+        if (!value || value.length === 0) return `Value is required!`
       },
     })
   )
@@ -134,7 +134,7 @@ export const init: Effect.Effect<void, never, HttpClient.HttpClient> = pipe(
       signup(signupData),
       Effect.tapError(() =>
         Effect.sync(() => {
-          s.stop("Something went wrong", 1)
+          s.stop("Something went wrong")
         })
       )
     )

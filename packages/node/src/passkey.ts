@@ -1,4 +1,4 @@
-import type { AuthenticatedTenancyOptions } from "../shared.js"
+import type { AuthenticatedTenancyOptions } from "./shared.js"
 import {
   FetchHttpClient,
   HttpClient,
@@ -6,9 +6,9 @@ import {
   HttpClientResponse,
 } from "@effect/platform"
 import { Chunk, Effect, type Layer, Match, Option, pipe, Schema, Stream } from "effect"
-import { Forbidden, NotFound } from "../schemas/errors.js"
-import { FindAllPasskeys } from "../schemas/index.js"
-import { DeletedPasskey, Passkey, type PasskeySummary } from "../schemas/passkey.js"
+import { Forbidden, NotFound } from "./schemas/errors.js"
+import { FindAllPasskeys } from "./schemas/index.js"
+import { DeletedPasskey, Passkey, type PasskeySummary } from "./schemas/passkey.js"
 
 /* Get Passkey */
 

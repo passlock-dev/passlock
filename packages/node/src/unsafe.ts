@@ -5,12 +5,11 @@ import type {
   ListPasskeyOptions,
   Passkey,
 } from "./passkey.js"
-import type { ExchangeCodeOptions, VerificationFailure, VerifyTokenOptions } from "./principal.js"
-import type { Forbidden, InvalidCode, NotFound } from "./schemas/errors.js"
+import type { ExchangeCodeOptions, VerifyTokenOptions } from "./principal.js"
 import type { DeletedPasskey, FindAllPasskeys } from "./schemas/passkey.js"
 import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
 import { FetchHttpClient } from "@effect/platform"
-import { Effect, identity, pipe } from "effect"
+import { Effect, pipe } from "effect"
 import {
   assignUser as assignUserE,
   deletePasskey as deletePasskeyE,
@@ -25,12 +24,8 @@ import { exchangeCode as exchangeCodeE, verifyIdToken as verifyIdTokenE } from "
  * @param request
  * @returns
  */
-export const assignUser = (request: AssignUserRequest): Promise<Passkey | NotFound | Forbidden> =>
-  pipe(
-    assignUserE(request),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+export const assignUser = (request: AssignUserRequest): Promise<Passkey> =>
+  pipe(assignUserE(request), Effect.runPromise)
 
 /**
  * Call the Passlock backend API to delete an authenticator
@@ -41,40 +36,26 @@ export const assignUser = (request: AssignUserRequest): Promise<Passkey | NotFou
 export const deletePasskey = (
   passkeyId: string,
   options: DeleteAuthenticatorOptions
-): Promise<DeletedPasskey | Forbidden | NotFound> =>
-  pipe(
-    deletePasskeyE(passkeyId, options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+): Promise<DeletedPasskey> => pipe(deletePasskeyE(passkeyId, options), Effect.runPromise)
 
 /**
  * Call the Passlock backend API to fetch an authenticator
- * @param request
- * @param request
+ * @param authenticatorId
+ * @param options
  * @returns
  */
 export const getPasskey = (
   authenticatorId: string,
   options: GetAuthenticatorOptions
-): Promise<Passkey | Forbidden | NotFound> =>
-  pipe(
-    getPasskeyE(authenticatorId, options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+): Promise<Passkey> => pipe(getPasskeyE(authenticatorId, options), Effect.runPromise)
 
 /**
  * List passkeys for the given tenancy. Note this could return a cursor, in which case the function chould be called with the given cursor.
  * @param options
  * @returns
  */
-export const listPasskeys = (options: ListPasskeyOptions): Promise<FindAllPasskeys | Forbidden> =>
-  pipe(
-    listPasskeysE(options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+export const listPasskeys = (options: ListPasskeyOptions): Promise<FindAllPasskeys> =>
+  pipe(listPasskeysE(options), Effect.runPromise)
 
 /**
  * Call the Passlock backend API to exchange a code for a Principal
@@ -85,13 +66,8 @@ export const listPasskeys = (options: ListPasskeyOptions): Promise<FindAllPasske
 export const exchangeCode = (
   code: string,
   options: ExchangeCodeOptions
-): Promise<ExtendedPrincipal | Forbidden | InvalidCode> =>
-  pipe(
-    exchangeCodeE(code, options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.provide(FetchHttpClient.layer),
-    Effect.runPromise
-  )
+): Promise<ExtendedPrincipal> =>
+  pipe(exchangeCodeE(code, options), Effect.provide(FetchHttpClient.layer), Effect.runPromise)
 
 /**
  * Decode and verify a Passlock idToken.
@@ -103,15 +79,8 @@ export const exchangeCode = (
  * @param options
  * @returns
  */
-export const verifyIdToken = (
-  token: string,
-  options: VerifyTokenOptions
-): Promise<Principal | VerificationFailure> =>
-  pipe(
-    verifyIdTokenE(token, options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+export const verifyIdToken = (token: string, options: VerifyTokenOptions): Promise<Principal> =>
+  pipe(verifyIdTokenE(token, options), Effect.provide(FetchHttpClient.layer), Effect.runPromise)
 
 export type {
   AssignUserRequest,

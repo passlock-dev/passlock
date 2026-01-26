@@ -30,19 +30,25 @@ We largely rely on pnpm scripts for build and test:
 
 * `pnpm run build` - Invoke TSC to compile the project
 
+* `pnpm run typecheck` - Invoke TSC to typecheck the project
+
 * `pnpm run clean:all` - Clean build (remove dist/ and tsconfig.tsbuildinfo)
 
 * `pnpm run build:clean` - "clean:all" followed by "build"
 
-* `pnpm run test --run` - Runs the unit tests
+* `pnpm run test:unit` - Runs the unit tests
 
-* `pnpm run test:it --run` - Runs the integration tests
+* `pnpm run test:integration` - Runs the integration tests
 
 * `pnpm run test:all` - Runs the unit and integration tests
 
 * `pnpm run format` - Format using Biome.js
 
 * `pnpm run lint:fix` - Lint using Biome.js and attempt to fix any issues
+
+## Important
+
+After making code changes run `pnpm run build` or `pnpm run typecheck` to make sure TSC is happy.
 
 [effect]: https://effect.website
 [micro]: https://effect.website/docs/micro/new-users/

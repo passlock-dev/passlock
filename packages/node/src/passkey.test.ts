@@ -1,16 +1,16 @@
-import type { DeletedPasskey, FindAllPasskeys, Passkey } from "../schemas/index.js"
+import type { DeletedPasskey, FindAllPasskeys, Passkey } from "./schemas/index.js"
 import { FetchHttpClient } from "@effect/platform"
 import { describe, it } from "@effect/vitest"
 import { Chunk, Effect, Layer, pipe, Stream } from "effect"
 import { expect } from "vitest"
-import { getHeaderValue } from "../testUtils.js"
 import {
   assignUser,
   deletePasskey,
   getPasskey,
   listPasskeys,
   listPasskeysStream,
-} from "./effects.js"
+} from "./passkey.js"
+import { getHeaderValue } from "./testUtils.js"
 
 const passkeyId = "dummyPasskeyId"
 const tenancyId = "dummyTenancyId"

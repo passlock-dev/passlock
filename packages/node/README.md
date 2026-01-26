@@ -42,5 +42,4 @@ Node 22+
 
 Please see the [Quick start guide](https://passlock.dev/getting-started/)
 
-[contact]: https://passlock.dev/contact
 [client]: https://www.npmjs.com/package/@passlock/client

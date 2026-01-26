@@ -1,5 +1,5 @@
-import type { PasslockOptions } from "../../shared/options"
-import type { UserVerification } from "../types"
+import type { PasslockOptions } from "../shared/options"
+import type { UserVerification } from "./shared"
 import * as Helper from "@simplewebauthn/browser"
 import {
   type PublicKeyCredentialCreationOptionsJSON,
@@ -7,10 +7,10 @@ import {
   WebAuthnError,
 } from "@simplewebauthn/browser"
 import { Context, Micro, pipe } from "effect"
-import { Logger } from "../../logger"
-import { buildEndpoint, Endpoint, makeRequest, type UnexpectedError } from "../../shared/network"
-import { TenancyId } from "../../shared/tenancy"
-import { OtherPasskeyError, PasskeysUnsupportedError } from "../errors"
+import { Logger } from "../logger"
+import { buildEndpoint, Endpoint, makeRequest, type UnexpectedError } from "../shared/network"
+import { TenancyId } from "../shared/tenancy"
+import { OtherPasskeyError, PasskeyUnsupportedError } from "./errors"
 
 interface OptionsResponse {
   sessionToken: string
@@ -204,7 +204,7 @@ export const startRegistration = (
 
     const isSupport = helper.browserSupportsWebAuthn()
     if (!isSupport)
-      yield* new PasskeysUnsupportedError({
+      yield* new PasskeyUnsupportedError({
         message: "Device does not support passkeys",
       })
 
@@ -267,7 +267,7 @@ export const verifyCredential = (
  * Potential errors associated with Passkey registration
  */
 export type RegistrationError =
-  | PasskeysUnsupportedError
+  | PasskeyUnsupportedError
   | DuplicatePasskeyError
   | OtherPasskeyError
   | UnexpectedError

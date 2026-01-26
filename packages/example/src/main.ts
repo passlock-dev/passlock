@@ -9,6 +9,7 @@ import {
   LogEvent,
   LogLevel,
   registerPasskey,
+  updateUserDetails,
 } from "@passlock/client"
 
 const BASE_URL = "http://localhost:5174"
@@ -17,6 +18,8 @@ const HEADERS = {
   Accept: "application/json",
   "Content-Type": "application/json",
 }
+
+let savedPasskeyId: string | null = null
 
 /* Lookup HTML elements */
 
@@ -41,6 +44,8 @@ const displayNameField = getTextField("#displayName")
 const registerBtn = getBtn("#register")
 
 const authenticateBtn = getBtn("#authenticate")
+
+const renameBtn = getBtn("#rename")
 
 const deleteBtn = getBtn("#deletePasskey")
 
@@ -216,6 +221,7 @@ registerBtn.addEventListener("click", async () => {
   })
 
   if (isRegistrationSuccess(data)) {
+    savedPasskeyId = data.principal.authenticatorId
     saveUserMapping(username, data.principal.authenticatorId)
     jwtDiv.innerText = data.id_token
     codeDiv.innerText = data.code
@@ -242,6 +248,7 @@ authenticateBtn.addEventListener("click", async () => {
   })
 
   if (isAuthenticationSuccess(data)) {
+    savedPasskeyId = data.principal.authenticatorId
     jwtDiv.innerText = data.id_token
     codeDiv.innerText = data.code
   } else {
@@ -292,6 +299,52 @@ deleteBtn.addEventListener("click", async () => {
       errorDiv.hidden = false
     }
   }
+})
+
+renameBtn.addEventListener("click", async () => {
+  resetUI()
+
+  const endpoint = saveEndpoint()
+  const tenancyId = saveTenancyId()
+  const username = usernameField.value
+  const displayName = displayNameField.value
+
+  if (savedPasskeyId) {
+    await updateUserDetails(
+      {
+        tenancyId, 
+        endpoint,
+        passkeyId: savedPasskeyId,
+        username,
+        displayName,
+      }
+    )
+
+    saveUserMapping(username, savedPasskeyId)
+  } else {
+    const data = await authenticatePasskey({
+      endpoint,
+      tenancyId,
+      userVerification: "required",
+    })
+
+    if (isAuthenticationSuccess(data)) {
+      const { authenticatorId: passkeyId } = data.principal
+      await updateUserDetails({ 
+        tenancyId, 
+        endpoint, 
+        passkeyId, 
+        username, 
+        displayName 
+      })
+      saveUserMapping(username, passkeyId)
+    } else {
+      errorDiv.innerText = data.message
+      errorDiv.hidden = false
+    }
+  }
+
+  responseDiv.hidden = false
 })
 
 copyJwt.addEventListener("click", () => {

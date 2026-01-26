@@ -1,12 +1,12 @@
 import { Micro } from "effect"
 
-export const isPasskeysUnsupported = (error: unknown): error is PasskeysUnsupportedError =>
-  error instanceof PasskeysUnsupportedError
+export const isPasskeyUnsupported = (error: unknown): error is PasskeyUnsupportedError =>
+  error instanceof PasskeyUnsupportedError
 
-export class PasskeysUnsupportedError extends Micro.TaggedError("@error/PasskeysUnsupported")<{
+export class PasskeyUnsupportedError extends Micro.TaggedError("@error/PasskeyUnsupported")<{
   readonly message: string
 }> {
-  static isPasskeysUnsupported = isPasskeysUnsupported
+  static isPasskeyUnsupported = isPasskeyUnsupported
 }
 
 export type ErrorCode =
