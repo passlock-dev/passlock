@@ -58,23 +58,23 @@ Passlock exists to make that same production-tested, privacy-preserving approach
 - Teams needing to launch quickly, then adopt advanced features as the need arises
 - Organizations who don't want to be locked into a product or ecosystem
 
-Passlock is not ideal if you want a fully self-hosted setup.
+**Passlock is not for you if you want a fully self-hosted setup**.
 
 ## Key features
  
-- **:unlock: No lock-in**  
+**:unlock: No lock-in**  
 Framework agnostic. Standards compliant.
 
-- **:key: Related origins (domain migration)**  
+**:key: Related origins (domain migration)**  
 Accept passkeys from other domains on your site (subject to security constraints).
 
-- **:rocket: Zero config passkeys**  
+**:rocket: Zero config passkeys**  
 Works out of the box with sensible defaults.
 
-- **:iphone: Credential management**  
+**:iphone: Credential management**  
 Programmatically manage passkeys on end user devices
 
-- **:muscle: Powerful**  
+**:muscle: Powerful**  
 User verification, autofill, roaming authenticators and more.
 
 ## Why teams choose Passlock over alternatives
@@ -85,7 +85,7 @@ Below is how it compares to common alternatives.
 
 | Feature / Capability | Passlock | SimpleWebAuthn | Passport.js (WebAuthn) | Auth0 |
 |----------------------|----------|----------------|-------------------------|-------|
-| Passkeys / WebAuthn support | ✅ First-class | ✅ First-class | ✅ Low-level | ⚠️ Limited |
+| Passkeys / WebAuthn support | ✅ | ✅ | ✅ Low-level | ⚠️ Limited |
 | Self hosted | ❌ | ✅ | ✅ | ❌ |
 | Backend agnostic | ✅ | ⚠️ JS-Only | ❌ | ✅ |
 | Related origins (domain migration) | ✅ | ❌ | ❌ | ❌ |
@@ -106,23 +106,21 @@ The table above highlights high-level trade-offs. Details and context follow bel
 SimpleWebAuthn is an excellent self-hosted WebAuthn library.
 
 Passlock builds on it with additional capabilities:
-	•	Backend-agnostic (Node, Python, Java, Go, etc.)
-	•	Related origin requests (safe domain migration)
-	•	Client-side passkey management
-	•	Secure credential storage and audit logs
-	•	Management and debugging tooling
-
-We use SimpleWebAuthn internally — Passlock exists to eliminate the boilerplate teams keep rebuilding on top of it.
+* Backend-agnostic (Node, Python, Java, Go, etc.)
+* Related origin requests (safe domain migration)
+* Client-side passkey management
+* Secure credential storage and audit logs
+* Management and debugging tooling
 
 ### [Passport.js][passportjs] (WebAuthn strategy)
 
 Passport.js provides a low-level WebAuthn strategy intended for Express-based applications.
 
 In practice, this means you are responsible for:
-	•	Challenge storage and lifecycle management
-	•	Encoding/decoding WebAuthn payloads
-	•	Browser compatibility quirks
-	•	Frontend integration and UX
+* Challenge storage and lifecycle management
+* Encoding/decoding WebAuthn payloads
+* Browser compatibility quirks
+* Frontend integration and UX
 
 Passlock abstracts these concerns into simple browser and server APIs, works with any framework.
 
@@ -131,11 +129,11 @@ Passlock abstracts these concerns into simple browser and server APIs, works wit
 Auth0 supports passkeys as part of a broader identity platform, but treats them as an add-on rather than a first-class primitive.
 
 Key limitations:
-	•	Fixed registration and authentication flows
-	•	Limited access to underlying passkey data
-	•	Passkeys cannot be exported
+* Fixed registration and authentication flows
+* Limited access to underlying passkey data
+* Passkeys cannot be exported
 
-:warning: Vendor lock-in warning
+**:warning: Vendor lock-in warning**  
 If you migrate away from Auth0, existing passkeys stop working and users must re-register.
 
 Passlock keeps passkeys portable and migration-safe, giving you full control over user identities while still abstracting WebAuthn complexity.
