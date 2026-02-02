@@ -2,7 +2,7 @@
   "compilerOptions": {
     /* Projects */
     "incremental": true,
-    "composite": true,
+    "composite": false,
 
     /* Language & environment */
     "target": "ES2022",
@@ -39,6 +39,5 @@
     "skipLibCheck": true
   },
   "include": ["src"],
-  "exclude": ["**/*.test.*", "**/*.spec.*", "node_modules", "dist"],
-  "references": [{ "path": "../client" }, { "path": "../node" }]
+  "exclude": ["**/*.test.*", "**/*.spec.*", "node_modules", "dist"]
 }

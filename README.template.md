@@ -72,7 +72,7 @@ Accept passkeys from other domains on your site (subject to security constraints
 Works out of the box with sensible defaults.
 
 **:iphone: Credential management**  
-Programmatically manage passkeys on end user devices
+Programmatically manage passkeys on end user devices.
 
 **:muscle: Powerful**  
 User verification, autofill, roaming authenticators and more.
@@ -94,7 +94,7 @@ Below is how it compares to common alternatives.
 | No vendor / framework lock-in | ✅ | ✅ | ⚠️ | ❌ |
 | Management & audit tooling | ✅ | ❌ | ❌ | ✅ |
 
-> ⚠️ **Notes**
+> **Notes**
 > - **Low-level**: significant custom implementation required  
 > - **Limited**: passkeys are not a core design primitive  
 > - **JS-only**: Requires a JavaScript backend (Node, Deno, Bun)
@@ -164,33 +164,34 @@ Passlock uses short-lived, single-use codes to safely bridge the browser and bac
 
 ```typescript
 // frontend/register.ts
-import { registerPasskey, isRegistrationSuccess } from "@passlock/client/passkey";
+import { registerPasskey } from "@passlock/client/passkey";
 
-// capture a username from somewhere
+const tenancyId = "myTenancyId";
 
-// call this in a button click handler or similar action
+// supply or capture a username
+const username = "jdoe@gmail.com";
+
+// call this in a click handler or similar action
 const result = await registerPasskey({ tenancyId, username });
 
-if (isRegistrationSuccess(result)) {
-  // result includes a code, submit this to your backend for verification
-  myHiddenFormField.value = result.code;
-  myForm.requestSubmit();
-}
+// send this code to your backend for verification
+console.log('code: %s', result.code); 
 ```
 
-In your backend verify the code to obtain details about the newly registered passkey. We'll use the @passlock/node library for this, but it can also be done via vanilla REST.
+In your backend verify the code to obtain details about the newly registered passkey. We'll use the [@passlock/node][passlock-node] library for this, but you can also make vanilla REST calls.
 
 ```typescript
 // backend/register.ts
-import { exchangeCode, isExtendedPrincipal } from "@passlock/node";
+import { exchangeCode } from "@passlock/node";
+
+const tenancyId = "myTenancyId";
+const apiKey = "myApiKey";
 
 const result = await exchangeCode(code, { tenancyId, apiKey });
 
-// ExtendedPrincipal includes details about the new passkey
-if (isExtendedPrincipal(result)) {
-  // associate the authenticatorId (passkeyId) with a local user account
-  linkPasskey(user.id, result.authenticatorId);
-}
+// includes details about the new passkey
+// associate the authenticatorId (passkey ID) with a local user account
+console.log('passkey id: %s', result.authenticatorId); 
 ```
 
 ### Authenticate a passkey
@@ -199,33 +200,34 @@ Very similar to the registration process, authenticate in your frontend and send
 
 ```typescript
 // frontend/authenticate.ts
-import { authenticatePasskey, isAuthenticationSuccess } from "@passlock/client/passkey";
+import { authenticatePasskey } from "@passlock/client/passkey";
+
+const tenancyId = "myTenancyId";
 
 // call this in a button click handler or similar action
 const result = await authenticatePasskey({ tenancyId });
 
-if (isAuthenticationSuccess(result)) {
-  // result includes a code, submit this to your backend for verification
-  myHiddenFormField.value = result.code;
-  myForm.requestSubmit();
-} 
+// send this code to your backend for verification
+console.log('code: %s', result.code); 
 ```
 
 In your backend, verify the code and lookup the user by authenticatorId ...
 
 ```typescript
 // backend/authenticate.ts
-import { exchangeCode, isExtendedPrincipal } from "@passlock/node";
+import { exchangeCode } from "@passlock/node";
+
+const tenancyId = "myTenancyId";
+const apiKey = "myApiKey";
 
 const result = await exchangeCode(code, { tenancyId, apiKey });
 
-if (isExtendedPrincipal(result)) {
-  lookupUserByPasskeyId(result.authenticatorId);
-}
+// lookup the user based on their authenticatorId
+console.log('passkey id: %s', result.authenticatorId); 
 ```
 
 > [!TIP]  
-> **Not using a Node backend?** The examples in this README use our `@passlock/node` server library, but **this is not required**. Passlock works similarly to Oauth2/OpenID Connect, so you can make vanilla HTTP calls or use any suitable JWT library to verify an `id_token` (JWT).
+> **Not using a Node backend?** The examples in this README use our [@passlock/node][passlock-node] server library, but **this is not required**. Passlock works similarly to Oauth2/OpenID Connect, so you can make vanilla HTTP calls or use any suitable JWT library to verify an `id_token` (JWT).
 
 ## More information
 
@@ -236,7 +238,7 @@ Please see the [tutorial](https://passlock.dev/getting-started/) and [documentat
 If Passlock saved you time or helped you ship passkeys faster, a ⭐ on GitHub helps more than you think.
 
 [contact]: https://passlock.dev/contact
-[node]: https://www.npmjs.com/package/@passlock/node
+[passlock-node]: https://www.npmjs.com/package/@passlock/node
 [simplewebauthn]: https://simplewebauthn.dev
 [passportjs]: https://github.com/jaredhanson/passport-webauthn
 [auth0]: https://auth0.com/docs/secure/multi-factor-authentication/fido-authentication-with-webauthn

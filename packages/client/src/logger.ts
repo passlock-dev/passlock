@@ -1,6 +1,10 @@
 import { Context, Micro } from "effect"
 
-export class Logger extends Context.Tag("Logger")<
+/**
+ * Allows us to plug in specific implementations.
+ * @see consoleLogger and eventLogger
+ */
+export class Logger extends Context.Tag("ClientLogger")<
   Logger,
   {
     readonly logDebug: (message: string) => Micro.Micro<void>
@@ -10,7 +14,10 @@ export class Logger extends Context.Tag("Logger")<
   }
 >() {}
 
-export const ConsoleLogger: typeof Logger.Service = {
+/**
+ * Logs to the JS console
+ */
+export const consoleLogger: typeof Logger.Service = {
   logDebug: (message: string | object, ...optionalArgs: Array<unknown>) =>
     Micro.sync(() => {
       console.debug(message, optionalArgs)
@@ -39,6 +46,9 @@ export enum LogLevel {
   WARN = "WARN",
 }
 
+/**
+ * Custom event representing a log message
+ */
 export class LogEvent extends Event {
   readonly #message: string
   readonly #level: LogLevel
@@ -67,7 +77,12 @@ const logEvent = (level: LogLevel) => (message: string) =>
     }
   })
 
-export const EventLogger: typeof Logger.Service = {
+/**
+ * Fires JS events instead of writing to the console.
+ * Hook into it by listening for PasslockLogEvent events
+ * @see LogEvent
+ */
+export const eventLogger: typeof Logger.Service = {
   logDebug: logEvent(LogLevel.DEBUG),
   logError: logEvent(LogLevel.ERROR),
   logInfo: logEvent(LogLevel.INFO),

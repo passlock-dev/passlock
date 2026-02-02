@@ -3,8 +3,8 @@ import { describe, it, vi } from "@effect/vitest"
 import { Effect, Layer, pipe } from "effect"
 import * as jose from "jose"
 import { expect } from "vitest"
+import { getHeaderValue } from "../../test/utils.js"
 import { exchangeCode, verifyIdToken } from "./principal.js"
-import { getHeaderValue } from "./testUtils.js"
 
 const code = "dummyCode"
 const tenancyId = "dummyTenancyId"
@@ -50,13 +50,18 @@ describe(exchangeCode.name, () => {
           )
         )
 
-        const principal = yield* exchangeCode(code, { apiKey, tenancyId }, TestLayer)
+        const principal = yield* exchangeCode(
+          { code, apiKey, tenancyId },
+          TestLayer
+        )
 
         expect(principal._tag).toEqual("ExtendedPrincipal")
         expect(principal.metadata.ipAddress).toEqual("127.0.0.1")
         expect(principal.metadata.userAgent).toEqual("Safari")
 
-        expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/principal/${code}`)
+        expect(invokedUrl).toEqual(
+          `https://api.passlock.dev/${tenancyId}/principal/${code}`
+        )
 
         expect(method).toEqual("GET")
       })
@@ -75,12 +80,17 @@ describe(exchangeCode.name, () => {
           FetchHttpClient.layer,
           Layer.provide(
             Layer.succeed(FetchHttpClient.Fetch, () =>
-              Promise.resolve(new Response(JSON.stringify(errorResponse), { status: 404 }))
+              Promise.resolve(
+                new Response(JSON.stringify(errorResponse), { status: 404 })
+              )
             )
           )
         )
 
-        const error = yield* pipe(exchangeCode(code, { apiKey, tenancyId }, TestLayer), Effect.flip)
+        const error = yield* pipe(
+          exchangeCode({ code, apiKey, tenancyId }, TestLayer),
+          Effect.flip
+        )
 
         expect(error._tag).toEqual("@error/InvalidCode")
       })
@@ -105,9 +115,11 @@ describe(exchangeCode.name, () => {
         )
       )
 
-      yield* exchangeCode(code, { apiKey, tenancyId }, TestLayer)
+      yield* exchangeCode({ code, apiKey, tenancyId }, TestLayer)
 
-      expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/principal/${code}`)
+      expect(invokedUrl).toEqual(
+        `https://api.passlock.dev/${tenancyId}/principal/${code}`
+      )
     })
   )
 
@@ -120,7 +132,10 @@ describe(exchangeCode.name, () => {
         Layer.provide(
           Layer.succeed(FetchHttpClient.Fetch, (_, init) => {
             if (init?.headers) {
-              authorizationHeader = getHeaderValue(init.headers, "authorization")
+              authorizationHeader = getHeaderValue(
+                init.headers,
+                "authorization"
+              )
             }
 
             return Promise.resolve(
@@ -132,7 +147,7 @@ describe(exchangeCode.name, () => {
         )
       )
 
-      yield* exchangeCode(code, { apiKey, tenancyId }, TestLayer)
+      yield* exchangeCode({ code, apiKey, tenancyId }, TestLayer)
 
       expect(authorizationHeader).toEqual("Bearer dummyApiKey")
     })
@@ -149,12 +164,17 @@ describe(exchangeCode.name, () => {
         FetchHttpClient.layer,
         Layer.provide(
           Layer.succeed(FetchHttpClient.Fetch, () =>
-            Promise.resolve(new Response(JSON.stringify(forbiddenResponse), { status: 403 }))
+            Promise.resolve(
+              new Response(JSON.stringify(forbiddenResponse), { status: 403 })
+            )
           )
         )
       )
 
-      const error = yield* pipe(exchangeCode(code, { apiKey, tenancyId }, TestLayer), Effect.flip)
+      const error = yield* pipe(
+        exchangeCode({ code, apiKey, tenancyId }, TestLayer),
+        Effect.flip
+      )
 
       expect(error._tag).toEqual("@error/Forbidden")
     })
@@ -168,7 +188,9 @@ describe(verifyIdToken.name, () => {
         jose.generateKeyPair("RS256")
       )
 
-      const publicJwk = yield* Effect.tryPromise(() => jose.exportJWK(publicKey))
+      const publicJwk = yield* Effect.tryPromise(() =>
+        jose.exportJWK(publicKey)
+      )
       publicJwk.kid = "test-kid"
       publicJwk.alg = "RS256"
       const jwks = { keys: [publicJwk] }
@@ -186,7 +208,10 @@ describe(verifyIdToken.name, () => {
           "pk:uv": true,
           sub: "dummyUserId",
         })
-          .setProtectedHeader({ alg: "RS256", ...(publicJwk.kid ? { kid: publicJwk.kid } : {}) })
+          .setProtectedHeader({
+            alg: "RS256",
+            ...(publicJwk.kid ? { kid: publicJwk.kid } : {}),
+          })
           .setIssuedAt(issuedAt)
           .setExpirationTime(expiresAt)
           .sign(privateKey)
@@ -214,7 +239,7 @@ describe(verifyIdToken.name, () => {
 
       const principal = yield* Effect.acquireUseRelease(
         mockGlobalFetch,
-        () => verifyIdToken(token, { tenancyId }),
+        () => verifyIdToken({ token, tenancyId }),
         restoreGlobalFetch
       )
 

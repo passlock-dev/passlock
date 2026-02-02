@@ -1,24 +1,28 @@
-import type { DeletedPasskey, FindAllPasskeys, Passkey } from "./schemas/index.js"
 import { FetchHttpClient } from "@effect/platform"
 import { describe, it } from "@effect/vitest"
-import { Chunk, Effect, Layer, pipe, Stream } from "effect"
+import { getHeaderValue } from "@test/utils.js"
+import { Chunk, Effect, Layer, pipe, Schema, Stream } from "effect"
 import { expect } from "vitest"
+import type { PasskeyEncoded } from "../schemas/passkey.js"
+import type { DeletedPasskey, FindAllPasskeys } from "./passkey.js"
+
 import {
   assignUser,
   deletePasskey,
   getPasskey,
   listPasskeys,
   listPasskeysStream,
+  updatePasskey,
 } from "./passkey.js"
-import { getHeaderValue } from "./testUtils.js"
 
 const passkeyId = "dummyPasskeyId"
 const tenancyId = "dummyTenancyId"
 const apiKey = "dummyApiKey"
 const credentialId = "webAuthnId"
 const rpId = "localhost"
+const publicKey = Uint8Array.from([1, 2, 3, 4, 5])
 
-const passkeyResponse: Passkey = {
+const passkeyResponse: PasskeyEncoded = {
   _tag: "Passkey",
   credential: {
     aaguid: "dummyAaguid",
@@ -26,8 +30,10 @@ const passkeyResponse: Passkey = {
     counter: 0,
     deviceType: "singleDevice",
     id: "dummyWebAuthnId",
+    username: "dummyWebAuthnUsername",
     transports: ["internal"],
     userId: "dummyWebAuthnUserId",
+    publicKey: Schema.encodeSync(Schema.Uint8ArrayFromBase64Url)(publicKey),
   },
   enabled: true,
   id: "dummyPasskeyId",
@@ -42,7 +48,7 @@ const passkeyResponse: Passkey = {
 
 const deletedPasskeyResponse: DeletedPasskey = {
   _tag: "DeletedPasskey",
-  passkeyId,
+  id: passkeyId,
   credentialId,
   rpId,
 }
@@ -57,7 +63,8 @@ const findAllPasskeysResponse: FindAllPasskeys = {
       userId: "dummyUserId",
       enabled: true,
       credential: {
-        aaguid: "dummyAaguid",
+        id: "dummyCredentialId",
+        userId: "dummyCredentialUserId",
       },
       createdAt: Date.now(),
     },
@@ -78,17 +85,23 @@ describe(listPasskeys.name, () => {
               invokedUrl = String(url)
               method = init?.method
               return Promise.resolve(
-                new Response(JSON.stringify(findAllPasskeysResponse), { status: 200 })
+                new Response(JSON.stringify(findAllPasskeysResponse), {
+                  status: 200,
+                })
               )
             })
           )
         )
 
-        const result = yield* pipe(listPasskeys({ apiKey, tenancyId }, TestLayer))
+        const result = yield* pipe(
+          listPasskeys({ apiKey, tenancyId }, TestLayer)
+        )
 
         expect(result).toStrictEqual(findAllPasskeysResponse)
 
-        expect(invokedUrl).toEqual("https://api.passlock.dev/dummyTenancyId/passkeys/")
+        expect(invokedUrl).toEqual(
+          "https://api.passlock.dev/dummyTenancyId/passkeys/"
+        )
 
         expect(method).toEqual("GET")
       })
@@ -108,7 +121,9 @@ describe(listPasskeys.name, () => {
               invokedUrl = String(url)
               method = init?.method
               return Promise.resolve(
-                new Response(JSON.stringify(findAllPasskeysResponse), { status: 200 })
+                new Response(JSON.stringify(findAllPasskeysResponse), {
+                  status: 200,
+                })
               )
             })
           )
@@ -137,13 +152,17 @@ describe(listPasskeys.name, () => {
           Layer.provide(
             Layer.succeed(FetchHttpClient.Fetch, () => {
               return Promise.resolve(
-                new Response(JSON.stringify(findAllPasskeysResponse), { status: 200 })
+                new Response(JSON.stringify(findAllPasskeysResponse), {
+                  status: 200,
+                })
               )
             })
           )
         )
 
-        const result = yield* pipe(listPasskeys({ apiKey, tenancyId }, TestLayer))
+        const result = yield* pipe(
+          listPasskeys({ apiKey, tenancyId }, TestLayer)
+        )
 
         expect(result.cursor).toEqual("dummyCursor")
       })
@@ -165,7 +184,8 @@ describe(listPasskeysStream.name, () => {
               userId: "single-page-user-id",
               enabled: true,
               credential: {
-                aaguid: "single-page-aaguid",
+                id: "dummyCredentialId",
+                userId: "dummyCredentialUserId",
               },
               createdAt: 1,
             },
@@ -197,7 +217,9 @@ describe(listPasskeysStream.name, () => {
         )
 
         expect(fetchCount).toEqual(1)
-        expect(invokedUrls).toEqual(["https://api.passlock.dev/dummyTenancyId/passkeys/"])
+        expect(invokedUrls).toEqual([
+          "https://api.passlock.dev/dummyTenancyId/passkeys/",
+        ])
         expect(summaries).toEqual(singlePageResponse.records)
       })
     )
@@ -216,7 +238,8 @@ describe(listPasskeysStream.name, () => {
               userId: "first-page-user-id",
               enabled: true,
               credential: {
-                aaguid: "first-page-aaguid",
+                id: "dummyCredentialId",
+                userId: "dummyCredentialUserId",
               },
               createdAt: 1,
             },
@@ -233,7 +256,8 @@ describe(listPasskeysStream.name, () => {
               userId: "second-page-user-id",
               enabled: false,
               credential: {
-                aaguid: "second-page-aaguid",
+                id: "dummyCredentialId",
+                userId: "dummyCredentialUserId",
               },
               createdAt: 2,
             },
@@ -271,7 +295,10 @@ describe(listPasskeysStream.name, () => {
           "https://api.passlock.dev/dummyTenancyId/passkeys/",
           "https://api.passlock.dev/dummyTenancyId/passkeys/?cursor=page-two-cursor",
         ])
-        expect(summaries).toEqual([...firstPageResponse.records, ...secondPageResponse.records])
+        expect(summaries).toEqual([
+          ...firstPageResponse.records,
+          ...secondPageResponse.records,
+        ])
       })
     )
   })
@@ -290,14 +317,18 @@ describe(getPasskey.name, () => {
             Layer.succeed(FetchHttpClient.Fetch, (url, init) => {
               invokedUrl = String(url)
               method = init?.method
-              return Promise.resolve(new Response(JSON.stringify(passkeyResponse), { status: 200 }))
+              return Promise.resolve(
+                new Response(JSON.stringify(passkeyResponse), { status: 200 })
+              )
             })
           )
         )
 
-        const passkey = yield* pipe(getPasskey(passkeyId, { apiKey, tenancyId }, TestLayer))
+        const passkey = yield* pipe(
+          getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer)
+        )
 
-        expect(passkey).toStrictEqual(passkeyResponse)
+        expect(passkey).toStrictEqual(passkey)
 
         expect(invokedUrl).toEqual(
           "https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId"
@@ -320,13 +351,15 @@ describe(getPasskey.name, () => {
           FetchHttpClient.layer,
           Layer.provide(
             Layer.succeed(FetchHttpClient.Fetch, () =>
-              Promise.resolve(new Response(JSON.stringify(errorResponse), { status: 404 }))
+              Promise.resolve(
+                new Response(JSON.stringify(errorResponse), { status: 404 })
+              )
             )
           )
         )
 
         const error = yield* pipe(
-          getPasskey(passkeyId, { apiKey, tenancyId }, TestLayer),
+          getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer),
           Effect.flip
         )
 
@@ -344,14 +377,18 @@ describe(getPasskey.name, () => {
         Layer.provide(
           Layer.succeed(FetchHttpClient.Fetch, (url) => {
             invokedUrl = String(url)
-            return Promise.resolve(new Response(JSON.stringify(passkeyResponse), { status: 200 }))
+            return Promise.resolve(
+              new Response(JSON.stringify(passkeyResponse), { status: 200 })
+            )
           })
         )
       )
 
-      yield* pipe(getPasskey(passkeyId, { apiKey, tenancyId }, TestLayer))
+      yield* pipe(getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer))
 
-      expect(invokedUrl).toEqual("https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId")
+      expect(invokedUrl).toEqual(
+        "https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId"
+      )
     })
   )
 
@@ -364,15 +401,20 @@ describe(getPasskey.name, () => {
         Layer.provide(
           Layer.succeed(FetchHttpClient.Fetch, (_, init) => {
             if (init?.headers) {
-              authorizationHeader = getHeaderValue(init.headers, "authorization")
+              authorizationHeader = getHeaderValue(
+                init.headers,
+                "authorization"
+              )
             }
 
-            return Promise.resolve(new Response(JSON.stringify(passkeyResponse), { status: 200 }))
+            return Promise.resolve(
+              new Response(JSON.stringify(passkeyResponse), { status: 200 })
+            )
           })
         )
       )
 
-      yield* pipe(getPasskey(passkeyId, { apiKey, tenancyId }, TestLayer))
+      yield* pipe(getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer))
 
       expect(authorizationHeader).toEqual("Bearer dummyApiKey")
     })
@@ -389,13 +431,15 @@ describe(getPasskey.name, () => {
         FetchHttpClient.layer,
         Layer.provide(
           Layer.succeed(FetchHttpClient.Fetch, () =>
-            Promise.resolve(new Response(JSON.stringify(forbiddenResponse), { status: 403 }))
+            Promise.resolve(
+              new Response(JSON.stringify(forbiddenResponse), { status: 403 })
+            )
           )
         )
       )
 
       const error = yield* pipe(
-        getPasskey(passkeyId, { apiKey, tenancyId }, TestLayer),
+        getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer),
         Effect.flip
       )
 
@@ -418,13 +462,17 @@ describe(deletePasskey.name, () => {
               invokedUrl = String(url)
               method = init?.method
               return Promise.resolve(
-                new Response(JSON.stringify(deletedPasskeyResponse), { status: 202 })
+                new Response(JSON.stringify(deletedPasskeyResponse), {
+                  status: 202,
+                })
               )
             })
           )
         )
 
-        const result = yield* pipe(deletePasskey(passkeyId, { apiKey, tenancyId }, TestLayer))
+        const result = yield* pipe(
+          deletePasskey({ passkeyId, apiKey, tenancyId }, TestLayer)
+        )
 
         expect(result).toStrictEqual(deletedPasskeyResponse)
 
@@ -449,13 +497,15 @@ describe(deletePasskey.name, () => {
           FetchHttpClient.layer,
           Layer.provide(
             Layer.succeed(FetchHttpClient.Fetch, () =>
-              Promise.resolve(new Response(JSON.stringify(errorResponse), { status: 404 }))
+              Promise.resolve(
+                new Response(JSON.stringify(errorResponse), { status: 404 })
+              )
             )
           )
         )
 
         const error = yield* pipe(
-          deletePasskey(passkeyId, { apiKey, tenancyId }, TestLayer),
+          deletePasskey({ passkeyId, apiKey, tenancyId }, TestLayer),
           Effect.flip
         )
 
@@ -479,9 +529,12 @@ describe(assignUser.name, () => {
               invokedUrl = String(url)
               method = init?.method
               return Promise.resolve(
-                new Response(JSON.stringify({ ...passkeyResponse, userId: "newUserId" }), {
-                  status: 202,
-                })
+                new Response(
+                  JSON.stringify({ ...passkeyResponse, userId: "newUserId" }),
+                  {
+                    status: 202,
+                  }
+                )
               )
             })
           )
@@ -515,13 +568,106 @@ describe(assignUser.name, () => {
           FetchHttpClient.layer,
           Layer.provide(
             Layer.succeed(FetchHttpClient.Fetch, () =>
-              Promise.resolve(new Response(JSON.stringify(errorResponse), { status: 404 }))
+              Promise.resolve(
+                new Response(JSON.stringify(errorResponse), { status: 404 })
+              )
             )
           )
         )
 
         const error = yield* pipe(
-          assignUser({ apiKey, passkeyId, tenancyId, userId: "newUserId" }, TestLayer),
+          assignUser(
+            { apiKey, passkeyId, tenancyId, userId: "newUserId" },
+            TestLayer
+          ),
+          Effect.flip
+        )
+
+        expect(error._tag).toEqual("@error/NotFound")
+      })
+    )
+  })
+})
+
+describe(updatePasskey.name, () => {
+  describe("when the passkey exists", () => {
+    it.effect("should return the updated passkey", () =>
+      Effect.gen(function* () {
+        let invokedUrl: string | undefined
+        let method: string | undefined
+
+        const TestLayer = pipe(
+          FetchHttpClient.layer,
+          Layer.provide(
+            Layer.succeed(FetchHttpClient.Fetch, (url, init) => {
+              invokedUrl = String(url)
+              method = init?.method
+              return Promise.resolve(
+                new Response(
+                  JSON.stringify({
+                    ...passkeyResponse,
+                    userId: "newUserId",
+                    credential: {
+                      ...passkeyResponse.credential,
+                      username: "newUsername",
+                    },
+                  }),
+                  {
+                    status: 202,
+                  }
+                )
+              )
+            })
+          )
+        )
+
+        const result = yield* updatePasskey(
+          {
+            apiKey,
+            passkeyId,
+            tenancyId,
+            userId: "newUserId",
+            username: "newUsername",
+          },
+          TestLayer
+        )
+
+        expect(result.userId).toEqual("newUserId")
+        expect(result.credential.username).toEqual("newUsername")
+
+        expect(invokedUrl).toEqual(
+          "https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId"
+        )
+
+        expect(method).toEqual("PATCH")
+      })
+    )
+  })
+
+  describe("when the passkey does not exist", () => {
+    it.effect("should return an error", () =>
+      Effect.gen(function* () {
+        const errorResponse = {
+          _tag: "@error/NotFound",
+          message: "Passkey not found",
+        }
+
+        const TestLayer = pipe(
+          FetchHttpClient.layer,
+          Layer.provide(
+            Layer.succeed(FetchHttpClient.Fetch, () =>
+              Promise.resolve(
+                new Response(JSON.stringify(errorResponse), { status: 404 })
+              )
+            )
+          )
+        )
+
+        const error = yield* pipe(
+          assignUser(
+            { apiKey, passkeyId, tenancyId, userId: "newUserId" },
+            TestLayer
+          ),
           Effect.flip
         )
 

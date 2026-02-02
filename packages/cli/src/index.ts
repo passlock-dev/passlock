@@ -6,6 +6,8 @@ import { NodeContext, NodeHttpClient, NodeRuntime } from "@effect/platform-node"
 import { Console, Effect, Layer, pipe } from "effect"
 import { init } from "./init.js"
 
+const VERSION = "#{VERSION}#"
+
 // prepend the correct endpoint
 const mapClient = (endpoint: string) =>
   pipe(
@@ -38,7 +40,7 @@ const command = pipe(mainCmd, Command.withSubcommands([initCmd]))
 // Set up the CLI application
 const cli = Command.run(command, {
   name: "Passlock CLI tools",
-  version: "v2.0.0.alpha.1",
+  version: VERSION,
 })
 
 // Prepare and run the CLI application

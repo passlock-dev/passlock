@@ -1,94 +1,114 @@
+/**
+ * Unsafe functions that could potentially throw errors.
+ *
+ * @categoryDescription Passkeys
+ * Functions and related types for managing passkeys
+ *
+ * @showCategories
+ *
+ * @module unsafe
+ */
+
+import { FetchHttpClient } from "@effect/platform"
+import { Effect, pipe } from "effect"
 import type {
-  AssignUserRequest,
-  DeleteAuthenticatorOptions,
-  GetAuthenticatorOptions,
+  AssignUserOptions,
+  DeletedPasskey,
+  DeletePasskeyOptions,
+  FindAllPasskeys,
+  GetPasskeyOptions,
   ListPasskeyOptions,
   Passkey,
-} from "./passkey.js"
-import type { ExchangeCodeOptions, VerificationFailure, VerifyTokenOptions } from "./principal.js"
-import type { Forbidden, InvalidCode, NotFound } from "./schemas/errors.js"
-import type { DeletedPasskey, FindAllPasskeys } from "./schemas/passkey.js"
-import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
-import { FetchHttpClient } from "@effect/platform"
-import { Effect, identity, pipe } from "effect"
+  UpdatePasskeyOptions,
+} from "./passkey/passkey.js"
 import {
   assignUser as assignUserE,
   deletePasskey as deletePasskeyE,
   getPasskey as getPasskeyE,
   listPasskeys as listPasskeysE,
-} from "./passkey.js"
-import { exchangeCode as exchangeCodeE, verifyIdToken as verifyIdTokenE } from "./principal.js"
+  updatePasskey as updatePasskeyE,
+} from "./passkey/passkey.js"
+import type {
+  ExchangeCodeOptions,
+  VerifyIdTokenOptions,
+} from "./principal/principal.js"
+import {
+  exchangeCode as exchangeCodeE,
+  verifyIdToken as verifyIdTokenE,
+} from "./principal/principal.js"
+import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
 
 /**
  * Call the Passlock backend API to assign a userId to an authenticator
+ *
  * @param request
- * @param request
- * @returns
+ * @returns A promise resolving to the updated passkey.
+ * @throws {@link NotFound} if passkey does not exist
+ * @throws {@link Forbidden} if the Tenancy ID or API key is invalid
+ *
+ * @category Passkeys
  */
-export const assignUser = (request: AssignUserRequest): Promise<Passkey | NotFound | Forbidden> =>
-  pipe(
-    assignUserE(request),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+export const assignUser = (request: AssignUserOptions): Promise<Passkey> =>
+  pipe(assignUserE(request), Effect.runPromise)
+
+/**
+ * Call the Passlock backend API to update passkey properties
+ *
+ * @param request
+ * @returns A promise resolving to the updated passkey.
+ *
+ * @category Passkeys
+ */
+export const updatePasskey = (
+  request: UpdatePasskeyOptions
+): Promise<Passkey> => pipe(updatePasskeyE(request), Effect.runPromise)
 
 /**
  * Call the Passlock backend API to delete an authenticator
+ *
  * @param options
- * @param options
- * @returns
+ * @returns A promise resolving to the deleted passkey payload.
+ *
+ * @category Passkeys
  */
 export const deletePasskey = (
-  passkeyId: string,
-  options: DeleteAuthenticatorOptions
-): Promise<DeletedPasskey | Forbidden | NotFound> =>
-  pipe(
-    deletePasskeyE(passkeyId, options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+  options: DeletePasskeyOptions
+): Promise<DeletedPasskey> => pipe(deletePasskeyE(options), Effect.runPromise)
 
 /**
  * Call the Passlock backend API to fetch an authenticator
- * @param request
- * @param request
- * @returns
+ * @param options
+ * @returns A promise resolving to the passkey.
  */
-export const getPasskey = (
-  authenticatorId: string,
-  options: GetAuthenticatorOptions
-): Promise<Passkey | Forbidden | NotFound> =>
-  pipe(
-    getPasskeyE(authenticatorId, options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+export const getPasskey = (options: GetPasskeyOptions): Promise<Passkey> =>
+  pipe(getPasskeyE(options), Effect.runPromise)
 
 /**
- * List passkeys for the given tenancy. Note this could return a cursor, in which case the function chould be called with the given cursor.
+ * List passkeys for the given tenancy. Note this could return a cursor,
+ * in which case the function should be called again with the given cursor.
+ *
  * @param options
- * @returns
+ * @returns A promise resolving to a page of passkey summaries.
+ *
+ * @category Passkeys
  */
-export const listPasskeys = (options: ListPasskeyOptions): Promise<FindAllPasskeys | Forbidden> =>
-  pipe(
-    listPasskeysE(options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+export const listPasskeys = (
+  options: ListPasskeyOptions
+): Promise<FindAllPasskeys> => pipe(listPasskeysE(options), Effect.runPromise)
 
 /**
  * Call the Passlock backend API to exchange a code for a Principal
- * @param code
- * @package options
- * @returns
+ *
+ * @param options
+ * @returns A promise resolving to an extended principal.
+ *
+ * @category Principal
  */
 export const exchangeCode = (
-  code: string,
   options: ExchangeCodeOptions
-): Promise<ExtendedPrincipal | Forbidden | InvalidCode> =>
+): Promise<ExtendedPrincipal> =>
   pipe(
-    exchangeCodeE(code, options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
+    exchangeCodeE(options),
     Effect.provide(FetchHttpClient.layer),
     Effect.runPromise
   )
@@ -99,27 +119,76 @@ export const exchangeCode = (
  * endpoint to fetch the relevant public key. The response will be cached, however
  * bear in mind that for something like AWS lambda it will make the call on every
  * cold start so might actually be slower than {@link exchangeCode}
- * @param token
+ *
  * @param options
- * @returns
+ * @returns A promise resolving to the verified principal.
+ *
+ * @category Principal
  */
 export const verifyIdToken = (
-  token: string,
-  options: VerifyTokenOptions
-): Promise<Principal | VerificationFailure> =>
+  options: VerifyIdTokenOptions
+): Promise<Principal> =>
   pipe(
-    verifyIdTokenE(token, options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
+    verifyIdTokenE(options),
+    Effect.provide(FetchHttpClient.layer),
     Effect.runPromise
   )
 
+/* Re-exports */
+
 export type {
-  AssignUserRequest,
-  DeleteAuthenticatorOptions,
-  GetAuthenticatorOptions,
+  BadRequest,
+  DuplicateEmail,
+  Forbidden,
+  InvalidCode,
+  InvalidEmail,
+  InvalidTenancy,
+  NotFound,
+  PasskeyNotFound,
+  Unauthorized,
+  VerificationFailure,
+} from "./errors.js"
+export {
+  isBadRequest,
+  isDuplicateEmail,
+  isForbidden,
+  isInvalidCode,
+  isInvalidEmail,
+  isInvalidTenancy,
+  isNotFound,
+  isPasskeyNotFound,
+  isUnauthorized,
+  isVerificationFailure,
+} from "./errors.js"
+export type {
+  AssignUserOptions,
+  Credential,
+  DeletedPasskey,
+  DeletePasskeyOptions,
+  FindAllPasskeys,
+  GetPasskeyOptions,
   ListPasskeyOptions,
-} from "./passkey.js"
-export type { ExchangeCodeOptions, VerifyTokenOptions } from "./principal.js"
-export type { AuthenticatedTenancyOptions, TenancyOptions } from "./shared.js"
-export { VerificationFailure } from "./principal.js"
-export * from "./schemas/index.js"
+  Passkey,
+  PasskeySummary,
+  Platform,
+  UpdatePasskeyOptions,
+} from "./passkey/passkey.js"
+export {
+  isDeletedPasskey,
+  isPasskey,
+  isPasskeySummary,
+} from "./passkey/passkey.js"
+export type {
+  ExchangeCodeOptions,
+  VerifyIdTokenOptions,
+} from "./principal/principal.js"
+export type {
+  CredentialDeviceType,
+  Transports,
+} from "./schemas/passkey.js"
+export type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
+export { isExtendedPrincipal, isPrincipal } from "./schemas/principal.js"
+export type {
+  AuthenticatedOptions,
+  PasslockOptions,
+} from "./shared.js"

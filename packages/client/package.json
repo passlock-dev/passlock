@@ -1,6 +1,6 @@
 {
   "name": "@passlock/client",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Flexible passkey authentication for Astro, SvelteKit, NextJS and other frameworks",
   "keywords": [
     "passkey",
@@ -35,10 +35,10 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./unsafe": {
-      "types": "./dist/unsafe.d.ts",
-      "import": "./dist/unsafe.js",
-      "default": "./dist/unsafe.js"
+    "./safe": {
+      "types": "./dist/safe.d.ts",
+      "import": "./dist/safe.js",
+      "default": "./dist/safe.js"
     }
   },
   "module": "./dist/index.js",
@@ -47,19 +47,20 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc -p tsconfig.build.json",
     "build:clean": "$npm_execpath run clean:full && $npm_execpath run build",
     "build:production": "$npm_execpath run build:clean && $npm_execpath run build:readme && $npm_execpath run replaceTokens && echo '' && publint",
-    "build:readme": "LATEST=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/client",
-    "clean": "tsc --build --clean",
-    "clean:full": "rimraf dist tsconfig.tsbuildinfo",
+    "build:readme": "VERSION=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/client",
+    "typedoc": "typedoc",
+    "clean": "tsc -p tsconfig.build.json --clean",
+    "clean:full": "rimraf dist tsconfig.build.tsbuildinfo",
     "prepublishOnly": "$npm_execpath run build:production",
-    "replaceTokens": "LATEST=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/client",
+    "replaceTokens": "VERSION=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/client",
     "test:unit": "vitest --project unit run",
     "test:unit:watch": "vitest --project unit",
     "test:integration": "vitest --project integration run",
     "test:all": "vitest --project unit --project integration run",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.test.json --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --fix .",
     "lint:ci": "biome ci .",
@@ -72,19 +73,20 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/language-service": "^0.72.0",
+    "@effect/language-service": "^0.75.1",
     "@fetch-mock/vitest": "^0.2.18",
-    "@typescript/lib-dom": "npm:@types/web@^0.0.323",
+    "@typescript/lib-dom": "npm:@types/web@^0.0.337",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
     "publint": "catalog:",
     "rimraf": "catalog:",
     "tsx": "catalog:",
+    "typedoc": "^0.28.17",
     "typescript": "catalog:",
     "vitest": "^4.0.16"
   },
   "peerDependencies": {
     "effect": "catalog:"
   },
-  "packageManager": "pnpm@10.28.2"
+  "packageManager": "pnpm@10.30.1"
 }

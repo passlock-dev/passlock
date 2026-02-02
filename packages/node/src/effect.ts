@@ -1,16 +1,21 @@
 export type {
-  AssignUserRequest,
-  DeleteAuthenticatorOptions,
-  GetAuthenticatorOptions,
+  AssignUserOptions as AssignUserRequest,
   ListPasskeyOptions,
-} from "./passkey.js"
-export type { ExchangeCodeOptions, VerifyTokenOptions } from "./principal.js"
-export type { AuthenticatedTenancyOptions, TenancyOptions } from "./shared.js"
+} from "./passkey/passkey.js"
 export {
   assignUser,
   deletePasskey,
   getPasskey,
   listPasskeys,
-} from "./passkey.js"
-export { exchangeCode, VerificationFailure, verifyIdToken } from "./principal.js"
+} from "./passkey/passkey.js"
+export type {} from "./principal/principal.js"
+export {
+  exchangeCode,
+  VerificationFailure,
+  verifyIdToken,
+} from "./principal/principal.js"
 export * from "./schemas/index.js"
+export type {
+  AuthenticatedOptions,
+  PasslockOptions,
+} from "./shared.js"

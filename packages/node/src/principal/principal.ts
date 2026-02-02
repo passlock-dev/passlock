@@ -1,14 +1,28 @@
-import type { AuthenticatedTenancyOptions, TenancyOptions } from "./shared.js"
-import { FetchHttpClient, HttpClient, HttpClientResponse } from "@effect/platform"
-import { Data, Effect, type Layer, Match, pipe, Schema } from "effect"
-import * as jose from "jose"
-import { Forbidden, InvalidCode } from "./schemas/errors.js"
-import { ExtendedPrincipal, IdToken, type Principal } from "./schemas/principal.js"
+import {
+  FetchHttpClient,
+  HttpClient,
+  HttpClientResponse,
+} from "@effect/platform"
 
-type ExchangeCodeOptions = AuthenticatedTenancyOptions
+import { Data, Effect, type Layer, Match, pipe, Schema } from "effect"
+
+import * as jose from "jose"
+import { Forbidden, InvalidCode } from "../schemas/errors.js"
+
+import {
+  type ExtendedPrincipal,
+  ExtendedPrincipalSchema,
+  IdTokenSchema,
+  type Principal,
+} from "../schemas/principal.js"
+
+import type { AuthenticatedOptions, PasslockOptions } from "../shared.js"
+
+export interface ExchangeCodeOptions extends AuthenticatedOptions {
+  code: string
+}
 
 export const exchangeCode = (
-  code: string,
   options: ExchangeCodeOptions,
   httpClient: Layer.Layer<HttpClient.HttpClient> = FetchHttpClient.layer
 ): Effect.Effect<ExtendedPrincipal, InvalidCode | Forbidden> =>
@@ -16,7 +30,7 @@ export const exchangeCode = (
     Effect.gen(function* () {
       const client = yield* HttpClient.HttpClient
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
-      const { tenancyId } = options
+      const { tenancyId, code } = options
 
       const url = new URL(`/${tenancyId}/principal/${code}`, baseUrl)
 
@@ -27,14 +41,19 @@ export const exchangeCode = (
       )
 
       const encoded = yield* HttpClientResponse.matchStatus(response, {
-        "2xx": () => HttpClientResponse.schemaBodyJson(ExtendedPrincipal)(response),
+        "2xx": () =>
+          HttpClientResponse.schemaBodyJson(ExtendedPrincipalSchema)(response),
         orElse: () =>
-          HttpClientResponse.schemaBodyJson(Schema.Union(InvalidCode, Forbidden))(response),
+          HttpClientResponse.schemaBodyJson(
+            Schema.Union(InvalidCode, Forbidden)
+          )(response),
       })
 
       return yield* pipe(
         Match.value(encoded),
-        Match.tag("ExtendedPrincipal", (principal) => Effect.succeed(principal)),
+        Match.tag("ExtendedPrincipal", (principal) =>
+          Effect.succeed(principal)
+        ),
         Match.tag("@error/InvalidCode", (err) => Effect.fail(err)),
         Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
         Match.exhaustive
@@ -48,8 +67,6 @@ export const exchangeCode = (
     Effect.provide(httpClient)
   )
 
-type VerifyTokenOptions = TenancyOptions
-
 const createJwks = (endpoint?: string) =>
   Effect.sync(() => {
     const baseUrl = endpoint ?? "https://api.passlock.dev"
@@ -57,15 +74,23 @@ const createJwks = (endpoint?: string) =>
     return jose.createRemoteJWKSet(new URL("/.well-known/jwks.json", baseUrl))
   })
 
-const createCachedRemoteJwks = pipe(Effect.cachedFunction(createJwks), Effect.runSync)
+const createCachedRemoteJwks = pipe(
+  Effect.cachedFunction(createJwks),
+  Effect.runSync
+)
 
-export class VerificationFailure extends Data.TaggedError("@error/VerificationFailure")<{
+export class VerificationFailure extends Data.TaggedError(
+  "@error/VerificationFailure"
+)<{
   message: string
 }> {}
 
+export interface VerifyIdTokenOptions extends PasslockOptions {
+  token: string
+}
+
 export const verifyIdToken = (
-  token: string,
-  options: VerifyTokenOptions
+  options: VerifyIdTokenOptions
 ): Effect.Effect<Principal, VerificationFailure> =>
   pipe(
     Effect.gen(function* () {
@@ -79,13 +104,13 @@ export const verifyIdToken = (
             : new VerificationFailure({ message: String(err) })
         },
         try: () =>
-          jose.jwtVerify(token, JWKS, {
+          jose.jwtVerify(options.token, JWKS, {
             audience: options.tenancyId,
             issuer: "passlock.dev",
           }),
       })
 
-      const idToken = yield* Schema.decodeUnknown(IdToken)({
+      const idToken = yield* Schema.decodeUnknown(IdTokenSchema)({
         ...payload,
         _tag: "IdToken",
       })
@@ -108,5 +133,3 @@ export const verifyIdToken = (
     }),
     Effect.catchTag("ParseError", (err) => Effect.die(err))
   )
-
-export type { ExchangeCodeOptions, Principal, VerifyTokenOptions }

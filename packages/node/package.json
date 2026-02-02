@@ -1,6 +1,6 @@
 {
   "name": "@passlock/node",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Passkey authentication for NodeJS backends",
   "keywords": [
     "passkey",
@@ -29,10 +29,10 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./unsafe": {
-      "types": "./dist/unsafe.d.ts",
-      "import": "./dist/unsafe.js",
-      "default": "./dist/unsafe.js"
+    "./safe": {
+      "types": "./dist/safe.d.ts",
+      "import": "./dist/safe.js",
+      "default": "./dist/safe.js"
     },
     "./effect": {
       "types": "./dist/effect.d.ts",
@@ -48,18 +48,19 @@
     "!dist/**/*.spec.*"
   ],
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc -p tsconfig.build.json",
     "build:clean": "$npm_execpath run clean:full && $npm_execpath run build",
     "build:production": "$npm_execpath run build:clean && $npm_execpath run build:readme && $npm_execpath run replaceTokens && echo '' && publint",
-    "build:readme": "LATEST=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/node",
-    "clean": "tsc --build --clean",
-    "clean:full": "rimraf dist tsconfig.tsbuildinfo",
-    "replaceTokens": "LATEST=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/node",
+    "build:readme": "VERSION=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/node",
+    "typedoc": "typedoc",
+    "clean": "tsc -p tsconfig.build.json --clean",
+    "clean:full": "rimraf dist tsconfig.build.tsbuildinfo",
+    "replaceTokens": "VERSION=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/node",
     "test:unit": "vitest --project unit run",
     "test:unit:watch": "vitest --project unit",
     "test:integration": "vitest --project integration run",
     "test:all": "vitest --project unit --project integration run",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.test.json --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --fix .",
     "lint:ci": "biome ci .",
@@ -81,13 +82,15 @@
     "publint": "catalog:",
     "rimraf": "catalog:",
     "tsx": "catalog:",
+    "typedoc": "^0.28.17",
     "typescript": "catalog:",
+    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.4"
   },
   "peerDependencies": {
     "effect": "catalog:"
   },
-  "packageManager": "pnpm@10.28.2",
+  "packageManager": "pnpm@10.30.1",
   "engines": {
     "node": ">=22"
   }

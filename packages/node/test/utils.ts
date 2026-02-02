@@ -1,11 +1,20 @@
 import { Headers, type HeadersInit } from "@effect/platform-node/Undici"
 import { Array, Config, Effect, Option, pipe, Redacted } from "effect"
 
-const lookupTenancyId = pipe(Config.string("PASSLOCK_TENANCY_ID"), Config.withDefault("itTenancy"))
+const lookupTenancyId = pipe(
+  Config.string("PASSLOCK_TENANCY_ID"),
+  Config.withDefault("itTenancy")
+)
 
-const lookupPasskeyId = pipe(Config.string("PASSLOCK_PASSKEY_ID"), Config.withDefault("itPasskey"))
+const lookupPasskeyId = pipe(
+  Config.string("PASSLOCK_PASSKEY_ID"),
+  Config.withDefault("itPasskey")
+)
 
-const lookupCode = pipe(Config.string("PASSLOCK_PRINCIPAL_CODE"), Config.withDefault("itPrincipal"))
+const lookupCode = pipe(
+  Config.string("PASSLOCK_PRINCIPAL_CODE"),
+  Config.withDefault("itPrincipal")
+)
 
 const lookupApiKey = pipe(
   Config.redacted("PASSLOCK_API_KEY"),
@@ -27,7 +36,10 @@ export const intTestConfig = Effect.gen(function* () {
   return { tenancyId, passkeyId, code, apiKey, endpoint }
 })
 
-export const getHeaderValue = (headers: HeadersInit, header: string): string | null => {
+export const getHeaderValue = (
+  headers: HeadersInit,
+  header: string
+): string | null => {
   if (headers instanceof Headers) {
     return headers.get(header)
   }

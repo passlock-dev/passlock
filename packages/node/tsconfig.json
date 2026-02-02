@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
-    /* Projects */
-    "incremental": true,
-    "composite": true,
+    "baseUrl": ".",
 
     // Platform & modules
     "target": "ES2022", // Node 20+ supports this natively
@@ -10,17 +8,6 @@
     "module": "NodeNext", // ESM for Node
     "moduleResolution": "NodeNext",
     "moduleDetection": "force",
-    "types": ["node"],
-
-    // Emission
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "inlineSources": true,
-    "stripInternal": true, // hide @internal from .d.ts
-    "newLine": "lf",
 
     // ESM/CJS interop
     "verbatimModuleSyntax": true, // preserves import/export as written
@@ -37,8 +24,16 @@
 
     // QoL
     "resolveJsonModule": true,
-    "preserveSymlinks": false
+    "preserveSymlinks": false,
+
+    "paths": {
+      "@test/*": ["test/*"]
+    }
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["dist"],
+  "plugins": [
+    {
+      "name": "@effect/language-service"
+    }
+  ]
 }

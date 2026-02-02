@@ -10,5 +10,10 @@ export interface PasslockOptions {
    * environment will have a different tenancyId to prod.
    */
   tenancyId: string
+
+  /**
+   * Currently used for testing, but also required to support
+   * multi-region deployments and on-premise self-hosted setups.
+   */
   endpoint?: string
 }

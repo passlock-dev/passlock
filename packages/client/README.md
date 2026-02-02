@@ -36,7 +36,7 @@ in README.template.md and outputs to README.md
 
 Powerful features including signals and related origin requests...
 
-1. **🔓 No lock-in**
+1. **🔓 No lock-in**  
 Framework agnostic. Standards compliant.
 
 2. **🔑 Related origins (domain migration)**  
@@ -48,7 +48,7 @@ Works out of the box with sensible defaults.
 4. **📱 Credential management**  
 Programmatically manage passkeys on end user devices
 
-5. **💪 Powerful**
+5. **💪 Powerful**  
 User verification, autofill, roaming authenticators and more.
 
 ## More information

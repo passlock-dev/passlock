@@ -1,15 +1,15 @@
 {
   "name": "passlock",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "",
   "type": "module",
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
-  "packageManager": "pnpm@10.28.2",
+  "packageManager": "pnpm@10.30.1",
   "scripts": {
     "ncu": "pnpm exec ncu -x vitest --workspaces",
-    "build:readme": "LATEST=${npm_package_version} tsx ./scripts/replace-readme-tokens.ts ."
+    "build:readme": "VERSION=${npm_package_version} tsx ./scripts/replace-readme-tokens.ts ."
   },
   "devDependencies": {
     "@qetza/replacetokens": "^1.9.0",

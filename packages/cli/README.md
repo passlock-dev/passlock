@@ -42,7 +42,7 @@ Install the CLI globally:
 
 or
 
-`pnpm add -g @passlock/api`
+`pnpm add -g @passlock/cli`
 
 ### Create a cloud instance
 

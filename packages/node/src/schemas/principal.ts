@@ -1,8 +1,9 @@
 import { Schema } from "effect"
+import type { satisfy } from "./satisfy.js"
 
 /* Principal */
 
-export const Principal = Schema.TaggedStruct("Principal", {
+export const PrincipalSchema = Schema.TaggedStruct("Principal", {
   id: Schema.String,
   authenticatorId: Schema.String,
   authenticatorType: Schema.Literal("passkey"),
@@ -17,36 +18,81 @@ export const Principal = Schema.TaggedStruct("Principal", {
   userId: Schema.String,
 })
 
-export type Principal = typeof Principal.Type
+export type Principal = {
+  readonly _tag: "Principal"
+  readonly id: string
+  readonly userId: string
+  readonly createdAt: number
+  readonly authenticatorId: string
+  readonly authenticatorType: "passkey"
+  readonly passkey?:
+    | {
+        readonly userVerified: boolean
+        readonly verified: boolean
+      }
+    | undefined
+  readonly expiresAt: number
+}
 
-export const isPrincipal = (payload: unknown): payload is Principal => Schema.is(Principal)(payload)
+export const isPrincipal = (payload: unknown): payload is Principal =>
+  Schema.is(PrincipalSchema)(payload)
 
-export const ExtendedPrincipal = Schema.TaggedStruct("ExtendedPrincipal", {
-  id: Schema.String,
-  authenticatorId: Schema.String,
-  authenticatorType: Schema.Literal("passkey"),
-  createdAt: Schema.Number,
-  expiresAt: Schema.Number,
-  passkey: Schema.optional(
-    Schema.Struct({
-      platformName: Schema.optional(Schema.String),
-      userVerified: Schema.Boolean,
-      verified: Schema.Boolean,
-    })
-  ),
-  userId: Schema.String,
-  metadata: Schema.Struct({
-    ipAddress: Schema.optional(Schema.String),
-    userAgent: Schema.optional(Schema.String),
-  }),
-})
+type _Principal = satisfy<typeof PrincipalSchema.Type, Principal>
 
-export type ExtendedPrincipal = typeof ExtendedPrincipal.Type
+export const ExtendedPrincipalSchema = Schema.TaggedStruct(
+  "ExtendedPrincipal",
+  {
+    id: Schema.String,
+    authenticatorId: Schema.String,
+    authenticatorType: Schema.Literal("passkey"),
+    createdAt: Schema.Number,
+    expiresAt: Schema.Number,
+    passkey: Schema.optional(
+      Schema.Struct({
+        platformName: Schema.optional(Schema.String),
+        userVerified: Schema.Boolean,
+        verified: Schema.Boolean,
+      })
+    ),
+    userId: Schema.String,
+    metadata: Schema.Struct({
+      ipAddress: Schema.optional(Schema.String),
+      userAgent: Schema.optional(Schema.String),
+    }),
+  }
+)
 
-export const isExtendedPrincipal = (payload: unknown): payload is ExtendedPrincipal =>
-  Schema.is(ExtendedPrincipal)(payload)
+export type ExtendedPrincipal = {
+  readonly _tag: "ExtendedPrincipal"
+  readonly id: string
+  readonly authenticatorId: string
+  readonly authenticatorType: "passkey"
+  readonly passkey?:
+    | {
+        readonly userVerified: boolean
+        readonly verified: boolean
+        readonly platformName?: string | undefined
+      }
+    | undefined
+  readonly createdAt: number
+  readonly expiresAt: number
+  readonly userId: string
+  readonly metadata: {
+    readonly ipAddress?: string | undefined
+    readonly userAgent?: string | undefined
+  }
+}
 
-export const IdToken = Schema.TaggedStruct("IdToken", {
+export const isExtendedPrincipal = (
+  payload: unknown
+): payload is ExtendedPrincipal => Schema.is(ExtendedPrincipalSchema)(payload)
+
+type _ExtendedPrincipal = satisfy<
+  typeof ExtendedPrincipalSchema.Type,
+  ExtendedPrincipal
+>
+
+export const IdTokenSchema = Schema.TaggedStruct("IdToken", {
   "a:id": Schema.String,
   "a:typ": Schema.String,
   aud: Schema.String,
@@ -58,6 +104,20 @@ export const IdToken = Schema.TaggedStruct("IdToken", {
   sub: Schema.String,
 })
 
-export type IdToken = typeof IdToken.Type
+export type IdToken = {
+  readonly "a:id": string
+  readonly "a:typ": string
+  readonly aud: string
+  readonly exp: number
+  readonly iat: number
+  readonly iss: "passlock.dev"
+  readonly jti: string
+  readonly "pk:uv": boolean
+  readonly sub: string
+  readonly _tag: "IdToken"
+}
 
-export const isIdToken = (payload: unknown): payload is IdToken => Schema.is(IdToken)(payload)
+export const isIdToken = (payload: unknown): payload is IdToken =>
+  Schema.is(IdTokenSchema)(payload)
+
+type _IdToken = satisfy<typeof IdTokenSchema.Type, IdToken>

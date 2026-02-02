@@ -6,9 +6,9 @@ import { STATIC_VARS, disableConsole, getPackageDir, restoreConsole } from './co
 
 export const replaceCodeTokens = async (pathRelativeToRoot: string) => {
   // Replace the tokens
-  const LATEST = process.env['LATEST']
-  if (!LATEST) {
-    console.error(kleur.red('Please set LATEST env variable'))
+  const VERSION = process.env['VERSION']
+  if (!VERSION) {
+    console.error(kleur.red('Please set VERSION env variable'))
     process.exit(-1)
   }
 
@@ -17,7 +17,7 @@ export const replaceCodeTokens = async (pathRelativeToRoot: string) => {
 
   const vars = {
     ...STATIC_VARS,
-    LATEST: LATEST,
+    VERSION: VERSION,
   } as Record<string, string>
 
   // Replace tokens in dist/version.{js.ts}

@@ -9,7 +9,7 @@ import {
   LogEvent,
   LogLevel,
   registerPasskey,
-  updateUserDetails,
+  updatePasskey,
 } from "@passlock/client"
 
 const BASE_URL = "http://localhost:5174"
@@ -27,7 +27,8 @@ const getBtn = (id: string) => document.querySelector<HTMLButtonElement>(id)!
 
 const getDiv = (id: string) => document.querySelector<HTMLDivElement>(id)!
 
-const getTextField = (id: string) => document.querySelector<HTMLInputElement>(id)!
+const getTextField = (id: string) =>
+  document.querySelector<HTMLInputElement>(id)!
 
 const getDialog = (id: string) => document.querySelector<HTMLDialogElement>(id)!
 
@@ -76,6 +77,8 @@ const codeVerificationDiv = getDiv("#codeVerification")
 const endpointField = getTextField("#endpoint")
 
 const passkeyDeletedModal = getDialog("#passkeyDeleted")
+
+const passkeyUpdatedModal = getDialog("#passkeyUpdated")
 
 const resetUI = () => {
   responseDiv.hidden = true
@@ -238,7 +241,8 @@ authenticateBtn.addEventListener("click", async () => {
 
   const endpoint = saveEndpoint()
   const tenancyId = saveTenancyId()
-  const username = usernameField.value.length > 5 ? usernameField.value : undefined
+  const username =
+    usernameField.value.length > 5 ? usernameField.value : undefined
   const passkeyId = username ? getUserMappping(username) : undefined
   const data = await authenticatePasskey({
     allowCredentials: passkeyId ? [passkeyId] : undefined,
@@ -266,7 +270,8 @@ deleteBtn.addEventListener("click", async () => {
   const endpoint = saveEndpoint()
   const tenancyId = saveTenancyId()
 
-  const username = usernameField.value.length > 5 ? usernameField.value : undefined
+  const username =
+    usernameField.value.length > 5 ? usernameField.value : undefined
   const passkeyId = username ? getUserMappping(username) : undefined
   const data = await authenticatePasskey({
     allowCredentials: passkeyId ? [passkeyId] : undefined,
@@ -286,7 +291,10 @@ deleteBtn.addEventListener("click", async () => {
 
     if (fetchResponse.ok) {
       const deletedPasskey = (await fetchResponse.json()) as CredentialMapping
-      const deleteResult = await deletePasskey(deletedPasskey, { tenancyId, endpoint })
+      const deleteResult = await deletePasskey(deletedPasskey, {
+        tenancyId,
+        endpoint,
+      })
       if (typeof deleteResult === "boolean") {
         passkeyDeletedModal.showModal()
       } else {
@@ -301,26 +309,48 @@ deleteBtn.addEventListener("click", async () => {
   }
 })
 
-renameBtn.addEventListener("click", async () => {
-  resetUI()
+const updatePasskeyName = async (passkeyId: string) => {
+  console.log({ passkeyId })
 
+  const apiKey = saveApiKey()
   const endpoint = saveEndpoint()
   const tenancyId = saveTenancyId()
   const username = usernameField.value
   const displayName = displayNameField.value
 
-  if (savedPasskeyId) {
-    await updateUserDetails(
-      {
-        tenancyId, 
-        endpoint,
-        passkeyId: savedPasskeyId,
-        username,
-        displayName,
-      }
-    )
+  const fetchResponse = await fetch(`${BASE_URL}/passkey/${passkeyId}`, {
+    method: "PATCH",
+    headers: HEADERS,
+    body: JSON.stringify({ tenancyId, apiKey, endpoint, username }),
+  })
 
-    saveUserMapping(username, savedPasskeyId)
+  if (fetchResponse.ok) {
+    await updatePasskey({
+      tenancyId,
+      endpoint,
+      passkeyId,
+      username,
+      displayName,
+    })
+
+    saveUserMapping(username, passkeyId)
+    saveUserName()
+    passkeyUpdatedModal.showModal()
+  } else {
+    const error = await fetchResponse.json()
+    errorDiv.innerText = error
+    errorDiv.hidden = false
+  }
+}
+
+renameBtn.addEventListener("click", async () => {
+  resetUI()
+
+  const endpoint = saveEndpoint()
+  const tenancyId = saveTenancyId()
+
+  if (savedPasskeyId) {
+    await updatePasskeyName(savedPasskeyId)
   } else {
     const data = await authenticatePasskey({
       endpoint,
@@ -329,22 +359,13 @@ renameBtn.addEventListener("click", async () => {
     })
 
     if (isAuthenticationSuccess(data)) {
-      const { authenticatorId: passkeyId } = data.principal
-      await updateUserDetails({ 
-        tenancyId, 
-        endpoint, 
-        passkeyId, 
-        username, 
-        displayName 
-      })
-      saveUserMapping(username, passkeyId)
+      const { authenticatorId } = data.principal
+      await updatePasskeyName(authenticatorId)
     } else {
       errorDiv.innerText = data.message
       errorDiv.hidden = false
     }
   }
-
-  responseDiv.hidden = false
 })
 
 copyJwt.addEventListener("click", () => {
@@ -422,7 +443,10 @@ const restoreAll = () => {
   restoreApiKey()
 }
 
-if (document.readyState === "complete" || document.readyState === "interactive") {
+if (
+  document.readyState === "complete" ||
+  document.readyState === "interactive"
+) {
   restoreAll()
 } else document.addEventListener("load", restoreAll)
 

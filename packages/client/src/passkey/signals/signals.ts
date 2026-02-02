@@ -1,14 +1,14 @@
-import type { PasslockOptions } from "../shared/options"
-import type { PasskeyNotFound } from "./authentication"
 import { Micro, pipe } from "effect"
 import { encodeUriComponent } from "effect/Encoding"
-import { Logger } from "../logger"
-import { buildEndpoint } from "../shared/network"
+import { makeEndpoint } from "../../internal"
+import { Logger } from "../../logger"
+import type { PasslockOptions } from "../../options"
+import { DeleteError, PruningError, UpdateError } from "../errors"
 
 /**
  * Does the current device support local passkey removal
  */
-export const isPasskeyDeletionSupport = Micro.sync(() => {
+export const isPasskeyDeleteSupport = Micro.sync(() => {
   return (
     PublicKeyCredential?.signalUnknownCredential &&
     typeof PublicKeyCredential.signalUnknownCredential === "function"
@@ -16,9 +16,9 @@ export const isPasskeyDeletionSupport = Micro.sync(() => {
 })
 
 /**
- * Does the current device support local passkey syncing
+ * Does the current device support local passkey pruning
  */
-export const isPasskeySyncSupport = Micro.sync(() => {
+export const isPasskeyPruningSupport = Micro.sync(() => {
   return (
     PublicKeyCredential?.signalAllAcceptedCredentials &&
     typeof PublicKeyCredential.signalAllAcceptedCredentials === "function"
@@ -35,76 +35,49 @@ export const isPasskeyUpdateSupport = Micro.sync(() => {
   )
 })
 
-/* Deletion error */
-
-export const isDeletionError = (err: unknown) => err instanceof DeletionError
-
-export class DeletionError extends Micro.TaggedError("@error/DeletionError")<{
-  readonly message: string
-  readonly code: "PASSKEY_DELETION_UNSUPPORTED" | "PASSKEY_NOT_FOUND" | "OTHER_ERROR"
-}> {
-  static isDeletionError = isDeletionError
-}
-
-/* Sync error */
-
-export const isSyncError = (err: unknown) => err instanceof SyncError
-
-export class SyncError extends Micro.TaggedError("@error/SyncError")<{
-  readonly message: string
-  readonly code: "PASSKEY_SYNC_UNSUPPORTED" | "OTHER_ERROR"
-}> {
-  static isSyncError = isSyncError
-}
-
-/* Update error */
-
-export const isUpdateError = (err: unknown) => err instanceof UpdateError
-
-export class UpdateError extends Micro.TaggedError("@error/UpdateError")<{
-  readonly message: string
-  readonly code: "PASSKEY_UPDATE_UNSUPPORTED" | "OTHER_ERROR"
-}> {
-  static isUpdateError = isUpdateError
-}
-
 /**
  * Instruct the device to remove a passkey. E.g. attempt to remove it from
  * Apple Password Manager / iCloud.
  *
- * @param passkeyId
- * @param options
- * @returns
+ * @param passkeyId Passkey identifier.
+ * @param options Passlock tenancy and endpoint options.
+ * @returns A Micro effect that resolves with `true` or fails with {@link DeleteError}.
  */
 export const deletePasskey = (passkeyId: string, options: PasslockOptions) =>
   Micro.gen(function* () {
     const { tenancyId } = options
     const logger = yield* Micro.service(Logger)
-    const { endpoint } = buildEndpoint(options)
+    const { endpoint } = makeEndpoint(options)
 
     yield* logger.logInfo("Testing for local passkey removal support")
-    const canDelete = yield* isPasskeyDeletionSupport
+    const canDelete = yield* isPasskeyDeleteSupport
     if (!canDelete)
-      return yield* new DeletionError({
-        code: "PASSKEY_DELETION_UNSUPPORTED",
-        message: "Passkey deletion not supported on this device",
-      })
+      return yield* Micro.fail(
+        new DeleteError({
+          code: "PASSKEY_DELETION_UNSUPPORTED",
+          message: "Passkey deletion not supported on this device",
+        })
+      )
 
     yield* logger.logInfo("Fetching passkey credential and rp id")
     const url = new URL(`${tenancyId}/credential/${passkeyId}`, endpoint)
     const response = yield* Micro.promise(() => fetch(url))
     if (response.status === 404)
-      return yield* new DeletionError({
-        code: "OTHER_ERROR",
-        message: "Unable to find the metadata associated with this passkey",
-      })
+      return yield* Micro.fail(
+        new DeleteError({
+          code: "OTHER_ERROR",
+          message: "Unable to find the metadata associated with this passkey",
+        })
+      )
 
     const credential = yield* Micro.promise(() => response.json())
     if (!isCredentialMapping(credential))
-      return yield* new DeletionError({
-        code: "OTHER_ERROR",
-        message: "Invalid metadata associated with this passkey",
-      })
+      return yield* Micro.fail(
+        new DeleteError({
+          code: "OTHER_ERROR",
+          message: "Invalid metadata associated with this passkey",
+        })
+      )
 
     return yield* signalCredentialRemoval(credential)
   })
@@ -124,47 +97,70 @@ export const deletePasskey = (passkeyId: string, options: PasslockOptions) =>
  * jdoe@gmail.com account and remove passkey2. However as passkey3 is registered to a
  * different account, the device will retain it.
  *
- * @param passkeyIds
- * @param options
- * @returns
+ * @param passkeyIds Passkey identifiers to keep.
+ * @param options Passlock tenancy and endpoint options.
+ * @returns A Micro effect that resolves with `true` or fails with {@link PruningError}.
  */
-export const syncPasskeys = (passkeyIds: Array<string>, options: PasslockOptions) =>
+export const prunePasskeys = (
+  passkeyIds: Array<string>,
+  options: PasslockOptions
+) =>
   Micro.gen(function* () {
     const { tenancyId } = options
     const logger = yield* Micro.service(Logger)
-    const { endpoint } = buildEndpoint(options)
+    const { endpoint } = makeEndpoint(options)
 
-    yield* logger.logInfo("Testing for local passkey sync support")
-    const canSync = yield* isPasskeySyncSupport
+    yield* logger.logInfo("Testing for local passkey pruning support")
+    const canSync = yield* isPasskeyPruningSupport
     if (!canSync)
-      return yield* new SyncError({
-        code: "PASSKEY_SYNC_UNSUPPORTED",
-        message: "Passkey deletion not supported on this device",
-      })
+      return yield* Micro.fail(
+        new PruningError({
+          code: "PASSKEY_PRUNING_UNSUPPORTED",
+          message: "Passkey deletion not supported on this device",
+        })
+      )
 
     yield* logger.logInfo("Fetching passkey credentials and rp id")
     const encodedPasskeyIds = encodeUriComponent(passkeyIds.join(","))
-    const url = new URL(`${tenancyId}/credentials/${encodedPasskeyIds}`, endpoint)
+    const url = new URL(
+      `${tenancyId}/credentials/${encodedPasskeyIds}`,
+      endpoint
+    )
     const response = yield* Micro.promise(() => fetch(url))
     if (response.status === 404)
-      return yield* new SyncError({
-        code: "OTHER_ERROR",
-        message: "Unable to find the metadata associated with these passkeys",
-      })
+      return yield* Micro.fail(
+        new PruningError({
+          code: "OTHER_ERROR",
+          message: "Unable to find the metadata associated with these passkeys",
+        })
+      )
 
     const credentials = yield* Micro.promise(() => response.json())
     if (!isCredentialMappings(credentials))
-      return yield* new SyncError({
-        code: "OTHER_ERROR",
-        message: "Invalid metadata associated with one or more passkeys",
-      })
+      return yield* Micro.fail(
+        new PruningError({
+          code: "OTHER_ERROR",
+          message: "Invalid metadata associated with one or more passkeys",
+        })
+      )
 
     return yield* signalAcceptedCredentials(credentials)
   })
 
-export interface UpdateUserDetails extends PasslockOptions {
+/**
+ * @category Passkeys (core)
+ */
+export interface UpdatePasskeyOptions extends PasslockOptions {
   passkeyId: string
+
+  /**
+   * New username
+   */
   username: string
+
+  /**
+   * New display name
+   */
   displayName: string
 }
 
@@ -176,52 +172,62 @@ export interface UpdateUserDetails extends PasslockOptions {
  * device local passkey. Otherwise the passkey associated with your new-name@gmail.com
  * account would still show up in their password manager as old-name@gmail.com.
  *
- * @param updates
- * @param options
- * @returns
+ * @param options Passkey update options.
+ * @returns A Micro effect that resolves with `true` or fails with {@link UpdateError}.
  */
-export const updateUserDetails = (options: UpdateUserDetails) =>
+export const updatePasskey = (options: UpdatePasskeyOptions) =>
   Micro.gen(function* () {
     const { tenancyId } = options
     const logger = yield* Micro.service(Logger)
-    const { endpoint } = buildEndpoint(options)
+    const { endpoint } = makeEndpoint(options)
 
     yield* logger.logInfo("Testing for local passkey update support")
     const canUpdate = yield* isPasskeyUpdateSupport
     if (!canUpdate)
-      return yield* new UpdateError({
-        code: "PASSKEY_UPDATE_UNSUPPORTED",
-        message: "Passkey update not supported on this device",
-      })
+      return yield* Micro.fail(
+        new UpdateError({
+          code: "PASSKEY_UPDATE_UNSUPPORTED",
+          message: "Passkey update not supported on this device",
+        })
+      )
 
     yield* logger.logInfo("Fetching passkey credential and rp id")
-    const url = new URL(`${tenancyId}/credential/${options.passkeyId}`, endpoint)
+    const url = new URL(
+      `${tenancyId}/credential/${options.passkeyId}`,
+      endpoint
+    )
     const response = yield* Micro.promise(() => fetch(url))
     if (response.status === 404)
-      return yield* new UpdateError({
-        code: "OTHER_ERROR",
-        message: "Unable to find the metadata associated with this passkey",
-      })
+      return yield* Micro.fail(
+        new UpdateError({
+          code: "OTHER_ERROR",
+          message: "Unable to find the metadata associated with this passkey",
+        })
+      )
 
     const credential = yield* Micro.promise(() => response.json())
     if (!isCredentialMapping(credential))
-      return yield* new UpdateError({
-        code: "OTHER_ERROR",
-        message: "Invalid metadata associated with this passkey",
-      })
+      return yield* Micro.fail(
+        new UpdateError({
+          code: "OTHER_ERROR",
+          message: "Invalid metadata associated with this passkey",
+        })
+      )
 
     return yield* signalCurrentUserDetails(credential, options)
   })
 
 /* Signals */
 
-export interface CredentialMapping {
+export type CredentialMapping = {
   credentialId: string
   userId: string
   rpId: string
 }
 
-const isCredentialMapping = (payload: unknown): payload is CredentialMapping => {
+const isCredentialMapping = (
+  payload: unknown
+): payload is CredentialMapping => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
 
@@ -237,13 +243,15 @@ const isCredentialMapping = (payload: unknown): payload is CredentialMapping => 
   return true
 }
 
-export interface CredentialMappings {
+export type CredentialMappings = {
   rpId: string
   userId: string
   allAcceptedCredentialIds: string[]
 }
 
-const isCredentialMappings = (payload: unknown): payload is CredentialMappings => {
+const isCredentialMappings = (
+  payload: unknown
+): payload is CredentialMappings => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
 
@@ -259,24 +267,33 @@ const isCredentialMappings = (payload: unknown): payload is CredentialMappings =
   return true
 }
 
+type IPasskeyNotFound = {
+  message: string
+  credentialId: string
+  rpId: string
+}
+
 /**
  * Tell the client device to remove a given credential
- * @param error
- * @returns
+ *
+ * @param credential Credential mapping or missing-passkey payload.
+ * @returns A Micro effect that resolves with `true` or fails with {@link DeleteError}.
  */
 export const signalCredentialRemoval = (
-  credential: CredentialMapping | PasskeyNotFound
-): Micro.Micro<boolean, DeletionError, Logger> =>
+  credential: CredentialMapping | IPasskeyNotFound
+): Micro.Micro<boolean, DeleteError, Logger> =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
 
     yield* logger.logInfo("Testing for local passkey removal support")
-    const canDelete = yield* isPasskeyDeletionSupport
+    const canDelete = yield* isPasskeyDeleteSupport
     if (!canDelete)
-      return yield* new DeletionError({
-        code: "PASSKEY_DELETION_UNSUPPORTED",
-        message: "Passkey deletion not supported on this device",
-      })
+      return yield* Micro.fail(
+        new DeleteError({
+          code: "PASSKEY_DELETION_UNSUPPORTED",
+          message: "Passkey deletion not supported on this device",
+        })
+      )
 
     // might not be defined in older browsers
     yield* logger.logInfo("Signalling browser to remove passkey")
@@ -285,7 +302,9 @@ export const signalCredentialRemoval = (
       Micro.tryPromise({
         try: () => PublicKeyCredential.signalUnknownCredential(credential),
         catch: (err) =>
-          err instanceof Error ? err : new Error("Unable to signal credential removal"),
+          err instanceof Error
+            ? err
+            : new Error("Unable to signal credential removal"),
       }),
       Micro.catchAllDefect((err) =>
         err instanceof Error
@@ -301,27 +320,38 @@ export const signalCredentialRemoval = (
     return true
   })
 
+/**
+ * Tell the client device which credentials are still accepted for a user.
+ *
+ * @param credentials Accepted credential mapping for the user.
+ * @returns A Micro effect that resolves with `true` or fails with {@link PruningError}.
+ */
 export const signalAcceptedCredentials = (
   credentials: CredentialMappings
-): Micro.Micro<boolean, SyncError, Logger> =>
+): Micro.Micro<boolean, PruningError, Logger> =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
 
     yield* logger.logInfo("Testing for accepted credential signalling support")
-    const canSync = yield* isPasskeySyncSupport
+    const canSync = yield* isPasskeyPruningSupport
     if (!canSync)
-      return yield* new SyncError({
-        code: "PASSKEY_SYNC_UNSUPPORTED",
-        message: "Passkey sync not supported on this device",
-      })
+      return yield* Micro.fail(
+        new PruningError({
+          code: "PASSKEY_PRUNING_UNSUPPORTED",
+          message: "Passkey pruning not supported on this device",
+        })
+      )
 
     yield* logger.logInfo("Signalling browser of accepted credentials")
 
     yield* pipe(
       Micro.tryPromise({
-        try: () => PublicKeyCredential.signalAllAcceptedCredentials(credentials),
+        try: () =>
+          PublicKeyCredential.signalAllAcceptedCredentials(credentials),
         catch: (err) =>
-          err instanceof Error ? err : new Error("Unable to signal accepted credentials"),
+          err instanceof Error
+            ? err
+            : new Error("Unable to signal accepted credentials"),
       }),
       Micro.timeout(1000),
       Micro.catchAllDefect((err) =>
@@ -339,7 +369,7 @@ export const signalAcceptedCredentials = (
 
 export const signalCurrentUserDetails = (
   credential: CredentialMapping,
-  updates: Omit<UpdateUserDetails, "passkeyId">
+  updates: Omit<UpdatePasskeyOptions, "passkeyId">
 ) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
@@ -347,10 +377,12 @@ export const signalCurrentUserDetails = (
     yield* logger.logInfo("Testing for local passkey update support")
     const canUpdate = yield* isPasskeyUpdateSupport
     if (!canUpdate)
-      return yield* new UpdateError({
-        code: "PASSKEY_UPDATE_UNSUPPORTED",
-        message: "Passkey update not supported on this device",
-      })
+      return yield* Micro.fail(
+        new UpdateError({
+          code: "PASSKEY_UPDATE_UNSUPPORTED",
+          message: "Passkey update not supported on this device",
+        })
+      )
 
     yield* logger.logInfo("Signalling browser to update passkey")
 
@@ -359,9 +391,12 @@ export const signalCurrentUserDetails = (
 
     yield* pipe(
       Micro.tryPromise({
-        try: () => PublicKeyCredential.signalCurrentUserDetails(credentialUpdates),
+        try: () =>
+          PublicKeyCredential.signalCurrentUserDetails(credentialUpdates),
         catch: (err) =>
-          err instanceof Error ? err : new Error("Unable to signal credential update"),
+          err instanceof Error
+            ? err
+            : new Error("Unable to signal credential update"),
       }),
       Micro.catchAllDefect((err) =>
         err instanceof Error

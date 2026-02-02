@@ -1,15 +1,13 @@
-import { Schema } from "effect"
-import { NotFound } from "./schemas/errors.js"
-
-export interface TenancyOptions {
+export type PasslockOptions = {
   tenancyId: string
+
   /**
    * @default https://api.passlock.dev
    */
   endpoint?: string
 }
 
-export interface AuthenticatedTenancyOptions extends TenancyOptions {
+export interface AuthenticatedOptions extends PasslockOptions {
   apiKey: string
 }
 
@@ -21,7 +19,6 @@ export class UnexpectedError extends Error {
     this._tag = data._tag
   }
 
-  override readonly toString = (): string => `${this.message} (_tag: ${this._tag})`
+  override readonly toString = (): string =>
+    `${this.message} (_tag: ${this._tag})`
 }
-
-export const isNotFound = (payload: unknown): payload is NotFound => Schema.is(NotFound)(payload)

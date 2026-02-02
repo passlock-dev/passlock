@@ -1,40 +1,54 @@
 import { Context, Micro } from "effect"
 
-/**
- * Make a request to the Passlock API endpoint.
- * Assumes the response is JSON and any errors
- * have a non-200 status code, are also JSON and
- * include message and _tag fields.
- */
+export const isNetworkError = (payload: unknown): payload is NetworkError => {
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
+  return payload instanceof NetworkError
+}
+
+export class NetworkError extends Error {
+  readonly _tag = "NetworkError" as const
+  readonly message: string
+  readonly url: string
+
+  constructor({ message, url }: { message: string; url: string }) {
+    super()
+    this.message = message
+    this.url = url
+  }
+
+  static isNetworkError = isNetworkError
+}
 
 /**
+ * Make a request to the Passlock API endpoint. Assumes the response is
+ * JSON and any errors have a non-200 status code, are also JSON and include
+ * message and _tag fields.
+ *
  * TODO Consider Effect RPC/HttpClient
  */
 
-const DefaultEndpoint = "https://api.passlock.dev"
-
-export const isUnexpectedError = (err: unknown): err is UnexpectedError =>
-  err instanceof UnexpectedError
-
-export class UnexpectedError extends Micro.TaggedError("@error/UnexpectedError")<{
-  readonly message: string
-  readonly url: string
-}> {
-  static isUnexpectedError = isUnexpectedError
-}
+const DEFAULT_ENDPOINT = "https://api.passlock.dev"
 
 /**
  * Passlock API endpoint
  */
-export class Endpoint extends Context.Tag("Endpoint")<Endpoint, { readonly endpoint: string }>() {}
+export class Endpoint extends Context.Tag("Endpoint")<
+  Endpoint,
+  { readonly endpoint: string }
+>() {}
 
-export const buildEndpoint = ({
-  endpoint = DefaultEndpoint,
+export const makeEndpoint = ({
+  endpoint = DEFAULT_ENDPOINT,
 }: {
   endpoint?: string
 }): Endpoint["Type"] => Endpoint.of({ endpoint })
 
-interface ErrorResponse {
+/**
+ * Indicates the type we received from the API can be considered
+ * as an error.
+ */
+type ErrorResponse = {
   message: string
   _tag: string
 }
@@ -52,11 +66,28 @@ const isErrorResponse = (payload: unknown): payload is ErrorResponse => {
   return true
 }
 
+export type RequestOptions<A extends object, E = never> = {
+  url: URL
+
+  /** Request payload */
+  payload: object
+
+  /** Response type guard */
+  responsePredicate: (res: unknown) => res is A
+
+  /** Error response type guard */
+  errorPredicate?: (res: unknown, status: number) => res is E
+
+  /** For logging/error reporting */
+  label: string
+}
+
 /**
  * Make a fetch request and parse the response using the provided
  * responsePredicate function.
- * @param param0
- * @returns
+ *
+ * @param options Request options.
+ * @returns A Micro effect that resolves with the typed response payload.
  */
 export const makeRequest = <A extends object, E = never>({
   url,
@@ -64,19 +95,10 @@ export const makeRequest = <A extends object, E = never>({
   responsePredicate,
   errorPredicate = (res): res is E => false,
   label,
-}: {
-  url: URL
-  /** Request payload */
-  payload: object
-  /** Response type guard */
-  responsePredicate: (res: unknown) => res is A
-  /** Error response type guard */
-  errorPredicate?: (res: unknown, status: number) => res is E
-  /** For logging/error reporting */
-  label: string
-}): Micro.Micro<A, E | UnexpectedError> =>
+}: RequestOptions<A, E>): Micro.Micro<A, E | NetworkError> =>
   Micro.gen(function* () {
-    const isUnderTest = typeof process !== "undefined" && process.env.VITEST === "true"
+    const isUnderTest =
+      typeof process !== "undefined" && process.env.VITEST === "true"
 
     // when running the test in nodejs there is no browser therefore no
     // origin header is set so we need to fake it
@@ -88,17 +110,17 @@ export const makeRequest = <A extends object, E = never>({
 
     const body = JSON.stringify(payload)
 
-    const networkError = new UnexpectedError({
+    const networkError = new NetworkError({
       message: "Fetch failed",
       url: String(url),
     })
 
-    const parseError = new UnexpectedError({
+    const parseError = new NetworkError({
       message: "Unable to parse JSON response",
       url: String(url),
     })
 
-    const invalidResponsePayload = new UnexpectedError({
+    const invalidResponsePayload = new NetworkError({
       message: `Invalid ${label} response`,
       url: String(url),
     })
@@ -113,32 +135,38 @@ export const makeRequest = <A extends object, E = never>({
 
     if (!fetchResponse.ok && isJsonResponse) {
       const apiError = yield* Micro.tryPromise({
-        catch: () => parseError,
         try: () => fetchResponse.json() as Promise<unknown>,
+        catch: () => parseError,
       })
 
       if (errorPredicate(apiError, fetchResponse.status)) {
         return yield* Micro.fail(apiError)
       } else if (isErrorResponse(apiError)) {
-        return yield* new UnexpectedError({
-          ...apiError,
-          url: String(url),
-        })
+        return yield* Micro.fail(
+          new NetworkError({
+            ...apiError,
+            url: String(url),
+          })
+        )
       } else {
-        return yield* parseError
+        return yield* Micro.fail(parseError)
       }
     } else if (!fetchResponse.ok) {
       const message = yield* Micro.promise(() => fetchResponse.text())
-      return yield* new UnexpectedError({
-        message,
-        url: String(url),
-      })
+      return yield* Micro.fail(
+        new NetworkError({
+          message,
+          url: String(url),
+        })
+      )
     }
 
     const json = yield* Micro.tryPromise({
-      catch: () => parseError,
       try: () => fetchResponse.json() as Promise<unknown>,
+      catch: () => parseError,
     })
 
-    return responsePredicate(json) ? json : yield* invalidResponsePayload
+    return responsePredicate(json)
+      ? json
+      : yield* Micro.fail(invalidResponsePayload)
   })

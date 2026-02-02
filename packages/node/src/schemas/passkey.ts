@@ -1,8 +1,19 @@
 import { Schema } from "effect"
 
+/*
+ * Important. We don't use `type X = typeof X.Type` because it won't generate
+ * the Typedoc docs, so instead we mirror the types and use a dummy
+ * `type _x = satisfy<typeof X.Type, X>`
+ * kind of a type level satisfies
+ */
+
 /* Registration Options */
 
-export const UserVerificationSchema = Schema.Literal("required", "preferred", "discouraged")
+export const UserVerificationSchema = Schema.Literal(
+  "required",
+  "preferred",
+  "discouraged"
+)
 
 /* Passkey */
 
@@ -22,64 +33,53 @@ export type Transports = (typeof Transports)[number]
 
 /* Passkey */
 
-export const Passkey = Schema.TaggedStruct("Passkey", {
-  createdAt: Schema.Number,
+export const PasskeySchema = Schema.TaggedStruct("Passkey", {
+  id: Schema.String,
+  userId: Schema.optional(Schema.String),
+  enabled: Schema.Boolean,
   credential: Schema.Struct({
+    id: Schema.String, // webAuthnId (Base64Url)
+    userId: Schema.String, // webAuthnUserId (Base64Url)
+    username: Schema.String,
     aaguid: Schema.String,
     backedUp: Schema.Boolean,
     counter: Schema.Number,
     deviceType: Schema.Literal(...CredentialDeviceType),
-    id: Schema.String, // webAuthnId (Base64Url)
     transports: Schema.Array(Schema.Literal(...Transports)),
-    userId: Schema.String, // webAuthnUserId (Base64Url)
+    publicKey: Schema.Uint8ArrayFromBase64Url,
   }),
-  enabled: Schema.Boolean,
-  id: Schema.String,
-  lastUsed: Schema.optional(Schema.Number),
   platform: Schema.optional(
     Schema.Struct({
       icon: Schema.optional(Schema.String),
       name: Schema.optional(Schema.String),
     })
   ),
+  lastUsed: Schema.optional(Schema.Number),
+  createdAt: Schema.Number,
   updatedAt: Schema.Number,
-  userId: Schema.optional(Schema.String),
 })
 
-export type Passkey = typeof Passkey.Type
+export type PasskeyEncoded = typeof PasskeySchema.Encoded
 
-export const isPasskey = (payload: unknown): payload is Passkey => Schema.is(Passkey)(payload)
-
-export const PasskeySummary = Schema.TaggedStruct("PasskeySummary", {
+export const PasskeySummarySchema = Schema.TaggedStruct("PasskeySummary", {
   id: Schema.String,
   userId: Schema.String,
   credential: Schema.Struct({
-    aaguid: Schema.String,
+    id: Schema.String,
+    userId: Schema.String,
   }),
   enabled: Schema.Boolean,
   createdAt: Schema.Number,
   lastUsed: Schema.optional(Schema.Number),
 })
 
-export type PasskeySummary = typeof PasskeySummary.Type
-
-export const isPasskeySummary = (payload: unknown): payload is PasskeySummary =>
-  Schema.is(PasskeySummary)(payload)
-
-export const FindAllPasskeys = Schema.TaggedStruct("FindAllPasskeys", {
+export const FindAllPasskeysSchema = Schema.TaggedStruct("FindAllPasskeys", {
   cursor: Schema.NullOr(Schema.String),
-  records: Schema.Array(PasskeySummary),
+  records: Schema.Array(PasskeySummarySchema),
 })
 
-export type FindAllPasskeys = typeof FindAllPasskeys.Type
-
-export const DeletedPasskey = Schema.TaggedStruct("DeletedPasskey", {
-  passkeyId: Schema.String,
+export const DeletedPasskeySchema = Schema.TaggedStruct("DeletedPasskey", {
+  id: Schema.String,
   credentialId: Schema.String,
   rpId: Schema.String,
 })
-
-export type DeletedPasskey = typeof DeletedPasskey.Type
-
-export const isDeletedPasskey = (payload: unknown): payload is DeletedPasskey =>
-  Schema.is(DeletedPasskey)(payload)

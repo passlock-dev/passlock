@@ -1,21 +1,20 @@
-import type {
-  PublicKeyCredentialCreationOptionsJSON,
-  RegistrationResponseJSON,
-} from "@simplewebauthn/browser"
 import fetchMock from "@fetch-mock/vitest"
+import type {
+  AuthenticationResponseJSON,
+  PublicKeyCredentialRequestOptionsJSON,
+} from "@simplewebauthn/browser"
 import { Context, Micro, pipe } from "effect"
 import { afterAll, describe, expect, it, vi } from "vitest"
-import { Logger } from "../logger"
-import { Endpoint } from "../shared/network"
-import { TenancyId } from "../shared/tenancy"
-import { PasskeyUnsupportedError } from "./errors"
+import { Endpoint, TenancyId } from "../../internal"
+import { Logger } from "../../logger"
+import { PasskeyNotFoundError, PasskeyUnsupportedError } from "../errors"
 import {
+  AuthenticationHelper,
+  authenticatePasskey,
   fetchOptions,
-  RegistrationHelper,
-  registerPasskey,
-  startRegistration,
+  startAuthentication,
   verifyCredential,
-} from "./registration"
+} from "./authentication"
 
 const loggerTest = {
   logDebug: () => Micro.void,
@@ -27,9 +26,6 @@ const loggerTest = {
 describe(fetchOptions.name, () => {
   const endpoint = "https://api.passlock.dev"
   const tenancyId = "dummyTenancyId"
-  const username = "dummyUsername"
-  const userDisplayName = "dummyDisplayName"
-  const userId = "dummyUserId"
 
   const ctx = pipe(
     Context.make(Endpoint, { endpoint }),
@@ -37,7 +33,7 @@ describe(fetchOptions.name, () => {
     Context.add(TenancyId, { tenancyId })
   )
 
-  const expectedRoute = `${endpoint}/${tenancyId}/passkey/registration/options`
+  const expectedRoute = `${endpoint}/${tenancyId}/passkey/authentication/options`
 
   const mockResponse = {
     optionsJSON: {},
@@ -49,7 +45,7 @@ describe(fetchOptions.name, () => {
       fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
 
       const result = await pipe(
-        fetchOptions({ username }),
+        fetchOptions({}),
         Micro.provideContext(ctx),
         Micro.runPromise
       )
@@ -59,58 +55,20 @@ describe(fetchOptions.name, () => {
     })
   })
 
-  describe("given a username", () => {
-    it("should send it to the backend", async () => {
-      fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
-
-      await pipe(fetchOptions({ username }), Micro.provideContext(ctx), Micro.runPromise)
-
-      expect(fetchMock).toHavePosted(expectedRoute, { body: { username } })
-    })
-  })
-
-  describe("given a userDisplayName", () => {
-    it("should send it to the backend", async () => {
-      fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
-
-      await pipe(
-        fetchOptions({ userDisplayName, username }),
-        Micro.provideContext(ctx),
-        Micro.runPromise
-      )
-
-      expect(fetchMock).toHavePosted(expectedRoute, {
-        body: { userDisplayName, username },
-      })
-    })
-  })
-
-  describe("given a userId", () => {
-    it("should send it to the backend", async () => {
-      fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
-
-      await pipe(fetchOptions({ userId, username }), Micro.provideContext(ctx), Micro.runPromise)
-
-      expect(fetchMock).toHavePosted(expectedRoute, {
-        body: { userId, username },
-      })
-    })
-  })
-
-  describe("given a list of excludeCredentials", () => {
-    const excludeCredentials = ["dummyCredential"]
+  describe("given a list of allowCredentials", () => {
+    const allowCredentials = ["dummyCredential"]
 
     it("should send them to the backend", async () => {
       fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
 
       await pipe(
-        fetchOptions({ excludeCredentials, username }),
+        fetchOptions({ allowCredentials }),
         Micro.provideContext(ctx),
         Micro.runPromise
       )
 
       expect(fetchMock).toHavePosted(expectedRoute, {
-        body: { excludeCredentials, username },
+        body: { allowCredentials },
       })
     })
   })
@@ -122,13 +80,13 @@ describe(fetchOptions.name, () => {
       fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
 
       await pipe(
-        fetchOptions({ username, userVerification }),
+        fetchOptions({ userVerification }),
         Micro.provideContext(ctx),
         Micro.runPromise
       )
 
       expect(fetchMock).toHavePosted(expectedRoute, {
-        body: { username, userVerification },
+        body: { userVerification },
       })
     })
   })
@@ -138,41 +96,51 @@ describe(fetchOptions.name, () => {
 
     const onEvent = vi.fn()
 
-    await pipe(fetchOptions({ onEvent, username }), Micro.provideContext(ctx), Micro.runPromise)
+    await pipe(
+      fetchOptions({ onEvent }),
+      Micro.provideContext(ctx),
+      Micro.runPromise
+    )
 
     expect(onEvent).toHaveBeenCalledWith("optionsRequest")
   })
 })
 
-describe(startRegistration.name, () => {
+describe(startAuthentication.name, () => {
   describe("given valid options", () => {
-    const registrationHelperTest = {
+    const authenticationHelperTest = {
       browserSupportsWebAuthn: () => true,
-      startRegistration: () => Promise.resolve({} as RegistrationResponseJSON),
-    } satisfies typeof RegistrationHelper.Service
+      startAuthentication: () =>
+        Promise.resolve({} as AuthenticationResponseJSON),
+    } satisfies typeof AuthenticationHelper.Service
 
-    it("should invoke the underlying startRegistration function", async () => {
+    it("should invoke the underlying startAuthentication function", async () => {
       await pipe(
-        startRegistration({} as PublicKeyCredentialCreationOptionsJSON, {}),
+        startAuthentication({} as PublicKeyCredentialRequestOptionsJSON, {
+          useBrowserAutofill: false,
+        }),
         Micro.provideService(Logger, loggerTest),
-        Micro.provideService(RegistrationHelper, registrationHelperTest),
+        Micro.provideService(AuthenticationHelper, authenticationHelperTest),
         Micro.runPromise
       )
     })
   })
 
   describe("if the device does not support passkeys", () => {
-    const registrationHelperTest = {
+    const authenticationHelperTest = {
       browserSupportsWebAuthn: () => false,
-      startRegistration: () => Promise.resolve({} as RegistrationResponseJSON),
-    } satisfies typeof RegistrationHelper.Service
+      startAuthentication: () =>
+        Promise.resolve({} as AuthenticationResponseJSON),
+    } satisfies typeof AuthenticationHelper.Service
 
     it("should return an error", async () => {
       const result = await pipe(
-        startRegistration({} as PublicKeyCredentialCreationOptionsJSON, {}),
+        startAuthentication({} as PublicKeyCredentialRequestOptionsJSON, {
+          useBrowserAutofill: false,
+        }),
         Micro.flip,
         Micro.provideService(Logger, loggerTest),
-        Micro.provideService(RegistrationHelper, registrationHelperTest),
+        Micro.provideService(AuthenticationHelper, authenticationHelperTest),
         Micro.runPromise
       )
 
@@ -191,11 +159,11 @@ describe(verifyCredential.name, () => {
     Context.add(TenancyId, { tenancyId })
   )
 
-  const expectedRoute = `${endpoint}/${tenancyId}/passkey/registration/verification`
+  const expectedRoute = `${endpoint}/${tenancyId}/passkey/authentication/verification`
 
   describe("when the passkey exists", () => {
     const mockResponse = {
-      _tag: "RegistrationSuccess",
+      _tag: "AuthenticationSuccess",
       code: "dummyCode",
       id_token: "dummyIdToken",
       principal: {
@@ -207,7 +175,11 @@ describe(verifyCredential.name, () => {
       fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
 
       const result = await pipe(
-        verifyCredential("dummySessionToken", {} as RegistrationResponseJSON, {}),
+        verifyCredential(
+          "dummySessionToken",
+          {} as AuthenticationResponseJSON,
+          {}
+        ),
         Micro.provideContext(ctx),
         Micro.runPromise
       )
@@ -215,36 +187,64 @@ describe(verifyCredential.name, () => {
       expect(result).toStrictEqual(mockResponse)
     })
   })
+
+  describe("when the backend says the passkey does not exist", () => {
+    it("should return an error", async () => {
+      const mockResponse = {
+        _tag: "@error/PasskeyNotFound",
+        credentialId: "dummyWebAuthnId",
+        message: "oops",
+        rpId: "localhost",
+      }
+
+      fetchMock
+        .mockGlobal()
+        .postOnce(expectedRoute, { body: mockResponse, status: 400 })
+
+      const error = await pipe(
+        verifyCredential(
+          "dummySessionToken",
+          {} as AuthenticationResponseJSON,
+          {}
+        ),
+        Micro.flip,
+        Micro.provideContext(ctx),
+        Micro.runPromise
+      )
+
+      expect(error).toBeInstanceOf(PasskeyNotFoundError)
+    })
+  })
 })
 
-describe(registerPasskey.name, () => {
+describe(authenticatePasskey.name, () => {
   const endpoint = "https://api.passlock.dev"
   const tenancyId = "dummyTenancyId"
-  const username = "dummyUsername"
 
-  const registrationHelperTest = {
+  const authenticationHelperTest = {
     browserSupportsWebAuthn: () => true,
-    startRegistration: () => Promise.resolve({} as RegistrationResponseJSON),
-  } satisfies typeof RegistrationHelper.Service
+    startAuthentication: () =>
+      Promise.resolve({} as AuthenticationResponseJSON),
+  } satisfies typeof AuthenticationHelper.Service
 
   const ctx = pipe(
     Context.make(Endpoint, { endpoint }),
     Context.add(Logger, loggerTest),
     Context.add(TenancyId, { tenancyId }),
-    Context.add(RegistrationHelper, registrationHelperTest)
+    Context.add(AuthenticationHelper, authenticationHelperTest)
   )
 
-  const optionsRoute = `${endpoint}/${tenancyId}/passkey/registration/options`
+  const optionsRoute = `${endpoint}/${tenancyId}/passkey/authentication/options`
 
   const optionsResponse = {
     optionsJSON: {},
     sessionToken: "dummySessionToken",
   }
 
-  const verificationRoute = `${endpoint}/${tenancyId}/passkey/registration/verification`
+  const verificationRoute = `${endpoint}/${tenancyId}/passkey/authentication/verification`
 
   const verificationResponse = {
-    _tag: "RegistrationSuccess",
+    _tag: "AuthenticationSuccess",
     code: "dummyCode",
     id_token: "dummyIdToken",
     principal: {
@@ -252,11 +252,15 @@ describe(registerPasskey.name, () => {
     },
   }
 
-  it("should fetch the options and kick off the registration", async () => {
+  it("should fetch the options and kick off the authentication", async () => {
     fetchMock.mockGlobal().postOnce(optionsRoute, optionsResponse)
     fetchMock.mockGlobal().postOnce(verificationRoute, verificationResponse)
 
-    pipe(registerPasskey({ tenancyId, username }), Micro.provideContext(ctx), Micro.runPromise)
+    pipe(
+      authenticatePasskey({ tenancyId }),
+      Micro.provideContext(ctx),
+      Micro.runPromise
+    )
   })
 })
 

@@ -38,6 +38,11 @@
     "resolveJsonModule": true,
     "preserveSymlinks": false
   },
+  "plugins": [
+    {
+      "name": "@effect/language-service"
+    }
+  ],
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }

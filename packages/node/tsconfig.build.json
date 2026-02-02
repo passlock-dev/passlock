@@ -1,0 +1,28 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    /* Projects */
+    "incremental": true,
+    "composite": true,
+
+    // Emission
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "stripInternal": true, // hide @internal from .d.ts
+    "newLine": "lf",
+
+    "types": ["node"]
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "test/**/*",
+    "dist",
+    "node_modules"
+  ]
+}

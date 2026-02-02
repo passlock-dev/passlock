@@ -1,0 +1,27 @@
+// typedoc.json
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "@passlock/client",
+  "entryPoints": ["src/safe.ts", "src/index.ts"],
+  "out": "./docs/api",
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": true,
+    "excludeReferences": false,
+    "includeFolders": true
+  },
+  "categorizeByGroup": false,
+  "readme": "none",
+  "cleanOutputDir": true,
+  "categoryOrder": [
+    "Passkeys (core)",
+    "Passkeys (other)",
+    "Passkeys (errors)",
+    "*"
+  ],
+  "groupOrder": ["Functions", "Interfaces", "Classes", "*"],
+  "sort": ["kind", "instance-first", "source-order"],
+  "navigationLinks": {
+    "📖 Main Site": "https://passlock.dev"
+  }
+}
