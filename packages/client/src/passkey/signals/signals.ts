@@ -3,7 +3,12 @@ import { encodeUriComponent } from "effect/Encoding"
 import { makeEndpoint } from "../../internal"
 import { Logger } from "../../logger"
 import type { PasslockOptions } from "../../options"
-import { DeleteError, PruningError, UpdateError } from "../errors"
+import {
+  DeleteError,
+  type OrphanedPasskeyError,
+  PruningError,
+  UpdateError,
+} from "../errors"
 
 /**
  * Does the current device support local passkey removal
@@ -35,19 +40,28 @@ export const isPasskeyUpdateSupport = Micro.sync(() => {
   )
 })
 
+export interface DeletePasskeyOptions extends PasslockOptions {
+  passkeyId: string
+}
+
+export interface DeleteCredentialOptions extends PasslockOptions {
+  credentialId: string
+  userId: string
+  rpId: string
+}
+
 /**
  * Instruct the device to remove a passkey. E.g. attempt to remove it from
  * Apple Password Manager / iCloud.
  *
- * @param passkeyId Passkey identifier.
- * @param options Passlock tenancy and endpoint options.
- * @returns A Micro effect that resolves with `true` or fails with {@link DeleteError}.
+ * @param options Passkey identifier/credential details and Passlock tenancy options.
+ * @returns A Micro effect that resolves with a {@link DeleteSuccess} or fails with {@link DeleteError}.
  */
-export const deletePasskey = (passkeyId: string, options: PasslockOptions) =>
+export const deletePasskey = (
+  options: DeletePasskeyOptions | DeleteCredentialOptions | OrphanedPasskeyError
+) =>
   Micro.gen(function* () {
-    const { tenancyId } = options
     const logger = yield* Micro.service(Logger)
-    const { endpoint } = makeEndpoint(options)
 
     yield* logger.logInfo("Testing for local passkey removal support")
     const canDelete = yield* isPasskeyDeleteSupport
@@ -59,8 +73,23 @@ export const deletePasskey = (passkeyId: string, options: PasslockOptions) =>
         })
       )
 
+    const credential =
+      "rpId" in options ? options : yield* getCredentialMapping(options)
+
+    return yield* signalCredentialRemoval(credential)
+  })
+
+const getCredentialMapping = (options: DeletePasskeyOptions) =>
+  Micro.gen(function* () {
+    const { tenancyId } = options
+    const logger = yield* Micro.service(Logger)
+    const { endpoint } = makeEndpoint(options)
+
     yield* logger.logInfo("Fetching passkey credential and rp id")
-    const url = new URL(`${tenancyId}/credential/${passkeyId}`, endpoint)
+    const url = new URL(
+      `${tenancyId}/credential/${options.passkeyId}`,
+      endpoint
+    )
     const response = yield* Micro.promise(() => fetch(url))
     if (response.status === 404)
       return yield* Micro.fail(
@@ -79,11 +108,29 @@ export const deletePasskey = (passkeyId: string, options: PasslockOptions) =>
         })
       )
 
-    return yield* signalCredentialRemoval(credential)
+    return credential
   })
 
+export interface PrunePasskeyOptions extends PasslockOptions {
+  allowablePasskeyIds: Array<string>
+}
+
+export type PruningSuccess = {
+  _tag: "PruningSuccess"
+}
+
+export const isPruningSuccess = (
+  payload: unknown
+): payload is PruningSuccess => {
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
+  if (!("_tag" in payload)) return false
+  if (typeof payload._tag !== "string") return false
+  return payload._tag === "PruningSuccess"
+}
+
 /**
- * Given a list of passkey ids, instruct the device to remove any redundant passkeys.
+ * Given a list of passkey IDs, instruct the device to remove any redundant passkeys.
  *
  * Note: this will only remove redundant passkeys (based on the userId).
  *
@@ -97,14 +144,10 @@ export const deletePasskey = (passkeyId: string, options: PasslockOptions) =>
  * jdoe@gmail.com account and remove passkey2. However as passkey3 is registered to a
  * different account, the device will retain it.
  *
- * @param passkeyIds Passkey identifiers to keep.
- * @param options Passlock tenancy and endpoint options.
- * @returns A Micro effect that resolves with `true` or fails with {@link PruningError}.
+ * @param options Passlock tenancy/endpoint options and the passkey IDs to keep.
+ * @returns A Micro effect that resolves with a {@link PruningSuccess} or fails with {@link PruningError}.
  */
-export const prunePasskeys = (
-  passkeyIds: Array<string>,
-  options: PasslockOptions
-) =>
+export const prunePasskeys = (options: PrunePasskeyOptions) =>
   Micro.gen(function* () {
     const { tenancyId } = options
     const logger = yield* Micro.service(Logger)
@@ -121,7 +164,9 @@ export const prunePasskeys = (
       )
 
     yield* logger.logInfo("Fetching passkey credentials and rp id")
-    const encodedPasskeyIds = encodeUriComponent(passkeyIds.join(","))
+    const encodedPasskeyIds = encodeUriComponent(
+      options.allowablePasskeyIds.join(",")
+    )
     const url = new URL(
       `${tenancyId}/credentials/${encodedPasskeyIds}`,
       endpoint
@@ -148,9 +193,16 @@ export const prunePasskeys = (
   })
 
 /**
+ * Used when you want to update a local device passkey by Passkey ID aka authenticatorId.
+ *
+ * @see {@link updatePasskey}
+ *
  * @category Passkeys (core)
  */
 export interface UpdatePasskeyOptions extends PasslockOptions {
+  /**
+   * The Passlock passkey id
+   */
   passkeyId: string
 
   /**
@@ -161,11 +213,47 @@ export interface UpdatePasskeyOptions extends PasslockOptions {
   /**
    * New display name
    */
-  displayName: string
+  displayName?: string | undefined
 }
 
 /**
- * Update a passkey e.g. change the username and or display name.
+ * Used when you want to update one or more passkeys by the Credential User ID i.e. the
+ * immutable Base64Url encoded binary ID.
+ *
+ * @see {@link updatePasskey}
+ * @see {@link https://passlock.dev/rest-api/credential/ The Credential property (main docs site)}
+ *
+ * @category Passkeys (core)
+ */
+export interface UpdateCredentialOptions extends PasslockOptions {
+  userId: string
+  rpId: string
+
+  /**
+   * New username
+   */
+  username: string
+
+  /**
+   * New display name
+   */
+  displayName?: string | undefined
+}
+
+export type UpdateSuccess = {
+  _tag: "UpdateSuccess"
+}
+
+export const isUpdateSuccess = (payload: unknown): payload is UpdateSuccess => {
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
+  if (!("_tag" in payload)) return false
+  if (typeof payload._tag !== "string") return false
+  return payload._tag === "UpdateSuccess"
+}
+
+/**
+ * Update a passkey e.g. change the username and/or display name.
  * Note: this is purely informational, it does not change any identifiers.
  * The typical use case is when a user changes their account email, you would
  * want to change the username in your backend system and also the user's
@@ -173,13 +261,13 @@ export interface UpdatePasskeyOptions extends PasslockOptions {
  * account would still show up in their password manager as old-name@gmail.com.
  *
  * @param options Passkey update options.
- * @returns A Micro effect that resolves with `true` or fails with {@link UpdateError}.
+ * @returns A Micro effect that resolves with a {@link UpdateSuccess} or fails with {@link UpdateError}.
  */
-export const updatePasskey = (options: UpdatePasskeyOptions) =>
+export const updatePasskey = (
+  options: UpdatePasskeyOptions | UpdateCredentialOptions
+) =>
   Micro.gen(function* () {
-    const { tenancyId } = options
     const logger = yield* Micro.service(Logger)
-    const { endpoint } = makeEndpoint(options)
 
     yield* logger.logInfo("Testing for local passkey update support")
     const canUpdate = yield* isPasskeyUpdateSupport
@@ -190,6 +278,18 @@ export const updatePasskey = (options: UpdatePasskeyOptions) =>
           message: "Passkey update not supported on this device",
         })
       )
+
+    const credential =
+      "rpId" in options ? options : yield* getUserCredentialMapping(options)
+
+    return yield* signalCurrentUserDetails(credential, options)
+  })
+
+const getUserCredentialMapping = (options: UpdatePasskeyOptions) =>
+  Micro.gen(function* () {
+    const { tenancyId } = options
+    const logger = yield* Micro.service(Logger)
+    const { endpoint } = makeEndpoint(options)
 
     yield* logger.logInfo("Fetching passkey credential and rp id")
     const url = new URL(
@@ -214,7 +314,7 @@ export const updatePasskey = (options: UpdatePasskeyOptions) =>
         })
       )
 
-    return yield* signalCurrentUserDetails(credential, options)
+    return credential
   })
 
 /* Signals */
@@ -273,15 +373,27 @@ type IPasskeyNotFound = {
   rpId: string
 }
 
+export type DeleteSuccess = {
+  _tag: "DeleteSuccess"
+}
+
+export const isDeleteSuccess = (payload: unknown): payload is DeleteSuccess => {
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
+  if (!("_tag" in payload)) return false
+  if (typeof payload._tag !== "string") return false
+  return payload._tag === "DeleteSuccess"
+}
+
 /**
  * Tell the client device to remove a given credential
  *
  * @param credential Credential mapping or missing-passkey payload.
- * @returns A Micro effect that resolves with `true` or fails with {@link DeleteError}.
+ * @returns A Micro effect that resolves with a {@link DeleteSuccess} or fails with {@link DeleteError}.
  */
 export const signalCredentialRemoval = (
   credential: CredentialMapping | IPasskeyNotFound
-): Micro.Micro<boolean, DeleteError, Logger> =>
+): Micro.Micro<DeleteSuccess, DeleteError, Logger> =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
 
@@ -317,18 +429,18 @@ export const signalCredentialRemoval = (
 
     yield* logger.logInfo("Passkey removed")
 
-    return true
+    return { _tag: "DeleteSuccess" } as const
   })
 
 /**
  * Tell the client device which credentials are still accepted for a user.
  *
  * @param credentials Accepted credential mapping for the user.
- * @returns A Micro effect that resolves with `true` or fails with {@link PruningError}.
+ * @returns A Micro effect that resolves with a {@link PruningSuccess} or fails with {@link PruningError}.
  */
 export const signalAcceptedCredentials = (
   credentials: CredentialMappings
-): Micro.Micro<boolean, PruningError, Logger> =>
+): Micro.Micro<PruningSuccess, PruningError, Logger> =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
 
@@ -364,12 +476,17 @@ export const signalAcceptedCredentials = (
 
     yield* logger.logInfo("Accepted credentials signalled")
 
-    return true
+    return { _tag: "PruningSuccess" } as const
   })
 
+export type CredentialUserId = {
+  userId: string
+  rpId: string
+}
+
 export const signalCurrentUserDetails = (
-  credential: CredentialMapping,
-  updates: Omit<UpdatePasskeyOptions, "passkeyId">
+  credential: CredentialUserId,
+  updates: Pick<UpdatePasskeyOptions, "username" | "displayName">
 ) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
@@ -386,7 +503,7 @@ export const signalCurrentUserDetails = (
 
     yield* logger.logInfo("Signalling browser to update passkey")
 
-    const { username: name, displayName } = updates
+    const { username: name, displayName = updates.username } = updates
     const credentialUpdates = { ...credential, name, displayName }
 
     yield* pipe(
@@ -409,5 +526,5 @@ export const signalCurrentUserDetails = (
 
     yield* logger.logInfo("Passkey updated")
 
-    return true
+    return { _tag: "UpdateSuccess" } as const
   })

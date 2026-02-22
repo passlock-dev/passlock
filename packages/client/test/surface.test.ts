@@ -41,7 +41,7 @@ describe("public surface", () => {
   it("exports shared guards and utilities", () => {
     expectTypeOf(root.isRegistrationSuccess).toBeFunction()
     expectTypeOf(root.isAuthenticationSuccess).toBeFunction()
-    expectTypeOf(root.isPasskeyNotFoundError).toBeFunction()
+    expectTypeOf(root.isOrphanedPasskeyError).toBeFunction()
     expectTypeOf(root.isDuplicatePasskeyError).toBeFunction()
     expectTypeOf(root.isPasskeyUnsupportedError).toBeFunction()
     expectTypeOf(root.isOtherPasskeyError).toBeFunction()
@@ -54,7 +54,7 @@ describe("public surface", () => {
 
     expectTypeOf(unsafe.isRegistrationSuccess).toBeFunction()
     expectTypeOf(unsafe.isAuthenticationSuccess).toBeFunction()
-    expectTypeOf(unsafe.isPasskeyNotFoundError).toBeFunction()
+    expectTypeOf(unsafe.isOrphanedPasskeyError).toBeFunction()
     expectTypeOf(unsafe.isDuplicatePasskeyError).toBeFunction()
     expectTypeOf(unsafe.isPasskeyUnsupportedError).toBeFunction()
     expectTypeOf(unsafe.isOtherPasskeyError).toBeFunction()

@@ -1,5 +1,4 @@
-import { Headers, type HeadersInit } from "@effect/platform-node/Undici"
-import { Array, Config, Effect, Option, pipe, Redacted } from "effect"
+import { Config, Effect, pipe, Redacted } from "effect"
 
 const lookupTenancyId = pipe(
   Config.string("PASSLOCK_TENANCY_ID"),
@@ -37,20 +36,6 @@ export const intTestConfig = Effect.gen(function* () {
 })
 
 export const getHeaderValue = (
-  headers: HeadersInit,
+  headers: NonNullable<RequestInit["headers"]>,
   header: string
-): string | null => {
-  if (headers instanceof Headers) {
-    return headers.get(header)
-  }
-
-  if (Array.isArray(headers)) {
-    return pipe(
-      Array.findFirst(headers, ([k]) => k === header),
-      Option.map(([_, v]) => v),
-      Option.getOrNull
-    )
-  }
-
-  return headers["authorization"] ?? null
-}
+): string | null => new Headers(headers).get(header)

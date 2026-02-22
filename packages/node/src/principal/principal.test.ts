@@ -1,9 +1,9 @@
-import { FetchHttpClient } from "@effect/platform"
 import { describe, it, vi } from "@effect/vitest"
 import { Effect, Layer, pipe } from "effect"
 import * as jose from "jose"
 import { expect } from "vitest"
 import { getHeaderValue } from "../../test/utils.js"
+import { NetworkFetch } from "../network.js"
 import { exchangeCode, verifyIdToken } from "./principal.js"
 
 const code = "dummyCode"
@@ -35,24 +35,19 @@ describe(exchangeCode.name, () => {
         let invokedUrl: string | undefined
         let method: string | undefined
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, (url, init) => {
-              invokedUrl = String(url)
-              method = init?.method
-              return Promise.resolve(
-                new Response(JSON.stringify(principalResponse), {
-                  status: 200,
-                })
-              )
+        const testFetch = vi.fn<typeof fetch>((url, init) => {
+          invokedUrl = String(url)
+          method = init?.method
+          return Promise.resolve(
+            new Response(JSON.stringify(principalResponse), {
+              status: 200,
             })
           )
-        )
+        })
 
         const principal = yield* exchangeCode(
           { code, apiKey, tenancyId },
-          TestLayer
+          Layer.succeed(NetworkFetch, testFetch)
         )
 
         expect(principal._tag).toEqual("ExtendedPrincipal")
@@ -76,19 +71,17 @@ describe(exchangeCode.name, () => {
           message: "Code expired",
         }
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, () =>
-              Promise.resolve(
-                new Response(JSON.stringify(errorResponse), { status: 404 })
-              )
-            )
+        const testFetch = vi.fn<typeof fetch>(() =>
+          Promise.resolve(
+            new Response(JSON.stringify(errorResponse), { status: 404 })
           )
         )
 
         const error = yield* pipe(
-          exchangeCode({ code, apiKey, tenancyId }, TestLayer),
+          exchangeCode(
+            { code, apiKey, tenancyId },
+            Layer.succeed(NetworkFetch, testFetch)
+          ),
           Effect.flip
         )
 
@@ -101,21 +94,19 @@ describe(exchangeCode.name, () => {
     Effect.gen(function* () {
       let invokedUrl: string | null = null
 
-      const TestLayer = pipe(
-        FetchHttpClient.layer,
-        Layer.provide(
-          Layer.succeed(FetchHttpClient.Fetch, (url) => {
-            invokedUrl = String(url)
-            return Promise.resolve(
-              new Response(JSON.stringify(principalResponse), {
-                status: 200,
-              })
-            )
+      const testFetch = vi.fn<typeof fetch>((url) => {
+        invokedUrl = String(url)
+        return Promise.resolve(
+          new Response(JSON.stringify(principalResponse), {
+            status: 200,
           })
         )
-      )
+      })
 
-      yield* exchangeCode({ code, apiKey, tenancyId }, TestLayer)
+      yield* exchangeCode(
+        { code, apiKey, tenancyId },
+        Layer.succeed(NetworkFetch, testFetch)
+      )
 
       expect(invokedUrl).toEqual(
         `https://api.passlock.dev/${tenancyId}/principal/${code}`
@@ -127,27 +118,22 @@ describe(exchangeCode.name, () => {
     Effect.gen(function* () {
       let authorizationHeader: string | null = null
 
-      const TestLayer = pipe(
-        FetchHttpClient.layer,
-        Layer.provide(
-          Layer.succeed(FetchHttpClient.Fetch, (_, init) => {
-            if (init?.headers) {
-              authorizationHeader = getHeaderValue(
-                init.headers,
-                "authorization"
-              )
-            }
+      const testFetch = vi.fn<typeof fetch>((_, init) => {
+        if (init?.headers) {
+          authorizationHeader = getHeaderValue(init.headers, "authorization")
+        }
 
-            return Promise.resolve(
-              new Response(JSON.stringify(principalResponse), {
-                status: 200,
-              })
-            )
+        return Promise.resolve(
+          new Response(JSON.stringify(principalResponse), {
+            status: 200,
           })
         )
-      )
+      })
 
-      yield* exchangeCode({ code, apiKey, tenancyId }, TestLayer)
+      yield* exchangeCode(
+        { code, apiKey, tenancyId },
+        Layer.succeed(NetworkFetch, testFetch)
+      )
 
       expect(authorizationHeader).toEqual("Bearer dummyApiKey")
     })
@@ -160,19 +146,17 @@ describe(exchangeCode.name, () => {
         message: "Go away",
       }
 
-      const TestLayer = pipe(
-        FetchHttpClient.layer,
-        Layer.provide(
-          Layer.succeed(FetchHttpClient.Fetch, () =>
-            Promise.resolve(
-              new Response(JSON.stringify(forbiddenResponse), { status: 403 })
-            )
-          )
+      const testFetch = vi.fn<typeof fetch>(() =>
+        Promise.resolve(
+          new Response(JSON.stringify(forbiddenResponse), { status: 403 })
         )
       )
 
       const error = yield* pipe(
-        exchangeCode({ code, apiKey, tenancyId }, TestLayer),
+        exchangeCode(
+          { code, apiKey, tenancyId },
+          Layer.succeed(NetworkFetch, testFetch)
+        ),
         Effect.flip
       )
 

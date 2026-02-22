@@ -1,4 +1,9 @@
-/* Unauthorized */
+/*
+ * Publicly exposed errors.
+ * The errors we receive from the API live in the schemas/errors.ts module.
+ * The errors here have the same shape but they are simple types
+ * so are easier for non Effect consumers to handle.
+ */
 
 const isTagged =
   <A extends { _tag: string }>(tag: A["_tag"]) =>
@@ -13,62 +18,67 @@ const isTagged =
     return true
   }
 
+/* Unauthorized */
+
 /**
  * @category Authentication
  */
-export type Unauthorized = {
+export type UnauthorizedError = {
   _tag: "@error/Unauthorized"
   message: string
 }
 
-export const isUnauthorized = isTagged<Unauthorized>("@error/Unauthorized")
+export const isUnauthorizedError = isTagged<UnauthorizedError>(
+  "@error/Unauthorized"
+)
 
 /* Forbidden */
 
 /**
  * @category Authentication
  */
-export type Forbidden = {
+export type ForbiddenError = {
   _tag: "@error/Forbidden"
   message: string
 }
 
-export const isForbidden = isTagged<Forbidden>("@error/Forbidden")
+export const isForbiddenError = isTagged<ForbiddenError>("@error/Forbidden")
 
 /* InvalidCode */
 
 /**
  * @category Principal
  */
-export type InvalidCode = {
+export type InvalidCodeError = {
   _tag: "@error/InvalidCode"
   message: string
 }
 
-export const isInvalidCode = isTagged<InvalidCode>("@error/InvalidCode")
+export const isInvalidCodeError =
+  isTagged<InvalidCodeError>("@error/InvalidCode")
 
 /* VerificationFailure */
 
 /**
  * @category Principal
  */
-export type VerificationFailure = {
-  _tag: "@error/VerificationFailure"
+export type VerificationError = {
+  _tag: "@error/Verification"
   message: string
 }
 
-export const isVerificationFailure = isTagged<VerificationFailure>(
-  "@error/VerificationFailure"
+export const isVerificationError = isTagged<VerificationError>(
+  "@error/Verification"
 )
 
 /* InvalidTenancy */
 
-export type InvalidTenancy = {
+export type InvalidTenancyError = {
   _tag: "@error/InvalidTenancy"
   message: string
 }
 
-export const isInvalidTenancy = isTagged<InvalidTenancy>(
+export const isInvalidTenancyError = isTagged<InvalidTenancyError>(
   "@error/InvalidTenancy"
 )
 
@@ -80,51 +90,53 @@ export const isInvalidTenancy = isTagged<InvalidTenancy>(
  *
  * @category Passkeys
  */
-export type PasskeyNotFound = {
+export type PasskeyNotFoundError = {
   _tag: "@error/PasskeyNotFound"
   message: string
   credentialId: string
   rpId: string
 }
 
-export const isPasskeyNotFound = isTagged<PasskeyNotFound>(
+export const isPasskeyNotFoundError = isTagged<PasskeyNotFoundError>(
   "@error/PasskeyNotFound"
 )
 
 /* NotFound */
 
-export type NotFound = {
+export type NotFoundError = {
   _tag: "@error/NotFound"
   message: string
 }
 
-export const isNotFound = isTagged<NotFound>("@error/NotFound")
+export const isNotFoundError = isTagged<NotFoundError>("@error/NotFound")
 
 /* InvalidEmail */
 
-export type InvalidEmail = {
+export type InvalidEmailError = {
   _tag: "@error/InvalidEmail"
   message: string
 }
 
-export const isInvalidEmail = isTagged<InvalidEmail>("@error/InvalidEmail")
+export const isInvalidEmailError = isTagged<InvalidEmailError>(
+  "@error/InvalidEmail"
+)
 
 /* DuplicateEmail */
 
-export type DuplicateEmail = {
+export type DuplicateEmailError = {
   _tag: "@error/DuplicateEmail"
   message: string
 }
 
-export const isDuplicateEmail = isTagged<DuplicateEmail>(
+export const isDuplicateEmailError = isTagged<DuplicateEmailError>(
   "@error/DuplicateEmail"
 )
 
 /* BadRequest */
 
-export type BadRequest = {
+export type BadRequestError = {
   _tag: "@error/BadRequest"
   message: string
 }
 
-export const isBadRequest = isTagged<BadRequest>("@error/BadRequest")
+export const isBadRequestError = isTagged<BadRequestError>("@error/BadRequest")

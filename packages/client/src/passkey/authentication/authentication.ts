@@ -11,8 +11,8 @@ import type { NetworkError } from "../../internal/network"
 import { Logger } from "../../logger"
 import type { PasslockOptions } from "../../options"
 import {
+  OrphanedPasskeyError,
   OtherPasskeyError,
-  PasskeyNotFoundError,
   PasskeyUnsupportedError,
 } from "../errors"
 import type { Millis, UserVerification } from "../shared"
@@ -20,13 +20,15 @@ import type { Millis, UserVerification } from "../shared"
 /**
  * Passkey authentication options
  *
+ * @see {@link authenticatePasskey}
+ *
  * @category Passkeys (core)
  */
 export interface AuthenticationOptions extends PasslockOptions {
   /**
    * Restrict the passkey(s) the device presents to the user to a given set
    *
-   * @see {@link https://passlock.dev/passkeys/allow-credentials/|allowCredentials}
+   * @see {@link https://passlock.dev/passkeys/allow-credentials/ allowCredentials (main docs)}
    */
   allowCredentials?: Array<string> | undefined
 
@@ -34,14 +36,14 @@ export interface AuthenticationOptions extends PasslockOptions {
    * Whether the device should re-authenticate the user locally before
    * authenticating with a passkey.
    *
-   * @see {@link https://passlock.dev/passkeys/user-verification/|userVerification}
+   * @see {@link https://passlock.dev/passkeys/user-verification/ userVerification (main docs)}
    */
   userVerification?: UserVerification | undefined
 
   /**
    * Use browser autofill.
    *
-   * @see {@link https://passlock.dev/passkeys/autofill/|autofill}
+   * @see {@link https://passlock.dev/passkeys/autofill/ autofill (main docs)}
    */
   autofill?: boolean | undefined
 
@@ -49,9 +51,6 @@ export interface AuthenticationOptions extends PasslockOptions {
    * Receive notifications about key stages in the authentication process.
    * For example, you might use event notifications to toggle loading icons or
    * to disable certain form fields.
-   *
-   * @param event
-   * @returns Nothing.
    */
   onEvent?: OnAuthenticationEvent | undefined
 
@@ -83,12 +82,12 @@ export type AuthenticationSuccessTag = typeof AuthenticationSuccessTag
 
 /**
  * Represents the outcome of a successful passkey authentication.
- * Submit the code and/or id_token to your backend, then either
- * exchange the code with the passlock REST API or decode and
- * verify the id_token (JWT).
+ * Submit the `code` and/or `id_token` to your backend, then either
+ * exchange the code with the Passlock REST API or decode and
+ * verify the id_token (JWT). **note:** The @passlock/node library
+ * includes utilities for this.
  *
- * Note: The @passlock/node library includes utilities to do
- * this for you.
+ * @see {@link isAuthenticationSuccess}
  *
  * @category Passkeys (core)
  */
@@ -119,7 +118,7 @@ export type AuthenticationSuccess = {
 }
 
 /**
- * Type guard to narrow something down to an AuthenticationSuccess
+ * Type guard to narrow something down to an {@link AuthenticationSuccess}
  *
  * @param payload
  * @returns `true` if the payload is an {@link AuthenticationSuccess}.
@@ -134,9 +133,7 @@ export const isAuthenticationSuccess = (
 
   if (!("_tag" in payload)) return false
   if (typeof payload._tag !== "string") return false
-  if (payload._tag !== AuthenticationSuccessTag) return false
-
-  return true
+  return payload._tag === AuthenticationSuccessTag
 }
 
 export const fetchOptions = (
@@ -292,7 +289,7 @@ export const verifyCredential = (
         url,
       }),
       Micro.catchTag("@error/PasskeyNotFound", (err) =>
-        Micro.fail(new PasskeyNotFoundError(err))
+        Micro.fail(new OrphanedPasskeyError(err))
       )
     )
 
@@ -311,7 +308,7 @@ export const verifyCredential = (
 export type AuthenticationError =
   | PasskeyUnsupportedError
   | OtherPasskeyError
-  | PasskeyNotFoundError
+  | OrphanedPasskeyError
   | NetworkError
 
 /**
@@ -365,19 +362,34 @@ export const authenticatePasskey = (
 
 /**
  * Type of the authentication event
+ *
+ * @category Passkeys (other)
  */
-export const AuthenticationEvent = [
+export const AuthenticationEvents = [
   "optionsRequest",
   "getCredential",
   "verifyCredential",
 ] as const
 
 /**
+ * Type of the authentication event
+ *
  * @category Passkeys (other)
  */
-export type AuthenticationEvent = (typeof AuthenticationEvent)[number]
+export type AuthenticationEvent =
+  | "optionsRequest"
+  | "getCredential"
+  | "verifyCredential"
 
 /**
+ * Allows you to hook into key lifecycle events.
+ *
+ * Most commonly used when {@link authenticatePasskey}
+ * is called with {@link AuthenticationOptions#autofill}.
+ * When autofill is applied the browser will wait for user interaction. By listening
+ * for the `verifyCredential` {@link AuthenticationEvent} you know when the user has
+ * presented a passkey so you can disable forms/toggle loading icons etc.
+ *
  * @category Passkeys (other)
  */
 export type OnAuthenticationEvent = (event: AuthenticationEvent) => void

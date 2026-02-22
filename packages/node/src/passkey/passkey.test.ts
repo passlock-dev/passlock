@@ -1,10 +1,10 @@
-import { FetchHttpClient } from "@effect/platform"
 import { describe, it } from "@effect/vitest"
 import { getHeaderValue } from "@test/utils.js"
 import { Chunk, Effect, Layer, pipe, Schema, Stream } from "effect"
 import { expect } from "vitest"
-import type { PasskeyEncoded } from "../schemas/passkey.js"
-import type { DeletedPasskey, FindAllPasskeys } from "./passkey.js"
+import { NetworkFetch } from "../network.js"
+import type { Passkey, PasskeyEncoded } from "../schemas/passkey.js"
+import type { FindAllPasskeys } from "./passkey.js"
 
 import {
   assignUser,
@@ -18,8 +18,6 @@ import {
 const passkeyId = "dummyPasskeyId"
 const tenancyId = "dummyTenancyId"
 const apiKey = "dummyApiKey"
-const credentialId = "webAuthnId"
-const rpId = "localhost"
 const publicKey = Uint8Array.from([1, 2, 3, 4, 5])
 
 const passkeyResponse: PasskeyEncoded = {
@@ -34,6 +32,7 @@ const passkeyResponse: PasskeyEncoded = {
     transports: ["internal"],
     userId: "dummyWebAuthnUserId",
     publicKey: Schema.encodeSync(Schema.Uint8ArrayFromBase64Url)(publicKey),
+    rpId: "localhost",
   },
   enabled: true,
   id: "dummyPasskeyId",
@@ -46,11 +45,29 @@ const passkeyResponse: PasskeyEncoded = {
   createdAt: Date.now(),
 }
 
-const deletedPasskeyResponse: DeletedPasskey = {
-  _tag: "DeletedPasskey",
-  id: passkeyId,
-  credentialId,
-  rpId,
+const expectedPasskey: Passkey = {
+  _tag: "Passkey",
+  credential: {
+    aaguid: "dummyAaguid",
+    backedUp: true,
+    counter: 0,
+    deviceType: "singleDevice",
+    id: "dummyWebAuthnId",
+    username: "dummyWebAuthnUsername",
+    transports: ["internal"],
+    userId: "dummyWebAuthnUserId",
+    publicKey,
+    rpId: "localhost",
+  },
+  enabled: true,
+  id: "dummyPasskeyId",
+  updatedAt: Date.now(),
+  userId: "dummyUserId",
+  platform: {
+    icon: "/12345.png",
+    name: "Apple Passwords",
+  },
+  createdAt: Date.now(),
 }
 
 const findAllPasskeysResponse: FindAllPasskeys = {
@@ -78,20 +95,15 @@ describe(listPasskeys.name, () => {
         let invokedUrl: string | undefined
         let method: string | undefined
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, (url, init) => {
-              invokedUrl = String(url)
-              method = init?.method
-              return Promise.resolve(
-                new Response(JSON.stringify(findAllPasskeysResponse), {
-                  status: 200,
-                })
-              )
+        const TestLayer = Layer.succeed(NetworkFetch, (url, init) => {
+          invokedUrl = String(url)
+          method = init?.method
+          return Promise.resolve(
+            new Response(JSON.stringify(findAllPasskeysResponse), {
+              status: 200,
             })
           )
-        )
+        })
 
         const result = yield* pipe(
           listPasskeys({ apiKey, tenancyId }, TestLayer)
@@ -114,20 +126,15 @@ describe(listPasskeys.name, () => {
         let invokedUrl: string | undefined
         let method: string | undefined
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, (url, init) => {
-              invokedUrl = String(url)
-              method = init?.method
-              return Promise.resolve(
-                new Response(JSON.stringify(findAllPasskeysResponse), {
-                  status: 200,
-                })
-              )
+        const TestLayer = Layer.succeed(NetworkFetch, (url, init) => {
+          invokedUrl = String(url)
+          method = init?.method
+          return Promise.resolve(
+            new Response(JSON.stringify(findAllPasskeysResponse), {
+              status: 200,
             })
           )
-        )
+        })
 
         const result = yield* pipe(
           listPasskeys({ apiKey, tenancyId, cursor: "dummyCursor" }, TestLayer)
@@ -147,18 +154,13 @@ describe(listPasskeys.name, () => {
   describe("when the api returns a cursor", () => {
     it.effect("should return it", () =>
       Effect.gen(function* () {
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, () => {
-              return Promise.resolve(
-                new Response(JSON.stringify(findAllPasskeysResponse), {
-                  status: 200,
-                })
-              )
+        const TestLayer = Layer.succeed(NetworkFetch, () => {
+          return Promise.resolve(
+            new Response(JSON.stringify(findAllPasskeysResponse), {
+              status: 200,
             })
           )
-        )
+        })
 
         const result = yield* pipe(
           listPasskeys({ apiKey, tenancyId }, TestLayer)
@@ -195,20 +197,15 @@ describe(listPasskeysStream.name, () => {
         let fetchCount = 0
         const invokedUrls: string[] = []
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, (url) => {
-              fetchCount++
-              invokedUrls.push(String(url))
-              return Promise.resolve(
-                new Response(JSON.stringify(singlePageResponse), {
-                  status: 200,
-                })
-              )
+        const TestLayer = Layer.succeed(NetworkFetch, (url) => {
+          fetchCount++
+          invokedUrls.push(String(url))
+          return Promise.resolve(
+            new Response(JSON.stringify(singlePageResponse), {
+              status: 200,
             })
           )
-        )
+        })
 
         const summaries = yield* pipe(
           listPasskeysStream({ apiKey, tenancyId }, TestLayer),
@@ -268,21 +265,16 @@ describe(listPasskeysStream.name, () => {
         const invokedUrls: string[] = []
         const responses = [firstPageResponse, secondPageResponse]
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, (url) => {
-              invokedUrls.push(String(url))
-              const response = responses[fetchCount] ?? secondPageResponse
-              fetchCount++
-              return Promise.resolve(
-                new Response(JSON.stringify(response), {
-                  status: 200,
-                })
-              )
+        const TestLayer = Layer.succeed(NetworkFetch, (url) => {
+          invokedUrls.push(String(url))
+          const response = responses[fetchCount] ?? secondPageResponse
+          fetchCount++
+          return Promise.resolve(
+            new Response(JSON.stringify(response), {
+              status: 200,
             })
           )
-        )
+        })
 
         const summaries = yield* pipe(
           listPasskeysStream({ apiKey, tenancyId }, TestLayer),
@@ -311,24 +303,19 @@ describe(getPasskey.name, () => {
         let invokedUrl: string | undefined
         let method: string | undefined
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, (url, init) => {
-              invokedUrl = String(url)
-              method = init?.method
-              return Promise.resolve(
-                new Response(JSON.stringify(passkeyResponse), { status: 200 })
-              )
-            })
+        const TestLayer = Layer.succeed(NetworkFetch, (url, init) => {
+          invokedUrl = String(url)
+          method = init?.method
+          return Promise.resolve(
+            new Response(JSON.stringify(passkeyResponse), { status: 200 })
           )
-        )
+        })
 
         const passkey = yield* pipe(
           getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer)
         )
 
-        expect(passkey).toStrictEqual(passkey)
+        expect(passkey).toStrictEqual(expectedPasskey)
 
         expect(invokedUrl).toEqual(
           "https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId"
@@ -347,14 +334,9 @@ describe(getPasskey.name, () => {
           message: "Passkey not found",
         }
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, () =>
-              Promise.resolve(
-                new Response(JSON.stringify(errorResponse), { status: 404 })
-              )
-            )
+        const TestLayer = Layer.succeed(NetworkFetch, () =>
+          Promise.resolve(
+            new Response(JSON.stringify(errorResponse), { status: 404 })
           )
         )
 
@@ -372,17 +354,12 @@ describe(getPasskey.name, () => {
     Effect.gen(function* () {
       let invokedUrl: string | null = null
 
-      const TestLayer = pipe(
-        FetchHttpClient.layer,
-        Layer.provide(
-          Layer.succeed(FetchHttpClient.Fetch, (url) => {
-            invokedUrl = String(url)
-            return Promise.resolve(
-              new Response(JSON.stringify(passkeyResponse), { status: 200 })
-            )
-          })
+      const TestLayer = Layer.succeed(NetworkFetch, (url) => {
+        invokedUrl = String(url)
+        return Promise.resolve(
+          new Response(JSON.stringify(passkeyResponse), { status: 200 })
         )
-      )
+      })
 
       yield* pipe(getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer))
 
@@ -396,23 +373,15 @@ describe(getPasskey.name, () => {
     Effect.gen(function* () {
       let authorizationHeader: string | null = null
 
-      const TestLayer = pipe(
-        FetchHttpClient.layer,
-        Layer.provide(
-          Layer.succeed(FetchHttpClient.Fetch, (_, init) => {
-            if (init?.headers) {
-              authorizationHeader = getHeaderValue(
-                init.headers,
-                "authorization"
-              )
-            }
+      const TestLayer = Layer.succeed(NetworkFetch, (_, init) => {
+        if (init?.headers) {
+          authorizationHeader = getHeaderValue(init.headers, "authorization")
+        }
 
-            return Promise.resolve(
-              new Response(JSON.stringify(passkeyResponse), { status: 200 })
-            )
-          })
+        return Promise.resolve(
+          new Response(JSON.stringify(passkeyResponse), { status: 200 })
         )
-      )
+      })
 
       yield* pipe(getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer))
 
@@ -427,14 +396,9 @@ describe(getPasskey.name, () => {
         message: "Go away",
       }
 
-      const TestLayer = pipe(
-        FetchHttpClient.layer,
-        Layer.provide(
-          Layer.succeed(FetchHttpClient.Fetch, () =>
-            Promise.resolve(
-              new Response(JSON.stringify(forbiddenResponse), { status: 403 })
-            )
-          )
+      const TestLayer = Layer.succeed(NetworkFetch, () =>
+        Promise.resolve(
+          new Response(JSON.stringify(forbiddenResponse), { status: 403 })
         )
       )
 
@@ -455,26 +419,21 @@ describe(deletePasskey.name, () => {
         let invokedUrl: string | undefined
         let method: string | undefined
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, (url, init) => {
-              invokedUrl = String(url)
-              method = init?.method
-              return Promise.resolve(
-                new Response(JSON.stringify(deletedPasskeyResponse), {
-                  status: 202,
-                })
-              )
+        const TestLayer = Layer.succeed(NetworkFetch, (url, init) => {
+          invokedUrl = String(url)
+          method = init?.method
+          return Promise.resolve(
+            new Response(JSON.stringify(passkeyResponse), {
+              status: 202,
             })
           )
-        )
+        })
 
         const result = yield* pipe(
           deletePasskey({ passkeyId, apiKey, tenancyId }, TestLayer)
         )
 
-        expect(result).toStrictEqual(deletedPasskeyResponse)
+        expect(result).toStrictEqual(expectedPasskey)
 
         expect(invokedUrl).toEqual(
           "https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId"
@@ -493,14 +452,9 @@ describe(deletePasskey.name, () => {
           message: "Passkey not found",
         }
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, () =>
-              Promise.resolve(
-                new Response(JSON.stringify(errorResponse), { status: 404 })
-              )
-            )
+        const TestLayer = Layer.succeed(NetworkFetch, () =>
+          Promise.resolve(
+            new Response(JSON.stringify(errorResponse), { status: 404 })
           )
         )
 
@@ -522,23 +476,18 @@ describe(assignUser.name, () => {
         let invokedUrl: string | undefined
         let method: string | undefined
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, (url, init) => {
-              invokedUrl = String(url)
-              method = init?.method
-              return Promise.resolve(
-                new Response(
-                  JSON.stringify({ ...passkeyResponse, userId: "newUserId" }),
-                  {
-                    status: 202,
-                  }
-                )
-              )
-            })
+        const TestLayer = Layer.succeed(NetworkFetch, (url, init) => {
+          invokedUrl = String(url)
+          method = init?.method
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({ ...passkeyResponse, userId: "newUserId" }),
+              {
+                status: 202,
+              }
+            )
           )
-        )
+        })
 
         const result = yield* assignUser(
           { apiKey, passkeyId, tenancyId, userId: "newUserId" },
@@ -564,14 +513,9 @@ describe(assignUser.name, () => {
           message: "Passkey not found",
         }
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, () =>
-              Promise.resolve(
-                new Response(JSON.stringify(errorResponse), { status: 404 })
-              )
-            )
+        const TestLayer = Layer.succeed(NetworkFetch, () =>
+          Promise.resolve(
+            new Response(JSON.stringify(errorResponse), { status: 404 })
           )
         )
 
@@ -596,30 +540,25 @@ describe(updatePasskey.name, () => {
         let invokedUrl: string | undefined
         let method: string | undefined
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, (url, init) => {
-              invokedUrl = String(url)
-              method = init?.method
-              return Promise.resolve(
-                new Response(
-                  JSON.stringify({
-                    ...passkeyResponse,
-                    userId: "newUserId",
-                    credential: {
-                      ...passkeyResponse.credential,
-                      username: "newUsername",
-                    },
-                  }),
-                  {
-                    status: 202,
-                  }
-                )
-              )
-            })
+        const TestLayer = Layer.succeed(NetworkFetch, (url, init) => {
+          invokedUrl = String(url)
+          method = init?.method
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                ...passkeyResponse,
+                userId: "newUserId",
+                credential: {
+                  ...passkeyResponse.credential,
+                  username: "newUsername",
+                },
+              }),
+              {
+                status: 202,
+              }
+            )
           )
-        )
+        })
 
         const result = yield* updatePasskey(
           {
@@ -652,14 +591,9 @@ describe(updatePasskey.name, () => {
           message: "Passkey not found",
         }
 
-        const TestLayer = pipe(
-          FetchHttpClient.layer,
-          Layer.provide(
-            Layer.succeed(FetchHttpClient.Fetch, () =>
-              Promise.resolve(
-                new Response(JSON.stringify(errorResponse), { status: 404 })
-              )
-            )
+        const TestLayer = Layer.succeed(NetworkFetch, () =>
+          Promise.resolve(
+            new Response(JSON.stringify(errorResponse), { status: 404 })
           )
         )
 

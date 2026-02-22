@@ -3,70 +3,62 @@ import { Schema } from "effect"
 /* Unauthorized */
 
 /** @internal */
-export class Unauthorized extends Schema.TaggedError<Unauthorized>()(
+export class UnauthorizedError extends Schema.TaggedError<UnauthorizedError>()(
   "@error/Unauthorized",
   {}
 ) {}
 
-/**
- * @category Authentication
- */
-export const isUnauthorized = (payload: unknown): payload is Unauthorized =>
-  Schema.is(Unauthorized)(payload)
+/** @internal */
+export const isUnauthorizedError = (
+  payload: unknown
+): payload is UnauthorizedError => Schema.is(UnauthorizedError)(payload)
 
 /* Forbidden */
 
 /** @internal */
-export class Forbidden extends Schema.TaggedError<Forbidden>()(
+export class ForbiddenError extends Schema.TaggedError<ForbiddenError>()(
   "@error/Forbidden",
   {}
 ) {}
 
-/**
- * @category Authentication
- */
-export const isForbidden = (payload: unknown): payload is Forbidden =>
-  Schema.is(Forbidden)(payload)
+/** @internal */
+export const isForbiddenError = (payload: unknown): payload is ForbiddenError =>
+  Schema.is(ForbiddenError)(payload)
 
 /* InvalidCode */
 
 /** @internal */
-export class InvalidCode extends Schema.TaggedError<InvalidCode>()(
+export class InvalidCodeError extends Schema.TaggedError<InvalidCodeError>()(
   "@error/InvalidCode",
   {
     message: Schema.String,
   }
 ) {}
 
-/**
- * @category Principal
- */
-export const isInvalidCode = (payload: unknown): payload is InvalidCode =>
-  Schema.is(InvalidCode)(payload)
+/** @internal */
+export const isInvalidCodeError = (
+  payload: unknown
+): payload is InvalidCodeError => Schema.is(InvalidCodeError)(payload)
 
 /* InvalidTenancy */
 
 /** @internal */
-export class InvalidTenancy extends Schema.TaggedError<InvalidTenancy>()(
+export class InvalidTenancyError extends Schema.TaggedError<InvalidTenancyError>()(
   "@error/InvalidTenancy",
   {
     message: Schema.String,
   }
 ) {}
 
-export const isInvalidTenancy = (payload: unknown): payload is InvalidTenancy =>
-  Schema.is(InvalidTenancy)(payload)
+/** @internal */
+export const isInvalidTenancyError = (
+  payload: unknown
+): payload is InvalidTenancyError => Schema.is(InvalidTenancyError)(payload)
 
 /* PasskeyNotFound */
 
-/**
- * We need the credentialId and rpId to feed into the
- * client's signalCredentialRemoval function
- *
- * @category Passkeys
- */
 /** @internal */
-export class PasskeyNotFound extends Schema.TaggedError<PasskeyNotFound>()(
+export class PasskeyNotFoundError extends Schema.TaggedError<PasskeyNotFoundError>()(
   "@error/PasskeyNotFound",
   {
     credentialId: Schema.String,
@@ -75,64 +67,66 @@ export class PasskeyNotFound extends Schema.TaggedError<PasskeyNotFound>()(
   }
 ) {}
 
-/**
- * @param payload
- * @returns `true` if the payload is a {@link PasskeyNotFound} error.
- *
- * @category Passkeys
- */
-export const isPasskeyNotFound = (
+/** @internal */
+export const isPasskeyNotFoundError = (
   payload: unknown
-): payload is PasskeyNotFound => Schema.is(PasskeyNotFound)(payload)
+): payload is PasskeyNotFoundError => Schema.is(PasskeyNotFoundError)(payload)
 
 /* NotFound */
 
 /** @internal */
-export class NotFound extends Schema.TaggedError<NotFound>()(
+export class NotFoundError extends Schema.TaggedError<NotFoundError>()(
   "@error/NotFound",
   {
     message: Schema.String,
   }
 ) {}
 
-export const isNotFound = (payload: unknown): payload is NotFound =>
-  Schema.is(NotFound)(payload)
+/** @internal */
+export const isNotFoundError = (payload: unknown): payload is NotFoundError =>
+  Schema.is(NotFoundError)(payload)
 
 /* InvalidEmail */
 
 /** @internal */
-export class InvalidEmail extends Schema.TaggedError<InvalidEmail>()(
+export class InvalidEmailError extends Schema.TaggedError<InvalidEmailError>()(
   "@error/InvalidEmail",
   {
     message: Schema.String,
   }
 ) {}
 
-export const isInvalidEmail = (payload: unknown): payload is InvalidEmail =>
-  Schema.is(InvalidEmail)(payload)
+/** @internal */
+export const isInvalidEmailError = (
+  payload: unknown
+): payload is InvalidEmailError => Schema.is(InvalidEmailError)(payload)
 
 /* DuplicateEmail */
 
 /** @internal */
-export class DuplicateEmail extends Schema.TaggedError<DuplicateEmail>()(
+export class DuplicateEmailError extends Schema.TaggedError<DuplicateEmailError>()(
   "@error/DuplicateEmail",
   {
     message: Schema.String,
   }
 ) {}
 
-export const isDuplicateEmail = (payload: unknown): payload is DuplicateEmail =>
-  Schema.is(DuplicateEmail)(payload)
+/** @internal */
+export const isDuplicateEmailError = (
+  payload: unknown
+): payload is DuplicateEmailError => Schema.is(DuplicateEmailError)(payload)
 
 /* BadRequest */
 
 /** @internal */
-export class BadRequest extends Schema.TaggedError<BadRequest>()(
+export class BadRequestError extends Schema.TaggedError<BadRequestError>()(
   "@error/BadRequest",
   {
     message: Schema.String,
   }
 ) {}
 
-export const isBadRequest = (payload: unknown): payload is BadRequest =>
-  Schema.is(BadRequest)(payload)
+/** @internal */
+export const isBadRequestError = (
+  payload: unknown
+): payload is BadRequestError => Schema.is(BadRequestError)(payload)

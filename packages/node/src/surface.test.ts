@@ -4,7 +4,7 @@ import type {
   Passkey as UnsafePasskey,
 } from "./index.js"
 import type { ExtendedPrincipal, Passkey } from "./safe.js"
-import { isExtendedPrincipal, isForbidden } from "./safe.js"
+import { isExtendedPrincipal, isForbiddenError } from "./safe.js"
 import type {
   AuthenticatedOptions,
   PasslockOptions,
@@ -28,7 +28,7 @@ describe("public surface", () => {
 
   it("exports shared types and guards", () => {
     expectTypeOf(isExtendedPrincipal).toBeFunction()
-    expectTypeOf(isForbidden).toBeFunction()
+    expectTypeOf(isForbiddenError).toBeFunction()
   })
 
   it("keeps shared types identical", () => {

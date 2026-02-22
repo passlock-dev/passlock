@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": true,
+
+    /* Output */
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "stripInternal": true,
+
+    // usually you don't want tests or dev-only types leaking into build
+    "types": ["node"]
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "test/**/*",
+    "dist",
+    "node_modules"
+  ]
+}

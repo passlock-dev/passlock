@@ -1,11 +1,5 @@
 import {
-  FetchHttpClient,
-  HttpClient,
-  HttpClientRequest,
-  HttpClientResponse,
-} from "@effect/platform"
-
-import {
+  Array,
   Chunk,
   Effect,
   type Layer,
@@ -16,15 +10,25 @@ import {
   Stream,
 } from "effect"
 import type { satisfy } from "src/schemas/satisfy.js"
-import { FindAllPasskeysSchema, Forbidden, NotFound } from "../schemas/index.js"
 import {
-  type CredentialDeviceType,
-  DeletedPasskeySchema,
-  PasskeySchema,
-  PasskeySummarySchema,
-  type Transports,
-} from "../schemas/passkey.js"
+  fetchNetwork,
+  matchStatus,
+  type NetworkFetch,
+  NetworkFetchLive,
+  type NetworkPayloadError,
+  type NetworkRequestError,
+  type NetworkResponse,
+  type NetworkResponseError,
+} from "../network.js"
+import {
+  FindAllPasskeys as FindAllPasskeysSchema,
+  ForbiddenError,
+  NotFoundError,
+} from "../schemas/index.js"
+import * as PasskeySchemas from "../schemas/passkey.js"
 import type { AuthenticatedOptions } from "../shared.js"
+
+/* Passkey */
 
 /**
  * WebAuthn specific passkey data
@@ -36,9 +40,10 @@ export type Credential = {
   aaguid: string
   backedUp: boolean
   counter: number
-  deviceType: CredentialDeviceType
-  transports: ReadonlyArray<Transports>
+  deviceType: PasskeySchemas.CredentialDeviceType
+  transports: ReadonlyArray<PasskeySchemas.Transports>
   publicKey: Uint8Array<ArrayBufferLike>
+  rpId: string
 }
 
 /**
@@ -84,13 +89,15 @@ export type Passkey = {
 }
 
 export const isPasskey = (payload: unknown): payload is Passkey =>
-  Schema.is(PasskeySchema)(payload)
+  Schema.is(PasskeySchemas.Passkey)(payload)
 
 /**
  * needed to ensure the Passkey === Passkey.Type
  * @internal
  * */
-export type _Passkey = satisfy<typeof PasskeySchema.Type, Passkey>
+export type _Passkey = satisfy<typeof PasskeySchemas.Passkey.Type, Passkey>
+
+/* PasskeySummary */
 
 export type PasskeySummary = {
   readonly _tag: "PasskeySummary"
@@ -106,22 +113,50 @@ export type PasskeySummary = {
 }
 
 export const isPasskeySummary = (payload: unknown): payload is PasskeySummary =>
-  Schema.is(PasskeySummarySchema)(payload)
+  Schema.is(PasskeySchemas.PasskeySummary)(payload)
 
 /**
  * needed to ensure the PasskeySummary === PasskeySummary.Type
  * @internal
  */
 export type _PasskeySummary = satisfy<
-  typeof PasskeySummarySchema.Type,
+  typeof PasskeySchemas.PasskeySummary.Type,
   PasskeySummary
 >
+
+/* UpdatedPasskeys */
+
+export type UpdatedPasskeys = {
+  _tag: "UpdatedPasskeys"
+  updated: ReadonlyArray<Passkey>
+}
+
+export const isUpdatedPasskeys = (
+  payload: unknown
+): payload is UpdatedPasskeys =>
+  Schema.is(PasskeySchemas.UpdatedPasskeys)(payload)
+
+/**
+ * needed to ensure the UpdatedPasskeys === UpdatedPasskeys.Type
+ * @internal
+ * */
+export type _UpdatedPasskeys = satisfy<
+  typeof PasskeySchemas.UpdatedPasskeys.Type,
+  UpdatedPasskeys
+>
+
+/* FindAllPasskeys */
 
 export type FindAllPasskeys = {
   readonly _tag: "FindAllPasskeys"
   readonly cursor: string | null
   readonly records: ReadonlyArray<PasskeySummary>
 }
+
+export const isFindAllPasskeys = (
+  payload: unknown
+): payload is FindAllPasskeys =>
+  Schema.is(PasskeySchemas.FindAllPasskeys)(payload)
 
 /**
  * needed to ensure the FindAllPasskeys === FindAllPasskeys.Type
@@ -132,24 +167,40 @@ export type _FindAllPasskeys = satisfy<
   FindAllPasskeys
 >
 
-export type DeletedPasskey = {
-  readonly _tag: "DeletedPasskey"
-  readonly id: string
-  readonly credentialId: string
-  readonly rpId: string
+/* UpdatedPasskeyUsernames (update names by userId) */
+
+export type UpdatedPasskeyUsernames = {
+  _tag: "UpdatedPasskeyUsernames"
+  credentials: ReadonlyArray<{
+    rpId: string
+    userId: string
+    username: string
+    displayName: string
+  }>
 }
 
-export const isDeletedPasskey = (payload: unknown): payload is DeletedPasskey =>
-  Schema.is(DeletedPasskeySchema)(payload)
+export const isUpdatedPasskeyUsernames = (
+  payload: unknown
+): payload is UpdatedPasskeyUsernames => {
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
+  if (!("_tag" in payload)) return false
+  if (typeof payload._tag !== "string") return false
+  if (payload._tag !== "UpdatedPasskeyUsernames") return false
 
-/**
- * needed to ensure the DeletedPasskey === DeletedPasskey.Type
- * @internal
- */
-export type _DeletedPasskey = satisfy<
-  typeof DeletedPasskeySchema.Type,
-  DeletedPasskey
->
+  return true
+}
+
+/* END UpdatedPasskeyUsernames */
+
+const authorizationHeaders = (apiKey: string) => ({
+  authorization: `Bearer ${apiKey}`,
+})
+
+const decodeResponseJson = <A, I, R>(
+  response: NetworkResponse,
+  schema: Schema.Schema<A, I, R>
+) => pipe(response.json, Effect.flatMap(Schema.decodeUnknown(schema)))
 
 /* Get Passkey */
 
@@ -159,27 +210,28 @@ export interface GetPasskeyOptions extends AuthenticatedOptions {
 
 export const getPasskey = (
   options: GetPasskeyOptions,
-  httpClient: Layer.Layer<HttpClient.HttpClient> = FetchHttpClient.layer
-): Effect.Effect<Passkey, NotFound | Forbidden> =>
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<Passkey, NotFoundError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const client = yield* HttpClient.HttpClient
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
       const { tenancyId, passkeyId } = options
 
       const url = new URL(`/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
 
-      const response = yield* HttpClientRequest.get(url, {
-        headers: { Authorization: `Bearer ${options.apiKey}` },
-      }).pipe(client.execute)
-
-      const encoded = yield* HttpClientResponse.matchStatus(response, {
-        "2xx": () => HttpClientResponse.schemaBodyJson(PasskeySchema)(response),
-        orElse: () =>
-          HttpClientResponse.schemaBodyJson(Schema.Union(Forbidden, NotFound))(
-            response
-          ),
+      const response = yield* fetchNetwork(url, "get", undefined, {
+        headers: authorizationHeaders(options.apiKey),
       })
+
+      const encoded: Passkey | ForbiddenError | NotFoundError =
+        yield* matchStatus(response, {
+          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
+          orElse: (res) =>
+            decodeResponseJson(
+              res,
+              Schema.Union(ForbiddenError, NotFoundError)
+            ),
+        })
 
       return yield* pipe(
         Match.value(encoded),
@@ -190,11 +242,12 @@ export const getPasskey = (
       )
     }),
     Effect.catchTags({
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
       ParseError: (err) => Effect.die(err),
-      RequestError: (err) => Effect.die(err),
-      ResponseError: (err) => Effect.die(err),
     }),
-    Effect.provide(httpClient)
+    Effect.provide(fetchLayer)
   )
 
 /* Delete Passkey */
@@ -205,32 +258,32 @@ export interface DeletePasskeyOptions extends AuthenticatedOptions {
 
 export const deletePasskey = (
   options: DeletePasskeyOptions,
-  httpClient: Layer.Layer<HttpClient.HttpClient> = FetchHttpClient.layer
-): Effect.Effect<DeletedPasskey, NotFound | Forbidden> =>
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<Passkey, NotFoundError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const client = yield* HttpClient.HttpClient
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
       const { tenancyId, passkeyId } = options
 
       const url = new URL(`/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
 
-      const response = yield* HttpClientRequest.del(url, {
-        headers: { Authorization: `Bearer ${options.apiKey}` },
-      }).pipe(client.execute)
-
-      const encoded = yield* HttpClientResponse.matchStatus(response, {
-        "2xx": () =>
-          HttpClientResponse.schemaBodyJson(DeletedPasskeySchema)(response),
-        orElse: () =>
-          HttpClientResponse.schemaBodyJson(Schema.Union(Forbidden, NotFound))(
-            response
-          ),
+      const response = yield* fetchNetwork(url, "delete", undefined, {
+        headers: authorizationHeaders(options.apiKey),
       })
+
+      const encoded: Passkey | ForbiddenError | NotFoundError =
+        yield* matchStatus(response, {
+          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
+          orElse: (res) =>
+            decodeResponseJson(
+              res,
+              Schema.Union(ForbiddenError, NotFoundError)
+            ),
+        })
 
       return yield* pipe(
         Match.value(encoded),
-        Match.tag("DeletedPasskey", (deletedPasskey) =>
+        Match.tag("Passkey", (deletedPasskey) =>
           Effect.succeed(deletedPasskey)
         ),
         Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
@@ -239,11 +292,12 @@ export const deletePasskey = (
       )
     }),
     Effect.catchTags({
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
       ParseError: (err) => Effect.die(err),
-      RequestError: (err) => Effect.die(err),
-      ResponseError: (err) => Effect.die(err),
     }),
-    Effect.provide(httpClient)
+    Effect.provide(fetchLayer)
   )
 
 /* Assign User */
@@ -263,31 +317,34 @@ export interface AssignUserOptions extends AuthenticatedOptions {
 // TODO reuse updatePasskey
 export const assignUser = (
   options: AssignUserOptions,
-  httpClient: Layer.Layer<HttpClient.HttpClient> = FetchHttpClient.layer
-): Effect.Effect<Passkey, NotFound | Forbidden> =>
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<Passkey, NotFoundError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const client = yield* HttpClient.HttpClient
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
       const { userId, passkeyId } = options
       const { tenancyId } = options
 
       const url = new URL(`/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
 
-      const response = yield* HttpClientRequest.patch(url, {
-        headers: { Authorization: `Bearer ${options.apiKey}` },
-      }).pipe(
-        HttpClientRequest.bodyJson({ userId }),
-        Effect.flatMap(client.execute)
+      const response = yield* fetchNetwork(
+        url,
+        "patch",
+        { userId },
+        {
+          headers: authorizationHeaders(options.apiKey),
+        }
       )
 
-      const encoded = yield* HttpClientResponse.matchStatus(response, {
-        "2xx": () => HttpClientResponse.schemaBodyJson(PasskeySchema)(response),
-        orElse: () =>
-          HttpClientResponse.schemaBodyJson(Schema.Union(NotFound, Forbidden))(
-            response
-          ),
-      })
+      const encoded: Passkey | NotFoundError | ForbiddenError =
+        yield* matchStatus(response, {
+          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
+          orElse: (res) =>
+            decodeResponseJson(
+              res,
+              Schema.Union(NotFoundError, ForbiddenError)
+            ),
+        })
 
       return yield* pipe(
         Match.value(encoded),
@@ -298,13 +355,15 @@ export const assignUser = (
       )
     }),
     Effect.catchTags({
-      HttpBodyError: (err) => Effect.die(err),
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
       ParseError: (err) => Effect.die(err),
-      RequestError: (err) => Effect.die(err),
-      ResponseError: (err) => Effect.die(err),
     }),
-    Effect.provide(httpClient)
+    Effect.provide(fetchLayer)
   )
+
+/* Update passkey */
 
 export interface UpdatePasskeyOptions extends AuthenticatedOptions {
   passkeyId: string
@@ -314,31 +373,35 @@ export interface UpdatePasskeyOptions extends AuthenticatedOptions {
 
 export const updatePasskey = (
   options: UpdatePasskeyOptions,
-  httpClient: Layer.Layer<HttpClient.HttpClient> = FetchHttpClient.layer
-): Effect.Effect<Passkey, NotFound | Forbidden> =>
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<Passkey, NotFoundError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const client = yield* HttpClient.HttpClient
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
+
       const { userId, passkeyId, username } = options
       const { tenancyId } = options
 
       const url = new URL(`/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
 
-      const response = yield* HttpClientRequest.patch(url, {
-        headers: { Authorization: `Bearer ${options.apiKey}` },
-      }).pipe(
-        HttpClientRequest.bodyJson({ userId, username }),
-        Effect.flatMap(client.execute)
+      const response = yield* fetchNetwork(
+        url,
+        "patch",
+        { userId, username },
+        {
+          headers: authorizationHeaders(options.apiKey),
+        }
       )
 
-      const encoded = yield* HttpClientResponse.matchStatus(response, {
-        "2xx": () => HttpClientResponse.schemaBodyJson(PasskeySchema)(response),
-        orElse: () =>
-          HttpClientResponse.schemaBodyJson(Schema.Union(NotFound, Forbidden))(
-            response
-          ),
-      })
+      const encoded: Passkey | NotFoundError | ForbiddenError =
+        yield* matchStatus(response, {
+          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
+          orElse: (res) =>
+            decodeResponseJson(
+              res,
+              Schema.Union(NotFoundError, ForbiddenError)
+            ),
+        })
 
       return yield* pipe(
         Match.value(encoded),
@@ -349,24 +412,112 @@ export const updatePasskey = (
       )
     }),
     Effect.catchTags({
-      HttpBodyError: (err) => Effect.die(err),
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
       ParseError: (err) => Effect.die(err),
-      RequestError: (err) => Effect.die(err),
-      ResponseError: (err) => Effect.die(err),
     }),
-    Effect.provide(httpClient)
+    Effect.provide(fetchLayer)
+  )
+
+/* Update passkeys by userId (currently not exported) */
+
+interface UpdateUserPasskeyOptions extends AuthenticatedOptions {
+  userId: string
+  username?: string
+}
+
+const updateUserPasskeys = (
+  options: UpdateUserPasskeyOptions,
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<UpdatedPasskeys, NotFoundError | ForbiddenError> =>
+  pipe(
+    Effect.gen(function* () {
+      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
+
+      const { userId, username } = options
+      const { tenancyId } = options
+
+      const url = new URL(`/${tenancyId}/users/${userId}/passkeys/`, baseUrl)
+
+      const response = yield* fetchNetwork(
+        url,
+        "patch",
+        { userId, username },
+        {
+          headers: authorizationHeaders(options.apiKey),
+        }
+      )
+
+      const encoded: UpdatedPasskeys | NotFoundError | ForbiddenError =
+        yield* matchStatus(response, {
+          "2xx": (res) =>
+            decodeResponseJson(res, PasskeySchemas.UpdatedPasskeys),
+          orElse: (res) =>
+            decodeResponseJson(
+              res,
+              Schema.Union(NotFoundError, ForbiddenError)
+            ),
+        })
+
+      return yield* pipe(
+        Match.value(encoded),
+        Match.tag("UpdatedPasskeys", (result) => Effect.succeed(result)),
+        Match.tag("@error/NotFound", (err) => Effect.fail(err)),
+        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
+        Match.exhaustive
+      )
+    }),
+    Effect.catchTags({
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
+      ParseError: (err) => Effect.die(err),
+    }),
+    Effect.provide(fetchLayer)
+  )
+
+/* Update usernames by userId */
+
+export interface UpdatePasskeyUsernamesOptions extends AuthenticatedOptions {
+  userId: string
+  username: string
+  displayName?: string
+}
+
+export const updatePasskeyUsernames = (
+  options: UpdatePasskeyUsernamesOptions,
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<UpdatedPasskeyUsernames, NotFoundError | ForbiddenError> =>
+  pipe(
+    updateUserPasskeys(options, fetchLayer),
+    Effect.map((result) => result.updated),
+    Effect.map(
+      Array.map((passkey) => {
+        return {
+          rpId: passkey.credential.rpId,
+          userId: passkey.credential.userId,
+          username: passkey.credential.username,
+          displayName: options.displayName ?? passkey.credential.username,
+        }
+      })
+    ),
+    Effect.map((credentials) => ({
+      _tag: "UpdatedPasskeyUsernames",
+      credentials,
+    }))
   )
 
 /* List Passkeys */
 
 export const listPasskeysStream = (
   options: AuthenticatedOptions,
-  httpClient: Layer.Layer<HttpClient.HttpClient> = FetchHttpClient.layer
-): Stream.Stream<PasskeySummary, Forbidden> =>
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Stream.Stream<PasskeySummary, ForbiddenError> =>
   pipe(
     Stream.paginateChunkEffect(null as string | null, (cursor) =>
       pipe(
-        listPasskeys(cursor ? { ...options, cursor } : options, httpClient),
+        listPasskeys(cursor ? { ...options, cursor } : options, fetchLayer),
         Effect.map((result) => [
           Chunk.fromIterable(result.records),
           Option.fromNullable(result.cursor),
@@ -381,11 +532,10 @@ export interface ListPasskeyOptions extends AuthenticatedOptions {
 
 export const listPasskeys = (
   options: ListPasskeyOptions,
-  httpClient: Layer.Layer<HttpClient.HttpClient> = FetchHttpClient.layer
-): Effect.Effect<FindAllPasskeys, Forbidden> =>
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<FindAllPasskeys, ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const client = yield* HttpClient.HttpClient
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
       const { tenancyId } = options
 
@@ -394,15 +544,17 @@ export const listPasskeys = (
         url.searchParams.append("cursor", options.cursor)
       }
 
-      const response = yield* HttpClientRequest.get(url, {
-        headers: { Authorization: `Bearer ${options.apiKey}` },
-      }).pipe(client.execute)
-
-      const encoded = yield* HttpClientResponse.matchStatus(response, {
-        "2xx": () =>
-          HttpClientResponse.schemaBodyJson(FindAllPasskeysSchema)(response),
-        orElse: () => HttpClientResponse.schemaBodyJson(Forbidden)(response),
+      const response = yield* fetchNetwork(url, "get", undefined, {
+        headers: authorizationHeaders(options.apiKey),
       })
+
+      const encoded: FindAllPasskeys | ForbiddenError = yield* matchStatus(
+        response,
+        {
+          "2xx": (res) => decodeResponseJson(res, FindAllPasskeysSchema),
+          orElse: (res) => decodeResponseJson(res, ForbiddenError),
+        }
+      )
 
       return yield* pipe(
         Match.value(encoded),
@@ -412,9 +564,10 @@ export const listPasskeys = (
       )
     }),
     Effect.catchTags({
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
       ParseError: (err) => Effect.die(err),
-      RequestError: (err) => Effect.die(err),
-      ResponseError: (err) => Effect.die(err),
     }),
-    Effect.provide(httpClient)
+    Effect.provide(fetchLayer)
   )

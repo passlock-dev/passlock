@@ -1,6 +1,8 @@
 /**
  * https://w3c.github.io/webauthn/#user-verification
  *
+ * @see {@link https://passlock.dev/passkeys/user-verification/ User verification (main docs site)}
+ *
  * @category Passkeys (core)
  */
 export type UserVerification = "discouraged" | "preferred" | "required"

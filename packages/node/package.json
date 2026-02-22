@@ -1,6 +1,6 @@
 {
   "name": "@passlock/node",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Passkey authentication for NodeJS backends",
   "keywords": [
     "passkey",
@@ -69,8 +69,7 @@
     "prepublishOnly": "$npm_execpath run build:production"
   },
   "dependencies": {
-    "@effect/platform": "catalog:",
-    "@effect/platform-node": "catalog:",
+    "effect": "catalog:",
     "jose": "^6.1.3"
   },
   "devDependencies": {
@@ -87,10 +86,7 @@
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.4"
   },
-  "peerDependencies": {
-    "effect": "catalog:"
-  },
-  "packageManager": "pnpm@10.30.1",
+  "packageManager": "pnpm@10.30.3",
   "engines": {
     "node": ">=22"
   }

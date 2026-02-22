@@ -1,0 +1,4 @@
+# allow crawling everything by default
+User-agent: *
+# TODO change this
+Disallow: /

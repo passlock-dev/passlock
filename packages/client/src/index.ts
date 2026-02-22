@@ -3,7 +3,8 @@
  * type guards to narrow the thrown error down to a specific type.
  *
  * @categoryDescription Passkeys (core)
- * Creating, updating, authenticating and deleting passkeys.
+ * Creating, authenticating, updating and deleting passkeys. {@link registerPasskey}
+ * and {@link authenticatePasskey} are the key functions.
  *
  * @categoryDescription Passkeys (other)
  * Testing for browser capabilities related to passkeys, type guards and other utilities.
@@ -15,7 +16,6 @@
 import { Micro, pipe } from "effect"
 import { runToPromiseUnsafe } from "./internal"
 import { eventLogger, Logger } from "./logger"
-import type { PasslockOptions } from "./options"
 import type {
   AuthenticationOptions,
   AuthenticationSuccess,
@@ -33,8 +33,14 @@ import {
   registerPasskey as registerPasskeyM,
 } from "./passkey/registration/registration"
 import type {
-  CredentialMapping,
+  DeleteCredentialOptions,
+  DeletePasskeyOptions,
+  DeleteSuccess,
+  PrunePasskeyOptions,
+  PruningSuccess,
+  UpdateCredentialOptions,
   UpdatePasskeyOptions,
+  UpdateSuccess,
 } from "./passkey/signals/signals"
 import {
   deletePasskey as deletePasskeyM,
@@ -42,17 +48,17 @@ import {
   isPasskeyPruningSupport as isPasskeyPruningSupportM,
   isPasskeyUpdateSupport as isPasskeyUpdateSupportM,
   prunePasskeys as prunePasskeysM,
-  signalCredentialRemoval,
   updatePasskey as updatePasskeyM,
 } from "./passkey/signals/signals"
+import type { OrphanedPasskeyError } from "./safe"
 
 /* Registration */
 
 /**
  * Registers a passkey on the user's device, then saves the server-side component in your vault.
- * If successful, this function returns a `code` or `id_token` (JWT). The code and/or jwt should
- * be sent to your backend for verification. See
- * [register a passkey](https://passlock.dev/passkeys/registration/) in the documentation.
+ * If successful, this function returns both a `code` and an `id_token` (JWT).
+ * Send either value to your backend for verification.
+ * See [register a passkey](https://passlock.dev/passkeys/registration/) in the documentation.
  *
  * @param options
  *
@@ -65,7 +71,7 @@ import {
  *
  * @throws {@link RegistrationError} (alias to a union of potential errors)
  * @throws {@link PasskeyUnsupportedError} if the device does not support passkeys
- * @throws {@link DuplicatePasskeyError} if `allowCredentials` includes a passkey that already exists on the device
+ * @throws {@link DuplicatePasskeyError} if `excludeCredentials` includes a passkey that already exists on the device
  * @throws {@link OtherPasskeyError} typically a low level failure
  * @throws {@link NetworkError}
  *
@@ -82,7 +88,7 @@ import {
  *   if (isPasskeyUnsupportedError(error)) {
  *     alert("passkeys not supported on this device");
  *   } else {
- *     console.error(error);
+ *     console.log(error);
  *   }
  * }
  *
@@ -104,8 +110,8 @@ export const registerPasskey = async (
 
 /**
  * Asks the client to present a passkey, which is then verified against the server-side component in your vault.
- * If successful, this function returns a `code` or `id_token` (JWT). The code and/or jwt should
- * be sent to your backend for verification. See
+ * If successful, this function returns both a `code` and an `id_token` (JWT). Send either value to your backend for verification.
+ * See
  * [authenticate a passkey](https://passlock.dev/passkeys/authentication/) in the documentation.
  *
  * @param options
@@ -114,12 +120,12 @@ export const registerPasskey = async (
  *
  * @see {@link isAuthenticationSuccess}
  * @see {@link isPasskeyUnsupportedError}
- * @see {@link isPasskeyNotFoundError}
+ * @see {@link isOrphanedPasskeyError}
  * @see {@link isOtherPasskeyError}
  *
  * @throws {@link AuthenticationError} (alias to a union of potential errors)
  * @throws {@link PasskeyUnsupportedError} if the device does not support passkeys
- * @throws {@link PasskeyNotFoundError} if the passkey is orhpaned i.e. deleted from the vault but still present on the local device
+ * @throws {@link OrphanedPasskeyError} if the passkey is orphaned i.e. deleted from the vault but still present on the local device
  * @throws {@link OtherPasskeyError} typically a low level failure
  * @throws {@link NetworkError}
  *
@@ -135,7 +141,7 @@ export const registerPasskey = async (
  *   if (isPasskeyUnsupportedError(error)) {
  *     alert("passkeys not supported on this device");
  *   } else {
- *     console.error(error);
+ *     console.log(error);
  *   }
  * }
  *
@@ -166,7 +172,7 @@ export const authenticatePasskey = (
  * By calling this function and supplying a new username/display name, their local
  * password manager will align with their updated account identifier.
  *
- * @param options
+ * @param options You will typically supply a target `passkeyId` via {@link UpdatePasskeyOptions}. {@link UpdateCredentialOptions} is for advanced use cases.
  * @returns Update status
  * @see {@link isUpdateError}
  * @throws {@link UpdateError} if the passkey cannot be updated
@@ -182,16 +188,16 @@ export const authenticatePasskey = (
  *   const result = await updatePasskey({ tenancyId, passkeyId, username, displayName });
  *   console.log("passkey updated");
  * } catch (error) {
- *   console.error(error);
+ *   console.log(error);
  * }
  *
  * @category Passkeys (core)
  */
 export const updatePasskey = (
-  options: UpdatePasskeyOptions,
+  options: UpdatePasskeyOptions | UpdateCredentialOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<boolean> => {
+): Promise<UpdateSuccess> => {
   const micro = updatePasskeyM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromiseUnsafe)
 }
@@ -199,7 +205,7 @@ export const updatePasskey = (
 /**
  * Attempts to delete a passkey from a local device. There are two scenarios in which this function proves useful:
  *
- * 1. **Deleting a passkey**. Use the `@passlock/node` package or make  vanilla REST calls from your
+ * 1. **Deleting a passkey**. Use the `@passlock/node` package or make vanilla REST calls from your
  * backend to delete the server-side component, then use this function to delete the client-side component.
  *
  * 2. **Missing passkey**. The user tried to present a passkey, but the server-side component could not be found.
@@ -208,9 +214,8 @@ export const updatePasskey = (
  * See [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/) and
  * [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/) in the documentation.
  *
- * @param identifiers Passkey identifier or credential mapping.
- * @param options Passlock tenancy and endpoint options.
- * @returns Delete status
+ * @param options You typically pass a {@link DeletePasskeyOptions}, the other types are for advanced edge-cases.
+ * @returns A {@link DeleteSuccess} payload if the passkey is deleted.
  * @see {@link isDeleteError}
  * @throws {@link DeleteError} if the passkey cannot be deleted
  *
@@ -220,25 +225,23 @@ export const updatePasskey = (
  * const passkeyId = "myPasskeyId";
  *
  * try {
- *   const result = await deletePasskey(passkeyId, { tenancyId });
+ *   const result = await deletePasskey({ tenancyId, passkeyId });
  *   console.log("passkey deleted");
  * } catch (error) {
- *   console.error(error);
+ *   console.log(error);
  * }
  *
  * @category Passkeys (core)
  */
 export const deletePasskey = (
-  identifiers: string | CredentialMapping,
-  options: PasslockOptions,
+  options:
+    | DeletePasskeyOptions
+    | DeleteCredentialOptions
+    | OrphanedPasskeyError,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<boolean> => {
-  const micro =
-    typeof identifiers === "string"
-      ? deletePasskeyM(identifiers, options)
-      : signalCredentialRemoval(identifiers)
-
+): Promise<DeleteSuccess> => {
+  const micro = deletePasskeyM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromiseUnsafe)
 }
 
@@ -248,9 +251,8 @@ export const deletePasskey = (
  * This is useful when your backend is the source of truth for which passkeys
  * should still exist for a given account on this device.
  *
- * @param passkeyIds IDs to keep on-device.
- * @param options Passlock tenancy and endpoint options.
- * @returns `true` if local passkeys were pruned.
+ * @param options Pass the passkeys you want to retain.
+ * @returns A {@link PruningSuccess} payload if local passkeys were pruned.
  * @see {@link isPruningError}
  *
  * @throws {@link PruningError}
@@ -258,28 +260,27 @@ export const deletePasskey = (
  * @example
  * // from your Passlock console settings
  * const tenancyId = "myTenancyId";
- * const activePasskeyIds = ["passkey-1", "passkey-2"];
+ * const allowablePasskeyIds = ["passkey-1", "passkey-2"];
  *
  * try {
- *   const result = await prunePasskeys(activePasskeyIds, { tenancyId });
+ *   const result = await prunePasskeys({ tenancyId, allowablePasskeyIds });
  *   console.log("local passkeys pruned", result);
  * } catch (error) {
  *   if (isPruningError(error)) {
- *     console.error(error.code);
+ *     console.log(error.code);
  *   } else {
- *     console.error(error);
+ *     console.log(error);
  *   }
  * }
  *
  * @category Passkeys (core)
  */
 export const prunePasskeys = (
-  passkeyIds: Array<string>,
-  options: PasslockOptions,
+  options: PrunePasskeyOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<boolean> => {
-  const micro = prunePasskeysM(passkeyIds, options)
+): Promise<PruningSuccess> => {
+  const micro = prunePasskeysM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromiseUnsafe)
 }
 
@@ -317,8 +318,7 @@ export const isPasskeyUpdateSupport = () =>
 
 /* Re-exports */
 
-export type { NetworkError } from "./internal/network"
-export { isNetworkError } from "./internal/network"
+export { isNetworkError, NetworkError } from "./internal/network"
 export {
   LogEvent,
   Logger,
@@ -328,6 +328,7 @@ export type { PasslockOptions } from "./options"
 export type {
   AuthenticationError,
   AuthenticationEvent,
+  AuthenticationEvents,
   AuthenticationOptions,
   AuthenticationSuccess,
   OnAuthenticationEvent,
@@ -342,13 +343,13 @@ export {
   DuplicatePasskeyError,
   isDeleteError,
   isDuplicatePasskeyError,
+  isOrphanedPasskeyError,
   isOtherPasskeyError,
-  isPasskeyNotFoundError,
   isPasskeyUnsupportedError,
   isPruningError,
   isUpdateError,
+  OrphanedPasskeyError,
   OtherPasskeyError,
-  PasskeyNotFoundError,
   PasskeyUnsupportedError,
   PruningError,
   UpdateError,
@@ -367,7 +368,19 @@ export {
 export type { UserVerification } from "./passkey/shared"
 export type {
   CredentialMapping,
+  DeleteCredentialOptions,
+  DeletePasskeyOptions,
+  DeleteSuccess,
+  PrunePasskeyOptions,
+  PruningSuccess,
+  UpdateCredentialOptions,
   UpdatePasskeyOptions,
+  UpdateSuccess,
+} from "./passkey/signals/signals"
+export {
+  isDeleteSuccess,
+  isPruningSuccess,
+  isUpdateSuccess,
 } from "./passkey/signals/signals"
 export {
   isAutofillSupport,

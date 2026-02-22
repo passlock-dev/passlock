@@ -19,15 +19,13 @@ export const isPasskeyUnsupportedError = (
  * @category Passkeys (errors)
  */
 export class PasskeyUnsupportedError extends Error {
-  readonly _tag = "PasskeyUnsupported" as const
+  readonly _tag = "@error/PasskeyUnsupported" as const
   readonly message: string
 
   constructor({ message }: { message: string }) {
     super()
     this.message = message
   }
-
-  static isPasskeyUnsupportedError = isPasskeyUnsupportedError
 }
 
 /**
@@ -39,12 +37,12 @@ export class PasskeyUnsupportedError extends Error {
  *
  * @category Passkeys (errors)
  */
-export const isPasskeyNotFoundError = (
+export const isOrphanedPasskeyError = (
   payload: unknown
-): payload is PasskeyNotFoundError => {
+): payload is OrphanedPasskeyError => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
-  return payload instanceof PasskeyNotFoundError
+  return payload instanceof OrphanedPasskeyError
 }
 
 /**
@@ -56,8 +54,8 @@ export const isPasskeyNotFoundError = (
  *
  * @category Passkeys (errors)
  */
-export class PasskeyNotFoundError extends Error {
-  readonly _tag = "PasskeyNotFoundError" as const
+export class OrphanedPasskeyError extends Error {
+  readonly _tag = "@error/OrphanedPasskey" as const
   readonly message: string
   readonly credentialId: string
   readonly rpId: string
@@ -72,8 +70,6 @@ export class PasskeyNotFoundError extends Error {
     this.credentialId = credentialId
     this.rpId = rpId
   }
-
-  static isPasskeyNotFoundError = isPasskeyNotFoundError
 }
 
 export type ErrorCode =
@@ -111,7 +107,7 @@ export const isOtherPasskeyError = (
  * @category Passkeys (errors)
  */
 export class OtherPasskeyError extends Error {
-  readonly _tag = "OtherPasskey" as const
+  readonly _tag = "@error/OtherPasskey" as const
   readonly error: unknown
   readonly message: string
   readonly code?: ErrorCode
@@ -129,8 +125,6 @@ export class OtherPasskeyError extends Error {
     if (code) this.code = code
     if (cause) this.cause = cause
   }
-
-  static isOtherPasskeyError = isOtherPasskeyError
 }
 
 /**
@@ -156,14 +150,12 @@ export const isDuplicatePasskeyError = (
  * @category Passkeys (errors)
  */
 export class DuplicatePasskeyError extends Error {
-  readonly _tag = "DuplicatePasskeyError" as const
+  readonly _tag = "@error/DuplicatePasskey" as const
   readonly message: string
   constructor({ message }: { message: string }) {
     super()
     this.message = message
   }
-
-  static isDuplicatePasskeyError = isDuplicatePasskeyError
 }
 
 /**
@@ -183,7 +175,7 @@ export const isDeleteError = (payload: unknown): payload is DeleteError => {
  * @category Passkeys (errors)
  */
 export class DeleteError extends Error {
-  readonly _tag = "DeleteError" as const
+  readonly _tag = "@error/Delete" as const
   readonly message: string
   readonly code:
     | "PASSKEY_DELETION_UNSUPPORTED"
@@ -201,8 +193,6 @@ export class DeleteError extends Error {
     this.message = message
     this.code = code
   }
-
-  static isDeleteError = isDeleteError
 }
 
 /* Pruning error */
@@ -224,7 +214,7 @@ export const isPruningError = (payload: unknown): payload is PruningError => {
  * @category Passkeys (errors)
  */
 export class PruningError extends Error {
-  readonly _tag = "PruningError" as const
+  readonly _tag = "@error/Pruning" as const
   readonly message: string
   readonly code: "PASSKEY_PRUNING_UNSUPPORTED" | "OTHER_ERROR"
 
@@ -236,8 +226,6 @@ export class PruningError extends Error {
     this.message = message
     this.code = code
   }
-
-  static isPruningError = isPruningError
 }
 
 /**
@@ -257,7 +245,7 @@ export const isUpdateError = (payload: unknown): payload is UpdateError => {
  * @category Passkeys (errors)
  */
 export class UpdateError extends Error {
-  readonly _tag = "UpdateError" as const
+  readonly _tag = "@error/Update" as const
   readonly message: string
   readonly code: "PASSKEY_UPDATE_UNSUPPORTED" | "OTHER_ERROR"
 
@@ -269,6 +257,4 @@ export class UpdateError extends Error {
     this.message = message
     this.code = code
   }
-
-  static isUpdateError = isUpdateError
 }

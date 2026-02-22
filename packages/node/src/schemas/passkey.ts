@@ -9,7 +9,7 @@ import { Schema } from "effect"
 
 /* Registration Options */
 
-export const UserVerificationSchema = Schema.Literal(
+export const UserVerification = Schema.Literal(
   "required",
   "preferred",
   "discouraged"
@@ -33,7 +33,7 @@ export type Transports = (typeof Transports)[number]
 
 /* Passkey */
 
-export const PasskeySchema = Schema.TaggedStruct("Passkey", {
+export const Passkey = Schema.TaggedStruct("Passkey", {
   id: Schema.String,
   userId: Schema.optional(Schema.String),
   enabled: Schema.Boolean,
@@ -47,6 +47,7 @@ export const PasskeySchema = Schema.TaggedStruct("Passkey", {
     deviceType: Schema.Literal(...CredentialDeviceType),
     transports: Schema.Array(Schema.Literal(...Transports)),
     publicKey: Schema.Uint8ArrayFromBase64Url,
+    rpId: Schema.String,
   }),
   platform: Schema.optional(
     Schema.Struct({
@@ -59,9 +60,11 @@ export const PasskeySchema = Schema.TaggedStruct("Passkey", {
   updatedAt: Schema.Number,
 })
 
-export type PasskeyEncoded = typeof PasskeySchema.Encoded
+export type Passkey = typeof Passkey.Type
 
-export const PasskeySummarySchema = Schema.TaggedStruct("PasskeySummary", {
+export type PasskeyEncoded = typeof Passkey.Encoded
+
+export const PasskeySummary = Schema.TaggedStruct("PasskeySummary", {
   id: Schema.String,
   userId: Schema.String,
   credential: Schema.Struct({
@@ -73,13 +76,13 @@ export const PasskeySummarySchema = Schema.TaggedStruct("PasskeySummary", {
   lastUsed: Schema.optional(Schema.Number),
 })
 
-export const FindAllPasskeysSchema = Schema.TaggedStruct("FindAllPasskeys", {
+export type PasskeySummary = typeof PasskeySummary.Type
+
+export const FindAllPasskeys = Schema.TaggedStruct("FindAllPasskeys", {
   cursor: Schema.NullOr(Schema.String),
-  records: Schema.Array(PasskeySummarySchema),
+  records: Schema.Array(PasskeySummary),
 })
 
-export const DeletedPasskeySchema = Schema.TaggedStruct("DeletedPasskey", {
-  id: Schema.String,
-  credentialId: Schema.String,
-  rpId: Schema.String,
+export const UpdatedPasskeys = Schema.TaggedStruct("UpdatedPasskeys", {
+  updated: Schema.Array(Passkey),
 })

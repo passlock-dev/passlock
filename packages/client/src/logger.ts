@@ -20,22 +20,22 @@ export class Logger extends Context.Tag("ClientLogger")<
 export const consoleLogger: typeof Logger.Service = {
   logDebug: (message: string | object, ...optionalArgs: Array<unknown>) =>
     Micro.sync(() => {
-      console.debug(message, optionalArgs)
+      console.log(message, optionalArgs)
     }),
 
   logError: (message: string | object, ...optionalArgs: Array<unknown>) =>
     Micro.sync(() => {
-      console.error(message, optionalArgs)
+      console.log(message, optionalArgs)
     }),
 
   logInfo: (message: string | object, ...optionalArgs: Array<unknown>) =>
     Micro.sync(() => {
-      console.info(message, optionalArgs)
+      console.log(message, optionalArgs)
     }),
 
   logWarn: (message: string | object, ...optionalArgs: Array<unknown>) =>
     Micro.sync(() => {
-      console.warn(message, optionalArgs)
+      console.log(message, optionalArgs)
     }),
 }
 

@@ -20,9 +20,13 @@ Developers using the `@passlock/node` library will most likely not be using the 
 
 We also offer type guards to enable developers to narrow something of type `A | E` down to an `A` or `E`. 
 
+The entry point into the safe functions is `src/safe.ts`.
+
 ### "Unsafe" functions
 
 For developers who prefer the traditional try/catch style of coding, we offer "unsafe" variants of the functions. These are also exposed in the module's `index.ts` file e.g. `exchangeCodeUnsafe` in `src/principal/index.ts`, returns a `Promise<A>` but potentially throws something of type `E`.
+
+The entry point into the unsafe functions is `src/index.ts`.
 
 ## Build and test commands
 
@@ -48,7 +52,7 @@ We largely rely on pnpm scripts for build and test:
 
 ## Important
 
-After making code changes run `pnpm run build` or `pnpm run typecheck` to make sure TSC is happy.
+After making code changes run `pnpm run typecheck` to ensure TypeScript is happy. `pnpm run test:all` should also be run after significant code changes.
 
 [effect]: https://effect.website
 [platform]: https://effect.website/docs/platform/introduction/

@@ -7,7 +7,7 @@ import { Context, Micro, pipe } from "effect"
 import { afterAll, describe, expect, it, vi } from "vitest"
 import { Endpoint, TenancyId } from "../../internal"
 import { Logger } from "../../logger"
-import { PasskeyNotFoundError, PasskeyUnsupportedError } from "../errors"
+import { OrphanedPasskeyError, PasskeyUnsupportedError } from "../errors"
 import {
   AuthenticationHelper,
   authenticatePasskey,
@@ -212,7 +212,7 @@ describe(verifyCredential.name, () => {
         Micro.runPromise
       )
 
-      expect(error).toBeInstanceOf(PasskeyNotFoundError)
+      expect(error).toBeInstanceOf(OrphanedPasskeyError)
     })
   })
 })

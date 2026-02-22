@@ -9,17 +9,17 @@
  * @module unsafe
  */
 
-import { FetchHttpClient } from "@effect/platform"
 import { Effect, pipe } from "effect"
 import type {
   AssignUserOptions,
-  DeletedPasskey,
   DeletePasskeyOptions,
   FindAllPasskeys,
   GetPasskeyOptions,
   ListPasskeyOptions,
   Passkey,
+  UpdatedPasskeyUsernames,
   UpdatePasskeyOptions,
+  UpdatePasskeyUsernamesOptions,
 } from "./passkey/passkey.js"
 import {
   assignUser as assignUserE,
@@ -27,6 +27,7 @@ import {
   getPasskey as getPasskeyE,
   listPasskeys as listPasskeysE,
   updatePasskey as updatePasskeyE,
+  updatePasskeyUsernames as updatePasskeyUsernamesE,
 } from "./passkey/passkey.js"
 import type {
   ExchangeCodeOptions,
@@ -43,8 +44,8 @@ import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
  *
  * @param request
  * @returns A promise resolving to the updated passkey.
- * @throws {@link NotFound} if passkey does not exist
- * @throws {@link Forbidden} if the Tenancy ID or API key is invalid
+ * @throws {@link NotFoundError} if passkey does not exist
+ * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
  *
  * @category Passkeys
  */
@@ -56,6 +57,8 @@ export const assignUser = (request: AssignUserOptions): Promise<Passkey> =>
  *
  * @param request
  * @returns A promise resolving to the updated passkey.
+ * @throws {@link NotFoundError} if passkey does not exist
+ * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
  *
  * @category Passkeys
  */
@@ -64,21 +67,43 @@ export const updatePasskey = (
 ): Promise<Passkey> => pipe(updatePasskeyE(request), Effect.runPromise)
 
 /**
+ * Call the Passlock backend API to update all passkeys for a given user
+ *
+ * @param request
+ * @returns A promise resolving to updated usernames for matching passkeys.
+ * @throws {@link NotFoundError} if no passkeys are found for the given user
+ * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
+ *
+ * @category Passkeys
+ */
+export const updatePasskeyUsernames = (
+  request: UpdatePasskeyUsernamesOptions
+): Promise<UpdatedPasskeyUsernames> =>
+  pipe(updatePasskeyUsernamesE(request), Effect.runPromise)
+
+/**
  * Call the Passlock backend API to delete an authenticator
  *
  * @param options
- * @returns A promise resolving to the deleted passkey payload.
+ * @returns A promise resolving to the deleted passkey.
+ * @throws {@link NotFoundError} if passkey does not exist
+ * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
  *
  * @category Passkeys
  */
 export const deletePasskey = (
   options: DeletePasskeyOptions
-): Promise<DeletedPasskey> => pipe(deletePasskeyE(options), Effect.runPromise)
+): Promise<Passkey> => pipe(deletePasskeyE(options), Effect.runPromise)
 
 /**
  * Call the Passlock backend API to fetch an authenticator
+ *
  * @param options
  * @returns A promise resolving to the passkey.
+ * @throws {@link NotFoundError} if passkey does not exist
+ * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
+ *
+ * @category Passkeys
  */
 export const getPasskey = (options: GetPasskeyOptions): Promise<Passkey> =>
   pipe(getPasskeyE(options), Effect.runPromise)
@@ -89,6 +114,7 @@ export const getPasskey = (options: GetPasskeyOptions): Promise<Passkey> =>
  *
  * @param options
  * @returns A promise resolving to a page of passkey summaries.
+ * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
  *
  * @category Passkeys
  */
@@ -97,73 +123,66 @@ export const listPasskeys = (
 ): Promise<FindAllPasskeys> => pipe(listPasskeysE(options), Effect.runPromise)
 
 /**
- * Call the Passlock backend API to exchange a code for a Principal
+ * Call the Passlock backend API to exchange a code for an ExtendedPrincipal
  *
  * @param options
  * @returns A promise resolving to an extended principal.
+ * @throws {@link InvalidCodeError} if the code is invalid or expired
+ * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
  *
  * @category Principal
  */
 export const exchangeCode = (
   options: ExchangeCodeOptions
-): Promise<ExtendedPrincipal> =>
-  pipe(
-    exchangeCodeE(options),
-    Effect.provide(FetchHttpClient.layer),
-    Effect.runPromise
-  )
+): Promise<ExtendedPrincipal> => pipe(exchangeCodeE(options), Effect.runPromise)
 
 /**
- * Decode and verify a Passlock idToken.
- * Note: This will make a network call to the passlock.dev/.well-known/jwks.json
- * endpoint to fetch the relevant public key. The response will be cached, however
- * bear in mind that for something like AWS lambda it will make the call on every
+ * Decode and verify a Passlock `id_token` (JWT).
+ * Note: This will make a network call to
+ * `https://api.passlock.dev/.well-known/jwks.json` (or your configured `endpoint`)
+ * to fetch the relevant public key. The response will be cached, however
+ * bear in mind that for something like AWS Lambda it will make the call on every
  * cold start so might actually be slower than {@link exchangeCode}
  *
  * @param options
  * @returns A promise resolving to the verified principal.
+ * @throws {@link VerificationError} if token verification fails
  *
  * @category Principal
  */
 export const verifyIdToken = (
   options: VerifyIdTokenOptions
-): Promise<Principal> =>
-  pipe(
-    verifyIdTokenE(options),
-    Effect.provide(FetchHttpClient.layer),
-    Effect.runPromise
-  )
+): Promise<Principal> => pipe(verifyIdTokenE(options), Effect.runPromise)
 
 /* Re-exports */
 
 export type {
-  BadRequest,
-  DuplicateEmail,
-  Forbidden,
-  InvalidCode,
-  InvalidEmail,
-  InvalidTenancy,
-  NotFound,
-  PasskeyNotFound,
-  Unauthorized,
-  VerificationFailure,
+  BadRequestError,
+  DuplicateEmailError,
+  ForbiddenError,
+  InvalidCodeError,
+  InvalidEmailError,
+  InvalidTenancyError,
+  NotFoundError,
+  PasskeyNotFoundError,
+  UnauthorizedError,
+  VerificationError,
 } from "./errors.js"
 export {
-  isBadRequest,
-  isDuplicateEmail,
-  isForbidden,
-  isInvalidCode,
-  isInvalidEmail,
-  isInvalidTenancy,
-  isNotFound,
-  isPasskeyNotFound,
-  isUnauthorized,
-  isVerificationFailure,
+  isBadRequestError,
+  isDuplicateEmailError,
+  isForbiddenError,
+  isInvalidCodeError,
+  isInvalidEmailError,
+  isInvalidTenancyError,
+  isNotFoundError,
+  isPasskeyNotFoundError,
+  isUnauthorizedError,
+  isVerificationError,
 } from "./errors.js"
 export type {
   AssignUserOptions,
   Credential,
-  DeletedPasskey,
   DeletePasskeyOptions,
   FindAllPasskeys,
   GetPasskeyOptions,
@@ -171,12 +190,16 @@ export type {
   Passkey,
   PasskeySummary,
   Platform,
+  UpdatedPasskeys,
+  UpdatedPasskeyUsernames,
   UpdatePasskeyOptions,
+  UpdatePasskeyUsernamesOptions,
 } from "./passkey/passkey.js"
 export {
-  isDeletedPasskey,
   isPasskey,
   isPasskeySummary,
+  isUpdatedPasskeys,
+  isUpdatedPasskeyUsernames,
 } from "./passkey/passkey.js"
 export type {
   ExchangeCodeOptions,

@@ -1,14 +1,22 @@
 ## Overview
 
-The `@passlock/client` library is the primary library for interacting with Passlock in frontend code. It includes functions for registering and authenticating passkeys on a device. This client library typically generates codes and id tokens, which are sent to the backend to be verified using the [@passlock/node](../node/) library.
+The `@passlock/client` library is the primary library for interacting with Passlock in frontend code. It includes functions for registering, authenticating and managing passkeys on a device.
+
+## Relationship to the @passlock/node project
+
+During passkey registration and authentication this library generates a code and id_token, which is then sent to the backend for verification using the `@passlock/node` library (or via vanilla REST calls).
 
 ## Project structure
 
-* `src/logger` - a microservice definition (Context.Tag) that provides a logging capability, along with two implementations. The ConsoleLogger logs to the browser console, whereas the EventLogger fires DOM events for each log entry.
+* `src/logger.ts` - a microservice definition (Context.Tag) that provides a logging capability, along with two implementations. The `ConsoleLogger` logs to the browser console, whereas the `EventLogger` fires DOM events for each log entry.
 
 * `src/passkey` - Registering, authenticating and managing passkeys on a device.
 
-* `src/shared` - Utility functions and types
+* `src/internal` - Internal modules intended for private use.
+
+## Tests
+
+Most tests sit alongside the module they test e.g. src/passkey/registration.test.ts is a sibling to src/passkey/registration.ts. Test data and utilities common to multiple tests reside in the test/ directory.
 
 ## Preferred frameworks
 
@@ -20,9 +28,13 @@ Developers using the `@passlock/client` library will most likely not be using th
 
 We also offer type guards to enable developers to narrow something of type `A | E` down to an `A` or `E`. 
 
+The entry point to the safe functions is `src/safe.ts`, this is exported via the package.json `exports` field.
+
 ### "Unsafe" functions
 
 For developers who prefer the traditional try/catch style of coding, we offer "unsafe" variants of the functions. These are also exposed in the module's `index.ts` file e.g. `registerPasskeyUnsafe` in  `src/passkey/registration/index.ts`, returns a `Promise<A>` but potentially throws something of type `E`.
+
+The entry point for the unsafe functions is `src/index.ts`.
 
 ## Build and test commands
 
@@ -48,7 +60,7 @@ We largely rely on pnpm scripts for build and test:
 
 ## Important
 
-After making code changes run `pnpm run build` or `pnpm run typecheck` to make sure TSC is happy.
+After making code changes run `pnpm run typecheck` to ensure TypeScript is happy. `pnpm run test:all` should also be run after significant code changes.
 
 [effect]: https://effect.website
 [micro]: https://effect.website/docs/micro/new-users/

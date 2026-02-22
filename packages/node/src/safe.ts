@@ -1,7 +1,8 @@
 /**
- * Safe functions that don't throw but instead
- * return a discriminated union of types representing
- * the successful outcome or failures.
+ * Safe functions that return discriminated unions representing
+ * the successful outcome or expected failures.
+ *
+ * Note: unexpected runtime failures may still throw.
  *
  * @categoryDescription Passkeys
  * Functions and related types for managing passkeys
@@ -11,23 +12,23 @@
  * @module safe
  */
 
-import { FetchHttpClient } from "@effect/platform"
 import { Effect, identity, pipe } from "effect"
 import type {
-  Forbidden,
-  InvalidCode,
-  NotFound,
-  VerificationFailure,
+  ForbiddenError,
+  InvalidCodeError,
+  NotFoundError,
+  VerificationError,
 } from "./errors.js"
 import type {
   AssignUserOptions,
-  DeletedPasskey,
   DeletePasskeyOptions,
   FindAllPasskeys,
   GetPasskeyOptions,
   ListPasskeyOptions,
   Passkey,
+  UpdatedPasskeyUsernames,
   UpdatePasskeyOptions,
+  UpdatePasskeyUsernamesOptions,
 } from "./passkey/passkey.js"
 import {
   assignUser as assignUserE,
@@ -35,6 +36,7 @@ import {
   getPasskey as getPasskeyE,
   listPasskeys as listPasskeysE,
   updatePasskey as updatePasskeyE,
+  updatePasskeyUsernames as updatePasskeyUsernamesE,
 } from "./passkey/passkey.js"
 import type {
   ExchangeCodeOptions,
@@ -50,7 +52,7 @@ import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
  * Assign a custom User ID to a passkey. Will be reflected in the next
  * {@link Principal} or {@link ExtendedPrincipal} generated.
  *
- * **Note:** This does not change the underlying WebAuthn credential's userID.
+ * **Note:** This does not change the underlying WebAuthn credential's `userId`.
  * Instead we apply a layer of indirection.
  *
  * @see {@link Principal}
@@ -64,7 +66,7 @@ import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
  */
 export const assignUser = (
   request: AssignUserOptions
-): Promise<Passkey | NotFound | Forbidden> =>
+): Promise<Passkey | NotFoundError | ForbiddenError> =>
   pipe(
     assignUserE(request),
     Effect.match({ onFailure: identity, onSuccess: identity }),
@@ -89,9 +91,33 @@ export const assignUser = (
  */
 export const updatePasskey = (
   request: UpdatePasskeyOptions
-): Promise<Passkey | NotFound | Forbidden> =>
+): Promise<Passkey | NotFoundError | ForbiddenError> =>
   pipe(
     updatePasskeyE(request),
+    Effect.match({ onFailure: identity, onSuccess: identity }),
+    Effect.runPromise
+  )
+
+/**
+ * Update the username for all passkeys belonging to a given user.
+ *
+ * **Important:** changing the username has no bearing on authentication, as
+ * it's typically only used in the client-side component of the passkey
+ * (so the user knows which account the passkey relates to).
+ *
+ * However you might choose to align the username in your vault with the
+ * client-side component to simplify end user support.
+ *
+ * @param request
+ * @returns A promise resolving to either updated passkey usernames or an API error.
+ *
+ * @category Passkeys
+ */
+export const updatePasskeyUsernames = (
+  request: UpdatePasskeyUsernamesOptions
+): Promise<UpdatedPasskeyUsernames | NotFoundError | ForbiddenError> =>
+  pipe(
+    updatePasskeyUsernamesE(request),
     Effect.match({ onFailure: identity, onSuccess: identity }),
     Effect.runPromise
   )
@@ -116,13 +142,13 @@ export const updatePasskey = (
  * @see [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/)
  *
  * @param options
- * @returns A promise resolving to either deleted-passkey details or an API error.
+ * @returns A promise resolving to either the deleted passkey or an API error.
  *
  * @category Passkeys
  */
 export const deletePasskey = (
   options: DeletePasskeyOptions
-): Promise<DeletedPasskey | Forbidden | NotFound> =>
+): Promise<Passkey | ForbiddenError | NotFoundError> =>
   pipe(
     deletePasskeyE(options),
     Effect.match({ onFailure: identity, onSuccess: identity }),
@@ -142,7 +168,7 @@ export const deletePasskey = (
  */
 export const getPasskey = (
   options: GetPasskeyOptions
-): Promise<Passkey | Forbidden | NotFound> =>
+): Promise<Passkey | ForbiddenError | NotFoundError> =>
   pipe(
     getPasskeyE(options),
     Effect.match({ onFailure: identity, onSuccess: identity }),
@@ -160,7 +186,7 @@ export const getPasskey = (
  */
 export const listPasskeys = (
   options: ListPasskeyOptions
-): Promise<FindAllPasskeys | Forbidden> =>
+): Promise<FindAllPasskeys | ForbiddenError> =>
   pipe(
     listPasskeysE(options),
     Effect.match({ onFailure: identity, onSuccess: identity }),
@@ -182,19 +208,19 @@ export const listPasskeys = (
  */
 export const exchangeCode = (
   options: ExchangeCodeOptions
-): Promise<ExtendedPrincipal | Forbidden | InvalidCode> =>
+): Promise<ExtendedPrincipal | ForbiddenError | InvalidCodeError> =>
   pipe(
     exchangeCodeE(options),
     Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.provide(FetchHttpClient.layer),
     Effect.runPromise
   )
 
 /**
  * Decode and verify an id_token (JWT) locally.
- * **Note:** This will make a network call to the passlock.dev/.well-known/jwks.json
- * endpoint to fetch the relevant public key. The response will be cached, however
- * bear in mind that for something like AWS lambda it will make the call on every
+ * **Note:** This will make a network call to
+ * `https://api.passlock.dev/.well-known/jwks.json` (or your configured `endpoint`)
+ * to fetch the relevant public key. The response will be cached, however
+ * bear in mind that for something like AWS Lambda it will make the call on every
  * cold start so might actually be slower than {@link exchangeCode}
  *
  * @see {@link Principal}
@@ -206,7 +232,7 @@ export const exchangeCode = (
  */
 export const verifyIdToken = (
   options: VerifyIdTokenOptions
-): Promise<Principal | VerificationFailure> =>
+): Promise<Principal | VerificationError> =>
   pipe(
     verifyIdTokenE(options),
     Effect.match({ onFailure: identity, onSuccess: identity }),
@@ -216,33 +242,32 @@ export const verifyIdToken = (
 /* Re-exports */
 
 export type {
-  BadRequest,
-  DuplicateEmail,
-  Forbidden,
-  InvalidCode,
-  InvalidEmail,
-  InvalidTenancy,
-  NotFound,
-  PasskeyNotFound,
-  Unauthorized,
-  VerificationFailure,
+  BadRequestError,
+  DuplicateEmailError,
+  ForbiddenError,
+  InvalidCodeError,
+  InvalidEmailError,
+  InvalidTenancyError,
+  NotFoundError,
+  PasskeyNotFoundError,
+  UnauthorizedError,
+  VerificationError,
 } from "./errors.js"
 export {
-  isBadRequest,
-  isDuplicateEmail,
-  isForbidden,
-  isInvalidCode,
-  isInvalidEmail,
-  isInvalidTenancy,
-  isNotFound,
-  isPasskeyNotFound,
-  isUnauthorized,
-  isVerificationFailure,
+  isBadRequestError,
+  isDuplicateEmailError,
+  isForbiddenError,
+  isInvalidCodeError,
+  isInvalidEmailError,
+  isInvalidTenancyError,
+  isNotFoundError,
+  isPasskeyNotFoundError,
+  isUnauthorizedError,
+  isVerificationError,
 } from "./errors.js"
 export type {
   AssignUserOptions,
   Credential,
-  DeletedPasskey,
   DeletePasskeyOptions,
   FindAllPasskeys,
   GetPasskeyOptions,
@@ -250,12 +275,16 @@ export type {
   Passkey,
   PasskeySummary,
   Platform,
+  UpdatedPasskeys,
+  UpdatedPasskeyUsernames,
   UpdatePasskeyOptions,
+  UpdatePasskeyUsernamesOptions,
 } from "./passkey/passkey.js"
 export {
-  isDeletedPasskey,
   isPasskey,
   isPasskeySummary,
+  isUpdatedPasskeys,
+  isUpdatedPasskeyUsernames,
 } from "./passkey/passkey.js"
 export type {
   ExchangeCodeOptions,

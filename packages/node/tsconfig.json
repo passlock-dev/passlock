@@ -30,7 +30,7 @@
       "@test/*": ["test/*"]
     }
   },
-  "exclude": ["dist"],
+  "exclude": ["node_modules", "dist"],
   "plugins": [
     {
       "name": "@effect/language-service"

@@ -1,14 +1,16 @@
-import {
-  FetchHttpClient,
-  HttpClient,
-  HttpClientResponse,
-} from "@effect/platform"
-
 import { Data, Effect, type Layer, Match, pipe, Schema } from "effect"
 
 import * as jose from "jose"
-import { Forbidden, InvalidCode } from "../schemas/errors.js"
-
+import {
+  fetchNetwork,
+  matchStatus,
+  type NetworkFetch,
+  NetworkFetchLive,
+  type NetworkPayloadError,
+  type NetworkRequestError,
+  type NetworkResponseError,
+} from "../network.js"
+import { ForbiddenError, InvalidCodeError } from "../schemas/errors.js"
 import {
   type ExtendedPrincipal,
   ExtendedPrincipalSchema,
@@ -24,30 +26,38 @@ export interface ExchangeCodeOptions extends AuthenticatedOptions {
 
 export const exchangeCode = (
   options: ExchangeCodeOptions,
-  httpClient: Layer.Layer<HttpClient.HttpClient> = FetchHttpClient.layer
-): Effect.Effect<ExtendedPrincipal, InvalidCode | Forbidden> =>
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<ExtendedPrincipal, InvalidCodeError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const client = yield* HttpClient.HttpClient
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
       const { tenancyId, code } = options
 
       const url = new URL(`/${tenancyId}/principal/${code}`, baseUrl)
 
-      const response = yield* pipe(
-        client.get(url, {
-          headers: { Authorization: `Bearer ${options.apiKey}` },
-        })
-      )
-
-      const encoded = yield* HttpClientResponse.matchStatus(response, {
-        "2xx": () =>
-          HttpClientResponse.schemaBodyJson(ExtendedPrincipalSchema)(response),
-        orElse: () =>
-          HttpClientResponse.schemaBodyJson(
-            Schema.Union(InvalidCode, Forbidden)
-          )(response),
+      const response = yield* fetchNetwork(url, "get", undefined, {
+        headers: {
+          authorization: `Bearer ${options.apiKey}`,
+        },
       })
+
+      const encoded: ExtendedPrincipal | InvalidCodeError | ForbiddenError =
+        yield* matchStatus(response, {
+          "2xx": ({ json }) =>
+            pipe(
+              json,
+              Effect.flatMap(Schema.decodeUnknown(ExtendedPrincipalSchema))
+            ),
+          orElse: ({ json }) =>
+            pipe(
+              json,
+              Effect.flatMap(
+                Schema.decodeUnknown(
+                  Schema.Union(InvalidCodeError, ForbiddenError)
+                )
+              )
+            ),
+        })
 
       return yield* pipe(
         Match.value(encoded),
@@ -60,28 +70,15 @@ export const exchangeCode = (
       )
     }),
     Effect.catchTags({
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
       ParseError: (err) => Effect.die(err),
-      RequestError: (err) => Effect.die(err),
-      ResponseError: (err) => Effect.die(err),
     }),
-    Effect.provide(httpClient)
+    Effect.provide(fetchLayer)
   )
 
-const createJwks = (endpoint?: string) =>
-  Effect.sync(() => {
-    const baseUrl = endpoint ?? "https://api.passlock.dev"
-
-    return jose.createRemoteJWKSet(new URL("/.well-known/jwks.json", baseUrl))
-  })
-
-const createCachedRemoteJwks = pipe(
-  Effect.cachedFunction(createJwks),
-  Effect.runSync
-)
-
-export class VerificationFailure extends Data.TaggedError(
-  "@error/VerificationFailure"
-)<{
+export class VerificationError extends Data.TaggedError("@error/Verification")<{
   message: string
 }> {}
 
@@ -91,17 +88,16 @@ export interface VerifyIdTokenOptions extends PasslockOptions {
 
 export const verifyIdToken = (
   options: VerifyIdTokenOptions
-): Effect.Effect<Principal, VerificationFailure> =>
+): Effect.Effect<Principal, VerificationError> =>
   pipe(
     Effect.gen(function* () {
       const JWKS = yield* createCachedRemoteJwks(options.endpoint)
 
       const { payload } = yield* Effect.tryPromise({
         catch: (err) => {
-          console.error(err)
           return err instanceof Error
-            ? new VerificationFailure({ message: err.message })
-            : new VerificationFailure({ message: String(err) })
+            ? new VerificationError({ message: err.message })
+            : new VerificationError({ message: String(err) })
         },
         try: () =>
           jose.jwtVerify(options.token, JWKS, {
@@ -133,3 +129,15 @@ export const verifyIdToken = (
     }),
     Effect.catchTag("ParseError", (err) => Effect.die(err))
   )
+
+const createJwks = (endpoint?: string) =>
+  Effect.sync(() => {
+    const baseUrl = endpoint ?? "https://api.passlock.dev"
+
+    return jose.createRemoteJWKSet(new URL("/.well-known/jwks.json", baseUrl))
+  })
+
+const createCachedRemoteJwks = pipe(
+  Effect.cachedFunction(createJwks),
+  Effect.runSync
+)

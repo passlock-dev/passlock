@@ -20,6 +20,8 @@ import type { Millis, UserVerification } from "../shared"
 /**
  * Passkey registration options
  *
+ * @see {@link registerPasskey}
+ *
  * @category Passkeys (core)
  */
 export interface RegistrationOptions extends PasslockOptions {
@@ -31,15 +33,15 @@ export interface RegistrationOptions extends PasslockOptions {
    * You won't directly associate the username with an account in your
    * backend. Instead, you'll associate the passkey ID with an account.
    *
-   * @see {@link https://passlock.dev/passkeys/registration}
+   * @see {@link https://passlock.dev/passkeys/registration Register a passkey (main docs)}
    */
   username: string
 
   /**
    * May be shown by devices in place of the username e.g. given a username
    * of jdoe or jdoe@gmail.com a suitable display name might be "John Doe"
-   * or "John Doe (personal)". Note: no guarantee browsers/devices will
-   * choose to display this property.
+   * or "John Doe (personal)". **note:** There's no guarantee browsers/devices
+   * will choose to display this property.
    */
   userDisplayName?: string | undefined
 
@@ -47,14 +49,14 @@ export interface RegistrationOptions extends PasslockOptions {
    * Prevents the user registering a passkey if they already have one
    * (associated with the same user account) registered on the current device.
    *
-   * @see {@link https://passlock.dev/passkeys/exclude-credentials}
+   * @see {@link https://passlock.dev/passkeys/exclude-credentials Excluding credentials (main docs)}
    */
   excludeCredentials?: Array<string> | undefined
 
   /**
    * Whether the device should re-authenticate the user locally before registering the passkey.
    *
-   * @see {@link https://passlock.dev/passkeys/user-verification}
+   * @see {@link https://passlock.dev/passkeys/user-verification User verification (main docs)}
    */
   userVerification?: UserVerification | undefined
 
@@ -62,9 +64,6 @@ export interface RegistrationOptions extends PasslockOptions {
    * Receive notifications about key stages in the registration process.
    * For example, you might use event notifications to toggle loading icons or
    * to disable certain form fields.
-   *
-   * @param event
-   * @returns Nothing.
    */
   onEvent?: OnRegistrationEvent
 
@@ -93,12 +92,12 @@ export class RegistrationHelper extends Context.Tag("RegistrationHelper")<
 
 /**
  * Represents the outcome of a successful passkey registration.
- * Submit the code and/or id_token to your backend, then either
- * exchange the code with the passlock REST API or decode and
- * verify the id_token (JWT).
+ * Submit the `code` and/or `id_token` to your backend, then either
+ * exchange the code with the Passlock REST API or decode and
+ * verify the id_token (JWT). **note:** The @passlock/node library
+ * includes utilities for this.
  *
- * Note: The @passlock/node library includes utilities to do this
- * for you.
+ * @see {@link isRegistrationSuccess}
  *
  * @category Passkeys (core)
  */
@@ -144,9 +143,7 @@ export const isRegistrationSuccess = (
 
   if (!("_tag" in payload)) return false
   if (typeof payload._tag !== "string") return false
-  if (payload._tag !== "RegistrationSuccess") return false
-
-  return true
+  return payload._tag === "RegistrationSuccess"
 }
 
 export type OptionsResponse = {
@@ -330,7 +327,12 @@ export const registerPasskey = (
   )
 }
 
-export const RegistrationEvent = [
+/**
+ * Type of the registration event
+ *
+ * @category Passkeys (other)
+ */
+export const RegistrationEvents = [
   "optionsRequest",
   "createCredential",
   "saveCredential",
@@ -341,7 +343,10 @@ export const RegistrationEvent = [
  *
  * @category Passkeys (other)
  */
-export type RegistrationEvent = (typeof RegistrationEvent)[number]
+export type RegistrationEvent =
+  | "optionsRequest"
+  | "createCredential"
+  | "saveCredential"
 
 /**
  * Callback to receive registration lifecycle events.

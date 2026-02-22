@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    /* Projects */
-    "incremental": true,
+    "baseUrl": ".",
 
     // Platform & modules
     "target": "ES2022", // Node 20+ supports this natively
@@ -38,11 +37,10 @@
     "resolveJsonModule": true,
     "preserveSymlinks": false
   },
+  "exclude": ["node_modules", "dist"],
   "plugins": [
     {
       "name": "@effect/language-service"
     }
-  ],
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  ]
 }

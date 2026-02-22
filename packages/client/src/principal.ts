@@ -1,4 +1,7 @@
 /**
+ * Key identifiers. Not to be confused with the Principal available in backend code,
+ * which includes much more data.
+ *
  * @category Passkeys (core)
  */
 export type Principal = {

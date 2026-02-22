@@ -1,5 +1,5 @@
 export type {
-  AssignUserOptions as AssignUserRequest,
+  AssignUserOptions,
   ListPasskeyOptions,
 } from "./passkey/passkey.js"
 export {
@@ -11,7 +11,7 @@ export {
 export type {} from "./principal/principal.js"
 export {
   exchangeCode,
-  VerificationFailure,
+  VerificationError,
   verifyIdToken,
 } from "./principal/principal.js"
 export * from "./schemas/index.js"

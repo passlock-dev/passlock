@@ -7,7 +7,7 @@ export const isNetworkError = (payload: unknown): payload is NetworkError => {
 }
 
 export class NetworkError extends Error {
-  readonly _tag = "NetworkError" as const
+  readonly _tag = "@error/Network" as const
   readonly message: string
   readonly url: string
 
@@ -21,9 +21,11 @@ export class NetworkError extends Error {
 }
 
 /**
- * Make a request to the Passlock API endpoint. Assumes the response is
- * JSON and any errors have a non-200 status code, are also JSON and include
- * message and _tag fields.
+ * Make a request to the Passlock API endpoint.
+ * Successful responses are expected to be JSON.
+ * For non-2xx responses this function first attempts to parse JSON so typed
+ * API errors can be returned, and falls back to a generic network error when
+ * parsing fails.
  *
  * TODO Consider Effect RPC/HttpClient
  */
