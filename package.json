@@ -22,7 +22,8 @@
   },
   "pnpm": {
     "overrides": {
-      "minimatch": "10.2.2"
+      "minimatch": "10.2.2",
+      "qs": "6.15.0"
     }
   }
 }
