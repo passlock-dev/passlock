@@ -19,5 +19,10 @@
     "npm-check-updates": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:"
+  },
+  "pnpm": {
+    "overrides": {
+      "minimatch": "10.2.2"
+    }
   }
 }
