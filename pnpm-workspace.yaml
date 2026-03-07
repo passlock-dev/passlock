@@ -2,10 +2,10 @@
   "packages": [ "packages/*", "examples/*" ],
   "catalog":
     {
-      "@biomejs/biome": "^2.4.4",
+      "@biomejs/biome": "^2.4.6",
       "@effect/platform": "^0.94.5",
       "@effect/platform-node": "^0.104.1",
-      "@types/node": "25.3.3",
+      "@types/node": "25.3.5",
       "effect": "3.19.19",
       "globals": "^17.4.0",
       "npm-check-updates": "^19.6.3",

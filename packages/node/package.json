@@ -1,6 +1,6 @@
 {
   "name": "@passlock/node",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "Passkey authentication for NodeJS backends",
   "keywords": [
     "passkey",
@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "effect": "catalog:",
-    "jose": "^6.1.3"
+    "jose": "^6.2.0"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

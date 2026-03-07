@@ -1,6 +1,6 @@
 {
   "name": "@passlock/cli",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "CLI tooling support for the Passlock authentication framework",
   "keywords": [
     "passkey",
@@ -63,7 +63,7 @@
     "format:check": "biome format ."
   },
   "dependencies": {
-    "@clack/prompts": "^1.0.1",
+    "@clack/prompts": "^1.1.0",
     "effect": "catalog:",
     "kleur": "^4.1.5"
   },
