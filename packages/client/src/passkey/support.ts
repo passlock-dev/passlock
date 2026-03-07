@@ -26,4 +26,4 @@ export {
   isPasskeyDeleteSupport,
   isPasskeyPruningSupport as isPasskeySyncSupport,
   isPasskeyUpdateSupport,
-} from "./signals/signals"
+} from "./signals/signals.js"

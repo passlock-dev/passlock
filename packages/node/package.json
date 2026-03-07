@@ -1,6 +1,6 @@
 {
   "name": "@passlock/node",
-  "version": "2.0.4",
+  "version": "2.0.6",
   "description": "Passkey authentication for NodeJS backends",
   "keywords": [
     "passkey",

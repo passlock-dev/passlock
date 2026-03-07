@@ -6,16 +6,16 @@ import {
 } from "@simplewebauthn/browser"
 import { Context, Micro, pipe } from "effect"
 import type { Principal } from "src/principal"
-import { Endpoint, makeEndpoint, makeRequest, TenancyId } from "../../internal"
-import type { NetworkError } from "../../internal/network"
-import { Logger } from "../../logger"
-import type { PasslockOptions } from "../../options"
+import { Endpoint, makeEndpoint, makeRequest, TenancyId } from "../../internal/index.js"
+import type { NetworkError } from "../../internal/network.js"
+import { Logger } from "../../logger.js"
+import type { PasslockOptions } from "../../options.js"
 import {
   DuplicatePasskeyError,
   OtherPasskeyError,
   PasskeyUnsupportedError,
-} from "../errors"
-import type { Millis, UserVerification } from "../shared"
+} from "../errors.js"
+import type { Millis, UserVerification } from "../shared.js"
 
 /**
  * Passkey registration options

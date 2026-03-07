@@ -20,33 +20,33 @@
  */
 
 import { Micro, pipe } from "effect"
-import { runToPromise } from "./internal"
-import { eventLogger, Logger } from "./logger"
+import { runToPromise } from "./internal/index.js"
+import { eventLogger, Logger } from "./logger.js"
 import type {
   AuthenticationError,
   AuthenticationOptions,
   AuthenticationSuccess,
-} from "./passkey/authentication/authentication"
+} from "./passkey/authentication/authentication.js"
 import {
   AuthenticationHelper,
   authenticatePasskey as authenticatePasskeyM,
-} from "./passkey/authentication/authentication"
+} from "./passkey/authentication/authentication.js"
 import type {
   DeleteError,
   OrphanedPasskeyError,
   PruningError,
   UpdateError,
-} from "./passkey/errors"
+} from "./passkey/errors.js"
 
 import type {
   RegistrationError,
   RegistrationOptions,
   RegistrationSuccess,
-} from "./passkey/registration/registration"
+} from "./passkey/registration/registration.js"
 import {
   RegistrationHelper,
   registerPasskey as registerPasskeyM,
-} from "./passkey/registration/registration"
+} from "./passkey/registration/registration.js"
 
 import type {
   DeleteCredentialOptions,
@@ -57,7 +57,7 @@ import type {
   UpdateCredentialOptions,
   UpdatePasskeyOptions,
   UpdateSuccess,
-} from "./passkey/signals/signals"
+} from "./passkey/signals/signals.js"
 import {
   deletePasskey as deletePasskeyM,
   isDeleteSuccess,
@@ -68,7 +68,7 @@ import {
   isUpdateSuccess,
   prunePasskeys as prunePasskeysM,
   updatePasskey as updatePasskeyM,
-} from "./passkey/signals/signals"
+} from "./passkey/signals/signals.js"
 
 /* Registration */
 
@@ -352,13 +352,13 @@ export const isPasskeyUpdateSupport = () =>
 
 /* Re-exports */
 
-export { isNetworkError, NetworkError } from "./internal/network"
+export { isNetworkError, NetworkError } from "./internal/network.js"
 export {
   LogEvent,
   Logger,
   LogLevel,
-} from "./logger"
-export type { PasslockOptions } from "./options"
+} from "./logger.js"
+export type { PasslockOptions } from "./options.js"
 export type {
   AuthenticationError,
   AuthenticationEvent,
@@ -366,12 +366,12 @@ export type {
   AuthenticationOptions,
   AuthenticationSuccess,
   OnAuthenticationEvent,
-} from "./passkey/authentication/authentication"
+} from "./passkey/authentication/authentication.js"
 export {
   AuthenticationHelper,
   isAuthenticationSuccess,
-} from "./passkey/authentication/authentication"
-export type { ErrorCode } from "./passkey/errors"
+} from "./passkey/authentication/authentication.js"
+export type { ErrorCode } from "./passkey/errors.js"
 export {
   DeleteError,
   DuplicatePasskeyError,
@@ -387,19 +387,19 @@ export {
   PasskeyUnsupportedError,
   PruningError,
   UpdateError,
-} from "./passkey/errors"
+} from "./passkey/errors.js"
 export type {
   OnRegistrationEvent,
   RegistrationError,
   RegistrationEvent,
   RegistrationOptions,
   RegistrationSuccess,
-} from "./passkey/registration/registration"
+} from "./passkey/registration/registration.js"
 export {
   isRegistrationSuccess,
   RegistrationHelper,
-} from "./passkey/registration/registration"
-export type { UserVerification } from "./passkey/shared"
+} from "./passkey/registration/registration.js"
+export type { UserVerification } from "./passkey/shared.js"
 export type {
   CredentialMapping,
   DeleteCredentialOptions,
@@ -410,14 +410,14 @@ export type {
   UpdateCredentialOptions,
   UpdatePasskeyOptions,
   UpdateSuccess,
-} from "./passkey/signals/signals"
+} from "./passkey/signals/signals.js"
 export {
   isDeleteSuccess,
   isPruningSuccess,
   isUpdateSuccess,
-} from "./passkey/signals/signals"
+} from "./passkey/signals/signals.js"
 export {
   isAutofillSupport,
   isPasskeySupport,
-} from "./passkey/support"
-export type { Principal } from "./principal"
+} from "./passkey/support.js"
+export type { Principal } from "./principal.js"

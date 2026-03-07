@@ -9,8 +9,8 @@ import type {
   RegistrationOptions as UnsafeRegistrationOptions,
   RegistrationSuccess as UnsafeRegistrationSuccess,
   UpdatePasskeyOptions as UpdatePasskeyOptionsUnsafe,
-} from "../src"
-import * as unsafe from "../src"
+} from "../src/index.js"
+import * as unsafe from "../src/index.js"
 import type {
   AuthenticationError,
   AuthenticationOptions,
@@ -21,13 +21,13 @@ import type {
   RegistrationOptions,
   RegistrationSuccess,
   UpdatePasskeyOptions,
-} from "../src/safe"
-import * as root from "../src/safe"
+} from "../src/safe.js"
+import * as root from "../src/safe.js"
 
 describe("public surface", () => {
   it("exports identical keys for root and unsafe", () => {
-    type Root = typeof import("../src/safe")
-    type Unsafe = typeof import("../src")
+    type Root = typeof import("../src/safe.js")
+    type Unsafe = typeof import("../src/index.js")
     type RootKeys = keyof Root
     type UnsafeKeys = keyof Unsafe
     type Assert<T extends true> = T

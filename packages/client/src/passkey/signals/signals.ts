@@ -1,14 +1,14 @@
 import { Micro, pipe } from "effect"
 import { encodeUriComponent } from "effect/Encoding"
-import { makeEndpoint } from "../../internal"
-import { Logger } from "../../logger"
-import type { PasslockOptions } from "../../options"
+import { makeEndpoint } from "../../internal/index.js"
+import { Logger } from "../../logger.js"
+import type { PasslockOptions } from "../../options.js"
 import {
   DeleteError,
   type OrphanedPasskeyError,
   PruningError,
   UpdateError,
-} from "../errors"
+} from "../errors.js"
 
 /**
  * Does the current device support local passkey removal

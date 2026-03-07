@@ -5,16 +5,16 @@ import type {
 } from "@simplewebauthn/browser"
 import { Context, Micro, pipe } from "effect"
 import { afterAll, describe, expect, it, vi } from "vitest"
-import { Endpoint, TenancyId } from "../../internal"
-import { Logger } from "../../logger"
-import { PasskeyUnsupportedError } from "../errors"
+import { Endpoint, TenancyId } from "../../internal/index.js"
+import { Logger } from "../../logger.js"
+import { PasskeyUnsupportedError } from "../errors.js"
 import {
   fetchOptions,
   RegistrationHelper,
   registerPasskey,
   startRegistration,
   verifyCredential,
-} from "./registration"
+} from "./registration.js"
 
 const loggerTest = {
   logDebug: () => Micro.void,
