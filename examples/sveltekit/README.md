@@ -6,11 +6,11 @@ SvelteKit app using passkeys alongside passwords for authentication.
 
 ## Key features
 
-1. Progressive enhancement - Supports passkeys alongside existing/legacy password based authentication.
-2. Platform data - Informs users which platform/ecosystem each passkey belongs to.
-3. Lucia sessions - Session management following the [Lucia][lucia] recommendations.
-4. Local passkey updates - Updates the passkey account name on users' local devices/password managers.
-5. Local passkey deletion - Prevents orphaned passkeys by deleting passkeys on the users' device.
+1. **Progressive enhancement** - Supports passkeys alongside existing/legacy password based authentication
+2. **Platform data** - Informs users which platform/ecosystem each passkey belongs to
+3. **Lucia sessions** - Session management following the [Lucia][lucia] recommendations
+4. **Local passkey updates** - Updates the passkey account name on users' local devices/password managers
+5. **Local passkey deletion** - Prevents orphaned passkeys by deleting passkeys on the users' device
 
 ## Scope
 
@@ -31,13 +31,17 @@ Use the [download-directory][download-directory] tool to download [this director
 
 ### 2. Install the dependencies
 
-`npm install`
+```bash
+npm install
+```
 
 ### 3. Setup Passlock
 
 Create a Passlock environment:
 
-`npx @passlock/cli init`
+```bash
+npx @passlock/cli init
+```
 
 Follow the prompts and take note of your `Tenancy ID` and `API Key`.
 
@@ -49,11 +53,15 @@ Copy the `.env.example` to `.env` and set the `PUBLIC_PASSLOCK_TENANCY_ID` and `
 
 Create a local SQLite database:
 
-`npm run db:push`
+```bash
+npm run db:push
+```
 
 ### 6. Start the dev server
 
-`npm run dev`
+```bash
+npm run dev
+```
 
 [lucia]: https://lucia-auth.com
 [superforms]: https://superforms.rocks
