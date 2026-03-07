@@ -1,3 +1,6 @@
+/**
+ * DrizzleORM based repository
+ */
 import { DrizzleQueryError } from 'drizzle-orm/errors';
 import { and, desc, eq } from 'drizzle-orm';
 import { LibsqlError } from '@libsql/client';

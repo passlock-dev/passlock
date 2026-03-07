@@ -1,3 +1,6 @@
+/**
+ * Password hashing utils
+ */
 import { randomBytes, scrypt, timingSafeEqual, type BinaryLike } from 'node:crypto';
 import { promisify } from 'node:util';
 

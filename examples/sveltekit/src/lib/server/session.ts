@@ -1,3 +1,6 @@
+/**
+ * Prisma style session management
+ */
 import { dev } from '$app/environment';
 import type { Cookies } from '@sveltejs/kit';
 import { createHash, timingSafeEqual } from 'node:crypto';

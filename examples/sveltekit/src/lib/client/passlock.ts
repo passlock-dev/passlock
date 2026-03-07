@@ -13,34 +13,13 @@ import { updatePasskey as updateLocalPasskey } from '@passlock/client/safe';
 import { UpdatePasskeysSuccess, Error, DeletePasskeySuccess } from '$lib/shared/schemas';
 import { parse } from 'valibot';
 import { resolve } from '$app/paths';
+import { postData } from './network';
 
 export type CreatePasskeyInput = {
 	tenancyId: string;
 	endpoint: string | undefined;
 	email: string;
 	existingPasskeyIds: Array<string>;
-};
-
-type PostDataInput<A, E> = {
-	url: string;
-	body: object;
-	method: 'POST' | 'PATCH' | 'DELETE';
-	on2xx: (response: unknown) => A;
-	orElse: (response: unknown) => E;
-};
-
-const postData = async <A, E>({ url, method, body, on2xx, orElse }: PostDataInput<A, E>) => {
-	const response = await fetch(url, {
-		method,
-		headers: {
-			'content-type': 'application/json'
-		},
-		body: JSON.stringify(body)
-	});
-
-	const jsonResponse = await response.json();
-
-	return response.ok ? on2xx(jsonResponse) : orElse(jsonResponse);
 };
 
 export const createPasslockPasskey = async (input: CreatePasskeyInput) => {

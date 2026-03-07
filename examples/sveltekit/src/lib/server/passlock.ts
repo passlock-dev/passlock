@@ -1,3 +1,8 @@
+/**
+ * Utilty functions to calling the Passlock API
+ * from actions.
+ */
+
 import { PASSLOCK_API_KEY } from '$env/static/private';
 import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public';
 import {
@@ -43,6 +48,11 @@ export const exchangePasslockCode = async (code: string) => {
 	return await exchangeCode({ ...config, code });
 };
 
+/**
+ * Sets the passkey's userId in the Passlock vault,
+ * @param  
+ * @returns 
+ */
 export const assignPasslockUserId = async ({
 	passkeyId,
 	userId
