@@ -23,15 +23,15 @@ This is not intended to be a "batteries included" starter project. It's purpose 
 
 ## Getting started
 
-### Download this project
+### 1. Download this project
 
-Use the [download-directory][download-directory] tool to download [this project][download-directory] from GitHub.
+Use the [download-directory][download-directory] tool to download [this directory][download-directory] from GitHub.
 
-### Install the dependencies
+### 2. Install the dependencies
 
 `npm install`
 
-### Setup Passlock
+### 3. Setup Passlock
 
 Create a Passlock environment:
 
@@ -39,17 +39,17 @@ Create a Passlock environment:
 
 Follow the prompts and take note of your `Tenancy ID` and `API Key`.
 
-### Create a .env file
+### 4. Set environment variables
 
 Copy the `.env.example` to `.env` and set the `PUBLIC_PASSLOCK_TENANCY_ID` and `PASSLOCK_API_KEY` variables.
 
-### Setup the database
+### 5. Setup the database
 
 Create a local SQLite database:
 
 `npm run db:push`
 
-### Run the app
+### 6. Start the dev server
 
 `npm run dev`
 
