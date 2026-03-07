@@ -2,6 +2,8 @@
 
 SvelteKit app using passkeys alongside passwords for authentication. 
 
+![passlock-sample-screenshot](https://github.com/user-attachments/assets/77306736-4930-4045-9afd-ae3298eb768e)
+
 ## Key features
 
 1. Progressive enhancement - Supports passkeys alongside existing/legacy password based authentication.
