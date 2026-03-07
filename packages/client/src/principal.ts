@@ -12,7 +12,7 @@ export type Principal = {
 
   /**
    * By default this will mirror the `authenticatorId` however you
-   * can use the REST API or @passlock/node package to assign your
+   * can use the REST API or @passlock/server package to assign your
    * own internal userId to the passkey.
    */
   userId: string

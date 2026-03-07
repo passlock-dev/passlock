@@ -23,8 +23,8 @@ const packagesToSync = [
     sourcePackageJsonPath: path.join(repoRoot, "packages/client/package.json"),
   },
   {
-    packageName: "@passlock/node",
-    sourcePackageJsonPath: path.join(repoRoot, "packages/node/package.json"),
+    packageName: "@passlock/server",
+    sourcePackageJsonPath: path.join(repoRoot, "packages/server/package.json"),
   },
 ] as const
 

@@ -69,5 +69,5 @@ npm run dev
 [daisyui]: https://daisyui.com
 [drizzle]: https://orm.drizzle.team
 [passlock-client]: https://www.npmjs.com/package/@passlock/client
-[passlock-node]: https://www.npmjs.com/package/@passlock/node
+[passlock-server]: https://www.npmjs.com/package/@passlock/server
 [download-directory]: https://download-directory.github.io/?url=https://github.com/passlock-dev/passlock/tree/master/examples/sveltekit

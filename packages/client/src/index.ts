@@ -205,7 +205,7 @@ export const updatePasskey = (
 /**
  * Attempts to delete a passkey from a local device. There are two scenarios in which this function proves useful:
  *
- * 1. **Deleting a passkey**. Use the `@passlock/node` package or make vanilla REST calls from your
+ * 1. **Deleting a passkey**. Use the `@passlock/server` package or make vanilla REST calls from your
  * backend to delete the server-side component, then use this function to delete the client-side component.
  *
  * 2. **Missing passkey**. The user tried to present a passkey, but the server-side component could not be found.

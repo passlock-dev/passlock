@@ -10,7 +10,7 @@ import {
 	updatePasskeyUsernames,
 	exchangeCode,
 	assignUser
-} from '@passlock/node/safe';
+} from '@passlock/server/safe';
 import { error } from 'console';
 
 /**

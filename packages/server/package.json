@@ -1,0 +1,95 @@
+{
+  "name": "@passlock/server",
+  "version": "2.0.7",
+  "description": "Passkey authentication library for Fetch capable backends (Node, Bun, Vercel, Cloudflare workers etc.)",
+  "keywords": [
+    "passkey",
+    "webauthn",
+    "node",
+    "Bun",
+    "Vercel",
+    "CF Workers"
+  ],
+  "homepage": "https://passlock.dev",
+  "bugs": {
+    "url": "https://github.com/passlock-dev/passlock/issues",
+    "email": "team@passlock.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/passlock-dev/passlock.git",
+    "directory": "packages/server"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Toby Hobson",
+    "email": "toby@passlock.dev"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./safe": {
+      "types": "./dist/safe.d.ts",
+      "import": "./dist/safe.js",
+      "default": "./dist/safe.js"
+    },
+    "./effect": {
+      "types": "./dist/effect.d.ts",
+      "import": "./dist/effect.js",
+      "default": "./dist/effect.js"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "!dist/**/*.test.*",
+    "!dist/**/*.spec.*"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "build:clean": "$npm_execpath run clean:full && $npm_execpath run build",
+    "build:production": "$npm_execpath run build:clean && $npm_execpath run build:readme && $npm_execpath run replaceTokens && echo '' && publint",
+    "build:readme": "VERSION=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/server",
+    "typedoc": "typedoc",
+    "clean": "tsc -p tsconfig.build.json --clean",
+    "clean:full": "rimraf dist tsconfig.build.tsbuildinfo",
+    "replaceTokens": "VERSION=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/server",
+    "test:unit": "vitest --project unit run",
+    "test:unit:watch": "vitest --project unit",
+    "test:integration": "vitest --project integration run",
+    "test:all": "vitest --project unit --project integration run",
+    "typecheck": "tsc -p tsconfig.test.json --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check --fix .",
+    "lint:ci": "biome ci .",
+    "format": "biome format --fix .",
+    "format:check": "biome format .",
+    "prepublishOnly": "$npm_execpath run build:production"
+  },
+  "dependencies": {
+    "effect": "catalog:",
+    "jose": "^6.2.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@effect/vitest": "^0.27.0",
+    "globals": "catalog:",
+    "npm-check-updates": "catalog:",
+    "publint": "catalog:",
+    "rimraf": "catalog:",
+    "tsx": "catalog:",
+    "typedoc": "^0.28.17",
+    "typescript": "catalog:",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^3.2.4"
+  },
+  "packageManager": "pnpm@10.30.3",
+  "engines": {
+    "node": ">=20"
+  }
+}

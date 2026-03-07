@@ -14,7 +14,7 @@ in README.template.md and outputs to README.md
     <img align="center" width=550 height=50 src="#{ASSETS}#/images/client-repo-banner.svg" />
   </picture>
   <p align="center">
-    CLI wrapper around the Passlock API
+    Server-side library to accompany the <a href="https://www.npmjs.com/package/@passlock/client">@passlock/client</a> package
     <br />
     <a href="#{PASSLOCK_SITE}#"><strong>Project website »</strong></a>
     <br />
@@ -30,26 +30,16 @@ in README.template.md and outputs to README.md
 
 <br />
 
+## See also
+
+For frontend usage please see the accompanying [@passlock/client][client] package
+
 ## Requirements
 
-Node 20+
+Node 20+ (If running Node)
 
 ## Usage
 
-Install the CLI globally:
+Please see the [Quick start guide](#{TUTORIAL}#)
 
-`npm install -g @passlock/cli`
-
-or
-
-`pnpm add -g @passlock/cli`
-
-### Create a cloud instance
-
-`passlock init`
-
-Follow the prompts
-
-### Help
-
-`passlock --help`
+[client]: https://www.npmjs.com/package/@passlock/client

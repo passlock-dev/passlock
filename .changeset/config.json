@@ -5,6 +5,6 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "fixed": [["@passlock/client", "@passlock/node"]],
+  "fixed": [["@passlock/client", "@passlock/server"]],
   "ignore": []
 }

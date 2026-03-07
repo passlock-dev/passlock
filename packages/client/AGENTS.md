@@ -2,9 +2,9 @@
 
 The `@passlock/client` library is the primary library for interacting with Passlock in frontend code. It includes functions for registering, authenticating and managing passkeys on a device.
 
-## Relationship to the @passlock/node project
+## Relationship to the @passlock/server project
 
-During passkey registration and authentication this library generates a code and id_token, which is then sent to the backend for verification using the `@passlock/node` library (or via vanilla REST calls).
+During passkey registration and authentication this library generates a code and id_token, which is then sent to the backend for verification using the `@passlock/server` library (or via vanilla REST calls).
 
 ## Project structure
 

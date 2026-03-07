@@ -95,11 +95,11 @@ const result = await registerPasskey({ tenancyId, username });
 console.log('code: %s', result.code); 
 ```
 
-In your backend verify the code to obtain details about the newly registered passkey. We'll use the [@passlock/node][passlock-node] library for this, but you can also make vanilla REST calls.
+In your backend verify the code to obtain details about the newly registered passkey. We'll use the [@passlock/server][passlock-server] library for this, but you can also make vanilla REST calls.
 
 ```typescript
 // backend/register.ts
-import { exchangeCode } from "@passlock/node";
+import { exchangeCode } from "@passlock/server";
 
 const tenancyId = "myTenancyId";
 const apiKey = "myApiKey";
@@ -132,7 +132,7 @@ In your backend, verify the code and lookup the user by authenticatorId ...
 
 ```typescript
 // backend/authenticate.ts
-import { exchangeCode } from "@passlock/node";
+import { exchangeCode } from "@passlock/server";
 
 const tenancyId = "myTenancyId";
 const apiKey = "myApiKey";
@@ -144,7 +144,7 @@ console.log('passkey id: %s', result.authenticatorId);
 ```
 
 > [!TIP]  
-> **Not using a Node backend?** The examples in this README use our [@passlock/node][passlock-node] server library, but **this is not required**. Passlock works similarly to Oauth2/OpenID Connect, so you can make vanilla HTTP calls or use any suitable JWT library to verify an `id_token` (JWT).
+> **Not using a JS backend?** The examples in this README use our [@passlock/server][passlock-server] server library, but **this is not required**. Passlock works similarly to Oauth2/OpenID Connect, so you can make vanilla HTTP calls or use any suitable JWT library to verify an `id_token` (JWT).
 
 ## More information
 
@@ -155,7 +155,7 @@ Please see the [tutorial](https://passlock.dev/getting-started/) and [documentat
 If Passlock saved you time or helped you ship passkeys faster, a ⭐ on GitHub helps more than you think.
 
 [contact]: https://passlock.dev/contact
-[passlock-node]: https://www.npmjs.com/package/@passlock/node
+[passlock-server]: https://www.npmjs.com/package/@passlock/server
 [simplewebauthn]: https://simplewebauthn.dev
 [passportjs]: https://github.com/jaredhanson/passport-webauthn
 [auth0]: https://auth0.com/docs/secure/multi-factor-authentication/fido-authentication-with-webauthn

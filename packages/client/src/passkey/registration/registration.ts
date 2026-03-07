@@ -94,7 +94,7 @@ export class RegistrationHelper extends Context.Tag("RegistrationHelper")<
  * Represents the outcome of a successful passkey registration.
  * Submit the `code` and/or `id_token` to your backend, then either
  * exchange the code with the Passlock REST API or decode and
- * verify the id_token (JWT). **note:** The @passlock/node library
+ * verify the id_token (JWT). **note:** The @passlock/server library
  * includes utilities for this.
  *
  * @see {@link isRegistrationSuccess}
@@ -111,7 +111,7 @@ export type RegistrationSuccess = {
 
   /**
    * A signed JWT representing the newly registered passkey.
-   * Decode and verify this in your backend or use one of the @passlock/node
+   * Decode and verify this in your backend or use one of the @passlock/server
    * helper utilities.
    *
    * @see {@link https://passlock.dev/principal/idtoken-verification/|id_token}

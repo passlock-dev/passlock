@@ -16,7 +16,9 @@ The repo includes several PNPM projects/packages under the packages/ directory:
 
 * `packages/client (@passlock/client)` - The primary TypeScript/JavaScript client (browser) library. This package allows developers to register and authenticate with passkeys on a device. It's intended to be bundled into a deployable app with something like webpack. The `@passlock/client` library invokes APIs exposed via the private `@passlock/api` package.
 
-* `packages/node (@passlock/node)` - A server-side/backend library used for managing passkeys. Typically used to verify a passkey registration or authentication performed using the `@passlock/client` package. Code in this package also invokes APIs exposed via the private `@passlock/api` package.
+* `packages/node (@passlock/node)` - Deprecated, see @passlock/server.
+
+* `packages/server (@passlock/server)` - A server-side/backend library used for managing passkeys. Typically used to verify a passkey registration or authentication performed using the `@passlock/client` package. Code in this package also invokes APIs exposed via the private `@passlock/api` package.
 
 * `packages/example (@passlock/example)` - A basic Vite project, used largely for shakedown testing of the different packages and components.
 
