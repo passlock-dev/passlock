@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-
     // Platform & modules
     "target": "ES2022", // Node 20+ supports this natively
     "lib": ["ES2024"], // built-ins/Promise APIs, etc.
@@ -9,16 +7,6 @@
     "moduleResolution": "NodeNext",
     "moduleDetection": "force",
     "types": ["node"],
-
-    // Emission
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "inlineSources": true,
-    "stripInternal": true, // hide @internal from .d.ts
-    "newLine": "lf",
 
     // ESM/CJS interop
     "verbatimModuleSyntax": true, // preserves import/export as written
@@ -37,7 +25,6 @@
     "resolveJsonModule": true,
     "preserveSymlinks": false
   },
-  "exclude": ["node_modules", "dist"],
   "plugins": [
     {
       "name": "@effect/language-service"

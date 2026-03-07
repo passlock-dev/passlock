@@ -3,10 +3,15 @@
   "compilerOptions": {
     "incremental": true,
 
-    /* Output */
+    // Emission
     "rootDir": "./src",
     "outDir": "./dist",
-    "stripInternal": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "stripInternal": true, // hide @internal from .d.ts
+    "newLine": "lf",
 
     // usually you don't want tests or dev-only types leaking into build
     "types": ["node"]
