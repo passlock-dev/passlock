@@ -6,7 +6,7 @@
 
 	let { data }: PageProps = $props();
 	let passkeys = $derived(data.existingPasskeys);
-	let existingPasskeyIds = $derived(data.existingPasskeys.map(({ passkeyId }) => passkeyId));
+	let existingPasskeys = $derived(data.existingPasskeys.map(({ passkeyId }) => passkeyId));
 
 	let loading = $state(false);
 	let deletingPasskeyId = $state<string | null>(null);
@@ -24,7 +24,7 @@
 			tenancyId: data.tenancyId,
 			endpoint: data.endpoint,
 			email: data.user.email,
-			existingPasskeyIds
+			existingPasskeys
 		});
 
 		if (result._tag === '@error/CreatePasskeyError') {

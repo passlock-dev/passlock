@@ -10,7 +10,7 @@
  * Testing for browser capabilities related to passkeys, type guards and other utilities.
  *
  * @showCategories
- * @module unsafe
+ * @module unsafe (default)
  */
 
 import { Micro, pipe } from "effect"

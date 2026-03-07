@@ -6,7 +6,7 @@
  *
  * @showCategories
  *
- * @module unsafe
+ * @module unsafe (default)
  */
 
 import { Effect, pipe } from "effect"

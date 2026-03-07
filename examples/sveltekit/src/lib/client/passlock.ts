@@ -16,16 +16,16 @@ import { resolve } from '$app/paths';
 import { postData } from './network';
 
 export type CreatePasskeyInput = {
-	tenancyId: string;
-	endpoint: string | undefined;
 	email: string;
-	existingPasskeyIds: Array<string>;
+	tenancyId: string;
+	endpoint?: string | undefined;
+	existingPasskeys: Array<string>;
 };
 
 export const createPasslockPasskey = async (input: CreatePasskeyInput) => {
 	const ERROR_TAG = '@error/CreatePasskeyError' as const;
 
-	const { tenancyId, endpoint, email, existingPasskeyIds: excludeCredentials } = input;
+	const { tenancyId, endpoint, email, existingPasskeys: excludeCredentials } = input;
 
 	// client side registration
 	const clientResult = await registerPasskey({

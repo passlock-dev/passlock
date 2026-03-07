@@ -48,18 +48,17 @@ export const exchangePasslockCode = async (code: string) => {
 	return await exchangeCode({ ...config, code });
 };
 
+export type AssignUserId = {
+	passkeyId: string;
+	userId: number | string;  
+}
+
 /**
  * Sets the passkey's userId in the Passlock vault,
  * @param  
  * @returns 
  */
-export const assignPasslockUserId = async ({
-	passkeyId,
-	userId
-}: {
-	passkeyId: string;
-	userId: number;
-}) => {
+export const assignPasslockUserId = async ({ passkeyId, userId }: AssignUserId) => {
 	const config = getPasslockConfig();
 
 	return await assignUser({
@@ -69,13 +68,12 @@ export const assignPasslockUserId = async ({
 	});
 };
 
-export const updatePasslockUsernames = async ({
-	userId,
-	username
-}: {
-	userId: number;
+export type UpdateVaultUserNames = {
+	userId: number | number;
 	username: string;
-}) => {
+}
+
+export const updatePasslockUsernames = async ({ userId, username }: UpdateVaultUserNames) => {
 	const config = getPasslockConfig();
 
 	return await updatePasskeyUsernames({

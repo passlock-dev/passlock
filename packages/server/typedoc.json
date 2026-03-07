@@ -3,7 +3,16 @@
   "$schema": "https://typedoc.org/schema.json",
   "name": "@passlock/server",
   "entryPoints": ["src/safe.ts", "src/index.ts"],
-  "out": "./docs/api",
+  "outputs": [
+    {
+      "name": "html",
+      "path": "./docs/api"
+    },
+    {
+      "name": "html",
+      "path": "../../../private/packages/public-api-docs/public/server/"
+    }
+  ],
   "navigation": {
     "includeCategories": true,
     "includeGroups": true,
@@ -18,5 +27,10 @@
   "sort": ["kind", "instance-first", "source-order"],
   "navigationLinks": {
     "📖 Main Site": "https://passlock.dev"
-  }
+  },
+  "sidebarLinks": {
+    "@passlock/client": "https://apidocs.passlock.dev/client/index.html"
+  },
+  "hostedBaseUrl": "https://apidocs.passlock.dev/server/",
+  "includeVersion": true
 }
