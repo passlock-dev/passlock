@@ -1,9 +1,18 @@
 /**
- * _safe_ functions i.e. functions that return discriminated unions composed of either a
- * success result or an error result for expected outcomes. Use one of the type guards to
- * narrow the result to a given success or error type.
+ * _safe_ functions i.e. functions that return result envelopes over the original
+ * tagged success and error payloads. Use `result.success` to branch between success
+ * and error outcomes. Existing type guards and `_tag` checks remain supported.
  *
  * Note: unexpected runtime failures may still throw.
+ *
+ * @example
+ * const result = await registerPasskey({ tenancyId, username: "jdoe@gmail.com" });
+ *
+ * if (result.success) {
+ *   console.log(result.value.code);
+ * } else {
+ *   console.log(result.error.message);
+ * }
  *
  * @categoryDescription Passkeys (core)
  * Creating, authenticating, updating and deleting passkeys. {@link registerPasskey}
@@ -20,6 +29,7 @@
  */
 
 import { Micro, pipe } from "effect"
+import type { Result } from "./internal/result.js"
 import { runToPromise } from "./internal/index.js"
 import { eventLogger, Logger } from "./logger.js"
 import type {
@@ -80,11 +90,9 @@ import {
  *
  * @param options
  *
- * @returns Use {@link isRegistrationSuccess} to test for a successful result, {@link RegistrationError} is
- * an alias to a union of potential errors. Use one of the appropriate isXXX type guards to narrow
- * the error.
- *
- * Alternatively test the result's `_tag` property, which acts as a union discriminator.
+ * @returns A {@link Result} whose success branch contains a {@link RegistrationSuccess}
+ * and whose error branch contains a {@link RegistrationError}. Existing
+ * {@link isRegistrationSuccess} checks and `_tag` discrimination still work.
  *
  * @see {@link isRegistrationSuccess}
  * @see {@link isPasskeyUnsupportedError}
@@ -98,15 +106,15 @@ import {
  *
  * const result = await registerPasskey({ tenancyId, username });
  *
- * if (isRegistrationSuccess(result)) {
+ * if (result.success) {
  *   // send this to your backend for verification
- *   console.log(result.code);
- * } else if (isPasskeyUnsupportedError(result)) {
+ *   console.log(result.value.code);
+ * } else if (isPasskeyUnsupportedError(result.error)) {
  *   // ^^ using an error type guard
  *   console.log("Device does not support passkeys");
- * } else if (result._tag === "@error/OtherPasskey") {
+ * } else if (result.error._tag === "@error/OtherPasskey") {
  *   // ^^ narrowing the result using the _tag
- *   console.log(result.message);
+ *   console.log(result.error.message);
  * } else {
  *  ...
  * }
@@ -117,7 +125,7 @@ export const registerPasskey = async (
   options: RegistrationOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<RegistrationSuccess | RegistrationError> =>
+): Promise<Result<RegistrationSuccess, RegistrationError>> =>
   pipe(
     registerPasskeyM(options),
     Micro.provideService(RegistrationHelper, RegistrationHelper.Default),
@@ -135,11 +143,10 @@ export const registerPasskey = async (
  *
  * @param options
  *
- * @returns Use {@link isAuthenticationSuccess} to test for a successful result, {@link AuthenticationError} is
- * an alias to a union of potential errors. Use one of the appropriate isXXX type guards to narrow
- * the error.
- *
- * Alternatively test the result's `_tag` property, which acts as a union discriminator.
+ * @returns A {@link Result} whose success branch contains an
+ * {@link AuthenticationSuccess} and whose error branch contains an
+ * {@link AuthenticationError}. Existing {@link isAuthenticationSuccess}
+ * checks and `_tag` discrimination still work.
  *
  * @see {@link isAuthenticationSuccess}
  * @see {@link isPasskeyUnsupportedError}
@@ -152,15 +159,15 @@ export const registerPasskey = async (
  *
  * const result = await authenticatePasskey({ tenancyId });
  *
- * if (isAuthenticationSuccess(result)) {
+ * if (result.success) {
  *   // send this to your backend for verification
- *   console.log(result.code);
- * } else if (isPasskeyUnsupportedError(result)) {
+ *   console.log(result.value.code);
+ * } else if (isPasskeyUnsupportedError(result.error)) {
  *   // ^^ using an error type guard
  *   console.log("Device does not support passkeys");
- * } else if (result._tag === "@error/OtherPasskey") {
+ * } else if (result.error._tag === "@error/OtherPasskey") {
  *   // ^^ narrowing the result using the _tag
- *   console.log(result.message);
+ *   console.log(result.error.message);
  * }
  *
  * @category Passkeys (core)
@@ -169,7 +176,7 @@ export const authenticatePasskey = (
   options: AuthenticationOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<AuthenticationSuccess | AuthenticationError> =>
+): Promise<Result<AuthenticationSuccess, AuthenticationError>> =>
   pipe(
     authenticatePasskeyM(options),
     Micro.provideService(AuthenticationHelper, AuthenticationHelper.Default),
@@ -191,9 +198,9 @@ export const authenticatePasskey = (
  * password manager will align with their updated account identifier.
  *
  * @param options You will typically supply a target `passkeyId` via {@link UpdatePasskeyOptions}. {@link UpdateCredentialOptions} is for advanced use cases.
- * @returns Use {@link isUpdateSuccess} and {@link isUpdateError} to test the update status.
- *
- * Alternatively, examine the result's `_tag` property, which acts as a discriminator.
+ * @returns A {@link Result} whose success branch contains an {@link UpdateSuccess}
+ * and whose error branch contains an {@link UpdateError}. Existing
+ * {@link isUpdateSuccess}, {@link isUpdateError}, and `_tag` checks still work.
  *
  * @see {@link isUpdateSuccess}
  * @see {@link isUpdateError}
@@ -207,12 +214,11 @@ export const authenticatePasskey = (
  *
  * const result = await updatePasskey({ tenancyId, passkeyId, username, displayName });
  *
- * if (result._tag === "UpdateSuccess") {
- *   // ^^ narrowing the result using the _tag
+ * if (result.success) {
  *   console.log("passkey updated locally");
- * } else if (isUpdateError(result)) {
+ * } else if (isUpdateError(result.error)) {
  *   // narrowed to an UpdateError type
- *   console.log(result.code);
+ *   console.log(result.error.code);
  * } else {
  *   console.log("unable to update passkey");
  * }
@@ -223,7 +229,7 @@ export const updatePasskey = (
   options: UpdatePasskeyOptions | UpdateCredentialOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<UpdateSuccess | UpdateError> => {
+): Promise<Result<UpdateSuccess, UpdateError>> => {
   const micro = updatePasskeyM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
@@ -241,8 +247,9 @@ export const updatePasskey = (
  * [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/) in the documentation.
  *
  * @param options You will typically pass {@link DeletePasskeyOptions}, the other types are for advanced use cases/optimizations.
- * @returns Use {@link isDeleteSuccess} to test for a successful deletion, or {@link isDeleteError} to test for an error.
- * Alternatively, test the result's `_tag` property, which acts as a discriminator.
+ * @returns A {@link Result} whose success branch contains a {@link DeleteSuccess}
+ * and whose error branch contains a {@link DeleteError}. Existing
+ * {@link isDeleteSuccess}, {@link isDeleteError}, and `_tag` checks still work.
  * @see {@link isDeleteSuccess}
  * @see {@link isDeleteError}
  *
@@ -253,12 +260,11 @@ export const updatePasskey = (
  *
  * const result = await deletePasskey({ tenancyId, passkeyId });
  *
- * if (result._tag === "DeleteSuccess") {
- *   // ^^ narrowing the result using the _tag
+ * if (result.success) {
  *   console.log("passkey deleted locally");
- * } else if (isDeleteError(result)) {
+ * } else if (isDeleteError(result.error)) {
  *   // narrowed to a DeleteError type
- *   console.log(result.code);
+ *   console.log(result.error.code);
  * } else {
  *   console.log("unable to delete passkey");
  * }
@@ -272,7 +278,7 @@ export const deletePasskey = (
     | OrphanedPasskeyError,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<DeleteSuccess | DeleteError> => {
+): Promise<Result<DeleteSuccess, DeleteError>> => {
   const micro = deletePasskeyM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
@@ -284,8 +290,9 @@ export const deletePasskey = (
  * should still exist for a given account on this device.
  *
  * @param options Pass the passkeys you **want to retain**.
- * @returns Use {@link isPruningSuccess} and {@link isPruningError} to narrow the result.
- * Alternatively test the result's `_tag` property, which acts as a discriminator.
+ * @returns A {@link Result} whose success branch contains a {@link PruningSuccess}
+ * and whose error branch contains a {@link PruningError}. Existing
+ * {@link isPruningSuccess}, {@link isPruningError}, and `_tag` checks still work.
  *
  * @see {@link isPruningSuccess}
  * @see {@link isPruningError}
@@ -297,12 +304,11 @@ export const deletePasskey = (
  *
  * const result = await prunePasskeys({ tenancyId, allowablePasskeyIds });
  *
- * if (result._tag === "PruningSuccess") {
- *   // ^^ narrowing the result using the _tag
+ * if (result.success) {
  *   console.log("local passkeys pruned");
- * } else if (isPruningError(result)) {
+ * } else if (isPruningError(result.error)) {
  *   // narrowed to a PruningError type
- *   console.log(result.code);
+ *   console.log(result.error.code);
  * } else {
  *   console.log("unable to prune passkeys");
  * }
@@ -313,7 +319,7 @@ export const prunePasskeys = (
   options: PrunePasskeyOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<PruningSuccess | PruningError> => {
+): Promise<Result<PruningSuccess, PruningError>> => {
   const micro = prunePasskeysM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
@@ -352,6 +358,7 @@ export const isPasskeyUpdateSupport = () =>
 
 /* Re-exports */
 
+export type { Err, Ok, Result } from "./internal/result.js"
 export { isNetworkError, NetworkError } from "./internal/network.js"
 export {
   LogEvent,

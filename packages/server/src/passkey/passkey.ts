@@ -2,19 +2,19 @@ import {
   Array,
   Chunk,
   Effect,
-  type Layer,
   Match,
   Option,
   pipe,
   Schema,
   Stream,
+  type Layer,
 } from "effect"
 import type { satisfy } from "src/schemas/satisfy.js"
 import {
   fetchNetwork,
   matchStatus,
-  type NetworkFetch,
   NetworkFetchLive,
+  type NetworkFetch,
   type NetworkPayloadError,
   type NetworkRequestError,
   type NetworkResponse,

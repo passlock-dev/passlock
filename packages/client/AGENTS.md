@@ -24,9 +24,12 @@ Most functions are developed using a subset of the [Effect][effect] framework, s
 
 ### "Safe" functions
 
-Developers using the `@passlock/client` library will most likely not be using the Effect framework, so we expose regular Promise-based variants of public functions. e.g. given the function `registerPasskey` in `src/passkey/registration/registration.ts` returning a `Micro<A, E>`, we create a function `registerPasskey` in `src/passkey/registration/index.ts` returning a `Promise<A | E>`.
+Developers using the `@passlock/client` library will most likely not be using the Effect framework, so we expose Promise-based variants of public functions. For tagged success/error APIs, the safe entrypoint returns result envelopes over the original payloads. For example, given a function like `registerPasskey` in `src/passkey/registration/registration.ts` returning a `Micro<A, E>`, the `src/safe.ts` entrypoint exposes a `registerPasskey` returning `Promise<Result<A, E>>`, where:
 
-We also offer type guards to enable developers to narrow something of type `A | E` down to an `A` or `E`. 
+* `Ok<A>` is `A & { readonly success: true; readonly value: A }`
+* `Err<E>` is `E & { readonly success: false; readonly error: E }`
+
+This lets callers branch using `if (result.success)`, while the original success and error objects remain the top-level values. Existing `_tag` checks and the current `isX(...)` type guards therefore continue to work.
 
 The entry point to the safe functions is `src/safe.ts`, this is exported via the package.json `exports` field.
 
