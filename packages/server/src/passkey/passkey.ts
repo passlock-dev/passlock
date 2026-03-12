@@ -167,10 +167,10 @@ export type _FindAllPasskeys = satisfy<
   FindAllPasskeys
 >
 
-/* UpdatedPasskeyUsernames (update names by userId) */
+/* UpdatedUserDetails (update names by userId) */
 
-export type UpdatedPasskeyUsernames = {
-  _tag: "UpdatedPasskeyUsernames"
+export type UpdatedUserDetails = {
+  _tag: "UpdatedUserDetails"
   credentials: ReadonlyArray<{
     rpId: string
     userId: string
@@ -179,19 +179,19 @@ export type UpdatedPasskeyUsernames = {
   }>
 }
 
-export const isUpdatedPasskeyUsernames = (
+export const isUpdatedUserDetails = (
   payload: unknown
-): payload is UpdatedPasskeyUsernames => {
+): payload is UpdatedUserDetails => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
   if (!("_tag" in payload)) return false
   if (typeof payload._tag !== "string") return false
-  if (payload._tag !== "UpdatedPasskeyUsernames") return false
+  if (payload._tag !== "UpdatedUserDetails") return false
 
   return true
 }
 
-/* END UpdatedPasskeyUsernames */
+/* END UpdatedUserDetails */
 
 const authorizationHeaders = (apiKey: string) => ({
   authorization: `Bearer ${apiKey}`,
@@ -477,18 +477,18 @@ const updateUserPasskeys = (
     Effect.provide(fetchLayer)
   )
 
-/* Update usernames by userId */
+/* Update user details by userId */
 
-export interface UpdatePasskeyUsernamesOptions extends AuthenticatedOptions {
+export interface UpdateUserDetailsOptions extends AuthenticatedOptions {
   userId: string
   username: string
   displayName?: string
 }
 
-export const updatePasskeyUsernames = (
-  options: UpdatePasskeyUsernamesOptions,
+export const updatePasskeyUserDetails = (
+  options: UpdateUserDetailsOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<UpdatedPasskeyUsernames, NotFoundError | ForbiddenError> =>
+): Effect.Effect<UpdatedUserDetails, NotFoundError | ForbiddenError> =>
   pipe(
     updateUserPasskeys(options, fetchLayer),
     Effect.map((result) => result.updated),
@@ -503,7 +503,7 @@ export const updatePasskeyUsernames = (
       })
     ),
     Effect.map((credentials) => ({
-      _tag: "UpdatedPasskeyUsernames",
+      _tag: "UpdatedUserDetails",
       credentials,
     }))
   )

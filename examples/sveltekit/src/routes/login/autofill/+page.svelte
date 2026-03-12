@@ -2,7 +2,7 @@
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
 
-	import { passlockLogin } from '$lib/client/passlock';
+	import { passlockLogin } from '$lib/client/passkeys';
 	import { onMount } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -40,7 +40,7 @@
 </script>
 
 <svelte:head>
-  <title>Autofill Login</title>
+	<title>Autofill Login</title>
 </svelte:head>
 
 <div class="flex h-full w-full items-center justify-center">

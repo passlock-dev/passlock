@@ -26,9 +26,9 @@ import type {
   GetPasskeyOptions,
   ListPasskeyOptions,
   Passkey,
-  UpdatedPasskeyUsernames,
+  UpdatedUserDetails,
   UpdatePasskeyOptions,
-  UpdatePasskeyUsernamesOptions,
+  UpdateUserDetailsOptions,
 } from "./passkey/passkey.js"
 import {
   assignUser as assignUserE,
@@ -36,7 +36,7 @@ import {
   getPasskey as getPasskeyE,
   listPasskeys as listPasskeysE,
   updatePasskey as updatePasskeyE,
-  updatePasskeyUsernames as updatePasskeyUsernamesE,
+  updatePasskeyUserDetails as updatePasskeyUserDetailsE
 } from "./passkey/passkey.js"
 import type {
   ExchangeCodeOptions,
@@ -113,11 +113,11 @@ export const updatePasskey = (
  *
  * @category Passkeys
  */
-export const updatePasskeyUsernames = (
-  request: UpdatePasskeyUsernamesOptions
-): Promise<UpdatedPasskeyUsernames | NotFoundError | ForbiddenError> =>
+export const updatePasskeyUserDetails = (
+  request: UpdateUserDetailsOptions
+): Promise<UpdatedUserDetails | NotFoundError | ForbiddenError> =>
   pipe(
-    updatePasskeyUsernamesE(request),
+    updatePasskeyUserDetailsE(request),
     Effect.match({ onFailure: identity, onSuccess: identity }),
     Effect.runPromise
   )
@@ -276,15 +276,15 @@ export type {
   PasskeySummary,
   Platform,
   UpdatedPasskeys,
-  UpdatedPasskeyUsernames,
+  UpdatedUserDetails,
   UpdatePasskeyOptions,
-  UpdatePasskeyUsernamesOptions,
+  UpdateUserDetailsOptions,
 } from "./passkey/passkey.js"
 export {
   isPasskey,
   isPasskeySummary,
   isUpdatedPasskeys,
-  isUpdatedPasskeyUsernames,
+  isUpdatedUserDetails,
 } from "./passkey/passkey.js"
 export type {
   ExchangeCodeOptions,

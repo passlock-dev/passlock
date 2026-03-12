@@ -49,7 +49,7 @@
 </script>
 
 <svelte:head>
-  <title>SvelteKit + Passlock Sample App</title>
+	<title>SvelteKit + Passlock Sample App</title>
 </svelte:head>
 
 <div class="mx-auto flex w-full flex-col gap-10 px-6 lg:flex-row lg:items-center lg:px-12 lg:pt-20">
@@ -73,7 +73,7 @@
 			</p>
 		</div>
 		<div class="flex items-center gap-6">
-			<a href={resolve('/signup')} class="btn btn-wide btn-primary text-white">Sign up</a>
+			<a href={resolve('/signup')} class="btn btn-wide text-white btn-primary">Sign up</a>
 			<a href={resolve('/login')} class="link link-secondary">Login</a>
 		</div>
 	</div>

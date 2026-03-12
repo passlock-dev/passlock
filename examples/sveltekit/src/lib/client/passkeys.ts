@@ -1,5 +1,6 @@
 import {
 	authenticatePasskey,
+	updatePasskey,
 	deletePasskey,
 	isAuthenticationSuccess,
 	isDeleteError,
@@ -9,7 +10,6 @@ import {
 	type AuthenticationEvent
 } from '@passlock/client/safe';
 
-import { updatePasskey as updateLocalPasskey } from '@passlock/client/safe';
 import { UpdatePasskeysSuccess, Error, DeletePasskeySuccess } from '$lib/shared/schemas';
 import { parse } from 'valibot';
 import { resolve } from '$app/paths';
@@ -60,18 +60,35 @@ export const createPasslockPasskey = async (input: CreatePasskeyInput) => {
 
 export type UpdatePasskeyInput = {
 	username: string;
+	givenName: string | undefined;
+	familyName: string | undefined;
 	tenancyId: string;
 	endpoint: string | undefined;
 };
 
-export const updatePasslockUsernames = async (input: UpdatePasskeyInput) => {
+/**
+ * Update the username/display name for every passkey associated with the user.
+ *
+ * This happens in 3 places:
+ * 1) The passlock vault (nice to have)
+ * 2) The local (SQLite) database
+ * 3) The users local device/password manager
+ *
+ * First we call the /passkeys endpoint (+server.ts). This handles steps 1 and 2.
+ * Then we call updatePasskey from @passlock/client/safe to trigger the local updates.
+ *
+ * @param input
+ * @returns
+ */
+export const updatePasskeyUsernames = async (input: UpdatePasskeyInput) => {
 	const ERROR_TAG = '@error/UpdatePasskeyError';
-	const { username, tenancyId: passlockTenancyId, endpoint: passlockEndpoint } = input;
+	const { username, givenName, familyName, tenancyId, endpoint } = input;
+	const displayName = `${givenName} ${familyName}`.trim();
 
 	const serverResult = await postData({
 		url: resolve('/passkeys'),
 		method: 'PATCH',
-		body: { username },
+		body: { username, displayName },
 		on2xx: (jsonResponse) => {
 			const { credentials } = parse(UpdatePasskeysSuccess, jsonResponse);
 			return credentials.length === 0
@@ -86,17 +103,10 @@ export const updatePasslockUsernames = async (input: UpdatePasskeyInput) => {
 
 	if (serverResult._tag !== 'Credentials') return serverResult;
 
-	const { credentials } = serverResult;
-
-	// TODO return only one userId from server
-	// client side delete
+	// client side update
 	let isSuccess = true;
-	for (const credentialUpdate of credentials) {
-		const { _tag } = await updateLocalPasskey({
-			tenancyId: passlockTenancyId,
-			endpoint: passlockEndpoint ?? undefined,
-			...credentialUpdate
-		});
+	for (const credentialUpdate of serverResult.credentials) {
+		const { _tag } = await updatePasskey({ tenancyId, endpoint, ...credentialUpdate });
 		isSuccess = isSuccess && _tag === 'UpdateSuccess';
 	}
 

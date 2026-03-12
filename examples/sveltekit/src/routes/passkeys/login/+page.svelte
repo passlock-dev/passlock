@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { passlockLogin } from '$lib/client/passlock';
+	import { passlockLogin } from '$lib/client/passkeys';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -64,35 +64,36 @@
 </div>
 
 <!-- TODO Delete me -->
-  {#if data.allowCredentials.length > 0}
-  <div class="absolute top-20 right-8 hidden w-96 bg-base-200 p-8 lg:block">
-    <h2 class="text-center text-xl font-semibold">Developer notes</h2>
-    <p class="mt-2">
-      We know which account the user wants to authenticate against, 
-      so we tell the browser to use passkeys linked to that account.
-    </p>
+{#if data.allowCredentials.length > 0}
+	<div class="absolute top-20 right-8 hidden w-96 bg-base-200 p-8 lg:block">
+		<h2 class="text-center text-xl font-semibold">Developer notes</h2>
+		<p class="mt-2">
+			We know which account the user wants to authenticate against, so we tell the browser to use
+			passkeys linked to that account.
+		</p>
 
-    <p class="mt-2">
-      In most cases this doesn't add any real value, but it's useful when a user 
-      might have multiple accounts. 
-    </p>
-      
-    <p class="mt-2">For example, when they register an account and passkey using
-      their personal laptop, then want to login using their work machine.
-    </p>
-      
-    <p class="mt-2">
-      We'll ask them to present a passkey that doesn't exist on the work machine.
-      They'll drop into the roaming authenticator flow and most likely be prompted to
-      scan a QR code using their personal smartphone.
-    </p> 
-  </div>
+		<p class="mt-2">
+			In most cases this doesn't add any real value, but it's useful when a user might have multiple
+			accounts.
+		</p>
+
+		<p class="mt-2">
+			For example, when they register an account and passkey using their personal laptop, then want
+			to login using their work machine.
+		</p>
+
+		<p class="mt-2">
+			We'll ask them to present a passkey that doesn't exist on the work machine. They'll drop into
+			the roaming authenticator flow and most likely be prompted to scan a QR code using their
+			personal smartphone.
+		</p>
+	</div>
 {:else}
-  <div class="absolute top-20 right-8 hidden w-96 bg-base-200 p-8 lg:block">
-    <h2 class="text-center text-xl font-semibold">Developer notes</h2>
-    <p class="mt-2">
-      We don't know which account the user wants to authenticate against until
-      they present a passkey. They are free to present any suitable passkey.
-    </p>
-  </div>
+	<div class="absolute top-20 right-8 hidden w-96 bg-base-200 p-8 lg:block">
+		<h2 class="text-center text-xl font-semibold">Developer notes</h2>
+		<p class="mt-2">
+			We don't know which account the user wants to authenticate against until they present a
+			passkey. They are free to present any suitable passkey.
+		</p>
+	</div>
 {/if}

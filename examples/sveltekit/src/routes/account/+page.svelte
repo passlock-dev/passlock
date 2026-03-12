@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { setError, superForm } from 'sveltekit-superforms';
-	import { updatePasslockUsernames } from '$lib/client/passlock';
+	import { updatePasskeyUsernames } from '$lib/client/passkeys';
 	import type { PageProps } from './$types';
 	import { resolve } from '$app/paths';
 
@@ -11,22 +11,16 @@
 		applyAction: true,
 		invalidateAll: 'pessimistic',
 		onUpdated: async ({ form }) => {
-			await updatePasskeys(form.data.username);
+			const result = await updatePasskeyUsernames({ ...data, ...form.data });
+			if (result._tag === '@error/UpdatePasskeyError') {
+				setError(data.form, result.message);
+			}
 		}
 	});
-
-	const updatePasskeys = async (username: string) => {
-		const { tenancyId, endpoint } = data;
-
-		const result = await updatePasslockUsernames({ username, tenancyId, endpoint });
-		if (result._tag === '@error/UpdatePasskeyError') {
-			setError(data.form, result.message);
-		}
-	};
 </script>
 
 <svelte:head>
-  <title>My Account</title>
+	<title>My Account</title>
 </svelte:head>
 
 <div class="flex h-full w-full items-center justify-center">
@@ -105,8 +99,8 @@
 <div class="absolute top-20 right-8 hidden w-96 bg-base-200 p-8 lg:block">
 	<h2 class="text-center text-xl font-semibold">Developer notes</h2>
 	<p class="mt-2">
-		We want to align passkeys with any account changes. Therefore changes to the account
-		username or name result in several operations:
+		We want to align passkeys with any account changes. Therefore changes to the account username or
+		name result in several operations:
 	</p>
 
 	<ol class="mt-2 list-inside list-decimal">

@@ -62,7 +62,7 @@
 			<a href={resolve('/login/autofill')} class="mr-5 hidden link link-accent lg:block">
 				Autofill login
 			</a>
-			<a href={resolve('/signup')} class="btn mr-5 btn-primary text-white">Sign up</a>
+			<a href={resolve('/signup')} class="btn mr-5 text-white btn-primary">Sign up</a>
 		{/if}
 	</div>
 </div>
