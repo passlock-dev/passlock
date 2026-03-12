@@ -11,7 +11,8 @@ import { resolve } from '$app/paths';
 
 const schema = v.object({
 	email: v.string(),
-	givenName: v.string(),
+	givenName: v.pipe(v.string(), v.trim(), v.nonEmpty('First name is required')),
+	familyName: v.pipe(v.string(), v.trim(), v.nonEmpty('Last name is required')),
 	password: v.string()
 });
 
@@ -35,9 +36,10 @@ export const actions = {
 
 		const email = form.data.email;
 		const givenName = form.data.givenName;
+		const familyName = form.data.familyName;
 
 		const passwordHash = await hashPassword(form.data.password);
-		const user = await createUser({ email, givenName, passwordHash });
+		const user = await createUser({ email, givenName, familyName, passwordHash });
 
 		if (user._tag === 'DuplicateUser') {
 			return setError(form, 'email', 'Account already exists');

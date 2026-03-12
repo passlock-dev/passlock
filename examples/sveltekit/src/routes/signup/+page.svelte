@@ -23,17 +23,43 @@
 			</p>
 		</div>
 
-		<form method="post">
-			<fieldset class="fieldset rounded-box border border-base-300 bg-base-200 p-10 lg:w-sm">
-				<label for="givenName" class="label">First name</label>
-				<input
-					id="givenName"
-					type="text"
-					autocomplete="given-name"
-					name="givenName"
-					class="input"
-					bind:value={$form.givenName}
-					required />
+		<form method="post" class="w-full max-w-sm">
+			<fieldset class="fieldset rounded-box border border-base-300 bg-base-200 p-10">
+				<div class="grid gap-4 sm:grid-cols-2">
+					<div>
+						<label for="givenName" class="label">First name</label>
+						<input
+							id="givenName"
+							type="text"
+							autocomplete="given-name"
+							name="givenName"
+							class={['input w-full', { 'input-error': $errors.givenName }]}
+							bind:value={$form.givenName}
+							required />
+						{#if $errors.givenName}
+							{#each $errors.givenName as error (error)}
+								<span class="text-error">{error}</span>
+							{/each}
+						{/if}
+					</div>
+
+					<div>
+						<label for="familyName" class="label">Last name</label>
+						<input
+							id="familyName"
+							type="text"
+							autocomplete="family-name"
+							name="familyName"
+							class={['input w-full', { 'input-error': $errors.familyName }]}
+							bind:value={$form.familyName}
+							required />
+						{#if $errors.familyName}
+							{#each $errors.familyName as error (error)}
+								<span class="text-error">{error}</span>
+							{/each}
+						{/if}
+					</div>
+				</div>
 
 				<label for="email" class="label mt-2">Email</label>
 				<input
@@ -41,7 +67,7 @@
 					type="email"
 					name="email"
 					autocomplete="email"
-					class={['input', { 'input-error': $errors.email }]}
+					class={['input w-full', { 'input-error': $errors.email }]}
 					bind:value={$form.email}
 					required />
 				{#if $errors.email}<span class="text-error">{$errors.email}</span>{/if}
@@ -52,7 +78,7 @@
 					type="password"
 					autocomplete="new-password"
 					name="password"
-					class="input"
+					class="input w-full"
 					bind:value={$form.password}
 					required />
 

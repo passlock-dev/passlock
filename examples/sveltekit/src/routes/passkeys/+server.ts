@@ -95,6 +95,9 @@ export const PATCH: RequestHandler = async (event) => {
 	}
 	const userId = event.locals.user.userId;
 	const username = payload.output.username;
+	const displayName =
+		[event.locals.user.givenName, event.locals.user.familyName].filter(Boolean).join(' ') ||
+		username;
 
 	const userPasskeys = await getPasskeysByUserId(event.locals.user.userId);
 
@@ -102,7 +105,7 @@ export const PATCH: RequestHandler = async (event) => {
 		userPasskeys.map(async (passkey) => await updatePasskey(passkey.passkeyId, { username }))
 	);
 
-	const updatedPasskeys = await updatePasslockUsernames({ userId, username });
+	const updatedPasskeys = await updatePasslockUsernames({ userId, username, displayName });
 
 	if (updatedPasskeys._tag !== 'UpdatedPasskeyUsernames') {
 		const status = updatedPasskeys._tag === '@error/NotFound' ? 401 : 401;

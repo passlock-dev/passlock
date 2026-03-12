@@ -33,7 +33,7 @@
 	<form method="POST" use:enhance class="w-full max-w-sm rounded-lg bg-base-200 p-10 pt-8">
 		<h2 class="text-center text-xl font-semibold">My account</h2>
 		<p class="mt-3 text-center text-sm text-base-content/80">
-			Update your username and first name.
+			Update your username, first name, and last name.
 		</p>
 
 		{#if $message}
@@ -60,20 +60,41 @@
 				{/each}
 			{/if}
 
-			<label for="givenName" class="label mt-2">First name</label>
-			<input
-				id="givenName"
-				type="text"
-				name="givenName"
-				autocomplete="given-name"
-				class={['input', { 'input-error': $errors.givenName }]}
-				bind:value={$form.givenName}
-				required />
-			{#if $errors.givenName}
-				{#each $errors.givenName as error (error)}
-					<span class="text-error">{error}</span>
-				{/each}
-			{/if}
+			<div class="mt-2 grid gap-4 sm:grid-cols-2">
+				<div>
+					<label for="givenName" class="label">First name</label>
+					<input
+						id="givenName"
+						type="text"
+						name="givenName"
+						autocomplete="given-name"
+						class={['input w-full', { 'input-error': $errors.givenName }]}
+						bind:value={$form.givenName}
+						required />
+					{#if $errors.givenName}
+						{#each $errors.givenName as error (error)}
+							<span class="text-error">{error}</span>
+						{/each}
+					{/if}
+				</div>
+
+				<div>
+					<label for="familyName" class="label">Last name</label>
+					<input
+						id="familyName"
+						type="text"
+						name="familyName"
+						autocomplete="family-name"
+						class={['input w-full', { 'input-error': $errors.familyName }]}
+						bind:value={$form.familyName}
+						required />
+					{#if $errors.familyName}
+						{#each $errors.familyName as error (error)}
+							<span class="text-error">{error}</span>
+						{/each}
+					{/if}
+				</div>
+			</div>
 
 			<button class="btn mt-4 btn-primary">Save changes</button>
 		</fieldset>
@@ -84,18 +105,18 @@
 <div class="absolute top-20 right-8 hidden w-96 bg-base-200 p-8 lg:block">
 	<h2 class="text-center text-xl font-semibold">Developer notes</h2>
 	<p class="mt-2">
-    We want to align passkeys with any account changes. 
-    Therefore changes to the account email result in several operations:
-  </p>
+		We want to align passkeys with any account changes. Therefore changes to the account
+		username or name result in several operations:
+	</p>
 
 	<ol class="mt-2 list-inside list-decimal">
 		<li>The local application database is updated.</li>
 		<li class="mt-2">All associated passkeys are updated in the user's device/password manager.</li>
-		<li class="mt-2">The passkey username is updated in your Passlock vault.</li>
+		<li class="mt-2">The passkey username and display name are updated in your Passlock vault.</li>
 	</ol>
 
 	<p class="mt-2 font-semibold">
-		Test this by updating your username then visiting the
+		Test this by updating your username or name, then visiting the
 		<a href={resolve('/passkeys')} class="link text-primary">passkeys</a>
 		page and checking your local passkey manager 🚀
 	</p>

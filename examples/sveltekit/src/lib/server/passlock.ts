@@ -69,16 +69,22 @@ export const assignPasslockUserId = async ({ passkeyId, userId }: AssignUserId) 
 };
 
 export type UpdateVaultUserNames = {
-	userId: number | number;
+	userId: number | string;
 	username: string;
-}
+	displayName?: string;
+};
 
-export const updatePasslockUsernames = async ({ userId, username }: UpdateVaultUserNames) => {
+export const updatePasslockUsernames = async ({
+	userId,
+	username,
+	displayName
+}: UpdateVaultUserNames) => {
 	const config = getPasslockConfig();
 
 	return await updatePasskeyUsernames({
 		userId: String(userId),
 		username,
+		displayName,
 		...config
 	});
 };

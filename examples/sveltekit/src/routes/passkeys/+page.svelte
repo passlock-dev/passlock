@@ -24,6 +24,7 @@
 			tenancyId: data.tenancyId,
 			endpoint: data.endpoint,
 			email: data.user.email,
+			displayName: `${data.user.givenName} ${data.user.familyName}`.trim(),
 			existingPasskeys
 		});
 

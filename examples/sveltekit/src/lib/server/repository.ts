@@ -20,12 +20,14 @@ import { generateRandomString } from './utils';
 export type CreateUser = {
 	email: string;
 	givenName: string;
+	familyName: string;
 	passwordHash: string;
 };
 
 export type UpdateUserProfile = {
 	email: string;
 	givenName: string;
+	familyName: string;
 };
 
 export type User = {
@@ -83,6 +85,7 @@ export type SessionUser = {
 	userId: number;
 	email: string;
 	givenName: string;
+	familyName: string;
 };
 
 export type SessionValidationResult = {
@@ -115,14 +118,14 @@ const isSqliteConstraintError = (e: unknown): e is DrizzleQueryError & { cause: 
 };
 
 export const createUser = async (newUser: CreateUser): Promise<User | DuplicateUser> => {
-	const { email, givenName, passwordHash } = newUser;
+	const { email, givenName, familyName, passwordHash } = newUser;
 
 	try {
 		return await db.transaction(async (tx) => {
 			const createdAt = Date.now();
 			const user = await tx
 				.insert(usersTable)
-				.values({ email, givenName, createdAt })
+				.values({ email, givenName, familyName, createdAt })
 				.returning({ userId: usersTable.id, createdAt: usersTable.createdAt });
 
 			const userId = user[0].userId;
@@ -140,17 +143,18 @@ export const updateUserProfile = async (
 	userId: number,
 	updateUser: UpdateUserProfile
 ): Promise<SessionUser | DuplicateUser | null> => {
-	const { email, givenName } = updateUser;
+	const { email, givenName, familyName } = updateUser;
 
 	try {
 		const users = await db
 			.update(usersTable)
-			.set({ email, givenName })
+			.set({ email, givenName, familyName })
 			.where(eq(usersTable.id, userId))
 			.returning({
 				userId: usersTable.id,
 				email: usersTable.email,
-				givenName: usersTable.givenName
+				givenName: usersTable.givenName,
+				familyName: usersTable.familyName
 			});
 
 		return users[0] ?? null;
@@ -318,7 +322,8 @@ export const validateSessionToken = async (
 			createdAt: sessionsTable.createdAt,
 			lastVerifiedAt: sessionsTable.lastVerifiedAt,
 			email: usersTable.email,
-			givenName: usersTable.givenName
+			givenName: usersTable.givenName,
+			familyName: usersTable.familyName
 		})
 		.from(sessionsTable)
 		.innerJoin(usersTable, eq(sessionsTable.userId, usersTable.id))
@@ -359,7 +364,8 @@ export const validateSessionToken = async (
 		user: {
 			userId: row.userId,
 			email: row.email,
-			givenName: row.givenName
+			givenName: row.givenName,
+			familyName: row.familyName
 		},
 		fresh
 	};
