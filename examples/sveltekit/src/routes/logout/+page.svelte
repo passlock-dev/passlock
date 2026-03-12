@@ -1,5 +1,5 @@
 <svelte:head>
-  <title>Logout</title>
+	<title>Logout</title>
 </svelte:head>
 
 <div class="flex h-full w-full items-center justify-center">

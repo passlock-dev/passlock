@@ -1,15 +1,14 @@
 import {
 	deletePasslockPasskey,
 	exchangePasslockCode,
-	updatePasslockUsernames,
-	assignPasslockUserId
+	assignPasslockUserId,
+	getPasslockConfig
 } from '$lib/server/passlock.js';
 import {
 	createPasskey,
 	deletePasskeyByUserId,
-	getPasskeysByUserId,
 	getUserByPasskeyId,
-	updatePasskey
+	updatePasskeysByUserId
 } from '$lib/server/repository.js';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
@@ -19,6 +18,7 @@ import {
 	RegisterPasskeySuccess,
 	UpdatePasskeysSuccess
 } from '$lib/shared/schemas';
+import { updatePasskeyUserDetails as updateVault } from '@passlock/server';
 
 const CreatePasskeyPayload = v.object({
 	code: v.pipe(v.string(), v.trim(), v.minLength(8))
@@ -39,12 +39,9 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	const jsonPayload = await event.request.json();
-	const payload = v.safeParse(CreatePasskeyPayload, jsonPayload);
-	if (payload.issues) {
-		return json({ error: 'Invalid request. Expected code.' }, { status: 400 });
-	}
+	const { code } = v.parse(CreatePasskeyPayload, jsonPayload);
 
-	const principal = await exchangePasslockCode(payload.output.code);
+	const principal = await exchangePasslockCode(code);
 	if (principal._tag !== 'ExtendedPrincipal') {
 		const status = principal._tag === '@error/InvalidCode' ? 401 : 500;
 		return json({ error: principal.message }, { status });
@@ -78,7 +75,8 @@ export const POST: RequestHandler = async (event) => {
 };
 
 const UpdatePasskeyPayload = v.object({
-	username: v.pipe(v.string(), v.trim())
+	username: v.pipe(v.string(), v.trim()),
+	displayName: v.optional(v.pipe(v.string(), v.trim()))
 });
 
 type UpdatePasskeysSuccess = v.InferOutput<typeof UpdatePasskeysSuccess>;
@@ -88,33 +86,24 @@ export const PATCH: RequestHandler = async (event) => {
 		return json({ error: 'Authentication required.' }, { status: 401 });
 	}
 
-	const jsonPayload = await event.request.json().catch(() => null);
-	const payload = v.safeParse(UpdatePasskeyPayload, jsonPayload);
-	if (payload.issues) {
-		return json({ error: 'Invalid request. Expected username.' }, { status: 400 });
-	}
-	const userId = event.locals.user.userId;
-	const username = payload.output.username;
-	const displayName =
-		[event.locals.user.givenName, event.locals.user.familyName].filter(Boolean).join(' ') ||
-		username;
+	const jsonPayload = await event.request.json();
+	const { username, displayName } = v.parse(UpdatePasskeyPayload, jsonPayload);
+	const userId = String(event.locals.user.userId);
 
-	const userPasskeys = await getPasskeysByUserId(event.locals.user.userId);
+	// update vault passkeys
+	const vaultResult = await updateVault({
+		...getPasslockConfig(),
+		userId,
+		username,
+		displayName
+	});
 
-	await Promise.all(
-		userPasskeys.map(async (passkey) => await updatePasskey(passkey.passkeyId, { username }))
-	);
-
-	const updatedPasskeys = await updatePasslockUsernames({ userId, username, displayName });
-
-	if (updatedPasskeys._tag !== 'UpdatedPasskeyUsernames') {
-		const status = updatedPasskeys._tag === '@error/NotFound' ? 401 : 401;
-		return json({ error: updatedPasskeys.message }, { status });
-	}
+	// update local database
+	await updatePasskeysByUserId(event.locals.user.userId, { username });
 
 	const response: UpdatePasskeysSuccess = {
 		_tag: 'UpdatePasskeySuccess',
-		credentials: updatedPasskeys.credentials
+		credentials: vaultResult.credentials
 	};
 
 	return json(response);
@@ -132,12 +121,8 @@ export const DELETE: RequestHandler = async (event) => {
 	}
 
 	const jsonPayload = await event.request.json().catch(() => null);
-	const payload = v.safeParse(DeletePasskeyPayload, jsonPayload);
-	if (payload.issues) {
-		return json({ error: 'Invalid request. Expected passkeyId.' }, { status: 400 });
-	}
+	const { passkeyId } = v.parse(DeletePasskeyPayload, jsonPayload);
 
-	const passkeyId = payload.output.passkeyId;
 	const linkedPasskey = await getUserByPasskeyId(passkeyId);
 	if (!linkedPasskey || linkedPasskey.userId !== event.locals.user.userId) {
 		return json({ error: 'Passkey not found for this account.' }, { status: 404 });

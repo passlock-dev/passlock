@@ -248,19 +248,16 @@ export const getPasskeysByUsername = async (email: string): Promise<UserPasskey[
 		.orderBy(desc(passkeysTable.createdAt));
 };
 
-export const updatePasskey = async (
-	passkeyId: string,
+export const updatePasskeysByUserId = async (
+	userId: number,
 	{ username }: { username: string }
-): Promise<Passkey | PasskeyNotFound> => {
-	const passkeys = await db
+): Promise<number> => {
+	const results = await db
 		.update(passkeysTable)
 		.set({ username })
-		.where(eq(passkeysTable.passkeyId, passkeyId))
-		.returning();
+		.where(eq(passkeysTable.userId, userId));
 
-	return passkeys.length === 1
-		? { ...passkeys[0], _tag: 'Passkey' }
-		: { _tag: 'PasskeyNotFound', passkeyId };
+	return results.rowsAffected;
 };
 
 export const deletePasskeyByUserId = async (

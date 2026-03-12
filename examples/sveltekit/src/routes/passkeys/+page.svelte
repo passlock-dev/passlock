@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
-	import { createPasslockPasskey, deletePasslockPasskey } from '$lib/client/passlock';
+	import { createPasslockPasskey, deletePasslockPasskey } from '$lib/client/passkeys';
 	import { KeyRound, Trash2 } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
@@ -72,7 +72,7 @@
 </script>
 
 <svelte:head>
-  <title>My Passkeys</title>
+	<title>My Passkeys</title>
 </svelte:head>
 
 <div class="flex h-full w-full flex-col items-center justify-center">

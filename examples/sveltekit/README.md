@@ -1,6 +1,6 @@
 # Sample SvelteKit app using Passlock + Lucia
 
-SvelteKit app using passkeys alongside passwords for authentication. 
+SvelteKit app using passkeys alongside passwords for authentication.
 
 ![passlock-sample-screenshot](https://github.com/user-attachments/assets/77306736-4930-4045-9afd-ae3298eb768e)
 
@@ -18,10 +18,10 @@ This is not intended to be a "batteries included" starter project. It's purpose 
 
 ## Frameworks and libraries used
 
-* [Superforms][superforms]
-* [Tailwind CSS][tailwind]
-* [Daisy UI][daisyui]
-* [DrizzleORM][drizzle]
+- [Superforms][superforms]
+- [Tailwind CSS][tailwind]
+- [Daisy UI][daisyui]
+- [DrizzleORM][drizzle]
 
 ## Getting started
 

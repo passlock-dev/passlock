@@ -5,19 +5,14 @@
 
 import { PASSLOCK_API_KEY } from '$env/static/private';
 import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public';
-import {
-	deletePasskey,
-	updatePasskeyUsernames,
-	exchangeCode,
-	assignUser
-} from '@passlock/server/safe';
+import { deletePasskey, exchangeCode, assignUser } from '@passlock/server/safe';
 import { error } from 'console';
 
 /**
  * @returns apiKey, tenancyId and endoint
  * @throws 500 error if env variables are not set
  */
-const getPasslockConfig = () => {
+export const getPasslockConfig = () => {
 	const apiKey = PASSLOCK_API_KEY;
 	const tenancyId = PUBLIC_PASSLOCK_TENANCY_ID;
 	const endpoint = PUBLIC_PASSLOCK_ENDPOINT;
@@ -50,13 +45,13 @@ export const exchangePasslockCode = async (code: string) => {
 
 export type AssignUserId = {
 	passkeyId: string;
-	userId: number | string;  
-}
+	userId: number | string;
+};
 
 /**
  * Sets the passkey's userId in the Passlock vault,
- * @param  
- * @returns 
+ * @param
+ * @returns
  */
 export const assignPasslockUserId = async ({ passkeyId, userId }: AssignUserId) => {
 	const config = getPasslockConfig();
@@ -72,21 +67,6 @@ export type UpdateVaultUserNames = {
 	userId: number | string;
 	username: string;
 	displayName?: string;
-};
-
-export const updatePasslockUsernames = async ({
-	userId,
-	username,
-	displayName
-}: UpdateVaultUserNames) => {
-	const config = getPasslockConfig();
-
-	return await updatePasskeyUsernames({
-		userId: String(userId),
-		username,
-		displayName,
-		...config
-	});
 };
 
 export const deletePasslockPasskey = async (passkeyId: string) => {

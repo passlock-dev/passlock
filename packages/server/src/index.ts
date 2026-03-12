@@ -17,9 +17,9 @@ import type {
   GetPasskeyOptions,
   ListPasskeyOptions,
   Passkey,
-  UpdatedPasskeyUsernames,
+  UpdatedUserDetails,
   UpdatePasskeyOptions,
-  UpdatePasskeyUsernamesOptions,
+  UpdateUserDetailsOptions,
 } from "./passkey/passkey.js"
 import {
   assignUser as assignUserE,
@@ -27,7 +27,7 @@ import {
   getPasskey as getPasskeyE,
   listPasskeys as listPasskeysE,
   updatePasskey as updatePasskeyE,
-  updatePasskeyUsernames as updatePasskeyUsernamesE,
+  updatePasskeyUserDetails as updatePasskeyUserDetailsE,
 } from "./passkey/passkey.js"
 import type {
   ExchangeCodeOptions,
@@ -76,10 +76,10 @@ export const updatePasskey = (
  *
  * @category Passkeys
  */
-export const updatePasskeyUsernames = (
-  request: UpdatePasskeyUsernamesOptions
-): Promise<UpdatedPasskeyUsernames> =>
-  pipe(updatePasskeyUsernamesE(request), Effect.runPromise)
+export const updatePasskeyUserDetails = (
+  request: UpdateUserDetailsOptions
+): Promise<UpdatedUserDetails> =>
+  pipe(updatePasskeyUserDetailsE(request), Effect.runPromise)
 
 /**
  * Call the Passlock backend API to delete an authenticator
@@ -191,15 +191,15 @@ export type {
   PasskeySummary,
   Platform,
   UpdatedPasskeys,
-  UpdatedPasskeyUsernames,
+  UpdatedUserDetails,
   UpdatePasskeyOptions,
-  UpdatePasskeyUsernamesOptions,
+  UpdateUserDetailsOptions,
 } from "./passkey/passkey.js"
 export {
   isPasskey,
   isPasskeySummary,
   isUpdatedPasskeys,
-  isUpdatedPasskeyUsernames,
+  isUpdatedUserDetails,
 } from "./passkey/passkey.js"
 export type {
   ExchangeCodeOptions,

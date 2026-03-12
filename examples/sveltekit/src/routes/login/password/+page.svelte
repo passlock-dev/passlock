@@ -11,7 +11,7 @@
 </script>
 
 <svelte:head>
-  <title>Password Login</title>
+	<title>Password Login</title>
 </svelte:head>
 
 <div class="flex h-full w-full items-center justify-center">
