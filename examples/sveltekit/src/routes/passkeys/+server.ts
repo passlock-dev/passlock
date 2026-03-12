@@ -1,6 +1,5 @@
 import {
 	deletePasslockPasskey,
-	exchangePasslockCode,
 	assignPasslockUserId,
 	getPasslockConfig
 } from '$lib/server/passlock.js';
@@ -18,7 +17,17 @@ import {
 	RegisterPasskeySuccess,
 	UpdatePasskeysSuccess
 } from '$lib/shared/schemas';
-import { updatePasskeyUserDetails as updateVault } from '@passlock/server';
+import {
+	assignUser,
+	deletePasskey,
+	exchangeCode,
+	isExtendedPrincipal,
+	isForbiddenError,
+	isNotFoundError,
+	isPasskey,
+	isUpdatedUserDetails,
+	updatePasskeyUserDetails as updateVault
+} from '@passlock/server/safe';
 
 const CreatePasskeyPayload = v.object({
 	code: v.pipe(v.string(), v.trim(), v.minLength(8))
@@ -38,22 +47,32 @@ export const POST: RequestHandler = async (event) => {
 		return json({ error: 'Authentication required.' }, { status: 401 });
 	}
 
-	const jsonPayload = await event.request.json();
-	const { code } = v.parse(CreatePasskeyPayload, jsonPayload);
+  // use safeParse to avoid untyped thrown errors
+	const rawPayload = await event.request.json();
+	const payload = v.safeParse(CreatePasskeyPayload, rawPayload);
 
-	const principal = await exchangePasslockCode(code);
-	if (principal._tag !== 'ExtendedPrincipal') {
-		const status = principal._tag === '@error/InvalidCode' ? 401 : 500;
-		return json({ error: principal.message }, { status });
+	if (payload.issues) {
+		return json({ error: 'Invalid request. Expected code.' }, { status: 400 });
 	}
 
-	const passlockPasskey = await assignPasslockUserId({
+	// verify the passkey is authentic
+	const principal = await exchangeCode({ ...getPasslockConfig(), ...payload.output });
+	// could also use the _tag property as a discriminator
+  if (!isExtendedPrincipal(principal)) {
+		return json({ error: 'Unable to verify passkey' }, { status: 500 });
+	}
+
+  // not stricly necessary but makes passkey management easier 
+  // if the user registers more than one passkey as we can use
+  // functions like updatePasskeysByUserId for bulk operations
+	const passlockPasskey = await assignUser({
+		...getPasslockConfig(),
 		passkeyId: principal.authenticatorId,
-		userId: event.locals.user.userId
+		userId: String(event.locals.user.userId)
 	});
 
-	if (passlockPasskey._tag !== 'Passkey') {
-		const status = passlockPasskey._tag === '@error/NotFound' ? 401 : 500;
+	if (!isPasskey(passlockPasskey)) {
+		const status = isNotFoundError(passlockPasskey) ? 401 : 500;
 		return json({ error: passlockPasskey.message }, { status });
 	}
 
@@ -86,20 +105,25 @@ export const PATCH: RequestHandler = async (event) => {
 		return json({ error: 'Authentication required.' }, { status: 401 });
 	}
 
-	const jsonPayload = await event.request.json();
-	const { username, displayName } = v.parse(UpdatePasskeyPayload, jsonPayload);
-	const userId = String(event.locals.user.userId);
+	const rawPayload = await event.request.json();
+	const payload = v.safeParse(UpdatePasskeyPayload, rawPayload);
+	if (payload.issues) {
+		return json({ error: 'Invalid request. Expected username.' }, { status: 400 });
+	}
 
 	// update vault passkeys
 	const vaultResult = await updateVault({
+		userId: String(event.locals.user.userId),
 		...getPasslockConfig(),
-		userId,
-		username,
-		displayName
+		...payload.output
 	});
 
+	if (!isUpdatedUserDetails(vaultResult)) {
+		return json({ error: 'Unable to update passkeys' }, { status: 500 });
+	}
+
 	// update local database
-	await updatePasskeysByUserId(event.locals.user.userId, { username });
+	await updatePasskeysByUserId(event.locals.user.userId, payload.output);
 
 	const response: UpdatePasskeysSuccess = {
 		_tag: 'UpdatePasskeySuccess',
@@ -120,31 +144,34 @@ export const DELETE: RequestHandler = async (event) => {
 		return json({ error: 'Authentication required.' }, { status: 401 });
 	}
 
-	const jsonPayload = await event.request.json().catch(() => null);
-	const { passkeyId } = v.parse(DeletePasskeyPayload, jsonPayload);
+	const rawPayload = await event.request.json();
+	const payload = v.safeParse(DeletePasskeyPayload, rawPayload);
+	if (payload.issues) {
+		return json({ error: 'Invalid request. Expected passkeyId.' }, { status: 400 });
+	}
 
-	const linkedPasskey = await getUserByPasskeyId(passkeyId);
-	if (!linkedPasskey || linkedPasskey.userId !== event.locals.user.userId) {
+	const associatedUser = await getUserByPasskeyId(payload.output.passkeyId);
+	if (!associatedUser || associatedUser.userId !== event.locals.user.userId) {
 		return json({ error: 'Passkey not found for this account.' }, { status: 404 });
 	}
 
-	const deletedFromVault = await deletePasslockPasskey(passkeyId);
-	if (deletedFromVault._tag === '@error/Forbidden') {
-		return json({ error: deletedFromVault.message }, { status: 500 });
+	const vaultResult = await deletePasskey({ ...getPasslockConfig(), ...payload.output });
+	if (isForbiddenError(vaultResult)) {
+		return json({ error: 'Unable to delete passkey' }, { status: 500 });
 	}
 
-	const deletedFromTable = await deletePasskeyByUserId(event.locals.user.userId, passkeyId);
-	if (!deletedFromTable) {
+	const dbResult = await deletePasskeyByUserId(event.locals.user.userId, payload.output.passkeyId);
+	if (!dbResult) {
 		return json({ error: 'Unable to delete passkey from local account.' }, { status: 404 });
 	}
 
+	const warning = isNotFoundError(vaultResult)
+		? 'Passkey was already deleted from Passlock vault.'
+		: null;
+
 	const response: DeletePasskeySuccess = {
 		_tag: 'DeletePasskeySuccess',
-		passkeyId,
-		warning:
-			deletedFromVault._tag === '@error/NotFound'
-				? 'Passkey was already deleted from Passlock vault.'
-				: null
+		warning
 	};
 
 	return json(response);

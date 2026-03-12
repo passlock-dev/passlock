@@ -18,7 +18,6 @@ export const UpdatePasskeysSuccess = v.object({
 
 export const DeletePasskeySuccess = v.object({
 	_tag: v.literal('DeletePasskeySuccess'),
-	passkeyId: v.string(),
 	warning: v.nullable(v.string())
 });
 
