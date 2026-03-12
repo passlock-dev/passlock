@@ -17,6 +17,7 @@ import { postData } from './network';
 
 export type CreatePasskeyInput = {
 	email: string;
+	displayName: string;
 	tenancyId: string;
 	endpoint?: string | undefined;
 	existingPasskeys: Array<string>;
@@ -25,14 +26,14 @@ export type CreatePasskeyInput = {
 export const createPasslockPasskey = async (input: CreatePasskeyInput) => {
 	const ERROR_TAG = '@error/CreatePasskeyError' as const;
 
-	const { tenancyId, endpoint, email, existingPasskeys: excludeCredentials } = input;
+	const { tenancyId, endpoint, email, displayName, existingPasskeys: excludeCredentials } = input;
 
 	// client side registration
 	const clientResult = await registerPasskey({
 		endpoint,
 		tenancyId,
 		username: email,
-		userDisplayName: email,
+		userDisplayName: displayName,
 		userVerification: 'preferred',
 		excludeCredentials
 	});
@@ -100,11 +101,11 @@ export const updatePasslockUsernames = async (input: UpdatePasskeyInput) => {
 	}
 
 	return isSuccess
-		? ({
+		? ({ _tag: 'UpdatePasskeySuccess' } as const)
+		: ({
 				_tag: ERROR_TAG,
 				message: 'Unable to update passkey(s)'
-			} as const)
-		: ({ _tag: 'UpdatePasskeySuccess' } as const);
+			} as const);
 };
 
 export type DeletePasskeyInput = {
@@ -139,11 +140,11 @@ export const deletePasslockPasskey = async (input: DeletePasskeyInput) => {
 		endpoint: passlockEndpoint ?? undefined
 	});
 
-	if (result._tag === 'DeleteSuccess') {
+	if (!isDeleteError(result)) {
 		return { _tag: 'DeleteSuccess', warning } as const;
 	}
 
-	if (isDeleteError(result) && result.code === 'PASSKEY_DELETION_UNSUPPORTED') {
+	if (result.code === 'PASSKEY_DELETION_UNSUPPORTED') {
 		const message =
 			'This browser cannot delete passkeys programmatically. ' +
 			'The passkey was removed from your account, ' +
@@ -152,14 +153,7 @@ export const deletePasslockPasskey = async (input: DeletePasskeyInput) => {
 		return { _tag: '@warning/PasskeyDeletePaused', message } as const;
 	}
 
-	if (isDeleteError(result)) {
-		const message = `Passkey was removed from your account but local deletion failed: ${result.message}`;
-
-		return { _tag: ERROR_TAG, message } as const;
-	}
-
-	const message =
-		'Passkey was removed from your account, but local deletion failed on this device.';
+	const message = `Passkey was removed from your account but local deletion failed: ${result.message}`;
 
 	return { _tag: ERROR_TAG, message } as const;
 };
