@@ -3,8 +3,21 @@ import type {
   ExtendedPrincipal as UnsafeExtendedPrincipal,
   Passkey as UnsafePasskey,
 } from "./index.js"
-import type { ExtendedPrincipal, Passkey } from "./safe.js"
-import { isExtendedPrincipal, isForbiddenError } from "./safe.js"
+import type {
+  ExtendedPrincipal,
+  ForbiddenError,
+  InvalidCodeError,
+  Passkey,
+  Principal,
+  Result,
+  VerificationError,
+} from "./safe.js"
+import {
+  exchangeCode,
+  isExtendedPrincipal,
+  isForbiddenError,
+  verifyIdToken,
+} from "./safe.js"
 import type {
   AuthenticatedOptions,
   PasslockOptions,
@@ -41,6 +54,28 @@ describe("public surface", () => {
     type _2 = Assert<IsEqual<AuthenticatedOptions, UnsafeAuthenticatedOptions>>
     type _3 = Assert<IsEqual<ExtendedPrincipal, UnsafeExtendedPrincipal>>
     type _4 = Assert<IsEqual<Passkey, UnsafePasskey>>
+
+    expect(true).toBe(true)
+  })
+
+  it("returns Result envelopes from safe functions", () => {
+    type IsEqual<A, B> =
+      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+        ? true
+        : false
+    type Assert<T extends true> = T
+    type _1 = Assert<
+      IsEqual<
+        Awaited<ReturnType<typeof exchangeCode>>,
+        Result<ExtendedPrincipal, ForbiddenError | InvalidCodeError>
+      >
+    >
+    type _2 = Assert<
+      IsEqual<
+        Awaited<ReturnType<typeof verifyIdToken>>,
+        Result<Principal, VerificationError>
+      >
+    >
 
     expect(true).toBe(true)
   })
