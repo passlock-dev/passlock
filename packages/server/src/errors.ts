@@ -1,8 +1,9 @@
-/*
- * Publicly exposed errors.
- * The errors we receive from the API live in the schemas/errors.ts module.
- * The errors here have the same shape but they are simple types
- * so are easier for non Effect consumers to handle.
+/**
+ * Public error payload shapes exposed by the promise-based and safe entrypoints.
+ *
+ * These mirror the tagged errors used internally by the Effect-based
+ * implementation, but are represented as plain object types for easier
+ * consumption outside Effect.
  */
 
 const isTagged =
@@ -21,6 +22,8 @@ const isTagged =
 /* Unauthorized */
 
 /**
+ * Error payload returned when a request is not authenticated.
+ *
  * @category Authentication
  */
 export type UnauthorizedError = {
@@ -28,6 +31,9 @@ export type UnauthorizedError = {
   message: string
 }
 
+/**
+ * Type guard for {@link UnauthorizedError}.
+ */
 export const isUnauthorizedError = isTagged<UnauthorizedError>(
   "@error/Unauthorized"
 )
@@ -35,6 +41,9 @@ export const isUnauthorizedError = isTagged<UnauthorizedError>(
 /* Forbidden */
 
 /**
+ * Error payload returned when the API key or tenancy is not permitted to
+ * perform the requested action.
+ *
  * @category Authentication
  */
 export type ForbiddenError = {
@@ -42,11 +51,16 @@ export type ForbiddenError = {
   message: string
 }
 
+/**
+ * Type guard for {@link ForbiddenError}.
+ */
 export const isForbiddenError = isTagged<ForbiddenError>("@error/Forbidden")
 
 /* InvalidCode */
 
 /**
+ * Error payload returned when an exchanged code is invalid or expired.
+ *
  * @category Principal
  */
 export type InvalidCodeError = {
@@ -54,12 +68,17 @@ export type InvalidCodeError = {
   message: string
 }
 
+/**
+ * Type guard for {@link InvalidCodeError}.
+ */
 export const isInvalidCodeError =
   isTagged<InvalidCodeError>("@error/InvalidCode")
 
 /* VerificationFailure */
 
 /**
+ * Error payload returned when `verifyIdToken` cannot validate a token.
+ *
  * @category Principal
  */
 export type VerificationError = {
@@ -67,17 +86,28 @@ export type VerificationError = {
   message: string
 }
 
+/**
+ * Type guard for {@link VerificationError}.
+ */
 export const isVerificationError = isTagged<VerificationError>(
   "@error/Verification"
 )
 
 /* InvalidTenancy */
 
+/**
+ * Error payload returned when the supplied tenancy identifier is invalid.
+ *
+ * @category Authentication
+ */
 export type InvalidTenancyError = {
   _tag: "@error/InvalidTenancy"
   message: string
 }
 
+/**
+ * Type guard for {@link InvalidTenancyError}.
+ */
 export const isInvalidTenancyError = isTagged<InvalidTenancyError>(
   "@error/InvalidTenancy"
 )
@@ -97,46 +127,75 @@ export type PasskeyNotFoundError = {
   rpId: string
 }
 
+/**
+ * Type guard for {@link PasskeyNotFoundError}.
+ */
 export const isPasskeyNotFoundError = isTagged<PasskeyNotFoundError>(
   "@error/PasskeyNotFound"
 )
 
 /* NotFound */
 
+/**
+ * Error payload returned when a requested resource cannot be found.
+ *
+ * @category Passkeys
+ */
 export type NotFoundError = {
   _tag: "@error/NotFound"
   message: string
 }
 
+/**
+ * Type guard for {@link NotFoundError}.
+ */
 export const isNotFoundError = isTagged<NotFoundError>("@error/NotFound")
 
 /* InvalidEmail */
 
+/**
+ * Error payload returned when an email address is invalid.
+ */
 export type InvalidEmailError = {
   _tag: "@error/InvalidEmail"
   message: string
 }
 
+/**
+ * Type guard for {@link InvalidEmailError}.
+ */
 export const isInvalidEmailError = isTagged<InvalidEmailError>(
   "@error/InvalidEmail"
 )
 
 /* DuplicateEmail */
 
+/**
+ * Error payload returned when an email address already exists.
+ */
 export type DuplicateEmailError = {
   _tag: "@error/DuplicateEmail"
   message: string
 }
 
+/**
+ * Type guard for {@link DuplicateEmailError}.
+ */
 export const isDuplicateEmailError = isTagged<DuplicateEmailError>(
   "@error/DuplicateEmail"
 )
 
 /* BadRequest */
 
+/**
+ * Error payload returned when the request body is invalid.
+ */
 export type BadRequestError = {
   _tag: "@error/BadRequest"
   message: string
 }
 
+/**
+ * Type guard for {@link BadRequestError}.
+ */
 export const isBadRequestError = isTagged<BadRequestError>("@error/BadRequest")

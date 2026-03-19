@@ -1,6 +1,6 @@
 /**
- * The local device does not support Passkeys.
- * See the message property (string) for more details
+ * The local browser or device does not support passkeys.
+ * See the `message` property for more details.
  *
  * @category Passkeys (errors)
  */
@@ -13,8 +13,8 @@ export const isPasskeyUnsupportedError = (
 }
 
 /**
- * The local device does not support Passkeys.
- * See the message property (string) for more details
+ * The local browser or device does not support passkeys.
+ * See the `message` property for more details.
  *
  * @category Passkeys (errors)
  */
@@ -72,6 +72,11 @@ export class OrphanedPasskeyError extends Error {
   }
 }
 
+/**
+ * WebAuthn/browser error codes surfaced via {@link OtherPasskeyError#code}.
+ *
+ * @category Passkeys (errors)
+ */
 export type ErrorCode =
   | "ERROR_CEREMONY_ABORTED"
   | "ERROR_INVALID_DOMAIN"
@@ -159,7 +164,7 @@ export class DuplicatePasskeyError extends Error {
 }
 
 /**
- * The browser/device was unable to delete the passkey
+ * Local passkey removal could not be prepared or signalled.
  *
  * @category Passkeys (errors)
  */
@@ -170,7 +175,7 @@ export const isDeleteError = (payload: unknown): payload is DeleteError => {
 }
 
 /**
- * The browser/device was unable to delete the passkey
+ * Local passkey removal could not be prepared or signalled.
  *
  * @category Passkeys (errors)
  */
@@ -198,7 +203,7 @@ export class DeleteError extends Error {
 /* Pruning error */
 
 /**
- * The browser/device was unable to prune the passkeys
+ * Local passkey pruning could not be prepared or signalled.
  *
  * @category Passkeys (errors)
  */
@@ -209,7 +214,7 @@ export const isPruningError = (payload: unknown): payload is PruningError => {
 }
 
 /**
- * The browser/device was unable to prune the passkeys
+ * Local passkey pruning could not be prepared or signalled.
  *
  * @category Passkeys (errors)
  */
@@ -229,7 +234,7 @@ export class PruningError extends Error {
 }
 
 /**
- * The browser/device was unable to update the local passkey
+ * Local passkey updates could not be prepared or signalled.
  *
  * @category Passkeys (errors)
  */
@@ -240,7 +245,7 @@ export const isUpdateError = (payload: unknown): payload is UpdateError => {
 }
 
 /**
- * The browser/device was unable to update the local passkey
+ * Local passkey updates could not be prepared or signalled.
  *
  * @category Passkeys (errors)
  */

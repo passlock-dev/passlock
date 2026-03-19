@@ -1,11 +1,18 @@
 import { Context, Micro } from "effect"
 
+/**
+ * Type guard for {@link NetworkError}.
+ */
 export const isNetworkError = (payload: unknown): payload is NetworkError => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
   return payload instanceof NetworkError
 }
 
+/**
+ * Error raised when a request to the Passlock API fails or returns an
+ * unexpected response payload.
+ */
 export class NetworkError extends Error {
   readonly _tag = "@error/Network" as const
   readonly message: string
@@ -33,13 +40,16 @@ export class NetworkError extends Error {
 const DEFAULT_ENDPOINT = "https://api.passlock.dev"
 
 /**
- * Passlock API endpoint
+ * Effect service that provides the Passlock API base URL.
  */
 export class Endpoint extends Context.Tag("Endpoint")<
   Endpoint,
   { readonly endpoint: string }
 >() {}
 
+/**
+ * Create an {@link Endpoint} service from an optional base URL override.
+ */
 export const makeEndpoint = ({
   endpoint = DEFAULT_ENDPOINT,
 }: {
@@ -68,6 +78,9 @@ const isErrorResponse = (payload: unknown): payload is ErrorResponse => {
   return true
 }
 
+/**
+ * Options for {@link makeRequest}.
+ */
 export type RequestOptions<A extends object, E = never> = {
   url: URL
 

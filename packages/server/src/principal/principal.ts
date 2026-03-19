@@ -20,10 +20,29 @@ import {
 
 import type { AuthenticatedOptions, PasslockOptions } from "../shared.js"
 
+/**
+ * Options for exchanging a short-lived Passlock code for an
+ * {@link ExtendedPrincipal}.
+ *
+ * @category Principal
+ */
 export interface ExchangeCodeOptions extends AuthenticatedOptions {
+  /**
+   * Short-lived code emitted by `@passlock/client`.
+   */
   code: string
 }
 
+/**
+ * Exchange a short-lived Passlock code for details about the completed
+ * registration or authentication operation.
+ *
+ * @param options Request options including the code to exchange.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns An Effect that succeeds with the resolved {@link ExtendedPrincipal}.
+ *
+ * @category Principal
+ */
 export const exchangeCode = (
   options: ExchangeCodeOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
@@ -78,14 +97,39 @@ export const exchangeCode = (
     Effect.provide(fetchLayer)
   )
 
+/**
+ * Error returned when `verifyIdToken` cannot decode or validate the supplied
+ * token.
+ *
+ * @category Principal
+ */
 export class VerificationError extends Data.TaggedError("@error/Verification")<{
   message: string
 }> {}
 
+/**
+ * Options for locally verifying a Passlock `id_token`.
+ *
+ * @category Principal
+ */
 export interface VerifyIdTokenOptions extends PasslockOptions {
+  /**
+   * JWT to decode and verify.
+   */
   token: string
 }
 
+/**
+ * Decode and verify a Passlock `id_token` using the Passlock JWKS endpoint.
+ *
+ * The JWKS endpoint is derived from `endpoint` and cached between calls in the
+ * current process.
+ *
+ * @param options Request options including the token to verify.
+ * @returns An Effect that succeeds with a decoded {@link Principal}.
+ *
+ * @category Principal
+ */
 export const verifyIdToken = (
   options: VerifyIdTokenOptions
 ): Effect.Effect<Principal, VerificationError> =>

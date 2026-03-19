@@ -179,7 +179,8 @@ export const authenticatePasskey = (
  * {@link UpdatePasskeyOptions}. {@link UpdateCredentialOptions} is intended
  * for credential-scoped updates, for example when replaying data returned by
  * `@passlock/server`.
- * @returns A promise resolving to an {@link UpdateSuccess}.
+ * @returns A promise resolving to an {@link UpdateSuccess} once the browser
+ * has been asked to refresh the local passkey details.
  * @see {@link isUpdateError}
  * @throws {@link UpdateError} if the passkey cannot be updated
  *
@@ -192,7 +193,7 @@ export const authenticatePasskey = (
  *
  * try {
  *   const result = await updatePasskey({ tenancyId, passkeyId, username, displayName });
- *   console.log("passkey updated");
+ *   console.log("passkey update signal sent");
  * } catch (error) {
  *   console.log(error);
  * }
@@ -221,15 +222,16 @@ export const updatePasskey = (
  *
  * @param options The `credentials` array returned by
  * `@passlock/server`'s `updatePasskeyUsernames`.
- * @returns A promise resolving to an {@link UpdateSuccess}.
+ * @returns A promise resolving to an {@link UpdateSuccess} once the browser
+ * has been asked to refresh the local passkey details.
  * @throws {@link UpdateError} if one or more local passkeys cannot be updated
  *
  * @example
  * // server code
- * import { updatePasskeyUsernames } from "@passlock/server";
+ * import { updatePasskeyUsernames as updatePasskeyUsernamesOnServer } from "@passlock/server";
  *
  * // send the backendResult to your frontend
- * const backendResult = await updatePasskeyUsernames({
+ * const backendResult = await updatePasskeyUsernamesOnServer({
  *   tenancyId,
  *   userId,
  *   username,
@@ -239,14 +241,7 @@ export const updatePasskey = (
  * // client code
  * import { updatePasskeyUsernames } from "@passlock/client";
  *
- * const credentialsFromBackend = [
- *   {
- *     userId: "base64url-user-id",
- *     rpId: "example.com",
- *     username: "jdoe@yahoo.com",
- *     displayName: "Jane Doe",
- *   },
- * ];
+ * const credentialsFromBackend = backendResult.credentials;
  * const result = await updatePasskeyUsernames(credentialsFromBackend);
  *
  * @category Passkeys (core)
@@ -261,22 +256,23 @@ export const updatePasskeyUsernames = (
 }
 
 /**
- * Attempt to delete multiple passkeys from a local device.
+ * Attempt to signal removal of multiple passkeys from a local device.
  *
  * Use this after deleting the server-side passkeys. The `deleted` array returned
  * by `@passlock/server` already has the right shape, so you can pass it straight
  * into this function.
  *
  * @param options Credentials derived from deleted backend passkeys.
- * @returns A promise resolving to a {@link DeleteSuccess}.
+ * @returns A promise resolving to a {@link DeleteSuccess} once the browser
+ * removal signals have been queued.
  * @see {@link isDeleteError}
  * @throws {@link DeleteError} if one or more local passkeys cannot be deleted
  *
  * @example
  * // server code
- * import { deleteUserPasskeys } from "@passlock/server";
+ * import { deleteUserPasskeys as deleteUserPasskeysOnServer } from "@passlock/server";
  *
- * const deletedPasskeys = await deleteUserPasskeys({
+ * const deletedPasskeys = await deleteUserPasskeysOnServer({
  *   tenancyId,
  *   userId,
  *   apiKey,
@@ -285,7 +281,8 @@ export const updatePasskeyUsernames = (
  * // client code
  * import { deleteUserPasskeys } from "@passlock/client";
  *
- * const result = await deleteUserPasskeys(deletedPasskeys.deleted);
+ * const deletedCredentials = deletedPasskeys.deleted;
+ * const result = await deleteUserPasskeys(deletedCredentials);
  *
  * @category Passkeys (core)
  */
@@ -299,7 +296,8 @@ export const deleteUserPasskeys = (
 }
 
 /**
- * Attempts to delete a passkey from a local device. There are two scenarios in which this function proves useful:
+ * Attempts to signal removal of a passkey from a local device. There are two
+ * scenarios in which this function proves useful:
  *
  * 1. **Deleting a passkey**. Use the `@passlock/server` package or make vanilla REST calls from your
  * backend to delete the server-side component, then use this function to delete the client-side component.
@@ -310,8 +308,11 @@ export const deleteUserPasskeys = (
  * See [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/) and
  * [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/) in the documentation.
  *
- * @param options You typically pass a {@link DeletePasskeyOptions}, the other types are for advanced edge-cases.
- * @returns A {@link DeleteSuccess} payload if the passkey is deleted.
+ * @param options You typically pass a {@link DeletePasskeyOptions}. Use
+ * {@link DeleteCredentialOptions} or {@link OrphanedPasskeyError} when you
+ * already have the credential metadata.
+ * @returns A {@link DeleteSuccess} payload once the browser removal signal has
+ * been queued.
  * @see {@link isDeleteError}
  * @throws {@link DeleteError} if the passkey cannot be deleted
  *
@@ -322,7 +323,7 @@ export const deleteUserPasskeys = (
  *
  * try {
  *   const result = await deletePasskey({ tenancyId, passkeyId });
- *   console.log("passkey deleted");
+ *   console.log("passkey removal signal sent");
  * } catch (error) {
  *   console.log(error);
  * }
@@ -348,7 +349,8 @@ export const deletePasskey = (
  * should still exist for a given account on this device.
  *
  * @param options Pass the passkeys you want to retain.
- * @returns A {@link PruningSuccess} payload if local passkeys were pruned.
+ * @returns A {@link PruningSuccess} payload once the browser has been told
+ * which credentials should remain accepted.
  * @see {@link isPruningError}
  *
  * @throws {@link PruningError}
@@ -360,7 +362,7 @@ export const deletePasskey = (
  *
  * try {
  *   const result = await prunePasskeys({ tenancyId, allowablePasskeyIds });
- *   console.log("local passkeys pruned", result);
+ *   console.log("accepted credentials signal sent", result);
  * } catch (error) {
  *   if (isPruningError(error)) {
  *     console.log(error.code);

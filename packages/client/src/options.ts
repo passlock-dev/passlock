@@ -1,7 +1,5 @@
 /**
- * Options that are not directly related to passkeys or
- * other authentication mechanisms, but required by the
- * Passlock framework
+ * Shared Passlock tenancy and API endpoint options.
  */
 export interface PasslockOptions {
   /**
@@ -12,8 +10,10 @@ export interface PasslockOptions {
   tenancyId: string
 
   /**
-   * Currently used for testing, but also required to support
-   * multi-region deployments and on-premise self-hosted setups.
+   * Override the default Passlock API base URL.
+   *
+   * Useful for tests, regional deployments, or self-hosted Passlock setups.
+   * When omitted, requests are sent to `https://api.passlock.dev`.
    */
   endpoint?: string
 }

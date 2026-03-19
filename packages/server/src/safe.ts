@@ -109,8 +109,7 @@ export const assignUser = (
   runSafe(assignUserE(request))
 
 /**
- * Can also be used to assign a custom User ID, but also allows you to update
- * the username.
+ * Update a passkey's custom user ID and/or username metadata.
  *
  * **Important:** changing the username has no bearing on authentication, as
  * it's typically only used in the client-side component of the passkey
@@ -257,11 +256,12 @@ export const exchangeCode = (
 
 /**
  * Decode and verify an id_token (JWT) locally.
+ *
  * **Note:** This will make a network call to
  * `https://api.passlock.dev/.well-known/jwks.json` (or your configured `endpoint`)
  * to fetch the relevant public key. The response will be cached, however
- * bear in mind that for something like AWS Lambda it will make the call on every
- * cold start so might actually be slower than {@link exchangeCode}
+ * bear in mind that for environments such as AWS Lambda it will make the call
+ * on each cold start, so it might be slower than {@link exchangeCode}.
  *
  * @see {@link Principal}
  *

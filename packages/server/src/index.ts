@@ -1,5 +1,8 @@
 /**
- * Unsafe functions that could potentially throw errors.
+ * Promise-based functions that reject with tagged error payloads for expected
+ * API failures.
+ *
+ * Unexpected runtime defects may still throw.
  *
  * @categoryDescription Passkeys
  * Functions and related types for managing passkeys
@@ -43,7 +46,10 @@ import {
 import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
 
 /**
- * Call the Passlock backend API to assign a userId to an authenticator
+ * Assign a custom user ID to a passkey in the Passlock vault.
+ *
+ * This updates Passlock's server-side mapping for the passkey. It does not
+ * change the underlying WebAuthn credential's `userId`.
  *
  * @param request
  * @returns A promise resolving to the updated passkey.
@@ -56,7 +62,10 @@ export const assignUser = (request: AssignUserOptions): Promise<Passkey> =>
   pipe(assignUserE(request), Effect.runPromise)
 
 /**
- * Call the Passlock backend API to update passkey properties
+ * Update a passkey's custom user ID and/or username metadata.
+ *
+ * Updating the username only affects the metadata stored in the vault. It does
+ * not affect whether the passkey can be used for authentication.
  *
  * @param request
  * @returns A promise resolving to the updated passkey.
@@ -94,7 +103,10 @@ export const updatePasskeyUsernames = (
   pipe(updatePasskeyUsernamesE(request), Effect.runPromise)
 
 /**
- * Call the Passlock backend API to delete an authenticator
+ * Delete a passkey from the Passlock vault.
+ *
+ * This does not remove the passkey from the user's device. Use
+ * `@passlock/client` to coordinate client-side removal when needed.
  *
  * @param options
  * @returns A promise resolving to the deleted passkey.
@@ -125,7 +137,7 @@ export const deleteUserPasskeys = (
   pipe(deleteUserPasskeysE(request), Effect.runPromise)
 
 /**
- * Call the Passlock backend API to fetch an authenticator
+ * Fetch a single passkey from the Passlock vault.
  *
  * @param options
  * @returns A promise resolving to the passkey.
@@ -152,7 +164,8 @@ export const listPasskeys = (
 ): Promise<FindAllPasskeys> => pipe(listPasskeysE(options), Effect.runPromise)
 
 /**
- * Call the Passlock backend API to exchange a code for an ExtendedPrincipal
+ * Exchange a short-lived code from `@passlock/client` for an
+ * {@link ExtendedPrincipal}.
  *
  * @param options
  * @returns A promise resolving to an extended principal.
@@ -167,11 +180,12 @@ export const exchangeCode = (
 
 /**
  * Decode and verify a Passlock `id_token` (JWT).
- * Note: This will make a network call to
+ *
+ * Note: this will make a network call to
  * `https://api.passlock.dev/.well-known/jwks.json` (or your configured `endpoint`)
  * to fetch the relevant public key. The response will be cached, however
- * bear in mind that for something like AWS Lambda it will make the call on every
- * cold start so might actually be slower than {@link exchangeCode}
+ * bear in mind that for environments such as AWS Lambda it will make the call
+ * on each cold start, so it might be slower than {@link exchangeCode}.
  *
  * @param options
  * @returns A promise resolving to the verified principal.

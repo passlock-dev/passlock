@@ -31,7 +31,12 @@ import type { AuthenticatedOptions } from "../shared.js"
 /* Passkey */
 
 /**
- * WebAuthn specific passkey data
+ * WebAuthn-specific credential data stored for a passkey in the Passlock vault.
+ *
+ * The `id` and `userId` fields are the underlying WebAuthn values, encoded as
+ * Base64URL strings.
+ *
+ * @category Passkeys
  */
 export type PasskeyCredential = {
   id: string
@@ -59,6 +64,8 @@ export type PasskeyCredential = {
  *
  * We've also included links to icons (SVG) so you can give your users
  * a quick visual indication.
+ *
+ * @category Passkeys
  */
 export type Platform = {
   name?: string | undefined
@@ -66,7 +73,7 @@ export type Platform = {
 }
 
 /**
- * The server-side component of a passkey
+ * The server-side representation of a passkey stored in the Passlock vault.
  *
  * @category Passkeys
  */
@@ -88,6 +95,11 @@ export type Passkey = {
   updatedAt: number
 }
 
+/**
+ * Type guard for {@link Passkey}.
+ *
+ * @category Passkeys
+ */
 export const isPasskey = (payload: unknown): payload is Passkey =>
   Schema.is(PasskeySchemas.Passkey)(payload)
 
@@ -108,6 +120,11 @@ export type _PasskeyCredential = satisfy<
 
 /* PasskeySummary */
 
+/**
+ * Compact passkey payload returned by list operations.
+ *
+ * @category Passkeys
+ */
 export type PasskeySummary = {
   readonly _tag: "PasskeySummary"
   readonly id: string
@@ -121,6 +138,11 @@ export type PasskeySummary = {
   readonly createdAt: number
 }
 
+/**
+ * Type guard for {@link PasskeySummary}.
+ *
+ * @category Passkeys
+ */
 export const isPasskeySummary = (payload: unknown): payload is PasskeySummary =>
   Schema.is(PasskeySchemas.PasskeySummary)(payload)
 
@@ -135,11 +157,21 @@ export type _PasskeySummary = satisfy<
 
 /* UpdatedPasskeys */
 
+/**
+ * Result payload returned when passkeys are updated in bulk for a user.
+ *
+ * @category Passkeys
+ */
 export type UpdatedPasskeys = {
   _tag: "UpdatedPasskeys"
   updated: ReadonlyArray<Passkey>
 }
 
+/**
+ * Type guard for {@link UpdatedPasskeys}.
+ *
+ * @category Passkeys
+ */
 export const isUpdatedPasskeys = (
   payload: unknown
 ): payload is UpdatedPasskeys =>
@@ -156,12 +188,21 @@ export type _UpdatedPasskeys = satisfy<
 
 /* Credential */
 
+/**
+ * Credential identifiers returned by passkey deletion operations.
+ *
+ * @category Passkeys
+ */
 export type Credential = {
   credentialId: string
   userId: string
   rpId: string
 }
 
+/**
+ * needed to ensure the Credential === Credential.Type
+ * @internal
+ */
 export type _Credential = satisfy<
   typeof PasskeySchemas.Credential.Type,
   Credential
@@ -169,11 +210,21 @@ export type _Credential = satisfy<
 
 /* DeletedPasskeys */
 
+/**
+ * Result payload returned when all passkeys for a user have been deleted.
+ *
+ * @category Passkeys
+ */
 export type DeletedPasskeys = {
   _tag: "DeletedPasskeys"
   deleted: ReadonlyArray<Credential>
 }
 
+/**
+ * Type guard for {@link DeletedPasskeys}.
+ *
+ * @category Passkeys
+ */
 export const isDeletedPasskeys = (
   payload: unknown
 ): payload is DeletedPasskeys =>
@@ -190,6 +241,11 @@ export type _DeletedPasskeys = satisfy<
 
 /* FindAllPasskeys */
 
+/**
+ * A single page of passkey summaries returned by {@link listPasskeys}.
+ *
+ * @category Passkeys
+ */
 export type FindAllPasskeys = {
   readonly _tag: "FindAllPasskeys"
   readonly cursor: string | null
@@ -212,6 +268,14 @@ export type _FindAllPasskeys = satisfy<
 
 /* UpdatedCredentials (update names by userId) */
 
+/**
+ * Client-facing credential update payload returned by
+ * {@link updatePasskeyUsernames}.
+ *
+ * Each entry describes one credential to update on the user's device.
+ *
+ * @category Passkeys
+ */
 export type UpdatedCredentials = {
   _tag: "UpdatedCredentials"
   credentials: ReadonlyArray<{
@@ -222,6 +286,11 @@ export type UpdatedCredentials = {
   }>
 }
 
+/**
+ * Narrow an unknown value to an `UpdatedCredentials`-tagged payload.
+ *
+ * @category Passkeys
+ */
 export const isUpdatedUserDetails = (
   payload: unknown
 ): payload is UpdatedCredentials => {
@@ -247,10 +316,27 @@ const decodeResponseJson = <A, I, R>(
 
 /* Get Passkey */
 
+/**
+ * Options for fetching a single passkey.
+ *
+ * @category Passkeys
+ */
 export interface GetPasskeyOptions extends AuthenticatedOptions {
+  /**
+   * Identifier of the passkey to fetch.
+   */
   passkeyId: string
 }
 
+/**
+ * Fetch a single passkey from the Passlock vault.
+ *
+ * @param options Request options including the passkey identifier.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns An Effect that succeeds with the requested passkey.
+ *
+ * @category Passkeys
+ */
 export const getPasskey = (
   options: GetPasskeyOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
@@ -295,10 +381,30 @@ export const getPasskey = (
 
 /* Delete Passkey */
 
+/**
+ * Options for deleting a single passkey.
+ *
+ * @category Passkeys
+ */
 export interface DeletePasskeyOptions extends AuthenticatedOptions {
+  /**
+   * Identifier of the passkey to delete.
+   */
   passkeyId: string
 }
 
+/**
+ * Delete a single passkey from the Passlock vault.
+ *
+ * This only removes the server-side record. It does not remove the passkey
+ * from the user's device.
+ *
+ * @param options Request options including the passkey identifier.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns An Effect that succeeds with the deleted passkey.
+ *
+ * @category Passkeys
+ */
 export const deletePasskey = (
   options: DeletePasskeyOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
@@ -346,9 +452,14 @@ export const deletePasskey = (
 /* Assign User */
 
 /**
+ * Options for assigning a custom user ID to a single passkey.
+ *
  * @category Passkeys
  */
 export interface AssignUserOptions extends AuthenticatedOptions {
+  /**
+   * Identifier of the passkey to update.
+   */
   passkeyId: string
 
   /**
@@ -358,6 +469,18 @@ export interface AssignUserOptions extends AuthenticatedOptions {
 }
 
 // TODO reuse updatePasskey
+/**
+ * Assign a custom user ID to a single passkey.
+ *
+ * This updates Passlock's mapping for the passkey. It does not change the
+ * underlying WebAuthn credential's `userId`.
+ *
+ * @param options Request options including the passkey identifier and custom user ID.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns An Effect that succeeds with the updated passkey.
+ *
+ * @category Passkeys
+ */
 export const assignUser = (
   options: AssignUserOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
@@ -408,12 +531,35 @@ export const assignUser = (
 
 /* Update passkey */
 
+/**
+ * Options for updating a single passkey's metadata.
+ *
+ * @category Passkeys
+ */
 export interface UpdatePasskeyOptions extends AuthenticatedOptions {
+  /**
+   * Identifier of the passkey to update.
+   */
   passkeyId: string
+  /**
+   * Custom user ID to associate with the passkey.
+   */
   userId?: string
+  /**
+   * Username metadata stored alongside the passkey.
+   */
   username?: string
 }
 
+/**
+ * Update a single passkey's custom user ID and/or username metadata.
+ *
+ * @param options Request options including the passkey identifier and fields to update.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns An Effect that succeeds with the updated passkey.
+ *
+ * @category Passkeys
+ */
 export const updatePasskey = (
   options: UpdatePasskeyOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
@@ -522,10 +668,31 @@ const updateUserPasskeys = (
 
 /* Delete passkeys by userId */
 
+/**
+ * Options for deleting all passkeys belonging to a user.
+ *
+ * @category Passkeys
+ */
 export interface DeleteUserPasskeysOptions extends AuthenticatedOptions {
+  /**
+   * Custom user ID whose passkeys should be deleted.
+   */
   userId: string
 }
 
+/**
+ * Delete all passkeys associated with a custom user ID.
+ *
+ * The resulting `deleted` credentials can be passed to
+ * `@passlock/client` to remove the corresponding passkeys from the user's
+ * device.
+ *
+ * @param options Request options including the custom user ID.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns An Effect that succeeds with the deleted credential identifiers.
+ *
+ * @category Passkeys
+ */
 export const deleteUserPasskeys = (
   options: DeleteUserPasskeysOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
@@ -588,12 +755,41 @@ export const deleteUserPasskeys = (
 
 /* Update user details by userId */
 
+/**
+ * Options for updating the username and display name for all passkeys that
+ * share a custom user ID.
+ *
+ * @category Passkeys
+ */
 export interface UpdateUsernamesOptions extends AuthenticatedOptions {
+  /**
+   * Custom user ID whose passkeys should be updated.
+   */
   userId: string
+  /**
+   * Username to write back to each stored passkey.
+   */
   username: string
+  /**
+   * Optional display name to return for client-side credential updates.
+   *
+   * When omitted, the returned credentials use `username` as the display name.
+   */
   displayName?: string
 }
 
+/**
+ * Update the username metadata for all passkeys belonging to a custom user ID.
+ *
+ * The resulting payload is designed to be passed to
+ * `@passlock/client` so matching device credentials can be updated.
+ *
+ * @param options Request options including the custom user ID and username metadata.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns An Effect that succeeds with one credential update per updated passkey.
+ *
+ * @category Passkeys
+ */
 export const updatePasskeyUsernames = (
   options: UpdateUsernamesOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
@@ -619,6 +815,15 @@ export const updatePasskeyUsernames = (
 
 /* List Passkeys */
 
+/**
+ * Stream every passkey summary for a tenancy across all result pages.
+ *
+ * @param options Request options used for each paginated request.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns A stream of passkey summaries.
+ *
+ * @category Passkeys
+ */
 export const listPasskeysStream = (
   options: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
@@ -635,10 +840,27 @@ export const listPasskeysStream = (
     )
   )
 
+/**
+ * Options for listing passkeys.
+ *
+ * @category Passkeys
+ */
 export interface ListPasskeyOptions extends AuthenticatedOptions {
+  /**
+   * Pagination cursor returned from a previous {@link listPasskeys} call.
+   */
   cursor?: string
 }
 
+/**
+ * Fetch a single page of passkey summaries for a tenancy.
+ *
+ * @param options Request options including an optional pagination cursor.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns An Effect that succeeds with one page of passkey summaries.
+ *
+ * @category Passkeys
+ */
 export const listPasskeys = (
   options: ListPasskeyOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive

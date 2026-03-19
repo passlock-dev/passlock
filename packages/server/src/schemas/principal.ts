@@ -3,6 +3,11 @@ import type { satisfy } from "./satisfy.js"
 
 /* Principal */
 
+/**
+ * Schema for the principal payload produced after verifying an `id_token`.
+ *
+ * @category Principal
+ */
 export const PrincipalSchema = Schema.TaggedStruct("Principal", {
   id: Schema.String,
   authenticatorId: Schema.String,
@@ -18,6 +23,12 @@ export const PrincipalSchema = Schema.TaggedStruct("Principal", {
   userId: Schema.String,
 })
 
+/**
+ * Principal payload describing a completed authentication or registration
+ * operation.
+ *
+ * @category Principal
+ */
 export type Principal = {
   readonly _tag: "Principal"
   readonly id: string
@@ -34,11 +45,21 @@ export type Principal = {
   readonly expiresAt: number
 }
 
+/**
+ * Type guard for {@link Principal}.
+ *
+ * @category Principal
+ */
 export const isPrincipal = (payload: unknown): payload is Principal =>
   Schema.is(PrincipalSchema)(payload)
 
 type _Principal = satisfy<typeof PrincipalSchema.Type, Principal>
 
+/**
+ * Schema for the richer principal payload returned by `exchangeCode`.
+ *
+ * @category Principal
+ */
 export const ExtendedPrincipalSchema = Schema.TaggedStruct(
   "ExtendedPrincipal",
   {
@@ -62,6 +83,14 @@ export const ExtendedPrincipalSchema = Schema.TaggedStruct(
   }
 )
 
+/**
+ * Extended principal payload returned by `exchangeCode`.
+ *
+ * In addition to the base principal fields it includes request metadata such as
+ * IP address and user agent when available.
+ *
+ * @category Principal
+ */
 export type ExtendedPrincipal = {
   readonly _tag: "ExtendedPrincipal"
   readonly id: string
@@ -83,6 +112,11 @@ export type ExtendedPrincipal = {
   }
 }
 
+/**
+ * Type guard for {@link ExtendedPrincipal}.
+ *
+ * @category Principal
+ */
 export const isExtendedPrincipal = (
   payload: unknown
 ): payload is ExtendedPrincipal => Schema.is(ExtendedPrincipalSchema)(payload)
@@ -92,6 +126,11 @@ type _ExtendedPrincipal = satisfy<
   ExtendedPrincipal
 >
 
+/**
+ * Schema for the Passlock JWT claims used by {@link PrincipalSchema}.
+ *
+ * @category Principal
+ */
 export const IdTokenSchema = Schema.TaggedStruct("IdToken", {
   "a:id": Schema.String,
   "a:typ": Schema.String,
@@ -104,6 +143,12 @@ export const IdTokenSchema = Schema.TaggedStruct("IdToken", {
   sub: Schema.String,
 })
 
+/**
+ * Decoded Passlock JWT claims used internally when verifying `id_token`
+ * payloads.
+ *
+ * @category Principal
+ */
 export type IdToken = {
   readonly "a:id": string
   readonly "a:typ": string
@@ -117,6 +162,11 @@ export type IdToken = {
   readonly _tag: "IdToken"
 }
 
+/**
+ * Type guard for {@link IdToken}.
+ *
+ * @category Principal
+ */
 export const isIdToken = (payload: unknown): payload is IdToken =>
   Schema.is(IdTokenSchema)(payload)
 

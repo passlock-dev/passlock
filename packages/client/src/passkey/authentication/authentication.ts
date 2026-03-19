@@ -77,6 +77,9 @@ export class AuthenticationHelper extends Context.Tag("AuthenticationHelper")<
   } satisfies typeof AuthenticationHelper.Service
 }
 
+/**
+ * Discriminator value used by {@link AuthenticationSuccess}.
+ */
 export const AuthenticationSuccessTag = "AuthenticationSuccess" as const
 export type AuthenticationSuccessTag = typeof AuthenticationSuccessTag
 
@@ -97,6 +100,9 @@ export type AuthenticationSuccess = {
    */
   _tag: "AuthenticationSuccess"
 
+  /**
+   * Passlock identifiers for the authenticated passkey.
+   */
   principal: Principal
 
   /**
@@ -361,7 +367,7 @@ export const authenticatePasskey = (
 }
 
 /**
- * Type of the authentication event
+ * All authentication lifecycle events emitted by {@link authenticatePasskey}.
  *
  * @category Passkeys (other)
  */
@@ -372,7 +378,7 @@ export const AuthenticationEvents = [
 ] as const
 
 /**
- * Type of the authentication event
+ * Authentication lifecycle event name.
  *
  * @category Passkeys (other)
  */
@@ -387,8 +393,9 @@ export type AuthenticationEvent =
  * Most commonly used when {@link authenticatePasskey}
  * is called with {@link AuthenticationOptions#autofill}.
  * When autofill is applied the browser will wait for user interaction. By listening
- * for the `verifyCredential` {@link AuthenticationEvent} you know when the user has
- * presented a passkey so you can disable forms/toggle loading icons etc.
+ * for the `verifyCredential` {@link AuthenticationEvent} you know the browser has
+ * already returned a credential and Passlock verification is starting, so you can
+ * disable forms or toggle loading indicators.
  *
  * @category Passkeys (other)
  */

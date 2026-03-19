@@ -107,6 +107,9 @@ export type RegistrationSuccess = {
    */
   _tag: "RegistrationSuccess"
 
+  /**
+   * Passlock identifiers for the newly registered passkey.
+   */
   principal: Principal
 
   /**
@@ -328,7 +331,7 @@ export const registerPasskey = (
 }
 
 /**
- * Type of the registration event
+ * All registration lifecycle events emitted by {@link registerPasskey}.
  *
  * @category Passkeys (other)
  */
@@ -339,7 +342,7 @@ export const RegistrationEvents = [
 ] as const
 
 /**
- * Type of the registration event
+ * Registration lifecycle event name.
  *
  * @category Passkeys (other)
  */
@@ -349,7 +352,7 @@ export type RegistrationEvent =
   | "saveCredential"
 
 /**
- * Callback to receive registration lifecycle events.
+ * Callback invoked when registration reaches a lifecycle event.
  *
  * @category Passkeys (other)
  */
