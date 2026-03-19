@@ -18,6 +18,8 @@ import type {
   CredentialMapping,
   DeleteError,
   DeleteSuccess,
+  Err,
+  Ok,
   PasslockOptions,
   PruningError,
   PruningSuccess,
@@ -132,6 +134,24 @@ describe("public surface", () => {
         Result<PruningSuccess, PruningError>
       >
     >
+
+    expect(true).toBe(true)
+  })
+
+  it("exposes inverse success and failure literals on each Result branch", () => {
+    type IsEqual<A, B> =
+      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+        ? true
+        : false
+    type Assert<T extends true> = T
+    type DeleteResult = Awaited<ReturnType<typeof root.deletePasskey>>
+    type SuccessBranch = Extract<DeleteResult, { success: true }>
+    type ErrorBranch = Extract<DeleteResult, { success: false }>
+
+    type _1 = Assert<IsEqual<SuccessBranch, Ok<DeleteSuccess>>>
+    type _2 = Assert<IsEqual<ErrorBranch, Err<DeleteError>>>
+    type _3 = Assert<IsEqual<SuccessBranch["failure"], false>>
+    type _4 = Assert<IsEqual<ErrorBranch["failure"], true>>
 
     expect(true).toBe(true)
   })

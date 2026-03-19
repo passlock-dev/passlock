@@ -1,7 +1,8 @@
 /**
  * _safe_ functions i.e. functions that return result envelopes over the original
- * tagged success and error payloads. Use `result.success` to branch between success
- * and error outcomes. Existing type guards and `_tag` checks remain supported.
+ * tagged success and error payloads. Use `result.success` or `result.failure`
+ * to branch between success and error outcomes. Existing type guards and `_tag`
+ * checks remain supported.
  *
  * Note: unexpected runtime failures may still throw.
  *
@@ -10,7 +11,9 @@
  *
  * if (result.success) {
  *   console.log(result.value.code);
- * } else {
+ * }
+ *
+ * if (result.failure) {
  *   console.log(result.error.message);
  * }
  *
@@ -110,10 +113,10 @@ import {
  * if (result.success) {
  *   // send this to your backend for verification
  *   console.log(result.value.code);
- * } else if (isPasskeyUnsupportedError(result.error)) {
+ * } else if (result.failure && isPasskeyUnsupportedError(result.error)) {
  *   // ^^ using an error type guard
  *   console.log("Device does not support passkeys");
- * } else if (result.error._tag === "@error/OtherPasskey") {
+ * } else if (result.failure && result.error._tag === "@error/OtherPasskey") {
  *   // ^^ narrowing the result using the _tag
  *   console.log(result.error.message);
  * } else {
@@ -163,10 +166,10 @@ export const registerPasskey = async (
  * if (result.success) {
  *   // send this to your backend for verification
  *   console.log(result.value.code);
- * } else if (isPasskeyUnsupportedError(result.error)) {
+ * } else if (result.failure && isPasskeyUnsupportedError(result.error)) {
  *   // ^^ using an error type guard
  *   console.log("Device does not support passkeys");
- * } else if (result.error._tag === "@error/OtherPasskey") {
+ * } else if (result.failure && result.error._tag === "@error/OtherPasskey") {
  *   // ^^ narrowing the result using the _tag
  *   console.log(result.error.message);
  * }
@@ -220,7 +223,7 @@ export const authenticatePasskey = (
  *
  * if (result.success) {
  *   console.log("passkey updated locally");
- * } else if (isUpdateError(result.error)) {
+ * } else if (result.failure && isUpdateError(result.error)) {
  *   // narrowed to an UpdateError type
  *   console.log(result.error.code);
  * } else {
@@ -280,7 +283,7 @@ export const updatePasskey = (
  *
  * if (result.success) {
  *   console.log("passkeys updated locally");
- * } else if (isUpdateError(result.error)) {
+ * } else if (result.failure && isUpdateError(result.error)) {
  *   // narrowed to an UpdateError type
  *   console.log(result.error.code);
  * } else {
@@ -290,7 +293,7 @@ export const updatePasskey = (
  * @category Passkeys (core)
  */
 export const updatePasskeyUserDetails = (
-  options: Array<UpdateCredentialOptions>,
+  options: ReadonlyArray<UpdateCredentialOptions>,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<Result<UpdateSuccess, UpdateError>> => {
@@ -326,7 +329,7 @@ export const updatePasskeyUserDetails = (
  *
  * if (result.success) {
  *   console.log("passkey deleted locally");
- * } else if (isDeleteError(result.error)) {
+ * } else if (result.failure && isDeleteError(result.error)) {
  *   // narrowed to a DeleteError type
  *   console.log(result.error.code);
  * } else {
@@ -370,7 +373,7 @@ export const deletePasskey = (
  *
  * if (result.success) {
  *   console.log("local passkeys pruned");
- * } else if (isPruningError(result.error)) {
+ * } else if (result.failure && isPruningError(result.error)) {
  *   // narrowed to a PruningError type
  *   console.log(result.error.code);
  * } else {

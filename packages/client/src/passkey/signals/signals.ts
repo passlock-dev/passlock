@@ -282,7 +282,7 @@ export const isUpdateSuccess = (payload: unknown): payload is UpdateSuccess => {
  * @returns A Micro effect that resolves with a {@link UpdateSuccess} or fails with {@link UpdateError}.
  */
 export const updatePasskeyUserDetails = (
-  options: Array<UpdateCredentialOptions>
+  options: ReadonlyArray<UpdateCredentialOptions>
 ) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)

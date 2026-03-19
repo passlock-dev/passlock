@@ -3,10 +3,12 @@
  * `@passlock/server/safe`.
  *
  * The top-level object still exposes its original `_tag`, so
- * existing `_tag` checks and type guards continue to work.
+ * existing `_tag` checks and type guards continue to work, while
+ * `success` and `failure` provide boolean branch narrowing.
  */
 export type Ok<T extends object> = T & {
   readonly success: true
+  readonly failure: false
   readonly value: T
 }
 
@@ -15,10 +17,12 @@ export type Ok<T extends object> = T & {
  * `@passlock/server/safe`.
  *
  * The top-level object still exposes its original `_tag`, so
- * existing `_tag` checks and type guards continue to work.
+ * existing `_tag` checks and type guards continue to work, while
+ * `success` and `failure` provide boolean branch narrowing.
  */
 export type Err<E extends object> = E & {
   readonly success: false
+  readonly failure: true
   readonly error: E
 }
 
@@ -47,17 +51,33 @@ const decorate = <
   success: Success,
   key: Key
 ): T => {
-  if (hasOwnProperty(payload, "success")) return payload
+  const descriptors: PropertyDescriptorMap = {}
 
-  Object.defineProperties(payload, {
-    success: {
+  if (!hasOwnProperty(payload, "success")) {
+    descriptors.success = {
       configurable: false,
       enumerable: false,
       value: success,
       writable: false,
-    },
-    [key]: toSelfAccessor(payload),
-  })
+    }
+  }
+
+  if (!hasOwnProperty(payload, "failure")) {
+    descriptors.failure = {
+      configurable: false,
+      enumerable: false,
+      value: !success,
+      writable: false,
+    }
+  }
+
+  if (!hasOwnProperty(payload, key)) {
+    descriptors[key] = toSelfAccessor(payload)
+  }
+
+  if (Object.keys(descriptors).length > 0) {
+    Object.defineProperties(payload, descriptors)
+  }
 
   return payload
 }

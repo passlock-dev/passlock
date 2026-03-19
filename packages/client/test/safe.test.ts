@@ -53,6 +53,7 @@ describe("safe result envelopes", () => {
     const result = await deletePasskey(deleteOptions, loggerTest)
 
     expect(result.success).toBe(true)
+    expect(result.failure).toBe(false)
     if (!result.success) {
       throw new Error("Expected a successful result")
     }
@@ -70,8 +71,10 @@ describe("safe result envelopes", () => {
       )
     )
     expect(Object.keys(result)).not.toContain("success")
+    expect(Object.keys(result)).not.toContain("failure")
     expect(Object.keys(result)).not.toContain("value")
     expect(JSON.stringify(result)).not.toContain('"success"')
+    expect(JSON.stringify(result)).not.toContain('"failure"')
     expect(JSON.stringify(result)).not.toContain('"value"')
   })
 
@@ -81,6 +84,7 @@ describe("safe result envelopes", () => {
     const result = await deletePasskey(deleteOptions, loggerTest)
 
     expect(result.success).toBe(false)
+    expect(result.failure).toBe(true)
     if (result.success) {
       throw new Error("Expected an error result")
     }
@@ -90,8 +94,10 @@ describe("safe result envelopes", () => {
     expect(isDeleteError(result)).toBe(true)
     expect(result.error.code).toEqual("PASSKEY_DELETION_UNSUPPORTED")
     expect(Object.keys(result)).not.toContain("success")
+    expect(Object.keys(result)).not.toContain("failure")
     expect(Object.keys(result)).not.toContain("error")
     expect(JSON.stringify(result)).not.toContain('"success"')
+    expect(JSON.stringify(result)).not.toContain('"failure"')
     expect(JSON.stringify(result)).not.toContain('"error"')
   })
 })

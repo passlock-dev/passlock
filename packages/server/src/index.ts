@@ -76,8 +76,8 @@ export const updatePasskey = (
  * However you might choose to align the username in your vault with the
  * client-side component to simplify end user support.
  * 
- * **Note**: updatePasskeyUserDetails can be used alongside updatePasskeyUserDetails
- * in the @passlock/client library to update passkey details on a user's device
+ * **Note:** This can be used alongside `@passlock/client`'s
+ * `updatePasskeyUserDetails` helper to update those details on the user's device.
  *
  * @param request
  * @returns A promise resolving to a list of updated Credentials.

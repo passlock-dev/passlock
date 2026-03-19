@@ -27,7 +27,7 @@ describe(fetchOptions.name, () => {
   const endpoint = "https://api.passlock.dev"
   const tenancyId = "dummyTenancyId"
   const username = "dummyUsername"
-  const userDisplayName = "dummyDisplayName"
+  const displayName = "dummyDisplayName"
 
   const ctx = pipe(
     Context.make(Endpoint, { endpoint }),
@@ -71,18 +71,18 @@ describe(fetchOptions.name, () => {
     })
   })
 
-  describe("given a userDisplayName", () => {
+  describe("given a displayName", () => {
     it("should send it to the backend", async () => {
       fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
 
       await pipe(
-        fetchOptions({ userDisplayName, username }),
+        fetchOptions({ displayName: displayName, username }),
         Micro.provideContext(ctx),
         Micro.runPromise
       )
 
       expect(fetchMock).toHavePosted(expectedRoute, {
-        body: { userDisplayName, username },
+        body: { displayName, username },
       })
     })
   })

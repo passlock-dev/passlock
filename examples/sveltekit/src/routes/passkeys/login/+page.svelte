@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { passlockLogin } from '$lib/client/passkeys';
+	import { authenticatePasskey } from '$lib/client/passkeys';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -9,21 +9,20 @@
 	let loading = $state(false);
 	let error = $state('');
 
-	const loginWithPasskey = async () => {
+	const login = async () => {
 		error = '';
 		loading = true;
 
-		const result = await passlockLogin(data);
+		const result = await authenticatePasskey(data);
 
-		if (result._tag === '@error/PasslockLoginError') {
-			error = result.message;
-			loading = false;
-			return;
-		}
-
-		loading = false;
-		await invalidateAll();
-		await goto(resolve('/'));
+    if (result._tag == "PasslockLoginSuccess") {
+		  loading = false;
+		  await invalidateAll();
+		  await goto(resolve('/'));
+    } else {
+      error = result.message;
+      loading = false;
+    }
 	};
 </script>
 
@@ -37,7 +36,7 @@
 		<button
 			type="button"
 			class="btn mt-6 w-full btn-primary"
-			onclick={loginWithPasskey}
+			onclick={login}
 			disabled={loading}>
 			{#if loading}Logging in...{:else}Login using your passkey{/if}
 		</button>

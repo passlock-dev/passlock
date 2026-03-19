@@ -43,7 +43,7 @@ export interface RegistrationOptions extends PasslockOptions {
    * or "John Doe (personal)". **note:** There's no guarantee browsers/devices
    * will choose to display this property.
    */
-  userDisplayName?: string | undefined
+  displayName?: string | undefined
 
   /**
    * Prevents the user registering a passkey if they already have one
@@ -177,7 +177,7 @@ export const fetchOptions = (
 
     const {
       username,
-      userDisplayName,
+      displayName,
       excludeCredentials,
       userVerification,
       timeout,
@@ -192,7 +192,7 @@ export const fetchOptions = (
     const payload = {
       excludeCredentials,
       timeout,
-      userDisplayName,
+      displayName,
       username,
       userVerification,
     }

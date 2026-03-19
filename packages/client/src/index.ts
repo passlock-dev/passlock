@@ -241,7 +241,7 @@ export const updatePasskey = (
  * @category Passkeys (core)
  */
 export const updatePasskeyUserDetails = (
-  options: Array<UpdateCredentialOptions>,
+  options: ReadonlyArray<UpdateCredentialOptions>,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<UpdateSuccess> => {

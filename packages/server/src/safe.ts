@@ -2,7 +2,7 @@
  * Safe functions that return result envelopes over the original
  * tagged success and error payloads. The returned value keeps
  * its original `_tag` shape, and is also augmented with a
- * result envelope for `success`-style branching.
+ * result envelope for `success`- or `failure`-style branching.
  *
  * Note: unexpected runtime failures may still throw.
  *
@@ -15,7 +15,9 @@
  *
  * if (result.success) {
  *   console.log(result.value.id)
- * } else {
+ * }
+ *
+ * if (result.failure) {
  *   console.log(result.error.message)
  * }
  *
@@ -135,8 +137,8 @@ export const updatePasskey = (
  * However you might choose to align the username in your vault with the
  * client-side component to simplify end user support.
  * 
- * **Note**: updatePasskeyUserDetails can be used alongside updatePasskeyUserDetails
- * in the @passlock/client library to update passkey details on a user's device
+ * **Note:** This can be used alongside `@passlock/client`'s
+ * `updatePasskeyUserDetails` helper to update those details on the user's device.
  *
  * @param request
  * @returns A promise resolving to a {@link Result} whose success branch contains

@@ -2,7 +2,7 @@
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
 
-	import { passlockLogin } from '$lib/client/passkeys';
+	import { authenticatePasskey } from '$lib/client/passkeys';
 	import { onMount } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -16,7 +16,7 @@
 
 	onMount(async () => {
 		// trigger passkey login on page load
-		const result = await passlockLogin({
+		const result = await authenticatePasskey({
 			...data,
 			autofill: true,
 			onEvent: (event) => {

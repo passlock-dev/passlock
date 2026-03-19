@@ -18,9 +18,12 @@ Most functions are developed using the [Effect][effect] framework.
 
 ### "Safe" functions
 
-Developers using the `@passlock/server` library will most likely not be using the Effect framework, so we expose regular Promise-based variants of public functions. e.g. given the function `exchangeCode` in `src/principal/principal.ts` returning an `Effect<A, E>`, we create a function `exchangeCode` in `src/principal/index.ts` returning a `Promise<A | E>`.
+Developers using the `@passlock/server` library will most likely not be using the Effect framework, so we expose regular Promise-based variants of public functions. For tagged success/error APIs, these safe entrypoints return result envelopes over the original payloads. For example, given the function `exchangeCode` in `src/principal/principal.ts` returning an `Effect<A, E>`, we expose an `exchangeCode` in `src/safe.ts` returning a `Promise<Result<A, E>>`, where:
 
-We also offer type guards to enable developers to narrow something of type `A | E` down to an `A` or `E`. 
+* `Ok<A>` is `A & { readonly success: true; readonly failure: false; readonly value: A }`
+* `Err<E>` is `E & { readonly success: false; readonly failure: true; readonly error: E }`
+
+This lets callers branch using either `if (result.success)` or `if (result.failure)`, while preserving the original top-level tagged payload. Existing `_tag` checks and `isX(...)` type guards therefore continue to work unchanged.
 
 The entry point into the safe functions is `src/safe.ts`.
 

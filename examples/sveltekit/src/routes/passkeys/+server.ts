@@ -51,7 +51,7 @@ export const POST: RequestHandler = async (event) => {
 	// verify the passkey is authentic
 	const principal = await exchangeCode({ ...getPasslockConfig(), ...payload.output });
 	// could also use the _tag property as a discriminator
-  if (!principal.success) {
+  if (principal.failure) {
 		return json({ error: 'Unable to verify passkey' }, { status: 500 });
 	}
 
@@ -63,7 +63,8 @@ export const POST: RequestHandler = async (event) => {
 		userId: String(event.locals.user.userId)
 	});
 
-	if (!passlockPasskey.success) {
+  // could also use if (!passlockPasskey.success) { ... }
+	if (passlockPasskey.failure) {
 		const status = isNotFoundError(passlockPasskey) ? 401 : 500;
 		return json({ error: passlockPasskey.message }, { status });
 	}
@@ -123,7 +124,7 @@ export const PATCH: RequestHandler = async (event) => {
 		...payload.output
 	});
 
-	if (!vaultResult.success) {
+	if (vaultResult.failure) {
 		return json({ error: 'Unable to update passkeys' }, { status: 500 });
 	}
 
@@ -176,8 +177,8 @@ export const DELETE: RequestHandler = async (event) => {
 	
   // we don't want to fail fast because it's possible the passkey was already deleted
   // in which case its not an error (see the warning below)
-  // note: we could also use isForbiddenError(result.error) here
-  if (!vaultResult.success && vaultResult.error._tag === "@error/Forbidden") {
+  // note: we could also use isForbiddenError(result) here
+  if (vaultResult.failure && vaultResult._tag === "@error/Forbidden") {
 		return json({ error: 'Unable to delete passkey' }, { status: 500 });
 	}
 
@@ -189,7 +190,7 @@ export const DELETE: RequestHandler = async (event) => {
 
   // note: we could alse examine the _tag property
   // make sure you call isNotFoundError on the vaultResult.error, not vaultResult
-	const warning = !vaultResult.success && isNotFoundError(vaultResult.error)
+	const warning = vaultResult.failure && isNotFoundError(vaultResult.error)
 		? 'Passkey was already deleted from Passlock vault.'
 		: null;
 

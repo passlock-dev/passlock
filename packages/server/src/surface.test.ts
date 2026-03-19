@@ -4,9 +4,11 @@ import type {
   Passkey as UnsafePasskey,
 } from "./index.js"
 import type {
+  Err,
   ExtendedPrincipal,
   ForbiddenError,
   InvalidCodeError,
+  Ok,
   Passkey,
   Principal,
   Result,
@@ -76,6 +78,26 @@ describe("public surface", () => {
         Result<Principal, VerificationError>
       >
     >
+
+    expect(true).toBe(true)
+  })
+
+  it("exposes inverse success and failure literals on each Result branch", () => {
+    type IsEqual<A, B> =
+      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+        ? true
+        : false
+    type Assert<T extends true> = T
+    type ExchangeCodeResult = Awaited<ReturnType<typeof exchangeCode>>
+    type SuccessBranch = Extract<ExchangeCodeResult, { success: true }>
+    type ErrorBranch = Extract<ExchangeCodeResult, { success: false }>
+
+    type _1 = Assert<IsEqual<SuccessBranch, Ok<ExtendedPrincipal>>>
+    type _2 = Assert<
+      IsEqual<ErrorBranch, Err<ForbiddenError> | Err<InvalidCodeError>>
+    >
+    type _3 = Assert<IsEqual<SuccessBranch["failure"], false>>
+    type _4 = Assert<IsEqual<ErrorBranch["failure"], true>>
 
     expect(true).toBe(true)
   })
