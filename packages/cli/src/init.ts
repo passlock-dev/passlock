@@ -62,7 +62,7 @@ const captureData: Effect.Effect<SignupPayload, CancelError> = Effect.gen(
       })
     )
 
-    if (isCancel(email)) return yield* new CancelError({})
+    if (isCancel(email)) return yield* new CancelError()
 
     const firstName = yield* Effect.promise(() =>
       text({
@@ -76,7 +76,7 @@ const captureData: Effect.Effect<SignupPayload, CancelError> = Effect.gen(
       })
     )
 
-    if (isCancel(firstName)) return yield* new CancelError({})
+    if (isCancel(firstName)) return yield* new CancelError()
 
     const lastName = yield* Effect.promise(() =>
       text({
@@ -90,7 +90,7 @@ const captureData: Effect.Effect<SignupPayload, CancelError> = Effect.gen(
       })
     )
 
-    if (isCancel(lastName)) return yield* new CancelError({})
+    if (isCancel(lastName)) return yield* new CancelError()
 
     const isConfirmed = yield* Effect.promise(() =>
       confirm({
@@ -98,7 +98,7 @@ const captureData: Effect.Effect<SignupPayload, CancelError> = Effect.gen(
       })
     )
 
-    if (isCancel(isConfirmed)) return yield* new CancelError({})
+    if (isCancel(isConfirmed)) return yield* new CancelError()
 
     return isConfirmed ? { email, firstName, lastName } : yield* captureData
   }

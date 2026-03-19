@@ -5,11 +5,8 @@ import {
 	SESSION_COOKIE_NAME,
 	setSessionTokenCookie
 } from '$lib/server/session.js';
-import { dev } from '$app/environment';
 
 export const handle: Handle = async ({ event, resolve }) => {
-	if (dev) console.log(`Route: ${event.route.id}`);
-
 	const token = event.cookies.get(SESSION_COOKIE_NAME);
 	if (!token) {
 		event.locals.user = null;

@@ -68,14 +68,14 @@
     "format:check": "biome format ."
   },
   "dependencies": {
-    "@simplewebauthn/browser": "^13.2.2",
+    "@simplewebauthn/browser": "^13.3.0",
     "effect": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/language-service": "^0.78.0",
+    "@effect/language-service": "^0.80.0",
     "@fetch-mock/vitest": "^0.2.18",
-    "@typescript/lib-dom": "npm:@types/web@^0.0.339",
+    "@typescript/lib-dom": "npm:@types/web@^0.0.344",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
     "publint": "catalog:",
@@ -85,5 +85,5 @@
     "typescript": "catalog:",
     "vitest": "^4.0.16"
   },
-  "packageManager": "pnpm@10.30.3"
+  "packageManager": "pnpm@10.32.1"
 }

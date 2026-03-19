@@ -70,11 +70,11 @@
   },
   "dependencies": {
     "effect": "catalog:",
-    "jose": "^6.2.0"
+    "jose": "^6.2.2"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/vitest": "^0.27.0",
+    "@effect/vitest": "^0.28.0",
     "@types/node": "catalog:",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
@@ -86,7 +86,7 @@
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@10.30.3",
+  "packageManager": "pnpm@10.32.1",
   "engines": {
     "node": ">=22"
   }
