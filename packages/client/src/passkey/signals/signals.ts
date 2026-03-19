@@ -74,12 +74,12 @@ export const deletePasskey = (
       )
 
     const credential =
-      "rpId" in options ? options : yield* getCredentialMapping(options)
+      "rpId" in options ? options : yield* getCredential(options)
 
     return yield* signalCredentialRemoval(credential)
   })
 
-const getCredentialMapping = (options: DeletePasskeyOptions) =>
+const getCredential = (options: DeletePasskeyOptions) =>
   Micro.gen(function* () {
     const { tenancyId } = options
     const logger = yield* Micro.service(Logger)
@@ -100,7 +100,7 @@ const getCredentialMapping = (options: DeletePasskeyOptions) =>
       )
 
     const credential = yield* Micro.promise(() => response.json())
-    if (!isCredentialMapping(credential))
+    if (!isCredential(credential))
       return yield* Micro.fail(
         new DeleteError({
           code: "OTHER_ERROR",
@@ -182,7 +182,7 @@ export const prunePasskeys = (options: PrunePasskeyOptions) =>
       )
 
     const credentials = yield* Micro.promise(() => response.json())
-    if (!isCredentialMappings(credentials))
+    if (!isUserCredentials(credentials))
       return yield* Micro.fail(
         new PruningError({
           code: "OTHER_ERROR",
@@ -296,11 +296,47 @@ export const updatePasskeyUsernames = (
         })
       )
 
-    yield* Micro.forEach(options, (credential) => signalCurrentUserDetails(credential, credential))
-    
+    yield* Micro.forEach(options, (credential) =>
+      signalCurrentUserDetails(credential, credential)
+    )
+
     return {
-      _tag: "UpdateSuccess"
-    } as const;
+      _tag: "UpdateSuccess",
+    } as const
+  })
+
+/**
+ * Delete multiple local passkeys using credentials previously returned from
+ * your backend.
+ *
+ * The typical flow is to delete the server-side passkeys first, then pass the
+ * returned `deleted` array into this function so the user’s password manager is
+ * updated too.
+ *
+ * @param options Credentials derived from deleted server-side passkeys.
+ * @returns A Micro effect that resolves with a {@link DeleteSuccess} or fails with {@link DeleteError}.
+ */
+export const deleteUserPasskeys = (
+  options: ReadonlyArray<Credential>
+) =>
+  Micro.gen(function* () {
+    const logger = yield* Micro.service(Logger)
+
+    yield* logger.logInfo("Testing for local passkey removal support")
+    const canDelete = yield* isPasskeyDeleteSupport
+    if (!canDelete)
+      return yield* Micro.fail(
+        new DeleteError({
+          code: "PASSKEY_DELETION_UNSUPPORTED",
+          message: "Passkey deletion not supported on this device",
+        })
+      )
+
+    yield* Micro.forEach(options, signalCredentialRemoval)
+
+    return {
+      _tag: "DeleteSuccess",
+    } as const
   })
 
 /**
@@ -331,12 +367,12 @@ export const updatePasskey = (
       )
 
     const credential =
-      "rpId" in options ? options : yield* getUserCredentialMapping(options)
+      "rpId" in options ? options : yield* getUserCredential(options)
 
     return yield* signalCurrentUserDetails(credential, options)
   })
 
-const getUserCredentialMapping = (options: UpdatePasskeyOptions) =>
+const getUserCredential = (options: UpdatePasskeyOptions) =>
   Micro.gen(function* () {
     const { tenancyId } = options
     const logger = yield* Micro.service(Logger)
@@ -357,7 +393,7 @@ const getUserCredentialMapping = (options: UpdatePasskeyOptions) =>
       )
 
     const credential = yield* Micro.promise(() => response.json())
-    if (!isCredentialMapping(credential))
+    if (!isCredential(credential))
       return yield* Micro.fail(
         new UpdateError({
           code: "OTHER_ERROR",
@@ -370,15 +406,15 @@ const getUserCredentialMapping = (options: UpdatePasskeyOptions) =>
 
 /* Signals */
 
-export type CredentialMapping = {
+export type Credential = {
   credentialId: string
   userId: string
   rpId: string
 }
 
-const isCredentialMapping = (
+const isCredential = (
   payload: unknown
-): payload is CredentialMapping => {
+): payload is Credential => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
 
@@ -394,15 +430,15 @@ const isCredentialMapping = (
   return true
 }
 
-export type CredentialMappings = {
+export type UserCredentials = {
   rpId: string
   userId: string
   allAcceptedCredentialIds: string[]
 }
 
-const isCredentialMappings = (
+const isUserCredentials = (
   payload: unknown
-): payload is CredentialMappings => {
+): payload is UserCredentials => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
 
@@ -439,11 +475,11 @@ export const isDeleteSuccess = (payload: unknown): payload is DeleteSuccess => {
 /**
  * Tell the client device to remove a given credential
  *
- * @param credential Credential mapping or missing-passkey payload.
+ * @param credential Credential or missing-passkey payload.
  * @returns A Micro effect that resolves with a {@link DeleteSuccess} or fails with {@link DeleteError}.
  */
 export const signalCredentialRemoval = (
-  credential: CredentialMapping | IPasskeyNotFound
+  credential: Credential | IPasskeyNotFound
 ): Micro.Micro<DeleteSuccess, DeleteError, Logger> =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
@@ -486,11 +522,11 @@ export const signalCredentialRemoval = (
 /**
  * Tell the client device which credentials are still accepted for a user.
  *
- * @param credentials Accepted credential mapping for the user.
+ * @param credentials Accepted credentials for the user.
  * @returns A Micro effect that resolves with a {@link PruningSuccess} or fails with {@link PruningError}.
  */
 export const signalAcceptedCredentials = (
-  credentials: CredentialMappings
+  credentials: UserCredentials
 ): Micro.Micro<PruningSuccess, PruningError, Logger> =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)

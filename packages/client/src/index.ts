@@ -36,6 +36,7 @@ import type {
   DeleteCredentialOptions,
   DeletePasskeyOptions,
   DeleteSuccess,
+  Credential,
   PrunePasskeyOptions,
   PruningSuccess,
   UpdateCredentialOptions,
@@ -44,6 +45,7 @@ import type {
 } from "./passkey/signals/signals.js"
 import {
   deletePasskey as deletePasskeyM,
+  deleteUserPasskeys as deleteUserPasskeysM,
   isPasskeyDeleteSupport as isPasskeyDeleteSupportM,
   isPasskeyPruningSupport as isPasskeyPruningSupportM,
   isPasskeyUpdateSupport as isPasskeyUpdateSupportM,
@@ -259,6 +261,44 @@ export const updatePasskeyUsernames = (
 }
 
 /**
+ * Attempt to delete multiple passkeys from a local device.
+ *
+ * Use this after deleting the server-side passkeys. The `deleted` array returned
+ * by `@passlock/server` already has the right shape, so you can pass it straight
+ * into this function.
+ *
+ * @param options Credentials derived from deleted backend passkeys.
+ * @returns A promise resolving to a {@link DeleteSuccess}.
+ * @see {@link isDeleteError}
+ * @throws {@link DeleteError} if one or more local passkeys cannot be deleted
+ *
+ * @example
+ * // server code
+ * import { deleteUserPasskeys } from "@passlock/server";
+ *
+ * const deletedPasskeys = await deleteUserPasskeys({
+ *   tenancyId,
+ *   userId,
+ *   apiKey,
+ * });
+ *
+ * // client code
+ * import { deleteUserPasskeys } from "@passlock/client";
+ *
+ * const result = await deleteUserPasskeys(deletedPasskeys.deleted);
+ *
+ * @category Passkeys (core)
+ */
+export const deleteUserPasskeys = (
+  options: ReadonlyArray<Credential>,
+  /** @hidden */
+  logger: typeof Logger.Service = eventLogger
+): Promise<DeleteSuccess> => {
+  const micro = deleteUserPasskeysM(options)
+  return pipe(micro, Micro.provideService(Logger, logger), runToPromiseUnsafe)
+}
+
+/**
  * Attempts to delete a passkey from a local device. There are two scenarios in which this function proves useful:
  *
  * 1. **Deleting a passkey**. Use the `@passlock/server` package or make vanilla REST calls from your
@@ -423,7 +463,7 @@ export {
 } from "./passkey/registration/registration.js"
 export type { UserVerification } from "./passkey/shared.js"
 export type {
-  CredentialMapping,
+  Credential,
   DeleteCredentialOptions,
   DeletePasskeyOptions,
   DeleteSuccess,
