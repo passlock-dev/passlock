@@ -33,22 +33,26 @@ export type Transports = (typeof Transports)[number]
 
 /* Passkey */
 
+export const PasskeyCredential = Schema.Struct({
+  id: Schema.String, // webAuthnId (Base64Url)
+  userId: Schema.String, // webAuthnUserId (Base64Url)
+  username: Schema.String,
+  aaguid: Schema.String,
+  backedUp: Schema.Boolean,
+  counter: Schema.Number,
+  deviceType: Schema.Literal(...CredentialDeviceType),
+  transports: Schema.Array(Schema.Literal(...Transports)),
+  publicKey: Schema.Uint8ArrayFromBase64Url,
+  rpId: Schema.String,
+})
+
+export type PasskeyCredential = typeof PasskeyCredential.Type
+
 export const Passkey = Schema.TaggedStruct("Passkey", {
   id: Schema.String,
   userId: Schema.optional(Schema.String),
   enabled: Schema.Boolean,
-  credential: Schema.Struct({
-    id: Schema.String, // webAuthnId (Base64Url)
-    userId: Schema.String, // webAuthnUserId (Base64Url)
-    username: Schema.String,
-    aaguid: Schema.String,
-    backedUp: Schema.Boolean,
-    counter: Schema.Number,
-    deviceType: Schema.Literal(...CredentialDeviceType),
-    transports: Schema.Array(Schema.Literal(...Transports)),
-    publicKey: Schema.Uint8ArrayFromBase64Url,
-    rpId: Schema.String,
-  }),
+  credential: PasskeyCredential,
   platform: Schema.optional(
     Schema.Struct({
       icon: Schema.optional(Schema.String),
@@ -85,4 +89,20 @@ export const FindAllPasskeys = Schema.TaggedStruct("FindAllPasskeys", {
 
 export const UpdatedPasskeys = Schema.TaggedStruct("UpdatedPasskeys", {
   updated: Schema.Array(Passkey),
+})
+
+export const Credential = Schema.Struct({
+  credentialId: Schema.String,
+  userId: Schema.String,
+  rpId: Schema.String,
+})
+
+export type Credential = typeof Credential.Type
+
+export const DeletedPasskeysResponse = Schema.TaggedStruct("DeletedPasskeys", {
+  deleted: Schema.Array(Passkey),
+})
+
+export const DeletedPasskeys = Schema.TaggedStruct("DeletedPasskeys", {
+  deleted: Schema.Array(Credential),
 })

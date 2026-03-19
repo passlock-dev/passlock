@@ -13,6 +13,8 @@ import { Effect, pipe } from "effect"
 import type {
   AssignUserOptions,
   DeletePasskeyOptions,
+  DeleteUserPasskeysOptions,
+  DeletedPasskeys,
   FindAllPasskeys,
   GetPasskeyOptions,
   ListPasskeyOptions,
@@ -24,6 +26,7 @@ import type {
 import {
   assignUser as assignUserE,
   deletePasskey as deletePasskeyE,
+  deleteUserPasskeys as deleteUserPasskeysE,
   getPasskey as getPasskeyE,
   listPasskeys as listPasskeysE,
   updatePasskey as updatePasskeyE,
@@ -103,6 +106,23 @@ export const updatePasskeyUsernames = (
 export const deletePasskey = (
   options: DeletePasskeyOptions
 ): Promise<Passkey> => pipe(deletePasskeyE(options), Effect.runPromise)
+
+/**
+ * Call the Passlock backend API to delete all passkeys associated with a user.
+ *
+ * @param request
+ * @returns A promise resolving to a {@link DeletedPasskeys} payload.
+ * Its `deleted` array can be passed directly into `@passlock/client`'s
+ * `deleteUserPasskeys` helper for follow-up client-side passkey removal.
+ * @throws {@link NotFoundError} if the user does not exist
+ * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
+ *
+ * @category Passkeys
+ */
+export const deleteUserPasskeys = (
+  request: DeleteUserPasskeysOptions
+): Promise<DeletedPasskeys> =>
+  pipe(deleteUserPasskeysE(request), Effect.runPromise)
 
 /**
  * Call the Passlock backend API to fetch an authenticator
@@ -193,10 +213,13 @@ export type {
   AssignUserOptions,
   Credential,
   DeletePasskeyOptions,
+  DeleteUserPasskeysOptions,
+  DeletedPasskeys,
   FindAllPasskeys,
   GetPasskeyOptions,
   ListPasskeyOptions,
   Passkey,
+  PasskeyCredential,
   PasskeySummary,
   Platform,
   UpdatedPasskeys,
@@ -205,6 +228,7 @@ export type {
   UpdateUsernamesOptions as UpdateUserDetailsOptions,
 } from "./passkey/passkey.js"
 export {
+  isDeletedPasskeys,
   isPasskey,
   isPasskeySummary,
   isUpdatedPasskeys,

@@ -33,7 +33,7 @@ import type { AuthenticatedOptions } from "../shared.js"
 /**
  * WebAuthn specific passkey data
  */
-export type Credential = {
+export type PasskeyCredential = {
   id: string
   userId: string
   username: string
@@ -81,7 +81,7 @@ export type Passkey = {
    */
   userId?: string | undefined
   enabled: boolean
-  credential: Credential
+  credential: PasskeyCredential
   platform?: Platform | undefined
   lastUsed?: number | undefined
   createdAt: number
@@ -96,6 +96,15 @@ export const isPasskey = (payload: unknown): payload is Passkey =>
  * @internal
  * */
 export type _Passkey = satisfy<typeof PasskeySchemas.Passkey.Type, Passkey>
+
+/**
+ * needed to ensure the PasskeyCredential === PasskeyCredential.Type
+ * @internal
+ * */
+export type _PasskeyCredential = satisfy<
+  typeof PasskeySchemas.PasskeyCredential.Type,
+  PasskeyCredential
+>
 
 /* PasskeySummary */
 
@@ -143,6 +152,40 @@ export const isUpdatedPasskeys = (
 export type _UpdatedPasskeys = satisfy<
   typeof PasskeySchemas.UpdatedPasskeys.Type,
   UpdatedPasskeys
+>
+
+/* Credential */
+
+export type Credential = {
+  credentialId: string
+  userId: string
+  rpId: string
+}
+
+export type _Credential = satisfy<
+  typeof PasskeySchemas.Credential.Type,
+  Credential
+>
+
+/* DeletedPasskeys */
+
+export type DeletedPasskeys = {
+  _tag: "DeletedPasskeys"
+  deleted: ReadonlyArray<Credential>
+}
+
+export const isDeletedPasskeys = (
+  payload: unknown
+): payload is DeletedPasskeys =>
+  Schema.is(PasskeySchemas.DeletedPasskeys)(payload)
+
+/**
+ * needed to ensure the DeletedPasskeys === DeletedPasskeys.Type
+ * @internal
+ * */
+export type _DeletedPasskeys = satisfy<
+  typeof PasskeySchemas.DeletedPasskeys.Type,
+  DeletedPasskeys
 >
 
 /* FindAllPasskeys */
@@ -463,6 +506,72 @@ const updateUserPasskeys = (
       return yield* pipe(
         Match.value(encoded),
         Match.tag("UpdatedPasskeys", (result) => Effect.succeed(result)),
+        Match.tag("@error/NotFound", (err) => Effect.fail(err)),
+        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
+        Match.exhaustive
+      )
+    }),
+    Effect.catchTags({
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
+      ParseError: (err) => Effect.die(err),
+    }),
+    Effect.provide(fetchLayer)
+  )
+
+/* Delete passkeys by userId */
+
+export interface DeleteUserPasskeysOptions extends AuthenticatedOptions {
+  userId: string
+}
+
+export const deleteUserPasskeys = (
+  options: DeleteUserPasskeysOptions,
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<DeletedPasskeys, NotFoundError | ForbiddenError> =>
+  pipe(
+    Effect.gen(function* () {
+      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
+
+      const { tenancyId, userId } = options
+
+      const url = new URL(`/${tenancyId}/users/${userId}/passkeys/`, baseUrl)
+
+      const response = yield* fetchNetwork(
+        url,
+        "delete",
+        { userId },
+        {
+          headers: authorizationHeaders(options.apiKey),
+        }
+      )
+
+      const encoded:
+        | typeof PasskeySchemas.DeletedPasskeysResponse.Type
+        | NotFoundError
+        | ForbiddenError = yield* matchStatus(response, {
+          "2xx": (res) =>
+            decodeResponseJson(res, PasskeySchemas.DeletedPasskeysResponse),
+          orElse: (res) =>
+            decodeResponseJson(
+              res,
+              Schema.Union(NotFoundError, ForbiddenError)
+            ),
+        })
+
+      return yield* pipe(
+        Match.value(encoded),
+        Match.tag("DeletedPasskeys", (result) =>
+          Effect.succeed({
+            _tag: "DeletedPasskeys" as const,
+            deleted: result.deleted.map((passkey) => ({
+              credentialId: passkey.credential.id,
+              userId: passkey.credential.userId,
+              rpId: passkey.credential.rpId,
+            })),
+          })
+        ),
         Match.tag("@error/NotFound", (err) => Effect.fail(err)),
         Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
         Match.exhaustive

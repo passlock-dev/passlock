@@ -2,6 +2,7 @@ import { Micro } from "effect"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   deletePasskey,
+  deleteUserPasskeys,
   isDeleteError,
   isDeleteSuccess,
   Logger,
@@ -23,6 +24,19 @@ const deleteOptions = {
   tenancyId: "dummyTenancyId",
   userId: "dummyUserId",
 } as const
+
+const deleteCredentials = [
+  {
+    credentialId: "dummyCredentialId",
+    rpId: "localhost",
+    userId: "dummyUserId",
+  },
+  {
+    credentialId: "dummyCredentialId2",
+    rpId: "localhost",
+    userId: "dummyUserId",
+  },
+] as const
 
 const setPublicKeyCredential = (value: unknown) => {
   Object.defineProperty(globalThis, "PublicKeyCredential", {
@@ -99,5 +113,42 @@ describe("safe result envelopes", () => {
     expect(JSON.stringify(result)).not.toContain('"success"')
     expect(JSON.stringify(result)).not.toContain('"failure"')
     expect(JSON.stringify(result)).not.toContain('"error"')
+  })
+
+  it("decorates successful bulk delete results without breaking _tag narrowing", async () => {
+    const signalUnknownCredential = vi.fn(() => Promise.resolve())
+
+    setPublicKeyCredential({
+      signalUnknownCredential,
+    })
+
+    const result = await deleteUserPasskeys(deleteCredentials, loggerTest)
+
+    expect(result.success).toBe(true)
+    expect(result.failure).toBe(false)
+    if (!result.success) {
+      throw new Error("Expected a successful result")
+    }
+
+    expect(result.value).toBe(result)
+    expect(result._tag).toEqual("DeleteSuccess")
+    expect(isDeleteSuccess(result)).toBe(true)
+    await vi.waitFor(() =>
+      expect(signalUnknownCredential).toHaveBeenCalledTimes(2)
+    )
+    expect(signalUnknownCredential).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining(deleteCredentials[0])
+    )
+    expect(signalUnknownCredential).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining(deleteCredentials[1])
+    )
+    expect(Object.keys(result)).not.toContain("success")
+    expect(Object.keys(result)).not.toContain("failure")
+    expect(Object.keys(result)).not.toContain("value")
+    expect(JSON.stringify(result)).not.toContain('"success"')
+    expect(JSON.stringify(result)).not.toContain('"failure"')
+    expect(JSON.stringify(result)).not.toContain('"value"')
   })
 })

@@ -1,6 +1,11 @@
 import * as Passlock from '@passlock/client/safe';
 
-import { UpdatePasskeysSuccess, Error, DeletePasskeySuccess } from '$lib/shared/schemas';
+import {
+	DeletePasskeySuccess,
+	DeleteUserPasskeysSuccess,
+	Error,
+	UpdatePasskeysSuccess
+} from '$lib/shared/schemas';
 import { parse } from 'valibot';
 import { resolve } from '$app/paths';
 import { postData } from './network';
@@ -107,7 +112,7 @@ export const updatePasskeyUsernames = async (input: UpdatePasskeysInput) => {
 	if (serverResult._tag !== 'Credentials') return serverResult;
 
   // client side update
-  const result = await Passlock.updatePasskeyUserDetails(serverResult.credentials)
+  const result = await Passlock.updatePasskeyUsernames(serverResult.credentials)
 
 	return result.success
 		? ({ _tag: 'UpdatePasskeySuccess' } as const)
@@ -175,6 +180,65 @@ export const deletePasskey = async (input: DeletePasskeyInput) => {
     const message = `Passkey was removed from your account but local deletion failed: ${result.message}`;
     return { _tag: ERROR_TAG, message } as const;
   }
+};
+
+export type DeleteAccountPasskeysInput = {
+	passkeyCount: number;
+};
+
+/**
+ * Delete every passkey associated with the current account.
+ *
+ * The /passkeys endpoint removes the server-side records and returns the
+ * deleted credentials. We then ask the browser/password manager to remove
+ * the local copies too. Local deletion issues are treated as warnings so the
+ * account deletion flow can continue.
+ *
+ * @param input
+ * @returns
+ */
+export const deleteAccountPasskeys = async (input: DeleteAccountPasskeysInput) => {
+	const ERROR_TAG = '@error/DeleteAccountPasskeysError';
+	const WARNING_TAG = '@warning/DeleteAccountPasskeysPaused';
+
+	if (input.passkeyCount === 0) {
+		return { _tag: 'DeleteSuccess' } as const;
+	}
+
+	const serverResult = await postData({
+		url: resolve('/passkeys'),
+		method: 'DELETE',
+		body: { scope: 'user' },
+		on2xx: (jsonResponse) => parse(DeleteUserPasskeysSuccess, jsonResponse),
+		orElse: (jsonResponse) => {
+			const { message } = parse(Error, jsonResponse);
+			return { _tag: ERROR_TAG, message } as const;
+		}
+	});
+
+	if (serverResult._tag === ERROR_TAG) {
+		return serverResult;
+	}
+
+	const result = await Passlock.deleteUserPasskeys(serverResult.deleted);
+	if (result.success) {
+		return { _tag: 'DeleteSuccess' } as const;
+	}
+
+	if (result.code === 'PASSKEY_DELETION_UNSUPPORTED') {
+		return {
+			_tag: WARNING_TAG,
+			message:
+				'Passkeys were removed from your account, but this browser cannot delete them ' +
+				'programmatically. Remove them manually from your device password manager after ' +
+				'the account is deleted.'
+		} as const;
+	}
+
+	return {
+		_tag: WARNING_TAG,
+		message: `Passkeys were removed from your account but local deletion failed: ${result.message}`
+	} as const;
 };
 
 export type AuthenticatePasskeyInput = {

@@ -1,20 +1,28 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type {
+  Credential as UnsafeCredential,
+  DeletedPasskeys as UnsafeDeletedPasskeys,
   ExtendedPrincipal as UnsafeExtendedPrincipal,
   Passkey as UnsafePasskey,
+  PasskeyCredential as UnsafePasskeyCredential,
 } from "./index.js"
 import type {
+  Credential,
+  DeletedPasskeys,
   Err,
   ExtendedPrincipal,
   ForbiddenError,
   InvalidCodeError,
+  NotFoundError,
   Ok,
   Passkey,
+  PasskeyCredential,
   Principal,
   Result,
   VerificationError,
 } from "./safe.js"
 import {
+  deleteUserPasskeys,
   exchangeCode,
   isExtendedPrincipal,
   isForbiddenError,
@@ -56,6 +64,11 @@ describe("public surface", () => {
     type _2 = Assert<IsEqual<AuthenticatedOptions, UnsafeAuthenticatedOptions>>
     type _3 = Assert<IsEqual<ExtendedPrincipal, UnsafeExtendedPrincipal>>
     type _4 = Assert<IsEqual<Passkey, UnsafePasskey>>
+    type _5 = Assert<IsEqual<DeletedPasskeys, UnsafeDeletedPasskeys>>
+    type _6 = Assert<IsEqual<Credential, UnsafeCredential>>
+    type _7 = Assert<
+      IsEqual<PasskeyCredential, UnsafePasskeyCredential>
+    >
 
     expect(true).toBe(true)
   })
@@ -76,6 +89,12 @@ describe("public surface", () => {
       IsEqual<
         Awaited<ReturnType<typeof verifyIdToken>>,
         Result<Principal, VerificationError>
+      >
+    >
+    type _3 = Assert<
+      IsEqual<
+        Awaited<ReturnType<typeof deleteUserPasskeys>>,
+        Result<DeletedPasskeys, ForbiddenError | NotFoundError>
       >
     >
 

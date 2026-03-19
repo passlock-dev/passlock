@@ -4,11 +4,12 @@ import { Chunk, Effect, Layer, pipe, Schema, Stream } from "effect"
 import { expect } from "vitest"
 import { NetworkFetch } from "../network.js"
 import type { Passkey, PasskeyEncoded } from "../schemas/passkey.js"
-import type { FindAllPasskeys } from "./passkey.js"
+import type { DeletedPasskeys, FindAllPasskeys } from "./passkey.js"
 
 import {
   assignUser,
   deletePasskey,
+  deleteUserPasskeys,
   getPasskey,
   listPasskeys,
   listPasskeysStream,
@@ -84,6 +85,22 @@ const findAllPasskeysResponse: FindAllPasskeys = {
         userId: "dummyCredentialUserId",
       },
       createdAt: Date.now(),
+    },
+  ],
+}
+
+const deletedPasskeysResponse = {
+  _tag: "DeletedPasskeys",
+  deleted: [passkeyResponse],
+}
+
+const expectedDeletedPasskeys: DeletedPasskeys = {
+  _tag: "DeletedPasskeys",
+  deleted: [
+    {
+      credentialId: "dummyWebAuthnId",
+      userId: "dummyWebAuthnUserId",
+      rpId: "localhost",
     },
   ],
 }
@@ -464,6 +481,96 @@ describe(deletePasskey.name, () => {
         )
 
         expect(error._tag).toEqual("@error/NotFound")
+      })
+    )
+  })
+})
+
+describe(deleteUserPasskeys.name, () => {
+  describe("when the user exists", () => {
+    it.effect("should delete all passkeys for the user", () =>
+      Effect.gen(function* () {
+        let invokedUrl: string | undefined
+        let method: string | undefined
+        let authorizationHeader: string | null = null
+        let requestBody: unknown
+
+        const TestLayer = Layer.succeed(NetworkFetch, (url, init) => {
+          invokedUrl = String(url)
+          method = init?.method
+          if (init?.headers) {
+            authorizationHeader = getHeaderValue(init.headers, "authorization")
+          }
+          if (typeof init?.body === "string") {
+            requestBody = JSON.parse(init.body)
+          }
+
+          return Promise.resolve(
+            new Response(JSON.stringify(deletedPasskeysResponse), {
+              status: 202,
+            })
+          )
+        })
+
+        const result = yield* pipe(
+          deleteUserPasskeys({ apiKey, tenancyId, userId: "dummyUserId" }, TestLayer)
+        )
+
+        expect(result).toStrictEqual(expectedDeletedPasskeys)
+        expect(invokedUrl).toEqual(
+          "https://api.passlock.dev/dummyTenancyId/users/dummyUserId/passkeys/"
+        )
+        expect(method).toEqual("DELETE")
+        expect(authorizationHeader).toEqual("Bearer dummyApiKey")
+        expect(requestBody).toStrictEqual({ userId: "dummyUserId" })
+      })
+    )
+  })
+
+  describe("when the user does not exist", () => {
+    it.effect("should return an error", () =>
+      Effect.gen(function* () {
+        const errorResponse = {
+          _tag: "@error/NotFound",
+          message: "User not found",
+        }
+
+        const TestLayer = Layer.succeed(NetworkFetch, () =>
+          Promise.resolve(
+            new Response(JSON.stringify(errorResponse), { status: 404 })
+          )
+        )
+
+        const error = yield* pipe(
+          deleteUserPasskeys({ apiKey, tenancyId, userId: "dummyUserId" }, TestLayer),
+          Effect.flip
+        )
+
+        expect(error._tag).toEqual("@error/NotFound")
+      })
+    )
+  })
+
+  describe("when the API key is invalid", () => {
+    it.effect("should return forbidden", () =>
+      Effect.gen(function* () {
+        const forbiddenResponse = {
+          _tag: "@error/Forbidden",
+          message: "Go away",
+        }
+
+        const TestLayer = Layer.succeed(NetworkFetch, () =>
+          Promise.resolve(
+            new Response(JSON.stringify(forbiddenResponse), { status: 403 })
+          )
+        )
+
+        const error = yield* pipe(
+          deleteUserPasskeys({ apiKey, tenancyId, userId: "dummyUserId" }, TestLayer),
+          Effect.flip
+        )
+
+        expect(error._tag).toEqual("@error/Forbidden")
       })
     )
   })

@@ -3,7 +3,7 @@ import type {
   AuthenticationError as UnsafeAuthenticationError,
   AuthenticationOptions as UnsafeAuthenticationOptions,
   AuthenticationSuccess as UnsafeAuthenticationSuccess,
-  CredentialMapping as UnsafeCredentialMapping,
+  Credential as UnsafeCredential,
   PasslockOptions as UnsafePasslockOptions,
   RegistrationError as UnsafeRegistrationError,
   RegistrationOptions as UnsafeRegistrationOptions,
@@ -15,7 +15,7 @@ import type {
   AuthenticationError,
   AuthenticationOptions,
   AuthenticationSuccess,
-  CredentialMapping,
+  Credential,
   DeleteError,
   DeleteSuccess,
   Err,
@@ -93,7 +93,7 @@ describe("public surface", () => {
     >
     type _7 = Assert<IsEqual<AuthenticationError, UnsafeAuthenticationError>>
     type _8 = Assert<IsEqual<UpdatePasskeyOptions, UpdatePasskeyOptionsUnsafe>>
-    type _9 = Assert<IsEqual<CredentialMapping, UnsafeCredentialMapping>>
+    type _9 = Assert<IsEqual<Credential, UnsafeCredential>>
 
     expect(true).toBe(true)
   })
@@ -132,6 +132,12 @@ describe("public surface", () => {
       IsEqual<
         Awaited<ReturnType<typeof root.prunePasskeys>>,
         Result<PruningSuccess, PruningError>
+      >
+    >
+    type _6 = Assert<
+      IsEqual<
+        Awaited<ReturnType<typeof root.deleteUserPasskeys>>,
+        Result<DeleteSuccess, DeleteError>
       >
     >
 

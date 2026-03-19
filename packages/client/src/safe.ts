@@ -62,6 +62,7 @@ import {
 } from "./passkey/registration/registration.js"
 
 import type {
+  Credential,
   DeleteCredentialOptions,
   DeletePasskeyOptions,
   DeleteSuccess,
@@ -73,6 +74,7 @@ import type {
 } from "./passkey/signals/signals.js"
 import {
   deletePasskey as deletePasskeyM,
+  deleteUserPasskeys as deleteUserPasskeysM,
   isDeleteSuccess,
   isPasskeyDeleteSupport as isPasskeyDeleteSupportM,
   isPasskeyPruningSupport as isPasskeyPruningSupportM,
@@ -309,6 +311,47 @@ export const updatePasskeyUsernames = (
 }
 
 /**
+ * Attempt to delete multiple passkeys from a local device.
+ *
+ * Use this after deleting the server-side passkeys. The `deleted` array returned
+ * by `@passlock/server/safe` already has the right shape, so you can pass it
+ * straight into this function.
+ *
+ * @param options Credentials derived from deleted backend passkeys.
+ * @returns A {@link Result} whose success branch contains a {@link DeleteSuccess}
+ * and whose error branch contains a {@link DeleteError}. Existing
+ * {@link isDeleteSuccess}, {@link isDeleteError}, and `_tag` checks still work.
+ * @see {@link isDeleteSuccess}
+ * @see {@link isDeleteError}
+ *
+ * @example
+ * // server code
+ * import { deleteUserPasskeys } from "@passlock/server/safe";
+ *
+ * const backendResult = await deleteUserPasskeys({
+ *   tenancyId,
+ *   userId,
+ *   apiKey,
+ * });
+ *
+ * if (backendResult.success) {
+ *   // client code
+ *   const result = await deleteUserPasskeys(backendResult.value.deleted);
+ *   console.log(result);
+ * }
+ *
+ * @category Passkeys (core)
+ */
+export const deleteUserPasskeys = (
+  options: ReadonlyArray<Credential>,
+  /** @hidden */
+  logger: typeof Logger.Service = eventLogger
+): Promise<Result<DeleteSuccess, DeleteError>> => {
+  const micro = deleteUserPasskeysM(options)
+  return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
+}
+
+/**
  * Attempts to delete a passkey from a local device. There are two scenarios in which this function is useful:
  *
  * 1. **Deleting a passkey** - Use the `@passlock/server` package or make vanilla REST calls from your
@@ -482,7 +525,7 @@ export {
 } from "./passkey/registration/registration.js"
 export type { UserVerification } from "./passkey/shared.js"
 export type {
-  CredentialMapping,
+  Credential,
   DeleteCredentialOptions,
   DeletePasskeyOptions,
   DeleteSuccess,

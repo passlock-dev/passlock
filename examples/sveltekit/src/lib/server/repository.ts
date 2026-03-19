@@ -375,3 +375,18 @@ export const invalidateSession = async (sessionId: string): Promise<void> => {
 export const invalidateSessionsByUserId = async (userId: number): Promise<void> => {
 	await db.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
 };
+
+export const deleteUserAccount = async (userId: number): Promise<boolean> => {
+	return await db.transaction(async (tx) => {
+		await tx.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
+		await tx.delete(passwordsTable).where(eq(passwordsTable.userId, userId));
+		await tx.delete(passkeysTable).where(eq(passkeysTable.userId, userId));
+
+		const deletedUsers = await tx
+			.delete(usersTable)
+			.where(eq(usersTable.id, userId))
+			.returning({ userId: usersTable.id });
+
+		return Boolean(deletedUsers[0]);
+	});
+};

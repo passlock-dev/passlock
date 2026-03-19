@@ -21,6 +21,17 @@ export const DeletePasskeySuccess = v.object({
 	warning: v.nullable(v.string())
 });
 
+export const DeletedCredential = v.object({
+	credentialId: v.string(),
+	userId: v.string(),
+	rpId: v.string()
+});
+
+export const DeleteUserPasskeysSuccess = v.object({
+	_tag: v.literal('DeleteUserPasskeysSuccess'),
+	deleted: v.pipe(v.array(DeletedCredential), v.readonly())
+});
+
 export const Error = v.object({
 	_tag: v.literal('@error/Error'),
 	message: v.string()

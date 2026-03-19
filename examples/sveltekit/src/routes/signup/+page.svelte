@@ -23,7 +23,7 @@
 			</p>
 		</div>
 
-		<form method="post" class="w-full max-w-sm">
+		<form method="post" class="w-full max-w-md">
 			<fieldset class="fieldset rounded-box border border-base-300 bg-base-200 p-10">
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div>
@@ -33,7 +33,7 @@
 							type="text"
 							autocomplete="given-name"
 							name="givenName"
-							class={['input w-full', { 'input-error': $errors.givenName }]}
+							class={['input w-full mt-2', { 'input-error': $errors.givenName }]}
 							bind:value={$form.givenName}
 							required />
 						{#if $errors.givenName}
@@ -50,7 +50,7 @@
 							type="text"
 							autocomplete="family-name"
 							name="familyName"
-							class={['input w-full', { 'input-error': $errors.familyName }]}
+							class={['input w-full mt-2', { 'input-error': $errors.familyName }]}
 							bind:value={$form.familyName}
 							required />
 						{#if $errors.familyName}
