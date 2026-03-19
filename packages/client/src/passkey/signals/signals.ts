@@ -130,7 +130,8 @@ export const isPruningSuccess = (
 }
 
 /**
- * Given a list of passkey IDs, instruct the device to remove any redundant passkeys.
+ * Given a list of passkey IDs to keep, instruct the device to remove any
+ * redundant passkeys for the same account on the same relying party.
  *
  * Note: this will only remove redundant passkeys (based on the userId).
  *
@@ -217,16 +218,27 @@ export interface UpdatePasskeyOptions extends PasslockOptions {
 }
 
 /**
- * Used when you want to update one or more passkeys by the Credential User ID i.e. the
- * immutable Base64Url encoded binary ID.
+ * Used when you want to update one or more passkeys by the credential user ID,
+ * that is the immutable Base64Url-encoded binary ID.
+ *
+ * This shape is usually returned by `@passlock/server`'s
+ * `updatePasskeyUserDetails` helper and does not include tenancy or endpoint
+ * configuration.
  *
  * @see {@link updatePasskey}
  * @see {@link https://passlock.dev/rest-api/credential/ The Credential property (main docs site)}
  *
  * @category Passkeys (core)
  */
-export interface UpdateCredentialOptions extends PasslockOptions {
+export interface UpdateCredentialOptions {
+  /**
+   * Credential user ID.
+   */
   userId: string
+
+  /**
+   * Relying party identifier for the passkey.
+   */
   rpId: string
 
   /**
@@ -251,6 +263,46 @@ export const isUpdateSuccess = (payload: unknown): payload is UpdateSuccess => {
   if (typeof payload._tag !== "string") return false
   return payload._tag === "UpdateSuccess"
 }
+
+/**
+ * Update user details, for example the username and/or display name, for
+ * multiple local passkeys.
+ *
+ * Note: this is purely informational. It does not change any passkey
+ * identifiers.
+ *
+ * The typical use case is when a user changes their account email. You would
+ * update the username in your backend system, then pass the returned
+ * credential list into this function so the same account label is shown in the
+ * user's password manager.
+ *
+ * @param options Credential identifiers plus the updated username/display name,
+ * typically taken from `@passlock/server`'s `updatePasskeyUserDetails`
+ * response.
+ * @returns A Micro effect that resolves with a {@link UpdateSuccess} or fails with {@link UpdateError}.
+ */
+export const updatePasskeyUserDetails = (
+  options: Array<UpdateCredentialOptions>
+) =>
+  Micro.gen(function* () {
+    const logger = yield* Micro.service(Logger)
+
+    yield* logger.logInfo("Testing for local passkey update support")
+    const canUpdate = yield* isPasskeyUpdateSupport
+    if (!canUpdate)
+      return yield* Micro.fail(
+        new UpdateError({
+          code: "PASSKEY_UPDATE_UNSUPPORTED",
+          message: "Passkey update not supported on this device",
+        })
+      )
+
+    yield* Micro.forEach(options, (credential) => signalCurrentUserDetails(credential, credential))
+    
+    return {
+      _tag: "UpdateSuccess"
+    } as const;
+  })
 
 /**
  * Update a passkey e.g. change the username and/or display name.

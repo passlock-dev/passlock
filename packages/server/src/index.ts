@@ -67,12 +67,20 @@ export const updatePasskey = (
 ): Promise<Passkey> => pipe(updatePasskeyE(request), Effect.runPromise)
 
 /**
- * Call the Passlock backend API to update all passkeys for a given user
+ * Update the username for all passkeys belonging to a given user.
+ *
+ * **Important:** changing the username has no bearing on authentication, as
+ * it's typically only used in the client-side component of the passkey
+ * (so the user knows which account the passkey relates to).
+ *
+ * However you might choose to align the username in your vault with the
+ * client-side component to simplify end user support.
+ * 
+ * **Note**: updatePasskeyUserDetails can be used alongside updatePasskeyUserDetails
+ * in the @passlock/client library to update passkey details on a user's device
  *
  * @param request
- * @returns A promise resolving to updated usernames for matching passkeys.
- * @throws {@link NotFoundError} if no passkeys are found for the given user
- * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
+ * @returns A promise resolving to a list of updated Credentials.
  *
  * @category Passkeys
  */
