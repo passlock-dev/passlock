@@ -2,19 +2,19 @@ import {
   Array,
   Chunk,
   Effect,
-  type Layer,
   Match,
   Option,
   pipe,
   Schema,
   Stream,
+  type Layer,
 } from "effect"
 import type { satisfy } from "src/schemas/satisfy.js"
 import {
   fetchNetwork,
   matchStatus,
-  type NetworkFetch,
   NetworkFetchLive,
+  type NetworkFetch,
   type NetworkPayloadError,
   type NetworkRequestError,
   type NetworkResponse,
@@ -167,10 +167,10 @@ export type _FindAllPasskeys = satisfy<
   FindAllPasskeys
 >
 
-/* UpdatedUserDetails (update names by userId) */
+/* UpdatedCredentials (update names by userId) */
 
-export type UpdatedUserDetails = {
-  _tag: "UpdatedUserDetails"
+export type UpdatedCredentials = {
+  _tag: "UpdatedCredentials"
   credentials: ReadonlyArray<{
     rpId: string
     userId: string
@@ -181,12 +181,12 @@ export type UpdatedUserDetails = {
 
 export const isUpdatedUserDetails = (
   payload: unknown
-): payload is UpdatedUserDetails => {
+): payload is UpdatedCredentials => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
   if (!("_tag" in payload)) return false
   if (typeof payload._tag !== "string") return false
-  if (payload._tag !== "UpdatedUserDetails") return false
+  if (payload._tag !== "UpdatedCredentials") return false
 
   return true
 }
@@ -479,16 +479,16 @@ const updateUserPasskeys = (
 
 /* Update user details by userId */
 
-export interface UpdateUserDetailsOptions extends AuthenticatedOptions {
+export interface UpdateUsernamesOptions extends AuthenticatedOptions {
   userId: string
   username: string
   displayName?: string
 }
 
-export const updatePasskeyUserDetails = (
-  options: UpdateUserDetailsOptions,
+export const updatePasskeyUsernames = (
+  options: UpdateUsernamesOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<UpdatedUserDetails, NotFoundError | ForbiddenError> =>
+): Effect.Effect<UpdatedCredentials, NotFoundError | ForbiddenError> =>
   pipe(
     updateUserPasskeys(options, fetchLayer),
     Effect.map((result) => result.updated),
@@ -503,7 +503,7 @@ export const updatePasskeyUserDetails = (
       })
     ),
     Effect.map((credentials) => ({
-      _tag: "UpdatedUserDetails",
+      _tag: "UpdatedCredentials",
       credentials,
     }))
   )

@@ -1,4 +1,4 @@
-import { getPasslockClientConfig } from '$lib/server/passlock.js';
+import { getPasslockClientConfig } from '$lib/server/passkeys.js';
 import { getPasskeysByUserId } from '$lib/server/repository.js';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';

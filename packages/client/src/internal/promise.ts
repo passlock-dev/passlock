@@ -1,20 +1,24 @@
-import { Either, identity, Micro, pipe } from "effect"
+import { Either, Micro, pipe } from "effect"
 import { error } from "effect/Brand"
+import { type Result, toErrResult, toOkResult } from "./result.js"
 
 /**
- * Run a Micro and return a success or failure.
+ * Run a Micro and return a result envelope containing either
+ * the successful value or the expected error value.
+ *
  * Note: function could still throw for an unexpected error.
+ *
  * @param micro
- * @returns Promise resolving to either the success value or error value.
+ * @returns Promise resolving to a result envelope.
  */
-export const runToPromise = async <A, E>(
+export const runToPromise = async <A extends object, E extends object>(
   micro: Micro.Micro<A, E>
-): Promise<A | E> => {
+): Promise<Result<A, E>> => {
   const either = await pipe(micro, Micro.either, Micro.runPromise)
 
   return Either.match(either, {
-    onLeft: identity,
-    onRight: identity,
+    onLeft: (failure): Result<A, E> => toErrResult(failure) as Result<A, E>,
+    onRight: (success): Result<A, E> => toOkResult(success) as Result<A, E>,
   })
 }
 

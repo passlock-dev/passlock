@@ -1,14 +1,4 @@
-import {
-	authenticatePasskey,
-	updatePasskey,
-	deletePasskey,
-	isAuthenticationSuccess,
-	isDeleteError,
-	isDuplicatePasskeyError,
-	isRegistrationSuccess,
-	registerPasskey,
-	type AuthenticationEvent
-} from '@passlock/client/safe';
+import * as Passlock from '@passlock/client/safe';
 
 import { UpdatePasskeysSuccess, Error, DeletePasskeySuccess } from '$lib/shared/schemas';
 import { parse } from 'valibot';
@@ -23,29 +13,42 @@ export type CreatePasskeyInput = {
 	existingPasskeys: Array<string>;
 };
 
-export const createPasslockPasskey = async (input: CreatePasskeyInput) => {
+/**
+ * Use @passlock/client/safe to register a passkey on the user's local device.
+ * Send the `code` to the backend for verification and account linkage by making a POST request
+ * to the /passkeys/+server.ts endpoint.
+ * 
+ * @param input 
+ * @returns 
+ */
+export const registerPasskey = async (input: CreatePasskeyInput) => {
 	const ERROR_TAG = '@error/CreatePasskeyError' as const;
 
-	const { tenancyId, endpoint, email, displayName, existingPasskeys: excludeCredentials } = input;
+  // excludeCredentials prevents the user registering multiple
+  // passkeys for the same account on the same device/ecosystem
+  // see https://passlock.dev/passkeys/exclude-credentials/
+	const { tenancyId, endpoint, email: username, displayName, existingPasskeys: excludeCredentials } = input;
 
 	// client side registration
-	const clientResult = await registerPasskey({
+	const clientResult = await Passlock.registerPasskey({
 		endpoint,
 		tenancyId,
-		username: email,
-		userDisplayName: displayName,
+		username,
+		displayName,
+		excludeCredentials,
 		userVerification: 'preferred',
-		excludeCredentials
 	});
 
-	if (isDuplicatePasskeyError(clientResult)) {
+  // could also use the _tag as a discriminator e.g. 
+  // if (clientResult.failure && clientResult._tag === "@error/DuplicatePasskey")
+	if (clientResult.failure && Passlock.isDuplicatePasskeyError(clientResult)) {
 		const message = 'Passkey already available on this device';
 		return { _tag: ERROR_TAG, message } as const;
-	} else if (!isRegistrationSuccess(clientResult)) {
+	} else if (clientResult.failure) {
 		return { _tag: ERROR_TAG, message: clientResult.message } as const;
 	}
 
-	// server side registration
+	// server side passkey verification and registration
 	return postData({
 		url: resolve('/passkeys'),
 		method: 'POST',
@@ -58,12 +61,10 @@ export const createPasslockPasskey = async (input: CreatePasskeyInput) => {
 	});
 };
 
-export type UpdatePasskeyInput = {
+export type UpdatePasskeysInput = {
 	username: string;
 	givenName: string | undefined;
 	familyName: string | undefined;
-	tenancyId: string;
-	endpoint: string | undefined;
 };
 
 /**
@@ -80,11 +81,12 @@ export type UpdatePasskeyInput = {
  * @param input
  * @returns
  */
-export const updatePasskeyUsernames = async (input: UpdatePasskeyInput) => {
+export const updatePasskeyUsernames = async (input: UpdatePasskeysInput) => {
 	const ERROR_TAG = '@error/UpdatePasskeyError';
-	const { username, givenName, familyName, tenancyId, endpoint } = input;
+	const { username, givenName, familyName } = input;
 	const displayName = `${givenName} ${familyName}`.trim();
 
+  // make a PATCH request to the /passkeys/+server.ts endpoint
 	const serverResult = await postData({
 		url: resolve('/passkeys'),
 		method: 'PATCH',
@@ -101,16 +103,13 @@ export const updatePasskeyUsernames = async (input: UpdatePasskeyInput) => {
 		}
 	});
 
+  // return the error
 	if (serverResult._tag !== 'Credentials') return serverResult;
 
-	// client side update
-	let isSuccess = true;
-	for (const credentialUpdate of serverResult.credentials) {
-		const { _tag } = await updatePasskey({ tenancyId, endpoint, ...credentialUpdate });
-		isSuccess = isSuccess && _tag === 'UpdateSuccess';
-	}
+  // client side update
+  const result = await Passlock.updatePasskeyUserDetails(serverResult.credentials)
 
-	return isSuccess
+	return result.success
 		? ({ _tag: 'UpdatePasskeySuccess' } as const)
 		: ({
 				_tag: ERROR_TAG,
@@ -124,10 +123,18 @@ export type DeletePasskeyInput = {
 	endpoint: string | undefined;
 };
 
-export const deletePasslockPasskey = async (input: DeletePasskeyInput) => {
+/**
+ * Delete the passkey from the Passlock vault, remove the user association in
+ * the local db and remove it from the user's local device/passkey manager.
+ * 
+ * @param input 
+ * @returns 
+ */
+export const deletePasskey = async (input: DeletePasskeyInput) => {
 	const ERROR_TAG = '@error/DeletePasskeyError';
 	const { tenancyId: passlockTenancyId, endpoint: passlockEndpoint, passkeyId } = input;
 
+  // remove it from the passlock vault and local db
 	const serverResult = await postData({
 		url: resolve('/passkeys'),
 		method: 'DELETE',
@@ -139,21 +146,24 @@ export const deletePasslockPasskey = async (input: DeletePasskeyInput) => {
 		}
 	});
 
+  // return the error
 	if (serverResult._tag === ERROR_TAG) return serverResult;
 
+  // warning will be that the passkey was already deleted/doesn't exist
 	const { warning } = serverResult;
 
 	// client side delete
-	const result = await deletePasskey({
+	const result = await Passlock.deletePasskey({
 		passkeyId,
 		tenancyId: passlockTenancyId,
-		endpoint: passlockEndpoint ?? undefined
+		endpoint: passlockEndpoint
 	});
 
-	if (!isDeleteError(result)) {
+	if (result.success) {
 		return { _tag: 'DeleteSuccess', warning } as const;
 	}
 
+  // some devices don't support programmatic passkey removal
 	if (result.code === 'PASSKEY_DELETION_UNSUPPORTED') {
 		const message =
 			'This browser cannot delete passkeys programmatically. ' +
@@ -161,26 +171,34 @@ export const deletePasslockPasskey = async (input: DeletePasskeyInput) => {
 			'but you still need to delete it manually from your device password manager.';
 
 		return { _tag: '@warning/PasskeyDeletePaused', message } as const;
-	}
-
-	const message = `Passkey was removed from your account but local deletion failed: ${result.message}`;
-
-	return { _tag: ERROR_TAG, message } as const;
+	} else {
+    const message = `Passkey was removed from your account but local deletion failed: ${result.message}`;
+    return { _tag: ERROR_TAG, message } as const;
+  }
 };
 
-export type LoginInput = {
+export type AuthenticatePasskeyInput = {
 	tenancyId: string;
 	endpoint?: string | undefined;
 	allowCredentials?: Array<string> | undefined;
 	autofill?: boolean;
-	onEvent?: (event: AuthenticationEvent) => void;
+	onEvent?: (event: Passlock.AuthenticationEvent) => void;
 };
 
-export const passlockLogin = async (input: LoginInput) => {
+/**
+ * Ask the browser/device to present a passkey, send the code to the
+ * backend for verification and if all good log the user in and create
+ * a new session
+ * 
+ * @param input 
+ * @returns 
+ */
+export const authenticatePasskey = async (input: AuthenticatePasskeyInput) => {
 	const ERROR_TAG = '@error/PasslockLoginError';
 	const { tenancyId, endpoint, autofill, onEvent, allowCredentials } = input;
 
-	const result = await authenticatePasskey({
+  // kick of passkey auth locally
+	const result = await Passlock.authenticatePasskey({
 		tenancyId,
 		endpoint,
 		allowCredentials,
@@ -189,10 +207,12 @@ export const passlockLogin = async (input: LoginInput) => {
 		onEvent
 	});
 
-	if (!isAuthenticationSuccess(result)) {
+	if (result.failure) {
 		return { _tag: ERROR_TAG, message: result.message } as const;
 	}
 
+  // send the code to the backend for verification
+  // create a new session if successful
 	return await postData({
 		url: resolve('/passkeys/login'),
 		method: 'POST',

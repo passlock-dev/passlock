@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
-	import { createPasslockPasskey, deletePasslockPasskey } from '$lib/client/passkeys';
+	import { registerPasskey, deletePasskey } from '$lib/client/passkeys';
 	import { KeyRound, Trash2 } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
@@ -20,7 +20,7 @@
 		error = '';
 		loading = true;
 
-		const result = await createPasslockPasskey({
+		const result = await registerPasskey({
 			tenancyId: data.tenancyId,
 			endpoint: data.endpoint,
 			email: data.user.email,
@@ -39,7 +39,7 @@
 		await invalidate('passkeys');
 	};
 
-	const deletePasskey = async (passkeyId: string) => {
+	const removePasskey = async (passkeyId: string) => {
 		const { tenancyId, endpoint } = data;
 
 		info = '';
@@ -48,7 +48,7 @@
 		deletingPasskeyId = passkeyId;
 
 		deletingPasskeyId = passkeyId;
-		const result = await deletePasslockPasskey({ tenancyId, endpoint, passkeyId });
+		const result = await deletePasskey({ tenancyId, endpoint, passkeyId });
 
 		if (result._tag === '@error/DeletePasskeyError') {
 			error = result.message;
@@ -132,7 +132,7 @@
 							class="btn btn-square btn-ghost"
 							aria-label="Delete passkey"
 							disabled={loading || deletingPasskeyId === passkey.passkeyId}
-							onclick={() => deletePasskey(passkey.passkeyId)}>
+							onclick={() => removePasskey(passkey.passkeyId)}>
 							{#if deletingPasskeyId === passkey.passkeyId}
 								<span class="loading loading-xs loading-spinner"></span>
 							{:else}

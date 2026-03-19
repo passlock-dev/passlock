@@ -88,7 +88,8 @@ export type ErrorCode =
 
 /**
  * An unexpected passkey specific error occurred.
- * Check the code and message for more information.
+ * Check the code and message for more information. The original
+ * underlying cause is exposed via `cause`.
  *
  * @category Passkeys (errors)
  */
@@ -102,13 +103,13 @@ export const isOtherPasskeyError = (
 
 /**
  * An unexpected passkey specific error occurred.
- * Check the code and message for more information.
+ * Check the code and message for more information. The original
+ * underlying cause is exposed via `cause`.
  *
  * @category Passkeys (errors)
  */
 export class OtherPasskeyError extends Error {
   readonly _tag = "@error/OtherPasskey" as const
-  readonly error: unknown
   readonly message: string
   readonly code?: ErrorCode
   readonly cause?: unknown
@@ -120,10 +121,9 @@ export class OtherPasskeyError extends Error {
     cause,
   }: { error: unknown; message: string; code?: ErrorCode; cause?: unknown }) {
     super()
-    this.error = error
     this.message = message
     if (code) this.code = code
-    if (cause) this.cause = cause
+    if (cause !== undefined || error !== undefined) this.cause = cause ?? error
   }
 }
 

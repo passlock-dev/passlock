@@ -1,8 +1,30 @@
 /**
- * Safe functions that return discriminated unions representing
- * the successful outcome or expected failures.
+ * Safe functions that return result envelopes over the original
+ * tagged success and error payloads. The returned value keeps
+ * its original `_tag` shape, and is also augmented with a
+ * result envelope for `success`- or `failure`-style branching.
  *
  * Note: unexpected runtime failures may still throw.
+ *
+ * ```ts
+ * const result = await exchangeCode({
+ *   apiKey,
+ *   code,
+ *   tenancyId,
+ * })
+ *
+ * if (result.success) {
+ *   console.log(result.value.id)
+ * }
+ *
+ * if (result.failure) {
+ *   console.log(result.error.message)
+ * }
+ *
+ * if (isExtendedPrincipal(result)) {
+ *   console.log(result.id)
+ * }
+ * ```
  *
  * @categoryDescription Passkeys
  * Functions and related types for managing passkeys
@@ -12,7 +34,7 @@
  * @module safe
  */
 
-import { Effect, identity, pipe } from "effect"
+import { Effect, pipe } from "effect"
 import type {
   ForbiddenError,
   InvalidCodeError,
@@ -26,9 +48,9 @@ import type {
   GetPasskeyOptions,
   ListPasskeyOptions,
   Passkey,
-  UpdatedUserDetails,
+  UpdatedCredentials,
   UpdatePasskeyOptions,
-  UpdateUserDetailsOptions,
+  UpdateUsernamesOptions,
 } from "./passkey/passkey.js"
 import {
   assignUser as assignUserE,
@@ -36,7 +58,7 @@ import {
   getPasskey as getPasskeyE,
   listPasskeys as listPasskeysE,
   updatePasskey as updatePasskeyE,
-  updatePasskeyUserDetails as updatePasskeyUserDetailsE
+  updatePasskeyUsernames as updatePasskeyUsernamesE,
 } from "./passkey/passkey.js"
 import type {
   ExchangeCodeOptions,
@@ -46,7 +68,20 @@ import {
   exchangeCode as exchangeCodeE,
   verifyIdToken as verifyIdTokenE,
 } from "./principal/principal.js"
+import { type Result, toErrResult, toOkResult } from "./safe-result.js"
 import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
+
+const runSafe = <A extends object, E extends object>(
+  effect: Effect.Effect<A, E>
+): Promise<Result<A, E>> =>
+  pipe(
+    effect,
+    Effect.match({
+      onFailure: (error): Result<A, E> => toErrResult(error) as Result<A, E>,
+      onSuccess: (value): Result<A, E> => toOkResult(value) as Result<A, E>,
+    }),
+    Effect.runPromise
+  )
 
 /**
  * Assign a custom User ID to a passkey. Will be reflected in the next
@@ -60,18 +95,15 @@ import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
  * @see [credential](https://passlock.dev/rest-api/credential/)
  *
  * @param request
- * @returns A promise resolving to either a passkey or an API error.
+ * @returns A promise resolving to a {@link Result} whose success branch contains
+ * a passkey and whose error branch contains an API error.
  *
  * @category Passkeys
  */
 export const assignUser = (
   request: AssignUserOptions
-): Promise<Passkey | NotFoundError | ForbiddenError> =>
-  pipe(
-    assignUserE(request),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+): Promise<Result<Passkey, NotFoundError | ForbiddenError>> =>
+  runSafe(assignUserE(request))
 
 /**
  * Can also be used to assign a custom User ID, but also allows you to update
@@ -85,42 +117,42 @@ export const assignUser = (
  * client-side component to simplify end user support.
  *
  * @param request
- * @returns A promise resolving to either a passkey or an API error.
+ * @returns A promise resolving to a {@link Result} whose success branch contains
+ * a passkey and whose error branch contains an API error.
  *
  * @category Passkeys
  */
 export const updatePasskey = (
   request: UpdatePasskeyOptions
-): Promise<Passkey | NotFoundError | ForbiddenError> =>
-  pipe(
-    updatePasskeyE(request),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+): Promise<Result<Passkey, NotFoundError | ForbiddenError>> =>
+  runSafe(updatePasskeyE(request))
 
 /**
- * Update the username for all passkeys belonging to a given user.
+ * Update the username and/or display name for all passkeys belonging to a given user.
  *
- * **Important:** changing the username has no bearing on authentication, as
+ * **Important:** changing these values has no bearing on authentication, as
  * it's typically only used in the client-side component of the passkey
  * (so the user knows which account the passkey relates to).
  *
- * However you might choose to align the username in your vault with the
+ * However you might choose to align the username and display name in your vault with the
  * client-side component to simplify end user support.
  *
+ * **Note:** This can be used alongside `@passlock/client`'s
+ * `updatePasskeyUsernames` helper to update those details on the user's device.
+ *
  * @param request
- * @returns A promise resolving to either updated passkey usernames or an API error.
+ * @returns A promise resolving to a {@link Result}.
+ * The success branch contains an {@link UpdatedCredentials} payload, whose
+ * `credentials` array can be passed into the client's `updatePasskeyUsernames` function.
+ * The error branch contains
+ * an API error.
  *
  * @category Passkeys
  */
-export const updatePasskeyUserDetails = (
-  request: UpdateUserDetailsOptions
-): Promise<UpdatedUserDetails | NotFoundError | ForbiddenError> =>
-  pipe(
-    updatePasskeyUserDetailsE(request),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+export const updatePasskeyUsernames = (
+  request: UpdateUsernamesOptions
+): Promise<Result<UpdatedCredentials, NotFoundError | ForbiddenError>> =>
+  runSafe(updatePasskeyUsernamesE(request))
 
 /**
  * Delete a passkey from your vault.
@@ -142,18 +174,15 @@ export const updatePasskeyUserDetails = (
  * @see [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/)
  *
  * @param options
- * @returns A promise resolving to either the deleted passkey or an API error.
+ * @returns A promise resolving to a {@link Result} whose success branch contains
+ * the deleted passkey and whose error branch contains an API error.
  *
  * @category Passkeys
  */
 export const deletePasskey = (
   options: DeletePasskeyOptions
-): Promise<Passkey | ForbiddenError | NotFoundError> =>
-  pipe(
-    deletePasskeyE(options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+): Promise<Result<Passkey, ForbiddenError | NotFoundError>> =>
+  runSafe(deletePasskeyE(options))
 
 /**
  * Fetch details about a passkey. **Important**: Not to be confused with
@@ -162,36 +191,30 @@ export const deletePasskey = (
  * Use this function for passkey management, not authentication.
  *
  * @param options
- * @returns A promise resolving to either passkey details or an API error.
+ * @returns A promise resolving to a {@link Result} whose success branch contains
+ * passkey details and whose error branch contains an API error.
  *
  * @category Passkeys
  */
 export const getPasskey = (
   options: GetPasskeyOptions
-): Promise<Passkey | ForbiddenError | NotFoundError> =>
-  pipe(
-    getPasskeyE(options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+): Promise<Result<Passkey, ForbiddenError | NotFoundError>> =>
+  runSafe(getPasskeyE(options))
 
 /**
  * List passkeys for the given tenancy. Note: This could return a cursor.
  * If so, call again, passing the cursor back in.
  *
  * @param options
- * @returns A promise resolving to a page of passkey summaries or an API error.
+ * @returns A promise resolving to a {@link Result} whose success branch contains
+ * a page of passkey summaries and whose error branch contains an API error.
  *
  * @category Passkeys
  */
 export const listPasskeys = (
   options: ListPasskeyOptions
-): Promise<FindAllPasskeys | ForbiddenError> =>
-  pipe(
-    listPasskeysE(options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+): Promise<Result<FindAllPasskeys, ForbiddenError>> =>
+  runSafe(listPasskeysE(options))
 
 /**
  * The @passlock/client library generates codes, which you should send to
@@ -202,18 +225,15 @@ export const listPasskeys = (
  * @see {@link ExtendedPrincipal}
  *
  * @param options
- * @returns A promise resolving to an extended principal or an API error.
+ * @returns A promise resolving to a {@link Result} whose success branch contains
+ * an extended principal and whose error branch contains an API error.
  *
  * @category Principal
  */
 export const exchangeCode = (
   options: ExchangeCodeOptions
-): Promise<ExtendedPrincipal | ForbiddenError | InvalidCodeError> =>
-  pipe(
-    exchangeCodeE(options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+): Promise<Result<ExtendedPrincipal, ForbiddenError | InvalidCodeError>> =>
+  runSafe(exchangeCodeE(options))
 
 /**
  * Decode and verify an id_token (JWT) locally.
@@ -226,21 +246,19 @@ export const exchangeCode = (
  * @see {@link Principal}
  *
  * @param options
- * @returns A promise resolving to a verified principal or verification failure.
+ * @returns A promise resolving to a {@link Result} whose success branch contains
+ * a verified principal and whose error branch contains a verification error.
  *
  * @category Principal
  */
 export const verifyIdToken = (
   options: VerifyIdTokenOptions
-): Promise<Principal | VerificationError> =>
-  pipe(
-    verifyIdTokenE(options),
-    Effect.match({ onFailure: identity, onSuccess: identity }),
-    Effect.runPromise
-  )
+): Promise<Result<Principal, VerificationError>> =>
+  runSafe(verifyIdTokenE(options))
 
 /* Re-exports */
 
+export type { Err, Ok, Result } from "./safe-result.js"
 export type {
   BadRequestError,
   DuplicateEmailError,
@@ -276,9 +294,9 @@ export type {
   PasskeySummary,
   Platform,
   UpdatedPasskeys,
-  UpdatedUserDetails,
+  UpdatedCredentials as UpdatedUserDetails,
   UpdatePasskeyOptions,
-  UpdateUserDetailsOptions,
+  UpdateUsernamesOptions as UpdateUserDetailsOptions,
 } from "./passkey/passkey.js"
 export {
   isPasskey,

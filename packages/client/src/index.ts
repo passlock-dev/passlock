@@ -49,6 +49,7 @@ import {
   isPasskeyUpdateSupport as isPasskeyUpdateSupportM,
   prunePasskeys as prunePasskeysM,
   updatePasskey as updatePasskeyM,
+  updatePasskeyUsernames as updatePasskeyUsernamesM,
 } from "./passkey/signals/signals.js"
 import type { OrphanedPasskeyError } from "./safe.js"
 
@@ -62,7 +63,7 @@ import type { OrphanedPasskeyError } from "./safe.js"
  *
  * @param options
  *
- * @returns A successful registration payload.
+ * @returns A promise resolving to a {@link RegistrationSuccess}.
  *
  * @see {@link isRegistrationSuccess}
  * @see {@link isPasskeyUnsupportedError}
@@ -116,7 +117,7 @@ export const registerPasskey = async (
  *
  * @param options
  *
- * @returns A successful authentication payload.
+ * @returns A promise resolving to an {@link AuthenticationSuccess}.
  *
  * @see {@link isAuthenticationSuccess}
  * @see {@link isPasskeyUnsupportedError}
@@ -172,8 +173,11 @@ export const authenticatePasskey = (
  * By calling this function and supplying a new username/display name, their local
  * password manager will align with their updated account identifier.
  *
- * @param options You will typically supply a target `passkeyId` via {@link UpdatePasskeyOptions}. {@link UpdateCredentialOptions} is for advanced use cases.
- * @returns Update status
+ * @param options You will typically supply a target `passkeyId` via
+ * {@link UpdatePasskeyOptions}. {@link UpdateCredentialOptions} is intended
+ * for credential-scoped updates, for example when replaying data returned by
+ * `@passlock/server`.
+ * @returns A promise resolving to an {@link UpdateSuccess}.
  * @see {@link isUpdateError}
  * @throws {@link UpdateError} if the passkey cannot be updated
  *
@@ -199,6 +203,58 @@ export const updatePasskey = (
   logger: typeof Logger.Service = eventLogger
 ): Promise<UpdateSuccess> => {
   const micro = updatePasskeyM(options)
+  return pipe(micro, Micro.provideService(Logger, logger), runToPromiseUnsafe)
+}
+
+/**
+ * Attempt to update the username or display name for multiple passkeys (client-side only).
+ *
+ * Useful if the user has changed their account identifier. For example, they register
+ * using jdoe@gmail.com but later change their account username to jdoe@yahoo.com.
+ * Even after you update their account details in your backend, their local password
+ * manager will continue to display jdoe@gmail.com.
+ *
+ * By calling this function and supplying a new username/display name, their local
+ * password manager will align with their updated account identifier.
+ *
+ * @param options The `credentials` array returned by
+ * `@passlock/server`'s `updatePasskeyUsernames`.
+ * @returns A promise resolving to an {@link UpdateSuccess}.
+ * @throws {@link UpdateError} if one or more local passkeys cannot be updated
+ *
+ * @example
+ * // server code
+ * import { updatePasskeyUsernames } from "@passlock/server";
+ *
+ * // send the backendResult to your frontend
+ * const backendResult = await updatePasskeyUsernames({
+ *   tenancyId,
+ *   userId,
+ *   username,
+ *   displayName,
+ * });
+ *
+ * // client code
+ * import { updatePasskeyUsernames } from "@passlock/client";
+ *
+ * const credentialsFromBackend = [
+ *   {
+ *     userId: "base64url-user-id",
+ *     rpId: "example.com",
+ *     username: "jdoe@yahoo.com",
+ *     displayName: "Jane Doe",
+ *   },
+ * ];
+ * const result = await updatePasskeyUsernames(credentialsFromBackend);
+ *
+ * @category Passkeys (core)
+ */
+export const updatePasskeyUsernames = (
+  options: ReadonlyArray<UpdateCredentialOptions>,
+  /** @hidden */
+  logger: typeof Logger.Service = eventLogger
+): Promise<UpdateSuccess> => {
+  const micro = updatePasskeyUsernamesM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromiseUnsafe)
 }
 
@@ -287,7 +343,7 @@ export const prunePasskeys = (
 /* Support */
 
 /**
- * Does the local device support programmatic passkey deletion
+ * Does the local device support programmatic passkey deletion?
  *
  * @returns `true` if local passkey deletion is supported.
  *
@@ -297,7 +353,7 @@ export const isPasskeyDeleteSupport = () =>
   pipe(isPasskeyDeleteSupportM, Micro.runSync)
 
 /**
- * Does the local device support programmatic passkey pruning
+ * Does the local device support programmatic passkey pruning?
  *
  * @returns `true` if local passkey pruning is supported.
  *
@@ -307,7 +363,7 @@ export const isPasskeyPruningSupport = () =>
   pipe(isPasskeyPruningSupportM, Micro.runSync)
 
 /**
- * Does the local device support programmatic passkey updates
+ * Does the local device support programmatic passkey updates?
  *
  * @returns `true` if local passkey updates are supported.
  *

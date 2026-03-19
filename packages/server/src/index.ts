@@ -17,9 +17,9 @@ import type {
   GetPasskeyOptions,
   ListPasskeyOptions,
   Passkey,
-  UpdatedUserDetails,
+  UpdatedCredentials,
   UpdatePasskeyOptions,
-  UpdateUserDetailsOptions,
+  UpdateUsernamesOptions,
 } from "./passkey/passkey.js"
 import {
   assignUser as assignUserE,
@@ -27,7 +27,7 @@ import {
   getPasskey as getPasskeyE,
   listPasskeys as listPasskeysE,
   updatePasskey as updatePasskeyE,
-  updatePasskeyUserDetails as updatePasskeyUserDetailsE,
+  updatePasskeyUsernames as updatePasskeyUsernamesE,
 } from "./passkey/passkey.js"
 import type {
   ExchangeCodeOptions,
@@ -67,19 +67,28 @@ export const updatePasskey = (
 ): Promise<Passkey> => pipe(updatePasskeyE(request), Effect.runPromise)
 
 /**
- * Call the Passlock backend API to update all passkeys for a given user
+ * Update the username and/or display name for all passkeys belonging to a given user.
+ *
+ * **Important:** changing these values has no bearing on authentication, as
+ * it's typically only used in the client-side component of the passkey
+ * (so the user knows which account the passkey relates to).
+ *
+ * However you might choose to align the names in your vault with the
+ * client-side component to simplify end user support.
+ *
+ * **Note:** This can be used alongside `@passlock/client`'s
+ * `updatePasskeyUsernames` helper to update those details on the user's device.
  *
  * @param request
- * @returns A promise resolving to updated usernames for matching passkeys.
- * @throws {@link NotFoundError} if no passkeys are found for the given user
- * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
+ * @returns A promise resolving to an {@link UpdatedCredentials} payload.
+ * Its `credentials` array can be passed to the client's `updatePasskeyUsernames` function.
  *
  * @category Passkeys
  */
-export const updatePasskeyUserDetails = (
-  request: UpdateUserDetailsOptions
-): Promise<UpdatedUserDetails> =>
-  pipe(updatePasskeyUserDetailsE(request), Effect.runPromise)
+export const updatePasskeyUsernames = (
+  request: UpdateUsernamesOptions
+): Promise<UpdatedCredentials> =>
+  pipe(updatePasskeyUsernamesE(request), Effect.runPromise)
 
 /**
  * Call the Passlock backend API to delete an authenticator
@@ -191,9 +200,9 @@ export type {
   PasskeySummary,
   Platform,
   UpdatedPasskeys,
-  UpdatedUserDetails,
+  UpdatedCredentials as UpdatedUserDetails,
   UpdatePasskeyOptions,
-  UpdateUserDetailsOptions,
+  UpdateUsernamesOptions as UpdateUserDetailsOptions,
 } from "./passkey/passkey.js"
 export {
   isPasskey,

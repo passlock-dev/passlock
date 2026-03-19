@@ -16,11 +16,20 @@ import type {
   AuthenticationOptions,
   AuthenticationSuccess,
   CredentialMapping,
+  DeleteError,
+  DeleteSuccess,
+  Err,
+  Ok,
   PasslockOptions,
+  PruningError,
+  PruningSuccess,
   RegistrationError,
   RegistrationOptions,
   RegistrationSuccess,
+  Result,
+  UpdateError,
   UpdatePasskeyOptions,
+  UpdateSuccess,
 } from "../src/safe.js"
 import * as root from "../src/safe.js"
 
@@ -85,6 +94,64 @@ describe("public surface", () => {
     type _7 = Assert<IsEqual<AuthenticationError, UnsafeAuthenticationError>>
     type _8 = Assert<IsEqual<UpdatePasskeyOptions, UpdatePasskeyOptionsUnsafe>>
     type _9 = Assert<IsEqual<CredentialMapping, UnsafeCredentialMapping>>
+
+    expect(true).toBe(true)
+  })
+
+  it("returns Result envelopes from safe functions", () => {
+    type IsEqual<A, B> =
+      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+        ? true
+        : false
+    type Assert<T extends true> = T
+    type _1 = Assert<
+      IsEqual<
+        Awaited<ReturnType<typeof root.registerPasskey>>,
+        Result<RegistrationSuccess, RegistrationError>
+      >
+    >
+    type _2 = Assert<
+      IsEqual<
+        Awaited<ReturnType<typeof root.authenticatePasskey>>,
+        Result<AuthenticationSuccess, AuthenticationError>
+      >
+    >
+    type _3 = Assert<
+      IsEqual<
+        Awaited<ReturnType<typeof root.updatePasskey>>,
+        Result<UpdateSuccess, UpdateError>
+      >
+    >
+    type _4 = Assert<
+      IsEqual<
+        Awaited<ReturnType<typeof root.deletePasskey>>,
+        Result<DeleteSuccess, DeleteError>
+      >
+    >
+    type _5 = Assert<
+      IsEqual<
+        Awaited<ReturnType<typeof root.prunePasskeys>>,
+        Result<PruningSuccess, PruningError>
+      >
+    >
+
+    expect(true).toBe(true)
+  })
+
+  it("exposes inverse success and failure literals on each Result branch", () => {
+    type IsEqual<A, B> =
+      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+        ? true
+        : false
+    type Assert<T extends true> = T
+    type DeleteResult = Awaited<ReturnType<typeof root.deletePasskey>>
+    type SuccessBranch = Extract<DeleteResult, { success: true }>
+    type ErrorBranch = Extract<DeleteResult, { success: false }>
+
+    type _1 = Assert<IsEqual<SuccessBranch, Ok<DeleteSuccess>>>
+    type _2 = Assert<IsEqual<ErrorBranch, Err<DeleteError>>>
+    type _3 = Assert<IsEqual<SuccessBranch["failure"], false>>
+    type _4 = Assert<IsEqual<ErrorBranch["failure"], true>>
 
     expect(true).toBe(true)
   })

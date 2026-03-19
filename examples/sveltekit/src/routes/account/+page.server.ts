@@ -5,7 +5,7 @@ import { superValidate, setError, message } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { getPasslockClientConfig } from '$lib/server/passlock';
+import { getPasslockClientConfig } from '$lib/server/passkeys';
 
 const schema = v.object({
 	username: v.pipe(v.string(), v.nonEmpty('Username is required')),
