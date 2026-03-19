@@ -1,5 +1,10 @@
 # @passlock/server
 
+## 2.2.1
+### Patch Changes
+
+- Upgrade dependencies including Vite 8
+
 ## 2.2.0
 
 ### Minor Changes

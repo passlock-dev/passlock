@@ -1,5 +1,10 @@
 # @passlock/node
 
+## 2.0.9
+### Patch Changes
+
+- Upgrade dependencies including Vite 8
+
 ## 2.0.8
 
 ### Patch Changes

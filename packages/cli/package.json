@@ -1,6 +1,6 @@
 {
   "name": "@passlock/cli",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "CLI tooling support for the Passlock authentication framework",
   "keywords": [
     "passkey",
