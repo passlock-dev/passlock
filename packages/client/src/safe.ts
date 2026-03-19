@@ -81,7 +81,7 @@ import {
   isUpdateSuccess,
   prunePasskeys as prunePasskeysM,
   updatePasskey as updatePasskeyM,
-  updatePasskeyUserDetails as updatePasskeyUserDetailsM,
+  updatePasskeyUsernames as updatePasskeyUsernamesM,
 } from "./passkey/signals/signals.js"
 
 /* Registration */
@@ -242,7 +242,7 @@ export const updatePasskey = (
 }
 
 /**
- * Attempt to update the username or display name for multiple passkeys (client-side only).
+ * Attempt to update the username and/or display name for multiple passkeys (client-side only).
  *
  * Useful if the user has changed their account identifier. For example, they register
  * using jdoe@gmail.com but later change their account username to jdoe@yahoo.com.
@@ -253,8 +253,7 @@ export const updatePasskey = (
  * password manager will align with their updated account identifier.
  *
  * @param options The `credentials` array returned by
- * `@passlock/server`'s `updatePasskeyUserDetails`, or
- * `result.value.credentials` from `@passlock/server/safe`.
+ * `@passlock/server/safe`'s `updatePasskeyUsernames` success branch.
  * @returns A {@link Result} whose success branch contains an {@link UpdateSuccess}
  * and whose error branch contains an {@link UpdateError}. Existing
  * {@link isUpdateSuccess}, {@link isUpdateError}, and `_tag` checks still work.
@@ -264,9 +263,9 @@ export const updatePasskey = (
  *
  * @example
  * // server code
- * import { updatePasskeyUserDetails } from "@passlock/server/safe";
+ * import { updatePasskeyUsernames } from "@passlock/server/safe";
  *
- * const backendResult = await updatePasskeyUserDetails({
+ * const backendResult = await updatePasskeyUsernames({
  *   tenancyId,
  *   userId,
  *   username,
@@ -277,9 +276,17 @@ export const updatePasskey = (
  * }
  *
  * // client code
- * import { updatePasskeyUserDetails } from "@passlock/client/safe";
+ * import { updatePasskeyUsernames } from "@passlock/client/safe";
  *
- * const result = await updatePasskeyUserDetails(credentialsFromBackend);
+ * const credentialsFromBackend = [
+ *   {
+ *     userId: "base64url-user-id",
+ *     rpId: "example.com",
+ *     username: "jdoe@yahoo.com",
+ *     displayName: "Jane Doe",
+ *   },
+ * ];
+ * const result = await updatePasskeyUsernames(credentialsFromBackend);
  *
  * if (result.success) {
  *   console.log("passkeys updated locally");
@@ -292,12 +299,12 @@ export const updatePasskey = (
  *
  * @category Passkeys (core)
  */
-export const updatePasskeyUserDetails = (
+export const updatePasskeyUsernames = (
   options: ReadonlyArray<UpdateCredentialOptions>,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<Result<UpdateSuccess, UpdateError>> => {
-  const micro = updatePasskeyUserDetailsM(options)
+  const micro = updatePasskeyUsernamesM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
 

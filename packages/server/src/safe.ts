@@ -48,9 +48,9 @@ import type {
   GetPasskeyOptions,
   ListPasskeyOptions,
   Passkey,
-  UpdatedUserDetails,
+  UpdatedCredentials,
   UpdatePasskeyOptions,
-  UpdateUserDetailsOptions,
+  UpdateUsernamesOptions,
 } from "./passkey/passkey.js"
 import {
   assignUser as assignUserE,
@@ -58,7 +58,7 @@ import {
   getPasskey as getPasskeyE,
   listPasskeys as listPasskeysE,
   updatePasskey as updatePasskeyE,
-  updatePasskeyUserDetails as updatePasskeyUserDetailsE,
+  updatePasskeyUsernames as updatePasskeyUsernamesE,
 } from "./passkey/passkey.js"
 import type {
   ExchangeCodeOptions,
@@ -128,28 +128,31 @@ export const updatePasskey = (
   runSafe(updatePasskeyE(request))
 
 /**
- * Update the username for all passkeys belonging to a given user.
+ * Update the username and/or display name for all passkeys belonging to a given user.
  *
- * **Important:** changing the username has no bearing on authentication, as
+ * **Important:** changing these values has no bearing on authentication, as
  * it's typically only used in the client-side component of the passkey
  * (so the user knows which account the passkey relates to).
  *
- * However you might choose to align the username in your vault with the
+ * However you might choose to align the username and display name in your vault with the
  * client-side component to simplify end user support.
- * 
+ *
  * **Note:** This can be used alongside `@passlock/client`'s
- * `updatePasskeyUserDetails` helper to update those details on the user's device.
+ * `updatePasskeyUsernames` helper to update those details on the user's device.
  *
  * @param request
- * @returns A promise resolving to a {@link Result} whose success branch contains
- * updated passkey usernames and whose error branch contains an API error.
+ * @returns A promise resolving to a {@link Result}.
+ * The success branch contains an {@link UpdatedCredentials} payload, whose
+ * `credentials` array can be passed into the client's `updatePasskeyUsernames` function.
+ * The error branch contains
+ * an API error.
  *
  * @category Passkeys
  */
-export const updatePasskeyUserDetails = (
-  request: UpdateUserDetailsOptions
-): Promise<Result<UpdatedUserDetails, NotFoundError | ForbiddenError>> =>
-  runSafe(updatePasskeyUserDetailsE(request))
+export const updatePasskeyUsernames = (
+  request: UpdateUsernamesOptions
+): Promise<Result<UpdatedCredentials, NotFoundError | ForbiddenError>> =>
+  runSafe(updatePasskeyUsernamesE(request))
 
 /**
  * Delete a passkey from your vault.
@@ -291,9 +294,9 @@ export type {
   PasskeySummary,
   Platform,
   UpdatedPasskeys,
-  UpdatedUserDetails,
+  UpdatedCredentials as UpdatedUserDetails,
   UpdatePasskeyOptions,
-  UpdateUserDetailsOptions,
+  UpdateUsernamesOptions as UpdateUserDetailsOptions,
 } from "./passkey/passkey.js"
 export {
   isPasskey,

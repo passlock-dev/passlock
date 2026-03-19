@@ -49,7 +49,7 @@ import {
   isPasskeyUpdateSupport as isPasskeyUpdateSupportM,
   prunePasskeys as prunePasskeysM,
   updatePasskey as updatePasskeyM,
-  updatePasskeyUserDetails as updatePasskeyUserDetailsM,
+  updatePasskeyUsernames as updatePasskeyUsernamesM,
 } from "./passkey/signals/signals.js"
 import type { OrphanedPasskeyError } from "./safe.js"
 
@@ -218,15 +218,16 @@ export const updatePasskey = (
  * password manager will align with their updated account identifier.
  *
  * @param options The `credentials` array returned by
- * `@passlock/server`'s `updatePasskeyUserDetails`.
+ * `@passlock/server`'s `updatePasskeyUsernames`.
  * @returns A promise resolving to an {@link UpdateSuccess}.
  * @throws {@link UpdateError} if one or more local passkeys cannot be updated
  *
  * @example
  * // server code
- * import { updatePasskeyUserDetails } from "@passlock/server";
+ * import { updatePasskeyUsernames } from "@passlock/server";
  *
- * const backendResult = await updatePasskeyUserDetails({
+ * // send the backendResult to your frontend
+ * const backendResult = await updatePasskeyUsernames({
  *   tenancyId,
  *   userId,
  *   username,
@@ -234,18 +235,26 @@ export const updatePasskey = (
  * });
  *
  * // client code
- * import { updatePasskeyUserDetails } from "@passlock/client";
+ * import { updatePasskeyUsernames } from "@passlock/client";
  *
- * const result = await updatePasskeyUserDetails(backendResult.credentials);
+ * const credentialsFromBackend = [
+ *   {
+ *     userId: "base64url-user-id",
+ *     rpId: "example.com",
+ *     username: "jdoe@yahoo.com",
+ *     displayName: "Jane Doe",
+ *   },
+ * ];
+ * const result = await updatePasskeyUsernames(credentialsFromBackend);
  *
  * @category Passkeys (core)
  */
-export const updatePasskeyUserDetails = (
+export const updatePasskeyUsernames = (
   options: ReadonlyArray<UpdateCredentialOptions>,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<UpdateSuccess> => {
-  const micro = updatePasskeyUserDetailsM(options)
+  const micro = updatePasskeyUsernamesM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromiseUnsafe)
 }
 

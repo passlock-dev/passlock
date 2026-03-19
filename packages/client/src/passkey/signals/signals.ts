@@ -222,7 +222,7 @@ export interface UpdatePasskeyOptions extends PasslockOptions {
  * that is the immutable Base64Url-encoded binary ID.
  *
  * This shape is usually returned by `@passlock/server`'s
- * `updatePasskeyUserDetails` helper and does not include tenancy or endpoint
+ * `updatePasskeyUsernames` helper and does not include tenancy or endpoint
  * configuration.
  *
  * @see {@link updatePasskey}
@@ -265,8 +265,7 @@ export const isUpdateSuccess = (payload: unknown): payload is UpdateSuccess => {
 }
 
 /**
- * Update user details, for example the username and/or display name, for
- * multiple local passkeys.
+ * Update the username and/or display name for multiple local passkeys.
  *
  * Note: this is purely informational. It does not change any passkey
  * identifiers.
@@ -277,11 +276,11 @@ export const isUpdateSuccess = (payload: unknown): payload is UpdateSuccess => {
  * user's password manager.
  *
  * @param options Credential identifiers plus the updated username/display name,
- * typically taken from `@passlock/server`'s `updatePasskeyUserDetails`
+ * typically taken from `@passlock/server`'s `updatePasskeyUsernames`
  * response.
  * @returns A Micro effect that resolves with a {@link UpdateSuccess} or fails with {@link UpdateError}.
  */
-export const updatePasskeyUserDetails = (
+export const updatePasskeyUsernames = (
   options: ReadonlyArray<UpdateCredentialOptions>
 ) =>
   Micro.gen(function* () {
