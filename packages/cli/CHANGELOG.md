@@ -1,6 +1,6 @@
-# @passlock/client
+# @passlock/cli
 
-## 2.2.0
+## 2.1.0
 
 ### Minor Changes
 
@@ -33,9 +33,3 @@
   This should improve the developer experience as you don't need to know which typeguard to use.
 
   Note: typeguards continue to work, as does discriminating based on the `_tag` property.
-
-## 2.1.0
-
-### Minor Changes
-
-- Introduce a new @passlock/server package, to replace the @passlock/node package which is deprecated. @passlock/server is largely backend agnostic as it uses the standardized fetch protocol instead of native node libraries.

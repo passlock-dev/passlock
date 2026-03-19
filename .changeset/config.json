@@ -6,5 +6,6 @@
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
   "fixed": [["@passlock/client", "@passlock/server"]],
-  "ignore": []
+  "ignore": [],
+  "prettier": false
 }
