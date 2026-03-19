@@ -28,7 +28,7 @@ const packagesToSync = [
   },
 ] as const
 
-const examplesRoot = path.join(repoRoot, "public/examples")
+const examplesRoot = path.join(repoRoot, "examples")
 
 async function readJson<T>(filePath: string): Promise<T> {
   const content = await readFile(filePath, "utf8")
