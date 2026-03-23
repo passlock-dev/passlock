@@ -32,7 +32,7 @@
 			// force the layout to refresh
 			await invalidateAll();
 			await goto(resolve('/'));
-      disabled = false;
+			disabled = false;
 		} else {
 			console.log(result.message);
 			disabled = false;

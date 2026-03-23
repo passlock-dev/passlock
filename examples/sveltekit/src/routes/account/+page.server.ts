@@ -15,7 +15,7 @@ const schema = v.object({
 
 export const load = (async ({ locals }) => {
 	if (!locals.user) {
-		throw redirect(302, '/login');
+		redirect(302, '/login');
 	}
 
 	const passlockConfig = getPasslockClientConfig();
@@ -38,7 +38,7 @@ export const load = (async ({ locals }) => {
 export const actions = {
 	default: async ({ request, locals }) => {
 		if (!locals.user) {
-			throw redirect(302, '/login');
+			redirect(302, '/login');
 		}
 
 		const form = await superValidate(request, valibot(schema));

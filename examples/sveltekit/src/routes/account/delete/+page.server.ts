@@ -12,7 +12,7 @@ const schema = v.object({
 
 export const load = (async ({ locals }) => {
 	if (!locals.user) {
-		throw redirect(302, '/login');
+		redirect(302, '/login');
 	}
 
 	const form = await superValidate({ intent: 'delete-account' }, valibot(schema));
@@ -28,7 +28,7 @@ export const load = (async ({ locals }) => {
 export const actions = {
 	default: async ({ request, locals, cookies }) => {
 		if (!locals.user) {
-			throw redirect(302, '/login');
+			redirect(302, '/login');
 		}
 
 		const form = await superValidate(request, valibot(schema));
@@ -42,6 +42,6 @@ export const actions = {
 		}
 
 		deleteSessionTokenCookie(cookies);
-		throw redirect(303, '/');
+		redirect(303, '/');
 	}
 } satisfies Actions;

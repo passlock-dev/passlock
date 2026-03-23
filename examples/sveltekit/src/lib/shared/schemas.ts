@@ -24,12 +24,12 @@ export const UpdatePasskeysSuccess = v.object({
 
 export const DeletePasskeyWarning = v.object({
 	_tag: v.literal('@warning/PasskeyNotFound'),
-  message: v.string()
+	message: v.string()
 });
 
 export const DeletePasskeySuccess = v.object({
 	_tag: v.literal('DeletePasskeySuccess'),
-  deleted: DeletedCredential
+	deleted: DeletedCredential
 });
 
 export const DeleteUserPasskeysSuccess = v.object({

@@ -92,9 +92,7 @@
 			</div>
 
 			<button class="btn mt-4 btn-primary">Save changes</button>
-			<a href={resolve('/account/delete')} class="btn mt-3 btn-outline btn-error">
-				Delete account
-			</a>
+			<a href={resolve('/account/delete')} class="btn mt-3 btn-outline btn-error">Delete account</a>
 		</fieldset>
 	</form>
 </div>

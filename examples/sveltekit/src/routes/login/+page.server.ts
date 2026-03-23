@@ -17,7 +17,7 @@ const schema = v.object({
 
 export const load = (async ({ locals }) => {
 	if (locals.user) {
-		throw redirect(302, '/');
+		redirect(302, '/');
 	}
 
 	const form = await superValidate(valibot(schema));
@@ -30,7 +30,6 @@ export const actions = {
 		const form = await superValidate(request, valibot(schema));
 
 		if (!form.valid) {
-			// Return { form } and things will just work.
 			return fail(400, { form });
 		}
 
@@ -39,11 +38,11 @@ export const actions = {
 			const passkeys = await getPasskeysByUserId(user.userId);
 			if (passkeys.length > 0) {
 				const username = encodeURIComponent(form.data.username);
-				throw redirect(303, `/login/passkey?username=${username}`);
+				redirect(303, `/login/passkey?username=${username}`);
 			}
 		}
 
 		const username = encodeURIComponent(form.data.username);
-		throw redirect(303, `/login/password?username=${username}`);
+		redirect(303, `/login/password?username=${username}`);
 	}
 } satisfies Actions;

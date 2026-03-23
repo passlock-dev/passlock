@@ -3,23 +3,24 @@ import type { Actions, PageServerLoad } from './$types';
 import {
 	createOtcChallenge,
 	createSession,
-	deletePasswordLoginChallengesByUserId,
-	getActivePasswordLoginChallengesByUserId,
-	getPasskeysByUserId,
+	deleteAllOtcChallengesByUser,
+	getOtcChallengesByUser,
 	getPendingOtcContext
 } from '$lib/server/repository.js';
 import { sendOtcEmail } from '$lib/server/email.js';
 import {
-	deletePendingPasswordLoginCookie,
-	hashPasswordLoginCode,
-	isSamePasswordLoginHash,
-	PENDING_PASSWORD_LOGIN_COOKIE_NAME,
-	setPendingPasswordLoginCookie
-} from '$lib/server/password-login.js';
+	hashText,
+	isEqualHash,
+} from '$lib/server/hashing';
+import {
+	deleteOtcCookie,
+	getOtcCookie,
+	setOtcCookie
+} from '$lib/server/oneTimeCode.js';
 import { setSessionTokenCookie } from '$lib/server/session.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
-import { superValidate } from 'sveltekit-superforms';
+import { setError, superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import * as v from 'valibot';
 
@@ -31,35 +32,33 @@ const resendCodeSchema = v.object({
 	intent: v.literal('resend-code')
 });
 
-const createVerifyForm = () =>
-	superValidate(valibot(verifyCodeSchema), { id: 'verify-code-form' });
+const createVerifyForm = () => superValidate(
+  valibot(verifyCodeSchema), 
+  { id: 'verify-code-form' }
+);
 
-const createResendForm = () =>
-	superValidate({ intent: 'resend-code' }, valibot(resendCodeSchema), { id: 'resend-code-form' });
+const createResendForm = () => superValidate(
+  { intent: 'resend-code' }, 
+  valibot(resendCodeSchema), { id: 'resend-code-form' }
+);
 
-const getPendingContextOrRedirect = async (token: string | undefined, clearCookie: () => void) => {
-	if (!token) {
-		throw redirect(303, resolve('/login'));
-	}
+const getOtcContext = async (token: string | undefined, clearCookie: () => void) => {
+	if (!token) redirect(303, resolve('/login'));
 
 	const pending = await getPendingOtcContext(token);
 	if (!pending) {
 		clearCookie();
-		throw redirect(303, resolve('/login'));
+		redirect(303, resolve('/login'));
 	}
 
 	return pending;
 };
 
 export const load = (async ({ locals, cookies }) => {
-	if (locals.user) {
-		throw redirect(302, '/');
-	}
+	if (locals.user) redirect(302, '/');
 
-	const token = cookies.get(PENDING_PASSWORD_LOGIN_COOKIE_NAME);
-	const pending = await getPendingContextOrRedirect(token, () =>
-		deletePendingPasswordLoginCookie(cookies)
-	);
+	const token = getOtcCookie(cookies);
+  const { user } = await getOtcContext(token, () => deleteOtcCookie(cookies));
 
 	const verifyForm = await createVerifyForm();
 	const resendForm = await createResendForm();
@@ -67,49 +66,47 @@ export const load = (async ({ locals, cookies }) => {
 	return {
 		verifyForm,
 		resendForm,
-		email: pending.user.email
+		email: user.email
 	};
 }) satisfies PageServerLoad;
 
 export const actions = {
 	verify: async ({ request, cookies }) => {
-		const verifyForm = await superValidate(request, valibot(verifyCodeSchema), {
-			id: 'verify-code-form'
-		});
-		const resendForm = await createResendForm();
+    const resendForm = await createResendForm();
 
-		if (!verifyForm.valid) {
-			return fail(400, { verifyForm, resendForm });
-		}
+		const verifyForm = await superValidate(
+      request, 
+      valibot(verifyCodeSchema), 
+      { id: 'verify-code-form' }
+    );
 
-		const token = cookies.get(PENDING_PASSWORD_LOGIN_COOKIE_NAME);
-		const pending = await getPendingContextOrRedirect(token, () =>
-			deletePendingPasswordLoginCookie(cookies)
-		);
+		if (!verifyForm.valid) return fail(400, { verifyForm, resendForm });
 
-		const activeChallenges = await getActivePasswordLoginChallengesByUserId(pending.user.userId);
-		const suppliedCodeHash = hashPasswordLoginCode(verifyForm.data.code);
+		const token = getOtcCookie(cookies);
+		const { user } = await getOtcContext(token, () => deleteOtcCookie(cookies));
+
+		const activeChallenges = await getOtcChallengesByUser(user.userId);
+		const suppliedCodeHash = hashText(verifyForm.data.code);
+    
 		const matchedChallenge = activeChallenges.find((challenge) =>
-			isSamePasswordLoginHash(challenge.codeHash, suppliedCodeHash)
+			isEqualHash(challenge.codeHash, suppliedCodeHash)
 		);
 
 		if (!matchedChallenge) {
-			verifyForm.valid = false;
-			verifyForm.errors.code = [
-				activeChallenges.length === 0 ? 'This code has expired. Request a new one.' : 'Invalid code'
-			];
-			return fail(400, { verifyForm, resendForm, email: pending.user.email });
+      const message = activeChallenges.length === 0 ? 'This code has expired. Request a new one.' : 'Invalid code';
+      setError(verifyForm, 'code', message);
+			return fail(400, { verifyForm, resendForm, email: user.email });
 		}
 
-		await deletePasswordLoginChallengesByUserId(pending.user.userId);
-		deletePendingPasswordLoginCookie(cookies);
+    // OTC validated so clear all challenges and the cookie
+    // otherwise it wouldn't be a ONE time code :D
+		await deleteAllOtcChallengesByUser(user.userId);
+		deleteOtcCookie(cookies);
 
-		const { token: sessionToken } = await createSession(pending.user.userId);
+		const { token: sessionToken } = await createSession(user.userId);
 		setSessionTokenCookie(cookies, sessionToken);
 
-		const passkeys = await getPasskeysByUserId(pending.user.userId);
-		const redirectTo = passkeys.length === 0 ? resolve('/passkeys') : resolve('/');
-		throw redirect(303, redirectTo);
+		redirect(303, resolve('/'));
 	},
 	resend: async ({ request, cookies }) => {
 		const resendForm = await superValidate(request, valibot(resendCodeSchema), {
@@ -121,10 +118,8 @@ export const actions = {
 			return fail(400, { verifyForm, resendForm });
 		}
 
-		const token = cookies.get(PENDING_PASSWORD_LOGIN_COOKIE_NAME);
-		const pending = await getPendingContextOrRedirect(token, () =>
-			deletePendingPasswordLoginCookie(cookies)
-		);
+		const token = getOtcCookie(cookies);
+		const pending = await getOtcContext(token, () => deleteOtcCookie(cookies));
 
 		const { token: pendingToken, code } = await createOtcChallenge(pending.user.userId);
 		await sendOtcEmail({
@@ -133,7 +128,7 @@ export const actions = {
 			code
 		});
 
-		setPendingPasswordLoginCookie(cookies, pendingToken);
+		setOtcCookie(cookies, pendingToken);
 		resendForm.message = 'A new code has been sent';
 
 		return { verifyForm, resendForm, email: pending.user.email };

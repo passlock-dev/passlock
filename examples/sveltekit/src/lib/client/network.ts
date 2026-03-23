@@ -8,11 +8,17 @@ export type PostDataInput<A, E> = {
 
 /**
  * Simple wrapper around fetch
- * 
- * @param param0 
- * @returns 
+ *
+ * @param param0
+ * @returns
  */
-export const fetchData = async <A, E>({ url, method, body, on2xx, orElse }: PostDataInput<A, E>) => {
+export const fetchData = async <A, E>({
+	url,
+	method,
+	body,
+	on2xx,
+	orElse
+}: PostDataInput<A, E>) => {
 	const response = await fetch(url, {
 		method,
 		headers: {

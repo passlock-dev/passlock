@@ -2,7 +2,6 @@
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
 	import { resolve } from '$app/paths';
-	import DevNotes from '$lib/components/DevNotes.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -27,7 +26,7 @@
 				name="username"
 				class="input text-base-content/60"
 				value={data.username}
-        readonly />
+				readonly />
 
 			<p class="mt-2 text-sm">
 				Not you?
@@ -61,17 +60,3 @@
 		</p>
 	</form>
 </div>
-
-<DevNotes>
-  <p>
-    Fallback to password based login if the user has no registered passkeys, or is unwilling / unable to use one.
-  </p>
-
-  <p class="mt-2">
-    In reality you'd also want to perform some additional verification e.g. one time code verification.
-  </p>
-
-  <p class="mt-2">
-    Email or SMS based one time codes strike a nice balance between security and friction.
-  </p>
-</DevNotes>

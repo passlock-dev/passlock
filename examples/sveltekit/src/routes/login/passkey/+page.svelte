@@ -34,11 +34,7 @@
 			Use your device passkey to sign in without typing your password.
 		</p>
 
-		<button
-			type="button"
-			class="btn mt-6 w-full btn-primary"
-			onclick={login}
-			disabled={loading}>
+		<button type="button" class="btn mt-6 w-full btn-primary" onclick={login} disabled={loading}>
 			{#if loading}Logging in...{:else}Login using your passkey{/if}
 		</button>
 
@@ -88,7 +84,7 @@
 		</p>
 	</DevNotes>
 {:else}
-	<DevNotes >
+	<DevNotes>
 		<p class="mt-2">
 			We don't know which account the user wants to authenticate against until they present a
 			passkey. They are free to present any suitable passkey.

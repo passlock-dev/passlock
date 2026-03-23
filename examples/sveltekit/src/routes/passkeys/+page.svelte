@@ -59,7 +59,7 @@
 			return;
 		}
 
-		if (result._tag === "@warning/PasskeyNotFound") {
+		if (result._tag === '@warning/PasskeyNotFound') {
 			warning = result.message;
 		} else {
 			info = 'Passkey deleted from your account';

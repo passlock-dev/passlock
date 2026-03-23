@@ -1,6 +1,9 @@
 /**
  * Password hashing utils
+ * Note: This is node specific, if you're not running node you'll
+ * need to swap out hashPassword and verifyPasswordHash
  */
+
 import { randomBytes, scrypt, timingSafeEqual, type BinaryLike } from 'node:crypto';
 import { promisify } from 'node:util';
 

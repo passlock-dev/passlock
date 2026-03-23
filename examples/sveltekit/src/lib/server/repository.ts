@@ -13,19 +13,18 @@ import {
 	usersTable
 } from './schema';
 import {
-	PASSWORD_LOGIN_CHALLENGE_ID_LENGTH,
-	PASSWORD_LOGIN_CHALLENGE_SECRET_LENGTH,
-	PASSWORD_LOGIN_CHALLENGE_TTL_MS,
-	PASSWORD_LOGIN_CODE_TTL_MS,
-	generatePasswordLoginCode,
-	hashPasswordLoginCode,
-	hashPasswordLoginSecret,
-	isSamePasswordLoginHash,
-	parsePendingPasswordLoginToken
-} from './password-login';
+	hashText,
+	isEqualHash,
+} from '././hashing';
 import {
-	hashSessionSecret,
-	isSameSecretHash,
+	generateCode,
+	OTC_CHALLENGE_ID_LENGTH,
+	OTC_CHALLENGE_SECRET_LENGTH,
+	OTC_CHALLENGE_TTL_MS,
+	OTC_CODE_TTL_MS,
+	parseOtcToken
+} from './oneTimeCode';
+import {
 	parseSessionToken,
 	SESSION_MAX_INACTIVE_MS,
 	SESSION_REFRESH_INTERVAL_MS,
@@ -239,21 +238,21 @@ export const createOtcChallenge = async (
 	await deleteExpiredPasswordLoginChallenges(userId);
 
 	for (let i = 0; i < 5; i++) {
-		const challengeId = generateRandomString(PASSWORD_LOGIN_CHALLENGE_ID_LENGTH);
-		const challengeSecret = generateRandomString(PASSWORD_LOGIN_CHALLENGE_SECRET_LENGTH);
+		const challengeId = generateRandomString(OTC_CHALLENGE_ID_LENGTH);
+		const challengeSecret = generateRandomString(OTC_CHALLENGE_SECRET_LENGTH);
 		const token = `${challengeId}.${challengeSecret}`;
-		const code = generatePasswordLoginCode();
+		const code = generateCode();
 		const now = Date.now();
 
 		try {
 			await db.insert(otcChallengesTable).values({
 				id: challengeId,
 				userId,
-				secretHash: hashPasswordLoginSecret(challengeSecret),
-				codeHash: hashPasswordLoginCode(code),
+				secretHash: hashText(challengeSecret),
+				codeHash: hashText(code),
 				createdAt: now,
-				codeExpiresAt: now + PASSWORD_LOGIN_CODE_TTL_MS,
-				challengeExpiresAt: now + PASSWORD_LOGIN_CHALLENGE_TTL_MS
+				codeExpiresAt: now + OTC_CODE_TTL_MS,
+				challengeExpiresAt: now + OTC_CHALLENGE_TTL_MS
 			});
 		} catch (e) {
 			if (isSqliteConstraintError(e) && e.cause.extendedCode === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
@@ -268,8 +267,8 @@ export const createOtcChallenge = async (
 				id: challengeId,
 				userId,
 				createdAt: now,
-				codeExpiresAt: now + PASSWORD_LOGIN_CODE_TTL_MS,
-				challengeExpiresAt: now + PASSWORD_LOGIN_CHALLENGE_TTL_MS
+				codeExpiresAt: now + OTC_CODE_TTL_MS,
+				challengeExpiresAt: now + OTC_CHALLENGE_TTL_MS
 			},
 			token,
 			code
@@ -279,10 +278,8 @@ export const createOtcChallenge = async (
 	throw new Error('Unable to create password login challenge');
 };
 
-export const getPendingOtcContext = async (
-	token: string
-): Promise<PendingOtcContext | null> => {
-	const parsedToken = parsePendingPasswordLoginToken(token);
+export const getPendingOtcContext = async (token: string): Promise<PendingOtcContext | null> => {
+	const parsedToken = parseOtcToken(token);
 	if (!parsedToken) return null;
 
 	const rows = await db
@@ -305,13 +302,11 @@ export const getPendingOtcContext = async (
 	const row = rows[0];
 	if (!row) return null;
 
-	const suppliedSecretHash = hashPasswordLoginSecret(parsedToken.sessionSecret);
-	if (!isSamePasswordLoginHash(row.secretHash, suppliedSecretHash)) return null;
+	const suppliedSecretHash = hashText(parsedToken.sessionSecret);
+	if (!isEqualHash(row.secretHash, suppliedSecretHash)) return null;
 
 	if (Date.now() > row.challengeExpiresAt) {
-		await db
-			.delete(otcChallengesTable)
-			.where(eq(otcChallengesTable.id, row.id));
+		await db.delete(otcChallengesTable).where(eq(otcChallengesTable.id, row.id));
 		return null;
 	}
 
@@ -332,7 +327,7 @@ export const getPendingOtcContext = async (
 	};
 };
 
-export const getActivePasswordLoginChallengesByUserId = async (
+export const getOtcChallengesByUser = async (
 	userId: number
 ): Promise<ActivePasswordLoginChallenge[]> => {
 	await deleteExpiredPasswordLoginChallenges(userId);
@@ -359,10 +354,8 @@ export const getActivePasswordLoginChallengesByUserId = async (
 		.orderBy(desc(otcChallengesTable.createdAt));
 };
 
-export const deletePasswordLoginChallengesByUserId = async (userId: number): Promise<void> => {
-	await db
-		.delete(otcChallengesTable)
-		.where(eq(otcChallengesTable.userId, userId));
+export const deleteAllOtcChallengesByUser = async (userId: number): Promise<void> => {
+	await db.delete(otcChallengesTable).where(eq(otcChallengesTable.userId, userId));
 };
 
 export const createPasskey = async (
@@ -463,7 +456,7 @@ export const createSession = async (userId: number): Promise<CreatedSession> => 
 	for (let i = 0; i < 5; i++) {
 		const sessionId = generateRandomString(SESSION_ID_LENGTH);
 		const sessionSecret = generateRandomString(SESSION_SECRET_LENGTH);
-		const secretHash = hashSessionSecret(sessionSecret);
+		const secretHash = hashText(sessionSecret);
 		const token = `${sessionId}.${sessionSecret}`;
 		const now = Date.now();
 
@@ -517,8 +510,8 @@ export const validateSessionToken = async (
 	const row = result[0];
 	if (!row) return null;
 
-	const suppliedSecretHash = hashSessionSecret(sessionToken.sessionSecret);
-	if (!isSameSecretHash(row.secretHash, suppliedSecretHash)) return null;
+	const suppliedSecretHash = hashText(sessionToken.sessionSecret);
+	if (!isEqualHash(row.secretHash, suppliedSecretHash)) return null;
 
 	const now = Date.now();
 	if (now - row.lastVerifiedAt >= SESSION_MAX_INACTIVE_MS) {

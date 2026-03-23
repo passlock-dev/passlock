@@ -33,7 +33,7 @@
 							type="text"
 							autocomplete="given-name"
 							name="givenName"
-							class={['input w-full mt-2', { 'input-error': $errors.givenName }]}
+							class={['input mt-2 w-full', { 'input-error': $errors.givenName }]}
 							bind:value={$form.givenName}
 							required />
 						{#if $errors.givenName}
@@ -50,7 +50,7 @@
 							type="text"
 							autocomplete="family-name"
 							name="familyName"
-							class={['input w-full mt-2', { 'input-error': $errors.familyName }]}
+							class={['input mt-2 w-full', { 'input-error': $errors.familyName }]}
 							bind:value={$form.familyName}
 							required />
 						{#if $errors.familyName}

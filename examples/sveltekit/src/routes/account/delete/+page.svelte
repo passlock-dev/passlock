@@ -10,34 +10,34 @@
 	let warning = $state('');
 	let error = $state('');
 	let deletingPasskeys = $state(false);
-	let passkeyStepCompleted = $state(false);  
+	let passkeyStepCompleted = $state(false);
 
 	// svelte-ignore state_referenced_locally
 	const { form, errors, enhance } = superForm(data.form, {
 		applyAction: true,
 		invalidateAll: 'pessimistic',
-    onSubmit: async ({ cancel }) => {
-      if (passkeyCount === 0 || passkeyStepCompleted) return;
+		onSubmit: async ({ cancel }) => {
+			if (passkeyCount === 0 || passkeyStepCompleted) return;
 
-      warning = '';
-      error = '';
-      deletingPasskeys = true;
+			warning = '';
+			error = '';
+			deletingPasskeys = true;
 
-      const result = await deleteAccountPasskeys();
-      deletingPasskeys = false;
+			const result = await deleteAccountPasskeys();
+			deletingPasskeys = false;
 
-      if (result._tag === '@error/DeletePasskeyError') {
-        error = result.message;
-        cancel();
-        return;
-      }
+			if (result._tag === '@error/DeletePasskeyError') {
+				error = result.message;
+				cancel();
+				return;
+			}
 
-      if (result._tag === '@warning/PasskeyDeletePaused') {
-        warning = result.message;
-      }
+			if (result._tag === '@warning/PasskeyDeletePaused') {
+				warning = result.message;
+			}
 
-      passkeyStepCompleted = true;      
-    }
+			passkeyStepCompleted = true;
+		}
 	});
 </script>
 
@@ -46,22 +46,19 @@
 </svelte:head>
 
 <div class="flex h-full w-full items-center justify-center">
-	<form
-		method="POST"
-		use:enhance
-		class="w-full max-w-sm rounded-lg bg-base-200 p-10 pt-8">
+	<form method="POST" use:enhance class="w-full max-w-sm rounded-lg bg-base-200 p-10 pt-8">
 		<h2 class="text-center text-xl font-semibold">Delete account</h2>
 		<p class="mt-3 text-center text-sm text-base-content/80">
-			This permanently deletes <span class="font-semibold">{data.user.email}</span> and signs you
-			out everywhere.
+			This permanently deletes <span class="font-semibold">{data.user.email}</span>
+			and signs you out everywhere.
 		</p>
 		<p class="mt-2 text-center text-sm text-base-content/80">
 			{#if passkeyCount === 0}
 				Your local account data and sessions will be removed immediately.
 			{:else}
 				We will delete {passkeyCount} linked {passkeyCount === 1 ? 'passkey' : 'passkeys'}
-				from Passlock first. Some browsers may still require you to remove them manually from your
-				password manager afterwards.
+				from Passlock first. Some browsers may still require you to remove them manually from your password
+				manager afterwards.
 			{/if}
 		</p>
 
@@ -82,7 +79,7 @@
 		<input type="hidden" name="intent" bind:value={$form.intent} />
 
 		<div class="mt-6 flex gap-3">
-			<a href={resolve('/account')} class="btn btn-neutral flex-1">Cancel</a>
+			<a href={resolve('/account')} class="btn flex-1 btn-neutral">Cancel</a>
 			<button class="btn flex-1 btn-error" disabled={deletingPasskeys}>
 				{#if deletingPasskeys}Deleting passkeys...{:else}Delete account{/if}
 			</button>

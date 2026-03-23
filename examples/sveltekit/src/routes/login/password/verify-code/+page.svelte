@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
+	import DevNotes from '$lib/components/DevNotes.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -10,7 +11,7 @@
 		form: verifyForm,
 		errors: verifyErrors,
 		enhance: verifyEnhance,
-    constraints: verifyConstraints
+		constraints: verifyConstraints
 	} = superForm(data.verifyForm, {
 		applyAction: true,
 		invalidateAll: 'pessimistic'
@@ -50,7 +51,7 @@
 					autocomplete="one-time-code"
 					class={['input tracking-[0.3em]', { 'input-error': $verifyErrors.code }]}
 					bind:value={$verifyForm.code}
-          {...$verifyConstraints.code} />
+					{...$verifyConstraints.code} />
 
 				{#if $verifyErrors.code}
 					{#each $verifyErrors.code as error (error)}

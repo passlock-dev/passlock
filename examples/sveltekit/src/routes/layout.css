@@ -6,5 +6,5 @@
 }
 
 .input:is([disabled], :disabled) {
-  @apply bg-base-300;
+	@apply bg-base-300;
 }

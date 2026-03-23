@@ -18,7 +18,7 @@ const schema = v.object({
 
 export const load = (async ({ locals }) => {
 	if (locals.user) {
-		throw redirect(302, '/');
+		redirect(302, '/');
 	}
 
 	const form = await superValidate(valibot(schema));
@@ -50,6 +50,6 @@ export const actions = {
 
 		const passkeys = await getPasskeysByUserId(user.userId);
 		const redirectTo = passkeys.length === 0 ? resolve('/passkeys') : resolve('/');
-		throw redirect(303, redirectTo);
+		redirect(303, redirectTo);
 	}
 };
