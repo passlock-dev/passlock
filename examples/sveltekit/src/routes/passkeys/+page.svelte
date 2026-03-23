@@ -40,15 +40,13 @@
 	};
 
 	const removePasskey = async (passkeyId: string) => {
-		const { tenancyId, endpoint } = data;
-
 		info = '';
 		warning = '';
 		error = '';
 		deletingPasskeyId = passkeyId;
 
 		deletingPasskeyId = passkeyId;
-		const result = await deletePasskey({ tenancyId, endpoint, passkeyId });
+		const result = await deletePasskey({ passkeyId });
 
 		if (result._tag === '@error/DeletePasskeyError') {
 			error = result.message;
@@ -60,8 +58,8 @@
 			return;
 		}
 
-		if (result.warning) {
-			warning = result.warning;
+		if (result._tag === "@warning/PasskeyNotFound") {
+			warning = result.message;
 		} else {
 			info = 'Passkey deleted from your account';
 		}

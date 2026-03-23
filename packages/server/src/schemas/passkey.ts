@@ -204,3 +204,12 @@ export const DeletedPasskeysResponse = Schema.TaggedStruct("DeletedPasskeys", {
 export const DeletedPasskeys = Schema.TaggedStruct("DeletedPasskeys", {
   deleted: Schema.Array(Credential),
 })
+
+/**
+ * Public schema returned when passkeys are deleted.
+ *
+ * @category Passkeys
+ */
+export const DeletedPasskey = Schema.TaggedStruct("DeletedPasskey", {
+  deleted: Credential,
+})

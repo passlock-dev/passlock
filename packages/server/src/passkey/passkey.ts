@@ -208,6 +208,37 @@ export type _Credential = satisfy<
   Credential
 >
 
+/* DeletedPasskey */
+
+/**
+ * Result payload returned when all passkeys for a user have been deleted.
+ *
+ * @category Passkeys
+ */
+export type DeletedPasskey = {
+  _tag: "DeletedPasskey"
+  deleted: Credential
+}
+
+/**
+ * Type guard for {@link DeletedPasskey}.
+ *
+ * @category Passkeys
+ */
+export const isDeletedPasskey = (
+  payload: unknown
+): payload is DeletedPasskey =>
+  Schema.is(PasskeySchemas.DeletedPasskey)(payload)
+
+/**
+ * needed to ensure the DeletedPasskey === DeletedPasskey.Type
+ * @internal
+ * */
+export type _DeletedPasskey = satisfy<
+  typeof PasskeySchemas.DeletedPasskey.Type,
+  DeletedPasskey
+>
+
 /* DeletedPasskeys */
 
 /**
@@ -401,14 +432,14 @@ export interface DeletePasskeyOptions extends AuthenticatedOptions {
  *
  * @param options Request options including the passkey identifier.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds with the deleted passkey.
+ * @returns An Effect that succeeds with the deleted credential.
  *
  * @category Passkeys
  */
 export const deletePasskey = (
   options: DeletePasskeyOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<Passkey, NotFoundError | ForbiddenError> =>
+): Effect.Effect<DeletedPasskey, NotFoundError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
@@ -432,8 +463,15 @@ export const deletePasskey = (
 
       return yield* pipe(
         Match.value(encoded),
-        Match.tag("Passkey", (deletedPasskey) =>
-          Effect.succeed(deletedPasskey)
+        Match.tag("Passkey", (passkey) =>
+          Effect.succeed({
+            _tag: "DeletedPasskey" as const,
+            deleted: {
+              credentialId: passkey.credential.id,
+              userId: passkey.credential.userId,
+              rpId: passkey.credential.rpId,
+            },
+          })
         ),
         Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
         Match.tag("@error/NotFound", (err) => Effect.fail(err)),

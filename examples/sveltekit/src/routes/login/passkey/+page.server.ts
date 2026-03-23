@@ -11,11 +11,11 @@ export const load = (async ({ locals, url }) => {
 	const passlockConfig = getPasslockClientConfig();
 	const username = url.searchParams.get('username');
 	const passkeys = username ? await getPasskeysByUsername(username) : [];
-	const allowCredentials = passkeys.map(({ passkeyId }) => passkeyId);
+	const existingPasskeys = passkeys.map(({ passkeyId }) => passkeyId);
 
 	return {
 		...passlockConfig,
 		username,
-		allowCredentials
+		existingPasskeys
 	};
 }) satisfies PageServerLoad;

@@ -15,14 +15,14 @@
 
 		const result = await authenticatePasskey(data);
 
-    if (result._tag == "PasslockLoginSuccess") {
-		  loading = false;
-		  await invalidateAll();
-		  await goto(resolve('/'));
-    } else {
-      error = result.message;
-      loading = false;
-    }
+		if (result._tag == 'PasslockLoginSuccess') {
+			loading = false;
+			await invalidateAll();
+			await goto(resolve('/'));
+		} else {
+			error = result.message;
+			loading = false;
+		}
 	};
 </script>
 
@@ -63,7 +63,7 @@
 </div>
 
 <!-- TODO Delete me -->
-{#if data.allowCredentials.length > 0}
+{#if data.existingPasskeys.length > 0}
 	<div class="absolute top-20 right-8 hidden w-96 bg-base-200 p-8 lg:block">
 		<h2 class="text-center text-xl font-semibold">Developer notes</h2>
 		<p class="mt-2">

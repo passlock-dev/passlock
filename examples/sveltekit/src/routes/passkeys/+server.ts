@@ -12,6 +12,7 @@ import type { RequestHandler } from './$types';
 import * as v from 'valibot';
 import {
 	DeletePasskeySuccess,
+	DeletePasskeyWarning,
 	DeleteUserPasskeysSuccess,
 	RegisterPasskeySuccess,
 	UpdatePasskeysSuccess
@@ -159,6 +160,7 @@ const DeletePasskeyPayload = v.union([DeletePasskeyByIdPayload, DeleteUserPasske
 
 type DeletePasskeySuccess = v.InferOutput<typeof DeletePasskeySuccess>;
 type DeleteUserPasskeysSuccess = v.InferOutput<typeof DeleteUserPasskeysSuccess>;
+type DeletePasskeyWarning = v.InferOutput<typeof DeletePasskeyWarning>;
 
 /**
  * Remove a passkey
@@ -210,7 +212,7 @@ export const DELETE: RequestHandler = async (event) => {
   // we don't want to fail fast because it's possible the passkey was already deleted
   // in which case its not an error (see the warning below)
   // note: we could also use isForbiddenError(result) here
-  if (vaultResult.failure && vaultResult._tag === "@error/Forbidden") {
+  if (vaultResult._tag === "@error/Forbidden") {
 		return errorResponse('Unable to delete passkey', 500);
 	}
 
@@ -220,16 +222,16 @@ export const DELETE: RequestHandler = async (event) => {
 		return errorResponse('Unable to delete passkey from local account.', 404);
 	}
 
-  // note: we could alse examine the _tag property
-  // make sure you call isNotFoundError on the vaultResult.error, not vaultResult
-	const warning = vaultResult.failure && isNotFoundError(vaultResult.error)
-		? 'Passkey was already deleted from Passlock vault.'
-		: null;
+  if (isNotFoundError(vaultResult)) {
+    const message = 'Passkey was already deleted from Passlock vault.'
+    const response: DeletePasskeyWarning = { _tag: "@warning/PasskeyNotFound", message } as const;
+    return json(response)
+  }
 
   const response: DeletePasskeySuccess = {
-		_tag: 'DeletePasskeySuccess',
-		warning
-	};
+    _tag: 'DeletePasskeySuccess',
+    deleted: vaultResult.deleted
+  };    
 
 	return json(response);
 };

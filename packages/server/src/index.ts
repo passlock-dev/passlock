@@ -25,6 +25,7 @@ import type {
   UpdatedCredentials,
   UpdatePasskeyOptions,
   UpdateUsernamesOptions,
+  DeletedPasskey,
 } from "./passkey/passkey.js"
 import {
   assignUser as assignUserE,
@@ -109,7 +110,7 @@ export const updatePasskeyUsernames = (
  * `@passlock/client` to coordinate client-side removal when needed.
  *
  * @param options
- * @returns A promise resolving to the deleted passkey.
+ * @returns A promise resolving to the deleted credential.
  * @throws {@link NotFoundError} if passkey does not exist
  * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
  *
@@ -117,7 +118,7 @@ export const updatePasskeyUsernames = (
  */
 export const deletePasskey = (
   options: DeletePasskeyOptions
-): Promise<Passkey> => pipe(deletePasskeyE(options), Effect.runPromise)
+): Promise<DeletedPasskey> => pipe(deletePasskeyE(options), Effect.runPromise)
 
 /**
  * Call the Passlock backend API to delete all passkeys associated with a user.

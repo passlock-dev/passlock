@@ -17,24 +17,22 @@
 		applyAction: true,
 		invalidateAll: 'pessimistic',
     onSubmit: async ({ cancel }) => {
-      if (passkeyCount === 0 || passkeyStepCompleted) {
-        return;
-      }
+      if (passkeyCount === 0 || passkeyStepCompleted) return;
 
       warning = '';
       error = '';
       deletingPasskeys = true;
 
-      const result = await deleteAccountPasskeys({ passkeyCount });
+      const result = await deleteAccountPasskeys();
       deletingPasskeys = false;
 
-      if (result._tag === '@error/DeleteAccountPasskeysError') {
+      if (result._tag === '@error/DeletePasskeyError') {
         error = result.message;
         cancel();
         return;
       }
 
-      if (result._tag === '@warning/DeleteAccountPasskeysPaused') {
+      if (result._tag === '@warning/PasskeyDeletePaused') {
         warning = result.message;
       }
 
@@ -84,7 +82,7 @@
 		<input type="hidden" name="intent" bind:value={$form.intent} />
 
 		<div class="mt-6 flex gap-3">
-			<a href={resolve('/account')} class="btn flex-1 btn-ghost">Cancel</a>
+			<a href={resolve('/account')} class="btn btn-neutral flex-1">Cancel</a>
 			<button class="btn flex-1 btn-error" disabled={deletingPasskeys}>
 				{#if deletingPasskeys}Deleting passkeys...{:else}Delete account{/if}
 			</button>

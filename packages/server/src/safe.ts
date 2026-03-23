@@ -53,6 +53,7 @@ import type {
   UpdatedCredentials,
   UpdatePasskeyOptions,
   UpdateUsernamesOptions,
+  DeletedPasskey,
 } from "./passkey/passkey.js"
 import {
   assignUser as assignUserE,
@@ -177,13 +178,13 @@ export const updatePasskeyUsernames = (
  *
  * @param options
  * @returns A promise resolving to a {@link Result} whose success branch contains
- * the deleted passkey and whose error branch contains an API error.
+ * the deleted credential and whose error branch contains an API error.
  *
  * @category Passkeys
  */
 export const deletePasskey = (
   options: DeletePasskeyOptions
-): Promise<Result<Passkey, ForbiddenError | NotFoundError>> =>
+): Promise<Result<DeletedPasskey, ForbiddenError | NotFoundError>> =>
   runSafe(deletePasskeyE(options))
 
 /**

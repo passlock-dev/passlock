@@ -42,7 +42,7 @@ export const actions = {
 			const passkeys = await getPasskeysByUserId(user.userId);
 			if (passkeys.length > 0) {
 				const username = encodeURIComponent(form.data.username);
-				throw redirect(303, `/passkeys/login?username=${username}`);
+				throw redirect(303, `/login/passkey?username=${username}`);
 			}
 		}
 

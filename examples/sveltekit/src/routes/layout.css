@@ -4,3 +4,7 @@
 		light --default,
 		dark --prefersdark;
 }
+
+.input:is([disabled], :disabled) {
+  @apply bg-base-300;
+}

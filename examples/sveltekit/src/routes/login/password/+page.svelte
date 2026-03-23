@@ -26,7 +26,7 @@
 				name="username"
 				class="input text-base-content/60"
 				value={data.username}
-				readonly />
+        readonly />
 
 			<p class="mt-2 text-sm">
 				Not you?
@@ -49,7 +49,7 @@
 
 		<p class="mt-4 text-center text-sm">
 			Prefer passkeys?
-			<a href={resolve('/passkeys/login')} class="ml-1 text-primary hover:underline">
+			<a href={resolve('/login/passkey')} class="ml-1 text-primary hover:underline">
 				Login using your passkey
 			</a>
 		</p>

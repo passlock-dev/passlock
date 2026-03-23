@@ -17,10 +17,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ error: 'Invalid request. Expected code.' }, { status: 400 });
 	}
 
-	const principal = await exchangeCode({ 
-    ...getPasslockConfig(), 
-    code: payload.output.code 
-  });
+	const principal = await exchangeCode({
+		...getPasslockConfig(),
+		code: payload.output.code
+	});
 
 	if (principal._tag !== 'ExtendedPrincipal') {
 		const status = principal._tag === '@error/InvalidCode' ? 401 : 500;

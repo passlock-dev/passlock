@@ -6,7 +6,13 @@ export type PostDataInput<A, E> = {
 	orElse: (response: unknown) => E;
 };
 
-export const postData = async <A, E>({ url, method, body, on2xx, orElse }: PostDataInput<A, E>) => {
+/**
+ * Simple wrapper around fetch
+ * 
+ * @param param0 
+ * @returns 
+ */
+export const fetchData = async <A, E>({ url, method, body, on2xx, orElse }: PostDataInput<A, E>) => {
 	const response = await fetch(url, {
 		method,
 		headers: {

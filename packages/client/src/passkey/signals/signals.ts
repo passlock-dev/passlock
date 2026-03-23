@@ -70,7 +70,7 @@ export interface DeletePasskeyOptions extends PasslockOptions {
  * @see {@link deleteUserPasskeys}
  * @category Passkeys (core)
  */
-export interface DeleteCredentialOptions extends PasslockOptions {
+export type DeleteCredentialOptions = {
   /**
    * WebAuthn credential ID.
    */

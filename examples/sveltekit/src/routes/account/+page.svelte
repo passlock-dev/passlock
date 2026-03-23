@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { setError, superForm } from 'sveltekit-superforms';
-	import { updatePasskeyUsernames } from '$lib/client/passkeys';
+	import { updateUserPasskeys } from '$lib/client/passkeys';
 	import type { PageProps } from './$types';
 	import { resolve } from '$app/paths';
 
@@ -11,7 +11,7 @@
 		applyAction: true,
 		invalidateAll: 'pessimistic',
 		onUpdated: async ({ form }) => {
-			const result = await updatePasskeyUsernames({ ...data, ...form.data });
+			const result = await updateUserPasskeys({ ...data, ...form.data });
 			if (result._tag === '@error/UpdatePasskeyError') {
 				setError(data.form, result.message);
 			}

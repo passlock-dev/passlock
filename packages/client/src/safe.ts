@@ -32,7 +32,7 @@
  */
 
 import { Micro, pipe } from "effect"
-import type { Result } from "./internal/result.js"
+import type { Result as PasslockClient } from "./internal/result.js"
 import { runToPromise } from "./internal/index.js"
 import { eventLogger, Logger } from "./logger.js"
 import type {
@@ -96,7 +96,7 @@ import {
  *
  * @param options
  *
- * @returns A {@link Result} whose success branch contains a {@link RegistrationSuccess}
+ * @returns A {@link PasslockClient} whose success branch contains a {@link RegistrationSuccess}
  * and whose error branch contains a {@link RegistrationError}. Existing
  * {@link isRegistrationSuccess} checks and `_tag` discrimination still work.
  *
@@ -131,7 +131,7 @@ export const registerPasskey = async (
   options: RegistrationOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<Result<RegistrationSuccess, RegistrationError>> =>
+): Promise<PasslockClient<RegistrationSuccess, RegistrationError>> =>
   pipe(
     registerPasskeyM(options),
     Micro.provideService(RegistrationHelper, RegistrationHelper.Default),
@@ -149,7 +149,7 @@ export const registerPasskey = async (
  *
  * @param options
  *
- * @returns A {@link Result} whose success branch contains an
+ * @returns A {@link PasslockClient} whose success branch contains an
  * {@link AuthenticationSuccess} and whose error branch contains an
  * {@link AuthenticationError}. Existing {@link isAuthenticationSuccess}
  * checks and `_tag` discrimination still work.
@@ -182,7 +182,7 @@ export const authenticatePasskey = (
   options: AuthenticationOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<Result<AuthenticationSuccess, AuthenticationError>> =>
+): Promise<PasslockClient<AuthenticationSuccess, AuthenticationError>> =>
   pipe(
     authenticatePasskeyM(options),
     Micro.provideService(AuthenticationHelper, AuthenticationHelper.Default),
@@ -207,7 +207,7 @@ export const authenticatePasskey = (
  * {@link UpdatePasskeyOptions}. {@link UpdateCredentialOptions} is intended
  * for credential-scoped updates, for example when replaying data returned by
  * `@passlock/server`.
- * @returns A {@link Result} whose success branch contains an
+ * @returns A {@link PasslockClient} whose success branch contains an
  * {@link UpdateSuccess} after the browser has been asked to refresh the local
  * passkey details, and whose error branch contains an {@link UpdateError}.
  * Existing {@link isUpdateSuccess}, {@link isUpdateError}, and `_tag` checks
@@ -240,7 +240,7 @@ export const updatePasskey = (
   options: UpdatePasskeyOptions | UpdateCredentialOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<Result<UpdateSuccess, UpdateError>> => {
+): Promise<PasslockClient<UpdateSuccess, UpdateError>> => {
   const micro = updatePasskeyM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
@@ -258,7 +258,7 @@ export const updatePasskey = (
  *
  * @param options The `credentials` array returned by
  * `@passlock/server/safe`'s `updatePasskeyUsernames` success branch.
- * @returns A {@link Result} whose success branch contains an
+ * @returns A {@link PasslockClient} whose success branch contains an
  * {@link UpdateSuccess} after the browser has been asked to refresh the local
  * passkey details, and whose error branch contains an {@link UpdateError}.
  * Existing {@link isUpdateSuccess}, {@link isUpdateError}, and `_tag` checks
@@ -292,7 +292,7 @@ export const updatePasskeyUsernames = (
   options: ReadonlyArray<UpdateCredentialOptions>,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<Result<UpdateSuccess, UpdateError>> => {
+): Promise<PasslockClient<UpdateSuccess, UpdateError>> => {
   const micro = updatePasskeyUsernamesM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
@@ -305,7 +305,7 @@ export const updatePasskeyUsernames = (
  * straight into this function.
  *
  * @param options Credentials derived from deleted backend passkeys.
- * @returns A {@link Result} whose success branch contains a
+ * @returns A {@link PasslockClient} whose success branch contains a
  * {@link DeleteSuccess} once the browser removal signals have been queued, and
  * whose error branch contains a {@link DeleteError}. Existing
  * {@link isDeleteSuccess}, {@link isDeleteError}, and `_tag` checks still work.
@@ -337,7 +337,7 @@ export const deleteUserPasskeys = (
   options: ReadonlyArray<Credential>,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<Result<DeleteSuccess, DeleteError>> => {
+): Promise<PasslockClient<DeleteSuccess, DeleteError>> => {
   const micro = deleteUserPasskeysM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
@@ -358,7 +358,7 @@ export const deleteUserPasskeys = (
  * @param options You will typically pass {@link DeletePasskeyOptions}. Use
  * {@link DeleteCredentialOptions} or {@link OrphanedPasskeyError} when you
  * already have the credential metadata.
- * @returns A {@link Result} whose success branch contains a
+ * @returns A {@link PasslockClient} whose success branch contains a
  * {@link DeleteSuccess} once the browser removal signal has been queued, and
  * whose error branch contains a {@link DeleteError}. Existing
  * {@link isDeleteSuccess}, {@link isDeleteError}, and `_tag` checks still work.
@@ -390,7 +390,7 @@ export const deletePasskey = (
     | OrphanedPasskeyError,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<Result<DeleteSuccess, DeleteError>> => {
+): Promise<PasslockClient<DeleteSuccess, DeleteError>> => {
   const micro = deletePasskeyM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
@@ -402,7 +402,7 @@ export const deletePasskey = (
  * should still exist for a given account on this device.
  *
  * @param options Pass the passkeys you **want to retain**.
- * @returns A {@link Result} whose success branch contains a
+ * @returns A {@link PasslockClient} whose success branch contains a
  * {@link PruningSuccess} once the browser has been told which credentials
  * should remain accepted, and whose error branch contains a
  * {@link PruningError}. Existing {@link isPruningSuccess},
@@ -433,7 +433,7 @@ export const prunePasskeys = (
   options: PrunePasskeyOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<Result<PruningSuccess, PruningError>> => {
+): Promise<PasslockClient<PruningSuccess, PruningError>> => {
   const micro = prunePasskeysM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }

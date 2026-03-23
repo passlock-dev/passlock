@@ -18,10 +18,9 @@
 		// trigger passkey login on page load
 		const result = await authenticatePasskey({
 			...data,
-			autofill: true,
+			autofill: true, // important
 			onEvent: (event) => {
 				// disables the form once the user has presented their passkey
-				// very much a "nice to have"
 				if (event === 'verifyCredential') {
 					disabled = true;
 				}
@@ -32,6 +31,7 @@
 			// force the layout to refresh
 			await invalidateAll();
 			await goto(resolve('/'));
+      disabled = false;
 		} else {
 			console.log(result.message);
 			disabled = false;
@@ -55,8 +55,8 @@
 				autocomplete="email webauthn"
 				name="username"
 				class={['input', { 'input-error': $errors.username }]}
-				bind:value={$form.username}
 				required
+				bind:value={$form.username}
 				{disabled} />
 			{#if $errors.username}<span class="text-error">{$errors.username}</span>{/if}
 
