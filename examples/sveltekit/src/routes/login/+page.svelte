@@ -2,6 +2,7 @@
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
 	import { resolve } from '$app/paths';
+	import DevNotes from '$lib/components/DevNotes.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -48,9 +49,8 @@
 </div>
 
 <!-- TODO Delete me -->
-<div class="absolute top-20 right-8 hidden w-96 bg-base-200 p-8 lg:block">
-	<h2 class="text-center text-xl font-semibold">Developer notes</h2>
-	<p class="mt-2">We adopt a two-step login flow:</p>
+<DevNotes>
+	<p>We adopt a two-step login flow:</p>
 	<ol class="mt-2 list-inside list-decimal">
 		<li class="mt-2">First we identify the user and check if they have a passkey.</li>
 		<li class="mt-2">
@@ -61,4 +61,4 @@
 		Check out the <a class="link link-primary" href={resolve('/login/autofill')}>Autofill</a>
 		login page, which supports progressive enhancement using a single-step login.
 	</p>
-</div>
+</DevNotes>

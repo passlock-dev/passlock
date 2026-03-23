@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import DevNotes from '$lib/components/DevNotes.svelte';
 
 	let { data }: PageProps = $props();
 	let disabled = $state(false);
@@ -72,9 +73,8 @@
 </div>
 
 <!-- TODO Delete me -->
-<div class="absolute top-20 right-8 hidden w-96 bg-base-200 p-8 lg:block">
-	<h2 class="text-center text-xl font-semibold">Developer notes</h2>
-	<p class="mt-2">
+<DevNotes>
+	<p>
 		Uses passkey autofill. Essentially allows users with passkeys to login in a single step vs the
 		"usual"
 		<a href={resolve('/login')} class="link link-secondary">two step login</a>
@@ -88,4 +88,4 @@
 	</p>
 
 	<p class="mt-2">Browser support is also a little flaky.</p>
-</div>
+</DevNotes>

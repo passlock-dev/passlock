@@ -3,6 +3,7 @@
 	import { updateUserPasskeys } from '$lib/client/passkeys';
 	import type { PageProps } from './$types';
 	import { resolve } from '$app/paths';
+	import DevNotes from '$lib/components/DevNotes.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -99,9 +100,8 @@
 </div>
 
 <!-- TODO Delete me -->
-<div class="absolute top-20 right-8 hidden w-96 bg-base-200 p-8 lg:block">
-	<h2 class="text-center text-xl font-semibold">Developer notes</h2>
-	<p class="mt-2">
+<DevNotes>
+	<p>
 		We want to align passkeys with any account changes. Therefore changes to the account username or
 		name result in several operations:
 	</p>
@@ -117,4 +117,4 @@
 		<a href={resolve('/passkeys')} class="link text-primary">passkeys</a>
 		page and checking your local passkey manager 🚀
 	</p>
-</div>
+</DevNotes>

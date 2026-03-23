@@ -3,23 +3,18 @@ import {
 } from '$lib/server/passkeys.js';
 import {
 	createPasskey,
-	deletePasskeyByUserId,
-	getUserByPasskeyId,
 	updatePasskeysByUserId
 } from '$lib/server/repository.js';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import * as v from 'valibot';
 import {
-	DeletePasskeySuccess,
-	DeletePasskeyWarning,
 	DeleteUserPasskeysSuccess,
 	RegisterPasskeySuccess,
 	UpdatePasskeysSuccess
 } from '$lib/shared/schemas';
 import {
 	assignUser,
-	deletePasskey,
 	deleteUserPasskeys as deletePasskeysByUserId,
 	exchangeCode,
 	isNotFoundError,
@@ -148,22 +143,14 @@ export const PATCH: RequestHandler = async (event) => {
 	return json(response);
 };
 
-const DeletePasskeyByIdPayload = v.object({
-	passkeyId: v.pipe(v.string(), v.trim(), v.minLength(8))
-});
-
 const DeleteUserPasskeysPayload = v.object({
 	scope: v.literal('user')
 });
 
-const DeletePasskeyPayload = v.union([DeletePasskeyByIdPayload, DeleteUserPasskeysPayload]);
-
-type DeletePasskeySuccess = v.InferOutput<typeof DeletePasskeySuccess>;
 type DeleteUserPasskeysSuccess = v.InferOutput<typeof DeleteUserPasskeysSuccess>;
-type DeletePasskeyWarning = v.InferOutput<typeof DeletePasskeyWarning>;
 
 /**
- * Remove a passkey
+ * Remove every passkey associated with the current user
  * 
  * @param event 
  * @returns 
@@ -175,63 +162,26 @@ export const DELETE: RequestHandler = async (event) => {
 
   // use safeParse to avoid untyped thrown errors
   const rawPayload = await event.request.json();
-	const payload = v.safeParse(DeletePasskeyPayload, rawPayload);
+	const payload = v.safeParse(DeleteUserPasskeysPayload, rawPayload);
 	if (payload.issues) {
-		return errorResponse('Invalid request. Expected passkeyId or scope.', 400);
+		return errorResponse("Invalid request. Expected scope: 'user'.", 400);
 	}
 
-	if ('scope' in payload.output) {
-    // delete all user passkeys (called from the /account/delete route)
-		const vaultResult = await deletePasskeysByUserId({
-			...getPasslockConfig(),
-			userId: String(event.locals.user.userId)
-		});
+  // delete all user passkeys (called from the /account/delete route)
+	const vaultResult = await deletePasskeysByUserId({
+		...getPasslockConfig(),
+		userId: String(event.locals.user.userId)
+	});
 
-		if (vaultResult.failure) {
-			const status = isNotFoundError(vaultResult) ? 404 : 500;
-			return errorResponse('Unable to delete passkeys', status);
-		}
-
-		const response: DeleteUserPasskeysSuccess = {
-			_tag: 'DeleteUserPasskeysSuccess',
-			deleted: vaultResult.deleted
-		};
-
-		return json(response);
+	if (vaultResult.failure) {
+		const status = isNotFoundError(vaultResult) ? 404 : 500;
+		return errorResponse('Unable to delete passkeys', status);
 	}
 
-  // ensure we're not deleting another user's passkey
-	const associatedUser = await getUserByPasskeyId(payload.output.passkeyId);
-	if (!associatedUser || associatedUser.userId !== event.locals.user.userId) {
-		return errorResponse('Passkey not found for this account.', 404);
-	}
-
-  // delete it from the Passlock vault
-	const vaultResult = await deletePasskey({ ...getPasslockConfig(), ...payload.output });
-	
-  // we don't want to fail fast because it's possible the passkey was already deleted
-  // in which case its not an error (see the warning below)
-  // note: we could also use isForbiddenError(result) here
-  if (vaultResult._tag === "@error/Forbidden") {
-		return errorResponse('Unable to delete passkey', 500);
-	}
-
-	// remove the association in the local db
-	const dbResult = await deletePasskeyByUserId(event.locals.user.userId, payload.output.passkeyId);
-	if (!dbResult) {
-		return errorResponse('Unable to delete passkey from local account.', 404);
-	}
-
-  if (isNotFoundError(vaultResult)) {
-    const message = 'Passkey was already deleted from Passlock vault.'
-    const response: DeletePasskeyWarning = { _tag: "@warning/PasskeyNotFound", message } as const;
-    return json(response)
-  }
-
-  const response: DeletePasskeySuccess = {
-    _tag: 'DeletePasskeySuccess',
-    deleted: vaultResult.deleted
-  };    
+	const response: DeleteUserPasskeysSuccess = {
+		_tag: 'DeleteUserPasskeysSuccess',
+		deleted: vaultResult.deleted
+	};
 
 	return json(response);
 };

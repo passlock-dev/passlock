@@ -1,6 +1,6 @@
 /**
- * Typically handles client side passkey management and makes fetch
- * calls to the /passkeys/+server.ts endpoint for the server side stuff.
+ * Typically handles client-side passkey management, making fetch
+ * calls to the passkey endpoints for the server side stuff.
  * 
  * We use a _tag property as a discriminator on the response instead of
  * throwing untyped errors.
@@ -194,7 +194,7 @@ export type DeletePasskeyInput = {
 };
 
 /**
- * Delete the passkey from the Passlock vault, remove the user association in
+ * Delete one passkey from the Passlock vault, remove the user association in
  * the local db and remove it from the user's local device/passkey manager.
  * 
  * @param input 
@@ -209,11 +209,11 @@ export const deletePasskey = async (input: DeletePasskeyInput) => {
   const EndpointResponse = variant('_tag', [DeletePasskeySuccess, DeletePasskeyWarning])
 
   // remove it from the passlock vault and local db
-  // see the DELETE handler in /passkeys/+server.ts
+  // see the DELETE handler in /passkeys/[id]/+server.ts
 	const serverResult = await fetchData({
-		url: resolve('/passkeys'),
+		url: resolve(`/passkeys/${encodeURIComponent(input.passkeyId)}`),
 		method: 'DELETE',
-		body: input,
+		body: {},
 		on2xx: (jsonResponse) => parse(EndpointResponse, jsonResponse),
 		orElse: (jsonResponse) => {
 			const { message } = parse(Error, jsonResponse);
@@ -253,9 +253,9 @@ export const deletePasskey = async (input: DeletePasskeyInput) => {
  * Delete every passkey associated with the current account.
  *
  * The /passkeys/+server.ts endpoint removes the server-side records and returns the
- * deleted credentials. We then ask the browser/password manager to remove
- * the credentials from the device. Local deletion issues are treated as warnings so the
- * account deletion flow can continue.
+ * deleted credentials for the current user. We then ask the browser/password manager
+ * to remove the credentials from the device. Local deletion issues are treated as
+ * warnings so the account deletion flow can continue.
  *
  * @param
  * @returns

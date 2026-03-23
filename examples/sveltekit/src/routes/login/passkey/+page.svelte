@@ -2,6 +2,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { authenticatePasskey } from '$lib/client/passkeys';
+	import DevNotes from '$lib/components/DevNotes.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -64,9 +65,8 @@
 
 <!-- TODO Delete me -->
 {#if data.existingPasskeys.length > 0}
-	<div class="absolute top-20 right-8 hidden w-96 bg-base-200 p-8 lg:block">
-		<h2 class="text-center text-xl font-semibold">Developer notes</h2>
-		<p class="mt-2">
+	<DevNotes>
+		<p>
 			We know which account the user wants to authenticate against, so we tell the browser to use
 			passkeys linked to that account.
 		</p>
@@ -86,13 +86,12 @@
 			the roaming authenticator flow and most likely be prompted to scan a QR code using their
 			personal smartphone.
 		</p>
-	</div>
+	</DevNotes>
 {:else}
-	<div class="absolute top-20 right-8 hidden w-96 bg-base-200 p-8 lg:block">
-		<h2 class="text-center text-xl font-semibold">Developer notes</h2>
+	<DevNotes >
 		<p class="mt-2">
 			We don't know which account the user wants to authenticate against until they present a
 			passkey. They are free to present any suitable passkey.
 		</p>
-	</div>
+	</DevNotes>
 {/if}

@@ -3,6 +3,7 @@
 	import { registerPasskey, deletePasskey } from '$lib/client/passkeys';
 	import { KeyRound, Trash2 } from '@lucide/svelte';
 	import type { PageProps } from './$types';
+	import DevNotes from '$lib/components/DevNotes.svelte';
 
 	let { data }: PageProps = $props();
 	let passkeys = $derived(data.existingPasskeys);
@@ -145,9 +146,8 @@
 </div>
 
 <!-- TODO Delete me -->
-<div class="absolute top-20 right-8 hidden w-96 bg-base-200 p-8 lg:block">
-	<h2 class="text-center text-xl font-semibold">Developer notes</h2>
-	<p class="mt-2">
+<DevNotes>
+	<p>
 		As passkeys are typically synced across platforms/ecosystems, it's useful to show users which
 		platform a passkey belongs to.
 	</p>
@@ -163,4 +163,4 @@
 	</p>
 
 	<p class="mt-2">This sample app handles these scenarios for you 👍</p>
-</div>
+</DevNotes>
