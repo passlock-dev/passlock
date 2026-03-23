@@ -1,8 +1,9 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import { createSession, getPasskeysByUserId, getUserByEmail } from '$lib/server/repository.js';
+import { createOtcChallenge, getUserByEmail } from '$lib/server/repository.js';
+import { sendOtcEmail } from '$lib/server/email.js';
 import { verifyPasswordHash } from '$lib/server/password.js';
-import { setSessionTokenCookie } from '$lib/server/session.js';
+import { setPendingPasswordLoginCookie } from '$lib/server/password-login.js';
 
 import { superValidate, setError } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
@@ -53,11 +54,15 @@ export const actions = {
 			return setError(form, 'password', 'Invalid email or password');
 		}
 
-		const { token } = await createSession(user.userId);
-		setSessionTokenCookie(cookies, token);
+		const { token, code } = await createOtcChallenge(user.userId);
 
-		const passkeys = await getPasskeysByUserId(user.userId);
-		const redirectTo = passkeys.length === 0 ? resolve('/passkeys') : resolve('/');
-		throw redirect(303, redirectTo);
+		await sendOtcEmail({
+			email: user.email,
+			firstName: user.givenName,
+			code
+		});
+
+		setPendingPasswordLoginCookie(cookies, token);
+		throw redirect(303, resolve('/login/password/verify-code'));
 	}
 } satisfies Actions;

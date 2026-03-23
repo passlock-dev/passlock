@@ -48,3 +48,19 @@ export const sessionsTable = sqliteTable(
 	},
 	(table) => [index('sessions_user_id_idx').on(table.userId)]
 );
+
+export const otcChallengesTable = sqliteTable(
+	'one_time_code_challenges',
+	{
+		id: text().primaryKey(),
+		userId: int()
+			.notNull()
+			.references(() => usersTable.id, { onDelete: 'cascade' }),
+		secretHash: text().notNull(),
+		codeHash: text().notNull(),
+		createdAt: int().notNull(),
+		codeExpiresAt: int().notNull(),
+		challengeExpiresAt: int().notNull()
+	},
+	(table) => [index('one_time_code_challenges_user_id_idx').on(table.userId)]
+);

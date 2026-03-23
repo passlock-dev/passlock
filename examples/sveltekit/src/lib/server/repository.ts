@@ -2,10 +2,27 @@
  * DrizzleORM based repository
  */
 import { DrizzleQueryError } from 'drizzle-orm/errors';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, gte, lt } from 'drizzle-orm';
 import { LibsqlError } from '@libsql/client';
 import db from './db';
-import { passkeysTable, passwordsTable, sessionsTable, usersTable } from './schema';
+import {
+	passkeysTable,
+	otcChallengesTable,
+	passwordsTable,
+	sessionsTable,
+	usersTable
+} from './schema';
+import {
+	PASSWORD_LOGIN_CHALLENGE_ID_LENGTH,
+	PASSWORD_LOGIN_CHALLENGE_SECRET_LENGTH,
+	PASSWORD_LOGIN_CHALLENGE_TTL_MS,
+	PASSWORD_LOGIN_CODE_TTL_MS,
+	generatePasswordLoginCode,
+	hashPasswordLoginCode,
+	hashPasswordLoginSecret,
+	isSamePasswordLoginHash,
+	parsePendingPasswordLoginToken
+} from './password-login';
 import {
 	hashSessionSecret,
 	isSameSecretHash,
@@ -71,7 +88,32 @@ export type UserPasskey = {
 
 export type UserPassword = {
 	userId: number;
+	email: string;
+	givenName: string;
 	passwordHash: string;
+};
+
+export type PasswordLoginChallenge = {
+	id: string;
+	userId: number;
+	createdAt: number;
+	codeExpiresAt: number;
+	challengeExpiresAt: number;
+};
+
+export type ActivePasswordLoginChallenge = PasswordLoginChallenge & {
+	codeHash: string;
+};
+
+export type PendingOtcContext = {
+	challenge: PasswordLoginChallenge;
+	user: SessionUser;
+};
+
+export type CreatedPasswordLoginChallenge = {
+	challenge: PasswordLoginChallenge;
+	token: string;
+	code: string;
 };
 
 export type Session = {
@@ -168,6 +210,8 @@ export const getUserByEmail = async (email: string): Promise<UserPassword | null
 	const users = await db
 		.select({
 			userId: usersTable.id,
+			email: usersTable.email,
+			givenName: usersTable.givenName,
 			passwordHash: passwordsTable.passwordHash
 		})
 		.from(usersTable)
@@ -176,6 +220,149 @@ export const getUserByEmail = async (email: string): Promise<UserPassword | null
 		.limit(1);
 
 	return users[0] ?? null;
+};
+
+const deleteExpiredPasswordLoginChallenges = async (userId: number): Promise<void> => {
+	await db
+		.delete(otcChallengesTable)
+		.where(
+			and(
+				eq(otcChallengesTable.userId, userId),
+				lt(otcChallengesTable.challengeExpiresAt, Date.now())
+			)
+		);
+};
+
+export const createOtcChallenge = async (
+	userId: number
+): Promise<CreatedPasswordLoginChallenge> => {
+	await deleteExpiredPasswordLoginChallenges(userId);
+
+	for (let i = 0; i < 5; i++) {
+		const challengeId = generateRandomString(PASSWORD_LOGIN_CHALLENGE_ID_LENGTH);
+		const challengeSecret = generateRandomString(PASSWORD_LOGIN_CHALLENGE_SECRET_LENGTH);
+		const token = `${challengeId}.${challengeSecret}`;
+		const code = generatePasswordLoginCode();
+		const now = Date.now();
+
+		try {
+			await db.insert(otcChallengesTable).values({
+				id: challengeId,
+				userId,
+				secretHash: hashPasswordLoginSecret(challengeSecret),
+				codeHash: hashPasswordLoginCode(code),
+				createdAt: now,
+				codeExpiresAt: now + PASSWORD_LOGIN_CODE_TTL_MS,
+				challengeExpiresAt: now + PASSWORD_LOGIN_CHALLENGE_TTL_MS
+			});
+		} catch (e) {
+			if (isSqliteConstraintError(e) && e.cause.extendedCode === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
+				continue;
+			}
+
+			throw e;
+		}
+
+		return {
+			challenge: {
+				id: challengeId,
+				userId,
+				createdAt: now,
+				codeExpiresAt: now + PASSWORD_LOGIN_CODE_TTL_MS,
+				challengeExpiresAt: now + PASSWORD_LOGIN_CHALLENGE_TTL_MS
+			},
+			token,
+			code
+		};
+	}
+
+	throw new Error('Unable to create password login challenge');
+};
+
+export const getPendingOtcContext = async (
+	token: string
+): Promise<PendingOtcContext | null> => {
+	const parsedToken = parsePendingPasswordLoginToken(token);
+	if (!parsedToken) return null;
+
+	const rows = await db
+		.select({
+			id: otcChallengesTable.id,
+			userId: otcChallengesTable.userId,
+			secretHash: otcChallengesTable.secretHash,
+			createdAt: otcChallengesTable.createdAt,
+			codeExpiresAt: otcChallengesTable.codeExpiresAt,
+			challengeExpiresAt: otcChallengesTable.challengeExpiresAt,
+			email: usersTable.email,
+			givenName: usersTable.givenName,
+			familyName: usersTable.familyName
+		})
+		.from(otcChallengesTable)
+		.innerJoin(usersTable, eq(otcChallengesTable.userId, usersTable.id))
+		.where(eq(otcChallengesTable.id, parsedToken.sessionId))
+		.limit(1);
+
+	const row = rows[0];
+	if (!row) return null;
+
+	const suppliedSecretHash = hashPasswordLoginSecret(parsedToken.sessionSecret);
+	if (!isSamePasswordLoginHash(row.secretHash, suppliedSecretHash)) return null;
+
+	if (Date.now() > row.challengeExpiresAt) {
+		await db
+			.delete(otcChallengesTable)
+			.where(eq(otcChallengesTable.id, row.id));
+		return null;
+	}
+
+	return {
+		challenge: {
+			id: row.id,
+			userId: row.userId,
+			createdAt: row.createdAt,
+			codeExpiresAt: row.codeExpiresAt,
+			challengeExpiresAt: row.challengeExpiresAt
+		},
+		user: {
+			userId: row.userId,
+			email: row.email,
+			givenName: row.givenName,
+			familyName: row.familyName
+		}
+	};
+};
+
+export const getActivePasswordLoginChallengesByUserId = async (
+	userId: number
+): Promise<ActivePasswordLoginChallenge[]> => {
+	await deleteExpiredPasswordLoginChallenges(userId);
+
+	const now = Date.now();
+
+	return await db
+		.select({
+			id: otcChallengesTable.id,
+			userId: otcChallengesTable.userId,
+			codeHash: otcChallengesTable.codeHash,
+			createdAt: otcChallengesTable.createdAt,
+			codeExpiresAt: otcChallengesTable.codeExpiresAt,
+			challengeExpiresAt: otcChallengesTable.challengeExpiresAt
+		})
+		.from(otcChallengesTable)
+		.where(
+			and(
+				eq(otcChallengesTable.userId, userId),
+				gte(otcChallengesTable.challengeExpiresAt, now),
+				gte(otcChallengesTable.codeExpiresAt, now)
+			)
+		)
+		.orderBy(desc(otcChallengesTable.createdAt));
+};
+
+export const deletePasswordLoginChallengesByUserId = async (userId: number): Promise<void> => {
+	await db
+		.delete(otcChallengesTable)
+		.where(eq(otcChallengesTable.userId, userId));
 };
 
 export const createPasskey = async (
