@@ -6,7 +6,7 @@ import { and, desc, eq, gte, isNull, lt, ne } from 'drizzle-orm';
 import { LibsqlError } from '@libsql/client';
 import db from './db';
 import { otcChallengesTable, passkeysTable, sessionsTable, usersTable } from './schema';
-import { hashText, isEqualHash } from '././hashing';
+import { hashText, isEqualHash } from './hashing';
 import {
 	generateCode,
 	OTC_CHALLENGE_ID_LENGTH,
@@ -81,7 +81,7 @@ export type UserPasskey = {
 	createdAt: number;
 };
 
-export type OtcPurpose = 'login' | 'signup';
+export type OtcPurpose = 'login' | 'signup' | 'email-change';
 
 export type OtcChallenge = {
 	id: string;
@@ -121,7 +121,8 @@ export type ChallengeVerificationError = {
 		| 'CHALLENGE_EXPIRED'
 		| 'TOO_MANY_ATTEMPTS'
 		| 'ACCOUNT_NOT_FOUND'
-		| 'PURPOSE_MISMATCH';
+		| 'PURPOSE_MISMATCH'
+		| 'UNAUTHORIZED';
 	email?: string;
 };
 
@@ -130,11 +131,18 @@ export type ConsumedChallenge = {
 	user: SessionUser;
 };
 
+export type EmailChangeSuccess = {
+	_tag: 'EmailChangeSuccess';
+	user: SessionUser;
+	oldEmail: string;
+};
+
 export type Session = {
 	id: string;
 	userId: number;
 	createdAt: number;
 	lastVerifiedAt: number;
+	lastPasskeyVerifiedAt: number | null;
 };
 
 export type SessionUser = {
@@ -162,6 +170,14 @@ export type CreatePasskey = {
 	platformName: string | null;
 	platformIcon: string | null;
 };
+
+type VerifiedChallenge = {
+	_tag: 'VerifiedChallenge';
+	challenge: OtcChallenge;
+};
+
+const isDuplicateUser = (user: SessionUser | DuplicateUser): user is DuplicateUser =>
+	(user as DuplicateUser)._tag === 'DuplicateUser';
 
 const isSqliteConstraintError = (e: unknown): e is DrizzleQueryError & { cause: LibsqlError } => {
 	if (!(e instanceof DrizzleQueryError)) return false;
@@ -235,7 +251,7 @@ const deleteExpiredChallenges = async (): Promise<void> => {
 	await db.delete(otcChallengesTable).where(lt(otcChallengesTable.challengeExpiresAt, Date.now()));
 };
 
-const deleteOtherActiveChallenges = async (
+const deleteOtherActiveChallengesByEmail = async (
 	email: string,
 	purpose: OtcPurpose,
 	excludeId?: string
@@ -259,7 +275,31 @@ const deleteOtherActiveChallenges = async (
 	await db.delete(otcChallengesTable).where(where);
 };
 
-const getLatestActiveChallenge = async (
+const deleteOtherActiveChallengesByUserId = async (
+	userId: number,
+	purpose: OtcPurpose,
+	excludeId?: string
+): Promise<void> => {
+	const now = Date.now();
+	const where = excludeId
+		? and(
+				eq(otcChallengesTable.userId, userId),
+				eq(otcChallengesTable.purpose, purpose),
+				isNull(otcChallengesTable.consumedAt),
+				gte(otcChallengesTable.challengeExpiresAt, now),
+				ne(otcChallengesTable.id, excludeId)
+			)
+		: and(
+				eq(otcChallengesTable.userId, userId),
+				eq(otcChallengesTable.purpose, purpose),
+				isNull(otcChallengesTable.consumedAt),
+				gte(otcChallengesTable.challengeExpiresAt, now)
+			);
+
+	await db.delete(otcChallengesTable).where(where);
+};
+
+const getLatestActiveChallengeByEmail = async (
 	email: string,
 	purpose: OtcPurpose
 ): Promise<OtcChallenge | null> => {
@@ -294,25 +334,48 @@ const getLatestActiveChallenge = async (
 	return row ? mapChallengeRow(row) : null;
 };
 
-const createChallenge = async (input: {
+const getLatestActiveChallengeByUserId = async (
+	userId: number,
+	purpose: OtcPurpose
+): Promise<OtcChallenge | null> => {
+	const now = Date.now();
+	const rows = await db
+		.select({
+			id: otcChallengesTable.id,
+			purpose: otcChallengesTable.purpose,
+			userId: otcChallengesTable.userId,
+			email: otcChallengesTable.email,
+			givenName: otcChallengesTable.givenName,
+			familyName: otcChallengesTable.familyName,
+			failedAttempts: otcChallengesTable.failedAttempts,
+			consumedAt: otcChallengesTable.consumedAt,
+			createdAt: otcChallengesTable.createdAt,
+			codeExpiresAt: otcChallengesTable.codeExpiresAt,
+			challengeExpiresAt: otcChallengesTable.challengeExpiresAt
+		})
+		.from(otcChallengesTable)
+		.where(
+			and(
+				eq(otcChallengesTable.userId, userId),
+				eq(otcChallengesTable.purpose, purpose),
+				isNull(otcChallengesTable.consumedAt),
+				gte(otcChallengesTable.challengeExpiresAt, now)
+			)
+		)
+		.orderBy(desc(otcChallengesTable.createdAt))
+		.limit(1);
+
+	const row = rows[0];
+	return row ? mapChallengeRow(row) : null;
+};
+
+const insertChallenge = async (input: {
 	purpose: OtcPurpose;
 	userId: number | null;
 	email: string;
 	givenName: string | null;
 	familyName: string | null;
-}): Promise<CreatedOtcChallenge | ChallengeRateLimited> => {
-	await deleteExpiredChallenges();
-
-	const existingChallenge = await getLatestActiveChallenge(input.email, input.purpose);
-	if (existingChallenge) {
-		const retryAfterMs = OTC_RESEND_COOLDOWN_MS - (Date.now() - existingChallenge.createdAt);
-		if (retryAfterMs > 0) {
-			return { _tag: 'ChallengeRateLimited', retryAfterMs };
-		}
-
-		await deleteOtherActiveChallenges(input.email, input.purpose);
-	}
-
+}): Promise<CreatedOtcChallenge> => {
 	for (let i = 0; i < 5; i++) {
 		const challengeId = generateRandomString(OTC_CHALLENGE_ID_LENGTH);
 		const challengeSecret = generateRandomString(OTC_CHALLENGE_SECRET_LENGTH);
@@ -367,6 +430,50 @@ const createChallenge = async (input: {
 	throw new Error('Unable to create one-time-code challenge');
 };
 
+const createChallengeForEmailScope = async (input: {
+	purpose: OtcPurpose;
+	userId: number | null;
+	email: string;
+	givenName: string | null;
+	familyName: string | null;
+}): Promise<CreatedOtcChallenge | ChallengeRateLimited> => {
+	await deleteExpiredChallenges();
+
+	const existingChallenge = await getLatestActiveChallengeByEmail(input.email, input.purpose);
+	if (existingChallenge) {
+		const retryAfterMs = OTC_RESEND_COOLDOWN_MS - (Date.now() - existingChallenge.createdAt);
+		if (retryAfterMs > 0) {
+			return { _tag: 'ChallengeRateLimited', retryAfterMs };
+		}
+
+		await deleteOtherActiveChallengesByEmail(input.email, input.purpose);
+	}
+
+	return insertChallenge(input);
+};
+
+const createChallengeForUserScope = async (input: {
+	purpose: OtcPurpose;
+	userId: number;
+	email: string;
+	givenName: string | null;
+	familyName: string | null;
+}): Promise<CreatedOtcChallenge | ChallengeRateLimited> => {
+	await deleteExpiredChallenges();
+
+	const existingChallenge = await getLatestActiveChallengeByUserId(input.userId, input.purpose);
+	if (existingChallenge) {
+		const retryAfterMs = OTC_RESEND_COOLDOWN_MS - (Date.now() - existingChallenge.createdAt);
+		if (retryAfterMs > 0) {
+			return { _tag: 'ChallengeRateLimited', retryAfterMs };
+		}
+
+		await deleteOtherActiveChallengesByUserId(input.userId, input.purpose);
+	}
+
+	return insertChallenge(input);
+};
+
 const markChallengeConsumed = async (challengeId: string): Promise<void> => {
 	await db
 		.update(otcChallengesTable)
@@ -374,11 +481,55 @@ const markChallengeConsumed = async (challengeId: string): Promise<void> => {
 		.where(eq(otcChallengesTable.id, challengeId));
 };
 
-const incrementChallengeFailures = async (challengeId: string, nextFailedAttempts: number): Promise<void> => {
+const incrementChallengeFailures = async (
+	challengeId: string,
+	nextFailedAttempts: number
+): Promise<void> => {
 	await db
 		.update(otcChallengesTable)
 		.set({ failedAttempts: nextFailedAttempts })
 		.where(eq(otcChallengesTable.id, challengeId));
+};
+
+const verifyChallenge = async (input: {
+	token: string;
+	code: string;
+	purpose: OtcPurpose;
+}): Promise<VerifiedChallenge | ChallengeVerificationError> => {
+	const challenge = await getChallengeByToken(input.token);
+	if (!challenge) return { _tag: 'ChallengeVerificationError', code: 'CHALLENGE_EXPIRED' };
+	if (challenge.purpose !== input.purpose) {
+		return { _tag: 'ChallengeVerificationError', code: 'PURPOSE_MISMATCH' };
+	}
+	if (challenge.consumedAt !== null || Date.now() > challenge.challengeExpiresAt) {
+		await db.delete(otcChallengesTable).where(eq(otcChallengesTable.id, challenge.id));
+		return { _tag: 'ChallengeVerificationError', code: 'CHALLENGE_EXPIRED' };
+	}
+	if (challenge.failedAttempts >= OTC_MAX_ATTEMPTS) {
+		return { _tag: 'ChallengeVerificationError', code: 'TOO_MANY_ATTEMPTS' };
+	}
+	if (Date.now() > challenge.codeExpiresAt) {
+		return { _tag: 'ChallengeVerificationError', code: 'CODE_EXPIRED' };
+	}
+
+	const suppliedCodeHash = hashText(input.code);
+	const storedChallenge = await db
+		.select({ codeHash: otcChallengesTable.codeHash })
+		.from(otcChallengesTable)
+		.where(eq(otcChallengesTable.id, challenge.id))
+		.limit(1);
+
+	const codeHash = storedChallenge[0]?.codeHash;
+	if (!codeHash || !isEqualHash(codeHash, suppliedCodeHash)) {
+		const nextFailedAttempts = challenge.failedAttempts + 1;
+		await incrementChallengeFailures(challenge.id, nextFailedAttempts);
+		return {
+			_tag: 'ChallengeVerificationError',
+			code: nextFailedAttempts >= OTC_MAX_ATTEMPTS ? 'TOO_MANY_ATTEMPTS' : 'INVALID_CODE'
+		};
+	}
+
+	return { _tag: 'VerifiedChallenge', challenge };
 };
 
 export const createUser = async (newUser: CreateUser): Promise<User | DuplicateUser> => {
@@ -418,6 +569,44 @@ export const updateUserProfile = async (
 	return users[0] ?? null;
 };
 
+export const updateUserEmail = async (
+	userId: number,
+	email: string
+): Promise<SessionUser | DuplicateUser | null> => {
+	try {
+		const users = await db
+			.update(usersTable)
+			.set({ email })
+			.where(eq(usersTable.id, userId))
+			.returning({
+				userId: usersTable.id,
+				email: usersTable.email,
+				givenName: usersTable.givenName,
+				familyName: usersTable.familyName
+			});
+
+		return users[0] ?? null;
+	} catch (e) {
+		if (!isSqliteConstraintError(e) || e.cause.extendedCode !== 'SQLITE_CONSTRAINT_UNIQUE') throw e;
+		return { _tag: 'DuplicateUser', email };
+	}
+};
+
+export const getAccountByUserId = async (userId: number): Promise<SessionUser | null> => {
+	const users = await db
+		.select({
+			userId: usersTable.id,
+			email: usersTable.email,
+			givenName: usersTable.givenName,
+			familyName: usersTable.familyName
+		})
+		.from(usersTable)
+		.where(eq(usersTable.id, userId))
+		.limit(1);
+
+	return users[0] ?? null;
+};
+
 export const getAccountByEmail = async (email: string): Promise<SessionUser | null> => {
 	const users = await db
 		.select({
@@ -439,7 +628,7 @@ export const createOrRefreshLoginChallenge = async (
 	const account = await getAccountByEmail(email);
 	if (!account) return { _tag: 'AccountNotFound', email };
 
-	return createChallenge({
+	return createChallengeForEmailScope({
 		purpose: 'login',
 		userId: account.userId,
 		email: account.email,
@@ -456,12 +645,33 @@ export const createOrRefreshSignupChallenge = async (input: {
 	const existingAccount = await getAccountByEmail(input.email);
 	if (existingAccount) return { _tag: 'DuplicateUser', email: input.email };
 
-	return createChallenge({
+	return createChallengeForEmailScope({
 		purpose: 'signup',
 		userId: null,
 		email: input.email,
 		givenName: input.givenName,
 		familyName: input.familyName
+	});
+};
+
+export const createOrRefreshEmailChangeChallenge = async (input: {
+	userId: number;
+	email: string;
+}): Promise<CreatedOtcChallenge | AccountNotFound | DuplicateUser | ChallengeRateLimited> => {
+	const account = await getAccountByUserId(input.userId);
+	if (!account) return { _tag: 'AccountNotFound', email: input.email };
+
+	const existingAccount = await getAccountByEmail(input.email);
+	if (existingAccount && existingAccount.userId !== input.userId) {
+		return { _tag: 'DuplicateUser', email: input.email };
+	}
+
+	return createChallengeForUserScope({
+		purpose: 'email-change',
+		userId: account.userId,
+		email: input.email,
+		givenName: account.givenName,
+		familyName: account.familyName
 	});
 };
 
@@ -480,64 +690,37 @@ export const getPendingOtcContext = async (token: string): Promise<PendingOtcCon
 export const consumeChallenge = async (input: {
 	token: string;
 	code: string;
-	purpose: OtcPurpose;
+	purpose: 'login' | 'signup';
 }): Promise<ConsumedChallenge | DuplicateUser | ChallengeVerificationError> => {
-	const challenge = await getChallengeByToken(input.token);
-	if (!challenge) return { _tag: 'ChallengeVerificationError', code: 'CHALLENGE_EXPIRED' };
-	if (challenge.purpose !== input.purpose) {
-		return { _tag: 'ChallengeVerificationError', code: 'PURPOSE_MISMATCH' };
-	}
-	if (challenge.consumedAt !== null || Date.now() > challenge.challengeExpiresAt) {
-		await db.delete(otcChallengesTable).where(eq(otcChallengesTable.id, challenge.id));
-		return { _tag: 'ChallengeVerificationError', code: 'CHALLENGE_EXPIRED' };
-	}
-	if (challenge.failedAttempts >= OTC_MAX_ATTEMPTS) {
-		return { _tag: 'ChallengeVerificationError', code: 'TOO_MANY_ATTEMPTS' };
-	}
-	if (Date.now() > challenge.codeExpiresAt) {
-		return { _tag: 'ChallengeVerificationError', code: 'CODE_EXPIRED' };
-	}
+	const verified = await verifyChallenge(input);
+	if (verified._tag !== 'VerifiedChallenge') return verified;
 
-	const suppliedCodeHash = hashText(input.code);
-	const storedChallenge = await db
-		.select({ codeHash: otcChallengesTable.codeHash })
-		.from(otcChallengesTable)
-		.where(eq(otcChallengesTable.id, challenge.id))
-		.limit(1);
+	const { challenge } = verified;
 
-	const codeHash = storedChallenge[0]?.codeHash;
-	if (!codeHash || !isEqualHash(codeHash, suppliedCodeHash)) {
-		const nextFailedAttempts = challenge.failedAttempts + 1;
-		await incrementChallengeFailures(challenge.id, nextFailedAttempts);
-		return {
-			_tag: 'ChallengeVerificationError',
-			code: nextFailedAttempts >= OTC_MAX_ATTEMPTS ? 'TOO_MANY_ATTEMPTS' : 'INVALID_CODE'
-		};
-	}
-
-	let user = await getAccountByEmail(challenge.email);
 	if (input.purpose === 'signup') {
-		if (!user) {
-			const givenName = challenge.givenName?.trim();
-			const familyName = challenge.familyName?.trim();
-			if (!givenName || !familyName) {
-				return { _tag: 'ChallengeVerificationError', code: 'ACCOUNT_NOT_FOUND' };
-			}
+		const existingAccount = await getAccountByEmail(challenge.email);
+		if (existingAccount) {
+			return { _tag: 'DuplicateUser', email: challenge.email };
+		}
 
-			const createdUser = await createUser({
-				email: challenge.email,
-				givenName,
-				familyName
-			});
+		const givenName = challenge.givenName?.trim();
+		const familyName = challenge.familyName?.trim();
+		if (!givenName || !familyName) {
+			return { _tag: 'ChallengeVerificationError', code: 'ACCOUNT_NOT_FOUND' };
+		}
 
-			if (createdUser._tag === 'DuplicateUser') {
-				return createdUser;
-			}
+		const createdUser = await createUser({
+			email: challenge.email,
+			givenName,
+			familyName
+		});
 
-			user = await getAccountByEmail(challenge.email);
+		if (createdUser._tag === 'DuplicateUser') {
+			return createdUser;
 		}
 	}
 
+	const user = await getAccountByEmail(challenge.email);
 	if (!user) {
 		return {
 			_tag: 'ChallengeVerificationError',
@@ -547,9 +730,54 @@ export const consumeChallenge = async (input: {
 	}
 
 	await markChallengeConsumed(challenge.id);
-	await deleteOtherActiveChallenges(challenge.email, input.purpose, challenge.id);
+	await deleteOtherActiveChallengesByEmail(challenge.email, challenge.purpose, challenge.id);
 
 	return { _tag: 'ChallengeConsumed', user };
+};
+
+export const consumeEmailChangeChallenge = async (input: {
+	token: string;
+	code: string;
+	userId: number;
+}): Promise<EmailChangeSuccess | DuplicateUser | ChallengeVerificationError> => {
+	const verified = await verifyChallenge({
+		token: input.token,
+		code: input.code,
+		purpose: 'email-change'
+	});
+	if (verified._tag !== 'VerifiedChallenge') return verified;
+
+	const { challenge } = verified;
+	if (challenge.userId !== input.userId) {
+		return { _tag: 'ChallengeVerificationError', code: 'UNAUTHORIZED' };
+	}
+
+	const currentAccount = await getAccountByUserId(input.userId);
+	if (!currentAccount) {
+		return { _tag: 'ChallengeVerificationError', code: 'ACCOUNT_NOT_FOUND' };
+	}
+
+	const existingAccount = await getAccountByEmail(challenge.email);
+	if (existingAccount && existingAccount.userId !== input.userId) {
+		return { _tag: 'DuplicateUser', email: challenge.email };
+	}
+
+	const updatedUser = await updateUserEmail(input.userId, challenge.email);
+	if (!updatedUser) {
+		return { _tag: 'ChallengeVerificationError', code: 'ACCOUNT_NOT_FOUND' };
+	}
+	if (isDuplicateUser(updatedUser)) {
+		return updatedUser;
+	}
+
+	await markChallengeConsumed(challenge.id);
+	await deleteOtherActiveChallengesByUserId(input.userId, challenge.purpose, challenge.id);
+
+	return {
+		_tag: 'EmailChangeSuccess',
+		user: updatedUser,
+		oldEmail: currentAccount.email
+	};
 };
 
 export const createPasskey = async (
@@ -646,13 +874,17 @@ export const deletePasskeyByUserId = async (
 	return Boolean(deleted[0]);
 };
 
-export const createSession = async (userId: number): Promise<CreatedSession> => {
+export const createSession = async (
+	userId: number,
+	options?: { passkeyVerified?: boolean }
+): Promise<CreatedSession> => {
 	for (let i = 0; i < 5; i++) {
 		const sessionId = generateRandomString(SESSION_ID_LENGTH);
 		const sessionSecret = generateRandomString(SESSION_SECRET_LENGTH);
 		const secretHash = hashText(sessionSecret);
 		const token = `${sessionId}.${sessionSecret}`;
 		const now = Date.now();
+		const lastPasskeyVerifiedAt = options?.passkeyVerified ? now : null;
 
 		try {
 			await db.insert(sessionsTable).values({
@@ -660,7 +892,8 @@ export const createSession = async (userId: number): Promise<CreatedSession> => 
 				userId,
 				secretHash,
 				createdAt: now,
-				lastVerifiedAt: now
+				lastVerifiedAt: now,
+				lastPasskeyVerifiedAt
 			});
 		} catch (e) {
 			if (isSqliteConstraintError(e) && e.cause.extendedCode === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
@@ -671,7 +904,13 @@ export const createSession = async (userId: number): Promise<CreatedSession> => 
 		}
 
 		return {
-			session: { id: sessionId, userId, createdAt: now, lastVerifiedAt: now },
+			session: {
+				id: sessionId,
+				userId,
+				createdAt: now,
+				lastVerifiedAt: now,
+				lastPasskeyVerifiedAt
+			},
 			token
 		};
 	}
@@ -692,6 +931,7 @@ export const validateSessionToken = async (
 			secretHash: sessionsTable.secretHash,
 			createdAt: sessionsTable.createdAt,
 			lastVerifiedAt: sessionsTable.lastVerifiedAt,
+			lastPasskeyVerifiedAt: sessionsTable.lastPasskeyVerifiedAt,
 			email: usersTable.email,
 			givenName: usersTable.givenName,
 			familyName: usersTable.familyName
@@ -730,7 +970,8 @@ export const validateSessionToken = async (
 			id: row.sessionId,
 			userId: row.userId,
 			createdAt: row.createdAt,
-			lastVerifiedAt
+			lastVerifiedAt,
+			lastPasskeyVerifiedAt: row.lastPasskeyVerifiedAt
 		},
 		user: {
 			userId: row.userId,
@@ -740,6 +981,13 @@ export const validateSessionToken = async (
 		},
 		fresh
 	};
+};
+
+export const markSessionPasskeyVerified = async (sessionId: string): Promise<void> => {
+	await db
+		.update(sessionsTable)
+		.set({ lastPasskeyVerifiedAt: Date.now() })
+		.where(eq(sessionsTable.id, sessionId));
 };
 
 export const invalidateSession = async (sessionId: string): Promise<void> => {
@@ -754,7 +1002,7 @@ export const deleteUserAccount = async (userId: number): Promise<boolean> => {
 	return await db.transaction(async (tx) => {
 		await tx.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
 		await tx.delete(passkeysTable).where(eq(passkeysTable.userId, userId));
-    await tx.delete(otcChallengesTable).where(eq(otcChallengesTable.userId, userId));
+		await tx.delete(otcChallengesTable).where(eq(otcChallengesTable.userId, userId));
 
 		const deletedUsers = await tx
 			.delete(usersTable)

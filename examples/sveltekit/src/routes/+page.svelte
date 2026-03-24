@@ -52,7 +52,8 @@
 	<title>SvelteKit + Passlock Sample App</title>
 </svelte:head>
 
-<div class="mx-auto flex w-full h-full flex-col gap-10 p-6 lg:flex-row lg:items-center lg:px-12 lg:pt-0 lg:-mt-10">
+<div
+	class="mx-auto flex h-full w-full flex-col gap-10 p-6 lg:-mt-10 lg:flex-row lg:items-center lg:px-12 lg:pt-0">
 	<div class="flex flex-col justify-center gap-5 lg:basis-1/2">
 		<div
 			class="flex w-fit items-center gap-2 rounded-xl border border-neutral/10 bg-base-300 px-2 py-1">

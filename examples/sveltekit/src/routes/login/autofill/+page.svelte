@@ -73,13 +73,13 @@
 </div>
 
 <!-- TODO Delete me -->
-	<DevNotes>
-		<p>
-			Uses passkey autofill. Essentially allows users with passkeys to login in a single step vs the
-			usual
-			<a href={resolve('/login')} class="link link-secondary">two step login</a>
-			flow.
-		</p>
+<DevNotes>
+	<p>
+		Uses passkey autofill. Essentially allows users with passkeys to login in a single step vs the
+		usual
+		<a href={resolve('/login')} class="link link-secondary">two step login</a>
+		flow.
+	</p>
 
 	<p class="mt-2">
 		This is most suitable if you're users are tech-savvy. Many users will be confused by this flow

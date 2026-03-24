@@ -32,7 +32,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ error: 'No local user account is linked to this passkey.' }, { status: 404 });
 	}
 
-	const { token } = await createSession(user.userId);
+	const { token } = await createSession(user.userId, { passkeyVerified: true });
 	setSessionTokenCookie(cookies, token);
 
 	return json({ success: true });

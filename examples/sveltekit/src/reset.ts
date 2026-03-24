@@ -1,10 +1,5 @@
 import db from '$lib/server/db';
-import {
-	otcChallengesTable,
-	passkeysTable,
-	sessionsTable,
-	usersTable
-} from '$lib/server/schema';
+import { otcChallengesTable, passkeysTable, sessionsTable, usersTable } from '$lib/server/schema';
 import {
 	PUBLIC_PASSLOCK_TENANCY_ID as tenancyId,
 	PUBLIC_PASSLOCK_ENDPOINT as endpoint

@@ -26,7 +26,7 @@
 		<form method="post" class="w-full max-w-md">
 			<fieldset class="fieldset rounded-box border border-base-300 bg-base-200 p-10">
 				{#if data.notice}
-					<p class="mb-4 text-sm text-error max-w-sm">{data.notice}</p>
+					<p class="mb-4 max-w-sm text-sm text-error">{data.notice}</p>
 				{/if}
 
 				<div class="grid gap-4 sm:grid-cols-2">

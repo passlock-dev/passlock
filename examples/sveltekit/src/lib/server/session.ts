@@ -11,6 +11,7 @@ export const SESSION_ID_LENGTH = 24;
 export const SESSION_SECRET_LENGTH = 24;
 export const SESSION_REFRESH_INTERVAL_MS = DAY_IN_MS;
 export const SESSION_MAX_INACTIVE_MS = 30 * DAY_IN_MS;
+export const SESSION_PASSKEY_REAUTH_WINDOW_MS = 10 * 60 * 1000;
 
 export const setSessionTokenCookie = (cookies: Cookies, token: string): void => {
 	cookies.set(SESSION_COOKIE_NAME, token, {
@@ -42,4 +43,9 @@ export const parseSessionToken = (
 	if (!sessionId || !sessionSecret) return null;
 
 	return { sessionId, sessionSecret };
+};
+
+export const isRecentPasskeyReauthentication = (lastPasskeyVerifiedAt: number | null): boolean => {
+	if (lastPasskeyVerifiedAt === null) return false;
+	return Date.now() - lastPasskeyVerifiedAt < SESSION_PASSKEY_REAUTH_WINDOW_MS;
 };

@@ -32,7 +32,8 @@ export const sessionsTable = sqliteTable(
 			.references(() => usersTable.id, { onDelete: 'cascade' }),
 		secretHash: text().notNull(),
 		createdAt: int().notNull(),
-		lastVerifiedAt: int().notNull()
+		lastVerifiedAt: int().notNull(),
+		lastPasskeyVerifiedAt: int()
 	},
 	(table) => [index('sessions_user_id_idx').on(table.userId)]
 );
@@ -42,8 +43,7 @@ export const otcChallengesTable = sqliteTable(
 	{
 		id: text().primaryKey(),
 		purpose: text().notNull(),
-		userId: int()
-			.references(() => usersTable.id, { onDelete: 'cascade' }),
+		userId: int().references(() => usersTable.id, { onDelete: 'cascade' }),
 		email: text().notNull(),
 		givenName: text(),
 		familyName: text(),

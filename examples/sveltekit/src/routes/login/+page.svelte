@@ -20,7 +20,7 @@
 		<h2 class="text-center text-xl font-semibold">Login</h2>
 
 		{#if data.notice}
-			<p class="mt-3 text-center text-sm text-error max-w-xs">{data.notice}</p>
+			<p class="mt-3 max-w-xs text-center text-sm text-error">{data.notice}</p>
 		{/if}
 
 		<fieldset class="fieldset w-xs">
@@ -53,16 +53,16 @@
 </div>
 
 <!-- TODO Delete me -->
-	<DevNotes>
-		<p>We adopt a two-step login flow:</p>
-		<ol class="mt-2 list-inside list-decimal">
-			<li class="mt-2">First we identify the user and check if they have a passkey.</li>
-			<li class="mt-2">
-				If they have a passkey we use it for authentication, otherwise we fallback to an emailed
-				one-time code.
-			</li>
-		</ol>
-		<p class="mt-2">
+<DevNotes>
+	<p>We adopt a two-step login flow:</p>
+	<ol class="mt-2 list-inside list-decimal">
+		<li class="mt-2">First we identify the user and check if they have a passkey.</li>
+		<li class="mt-2">
+			If they have a passkey we use it for authentication, otherwise we fallback to an emailed
+			one-time code.
+		</li>
+	</ol>
+	<p class="mt-2">
 		Check out the <a class="link link-primary" href={resolve('/login/autofill')}>Autofill</a>
 		login page, which supports progressive enhancement using a single-step login.
 	</p>

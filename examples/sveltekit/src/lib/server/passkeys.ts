@@ -5,7 +5,9 @@
 
 import { PASSLOCK_API_KEY } from '$env/static/private';
 import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public';
-import { error } from 'console';
+import { updatePasskeysByUserId } from '$lib/server/repository';
+import { updatePasskeyUsernames } from '@passlock/server/safe';
+import { error as kitError } from '@sveltejs/kit';
 
 /**
  * @returns apiKey, tenancyId and endoint
@@ -18,7 +20,7 @@ export const getPasslockConfig = () => {
 
 	if (!apiKey || !tenancyId) {
 		console.error('Passlock not configured');
-		error(500);
+		kitError(500, 'Passlock not configured');
 	}
 
 	return {
@@ -34,4 +36,24 @@ export const getPasslockConfig = () => {
 export const getPasslockClientConfig = () => {
 	const { apiKey, ...rest } = getPasslockConfig();
 	return rest;
+};
+
+export const syncUserPasskeyUsernames = async (input: {
+	userId: number;
+	username: string;
+	displayName?: string | undefined;
+}) => {
+	const vaultResult = await updatePasskeyUsernames({
+		userId: String(input.userId),
+		...getPasslockConfig(),
+		username: input.username,
+		displayName: input.displayName
+	});
+
+	if (vaultResult.failure) {
+		return vaultResult;
+	}
+
+	await updatePasskeysByUserId(input.userId, { username: input.username });
+	return vaultResult;
 };

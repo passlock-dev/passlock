@@ -29,9 +29,7 @@ export const load = (async ({ locals, url }) => {
 
 	const form = await superValidate({ email }, valibot(schema), { errors: false });
 	const notice =
-		reason === 'no-account'
-			? 'No account exists for that email. Create one to continue.'
-			: null;
+		reason === 'no-account' ? 'No account exists for that email. Create one to continue.' : null;
 
 	return { form, notice };
 }) satisfies PageServerLoad;

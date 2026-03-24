@@ -1,5 +1,5 @@
-import { getPasslockConfig } from '$lib/server/passkeys.js';
-import { createPasskey, updatePasskeysByUserId } from '$lib/server/repository.js';
+import { getPasslockConfig, syncUserPasskeyUsernames } from '$lib/server/passkeys.js';
+import { createPasskey } from '$lib/server/repository.js';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import * as v from 'valibot';
@@ -12,8 +12,7 @@ import {
 	assignUser,
 	deleteUserPasskeys as deletePasskeysByUserId,
 	exchangeCode,
-	isNotFoundError,
-	updatePasskeyUsernames
+	isNotFoundError
 } from '@passlock/server/safe';
 
 const errorResponse = (message: string, status: number) =>
@@ -114,18 +113,14 @@ export const PATCH: RequestHandler = async (event) => {
 	// update the passkeys in the Passlock vault.
 	// not strictly necessary but good to keep your local db and vault
 	// in sync to aid debugging, logging etc.
-	const vaultResult = await updatePasskeyUsernames({
-		userId: String(event.locals.user.userId),
-		...getPasslockConfig(),
+	const vaultResult = await syncUserPasskeyUsernames({
+		userId: event.locals.user.userId,
 		...payload.output
 	});
 
 	if (vaultResult.failure) {
 		return errorResponse('Unable to update passkeys', 500);
 	}
-
-	// update local database
-	await updatePasskeysByUserId(event.locals.user.userId, payload.output);
 
 	// updatePasskeyUsernames returns a data structure that we can pass
 	// to a function on the @passlock/client library to update the passkeys

@@ -36,7 +36,8 @@
 	<div class="w-full max-w-sm rounded-lg bg-base-200 p-10 pt-8">
 		<h2 class="text-center text-xl font-semibold">Check your email</h2>
 		<p class="mt-3 text-center text-sm text-base-content/80">
-			We sent a 6-digit login code to <span class="font-semibold">{data.email}</span>.
+			We sent a 6-digit login code to <span class="font-semibold">{data.email}</span>
+			.
 		</p>
 		<p class="mt-2 text-center text-sm text-base-content/80">Codes stay valid for 10 minutes.</p>
 
@@ -79,20 +80,14 @@
 </div>
 
 <DevNotes>
-  <p>
-    This sample app doesn't actually send emails. 
-  </p>
-  <p class="mt-2">
-    You'll need to plug your own email sending mechanism into: 
-  </p>
-  <p class="mt-2">
-    <span class="font-mono">src/lib/server/email.ts</span>
-  </p>
-  <p class="mt-2">
-    In the meantime <span class="font-semibold">check the dev server logs</span>, 
-    where we have logged the code to the console.
-  </p>
-  <p class="mt-2 font-semibold text-error">
-    Be sure to remove this before going into production!
-  </p>
+	<p>This sample app doesn't actually send emails.</p>
+	<p class="mt-2">You'll need to plug your own email sending mechanism into:</p>
+	<p class="mt-2">
+		<span class="font-mono">src/lib/server/email.ts</span>
+	</p>
+	<p class="mt-2">
+		In the meantime <span class="font-semibold">check the dev server logs</span>
+		, where we have logged the code to the console.
+	</p>
+	<p class="mt-2 font-semibold text-error">Be sure to remove this before going into production!</p>
 </DevNotes>

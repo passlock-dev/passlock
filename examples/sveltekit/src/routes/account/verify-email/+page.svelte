@@ -2,7 +2,6 @@
 	import { resolve } from '$app/paths';
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
-	import DevNotes from '$lib/components/DevNotes.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -29,17 +28,19 @@
 </script>
 
 <svelte:head>
-	<title>Verify Sign Up Code</title>
+	<title>Verify New Email</title>
 </svelte:head>
 
-<div class="flex h-full w-full items-center justify-center">
+<div class="flex h-full w-full items-center justify-center px-4 py-8">
 	<div class="w-full max-w-sm rounded-lg bg-base-200 p-10 pt-8">
-		<h2 class="text-center text-xl font-semibold">Confirm your email</h2>
+		<h2 class="text-center text-xl font-semibold">Verify your new email</h2>
 		<p class="mt-3 text-center text-sm text-base-content/80">
-			We sent a 6-digit sign up code to <span class="font-semibold">{data.email}</span>
+			We sent a 6-digit code to <span class="font-semibold">{data.email}</span>
 			.
 		</p>
-		<p class="mt-2 text-center text-sm text-base-content/80">Codes stay valid for 10 minutes.</p>
+		<p class="mt-2 text-center text-sm text-base-content/80">
+			Your account email will only change after you enter this code.
+		</p>
 
 		<form method="POST" action="?/verify" use:verifyEnhance class="mt-6">
 			<fieldset class="fieldset">
@@ -59,12 +60,12 @@
 					{/each}
 				{/if}
 
-				<button class="btn mt-4 btn-primary">Verify code</button>
+				<button class="btn mt-4 btn-primary">Verify email</button>
 			</fieldset>
 		</form>
 
 		{#if $resendMessage}
-			<p class="mt-4 text-center text-sm text-success">{$resendMessage}</p>
+			<p class="mt-4 text-center text-sm">{$resendMessage}</p>
 		{/if}
 
 		<form method="POST" action="?/resend" use:resendEnhance class="mt-4">
@@ -74,20 +75,7 @@
 
 		<p class="mt-4 text-center text-sm">
 			Need to start over?
-			<a href={resolve('/signup')} class="ml-1 text-primary hover:underline">Back to sign up</a>
+			<a href={resolve('/account')} class="ml-1 text-primary hover:underline">Back to account</a>
 		</p>
 	</div>
 </div>
-
-<DevNotes>
-	<p>This sample app doesn't actually send emails.</p>
-	<p class="mt-2">You'll need to plug your own email sending mechanism into:</p>
-	<p class="mt-2">
-		<span class="font-mono">src/lib/server/email.ts</span>
-	</p>
-	<p class="mt-2">
-		In the meantime <span class="font-semibold">check the dev server logs</span>
-		, where we have logged the code to the console.
-	</p>
-	<p class="mt-2 font-semibold text-error">Be sure to remove this before going into production!</p>
-</DevNotes>

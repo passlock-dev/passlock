@@ -8,11 +8,7 @@ import {
 	getPendingOtcContext
 } from '$lib/server/repository.js';
 import { sendOtcEmail } from '$lib/server/email.js';
-import {
-	deleteOtcCookie,
-	getOtcCookie,
-	setOtcCookie
-} from '$lib/server/oneTimeCode.js';
+import { deleteOtcCookie, getOtcCookie, setOtcCookie } from '$lib/server/oneTimeCode.js';
 import { setSessionTokenCookie } from '$lib/server/session.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
