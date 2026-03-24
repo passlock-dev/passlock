@@ -8,18 +8,6 @@ export const usersTable = sqliteTable('users', {
 	createdAt: int().notNull()
 });
 
-export const passwordsTable = sqliteTable(
-	'passwords',
-	{
-		userId: int()
-			.primaryKey()
-			.references(() => usersTable.id, { onDelete: 'cascade' }),
-		passwordHash: text().notNull(),
-		createdAt: int().notNull()
-	},
-	(table) => [index('passwords_user_id_idx').on(table.userId)]
-);
-
 export const passkeysTable = sqliteTable(
 	'passkeys',
 	{

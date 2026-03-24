@@ -2,7 +2,6 @@ import db from '$lib/server/db';
 import {
 	otcChallengesTable,
 	passkeysTable,
-	passwordsTable,
 	sessionsTable,
 	usersTable
 } from '$lib/server/schema';
@@ -37,9 +36,6 @@ const reset = async () => {
 
 	log.info(`Deleting sessions`);
 	await db.delete(sessionsTable);
-
-	log.info(`Deleting passwords`);
-	await db.delete(passwordsTable);
 
 	log.info(`Deleting one time codes`);
 	await db.delete(otcChallengesTable);

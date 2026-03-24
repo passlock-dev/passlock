@@ -5,7 +5,7 @@ import { DrizzleQueryError } from 'drizzle-orm/errors';
 import { and, desc, eq, gte, isNull, lt, ne } from 'drizzle-orm';
 import { LibsqlError } from '@libsql/client';
 import db from './db';
-import { otcChallengesTable, passkeysTable, passwordsTable, sessionsTable, usersTable } from './schema';
+import { otcChallengesTable, passkeysTable, sessionsTable, usersTable } from './schema';
 import { hashText, isEqualHash } from '././hashing';
 import {
 	generateCode,
@@ -753,7 +753,6 @@ export const invalidateSessionsByUserId = async (userId: number): Promise<void> 
 export const deleteUserAccount = async (userId: number): Promise<boolean> => {
 	return await db.transaction(async (tx) => {
 		await tx.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
-		await tx.delete(passwordsTable).where(eq(passwordsTable.userId, userId));
 		await tx.delete(passkeysTable).where(eq(passkeysTable.userId, userId));
     await tx.delete(otcChallengesTable).where(eq(otcChallengesTable.userId, userId));
 
