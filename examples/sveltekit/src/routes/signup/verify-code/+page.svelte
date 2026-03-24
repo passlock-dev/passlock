@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
+	import DevNotes from '$lib/components/DevNotes.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -76,3 +77,22 @@
 		</p>
 	</div>
 </div>
+
+<DevNotes>
+  <p>
+    This sample app doesn't actually send emails. 
+  </p>
+  <p class="mt-2">
+    You'll need to plug your own email sending mechanism into: 
+  </p>
+  <p class="mt-2">
+    <span class="font-mono">src/lib/server/email.ts</span>
+  </p>
+  <p class="mt-2">
+    In the meantime <span class="font-semibold">check the dev server logs</span>, 
+    where we have logged the code to the console.
+  </p>
+  <p class="mt-2 font-semibold text-error">
+    Be sure to remove this before going into production!
+  </p>
+</DevNotes>
