@@ -1,12 +1,12 @@
 # Sample SvelteKit app using Passlock + Lucia
 
-SvelteKit app using passkeys alongside passwords for authentication.
+SvelteKit app using passkeys alongside email one-time codes for authentication.
 
 ![passlock-sample-screenshot](https://github.com/user-attachments/assets/77306736-4930-4045-9afd-ae3298eb768e)
 
 ## Key features
 
-1. **Progressive enhancement** - Supports passkeys alongside existing/legacy password based authentication
+1. **Progressive enhancement** - Supports passkeys alongside email one-time-code authentication
 2. **Platform data** - Informs users which platform/ecosystem each passkey belongs to
 3. **Lucia sessions** - Session management following the [Lucia][lucia] recommendations
 4. **Local passkey updates** - Updates the passkey account name on users' local devices/password managers

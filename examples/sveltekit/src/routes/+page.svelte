@@ -6,7 +6,7 @@
 	const headlineFeature = {
 		icon: RectangleEllipsis,
 		title: 'Progressive enhancement',
-		description: 'Supports passkeys alongside existing/legacy password based authentication.'
+		description: 'Supports passkeys alongside email one-time-code authentication.'
 	};
 
 	const features = [
@@ -38,7 +38,7 @@
 			icon: RectangleEllipsis,
 			title: 'Passkey autofill',
 			description:
-				'One click login for passkey users, falling back to username/password for others.'
+				'One click login for passkey users, falling back to emailed one-time codes for others.'
 		},
 		{
 			icon: List,
@@ -67,9 +67,9 @@
 		</div>
 		<div>
 			<p class="text-lg leading-relaxed">
-				Sample SvelteKit app illustrating how to support passkey authentication alongside password
-				based authentication. Includes advanced features including autofill, local passkey updates,
-				deletion and more.
+				Sample SvelteKit app illustrating how to support passkey authentication alongside email
+				one-time-code authentication. Includes advanced features including autofill, local passkey
+				updates, deletion and more.
 			</p>
 		</div>
 		<div class="flex items-center gap-6">

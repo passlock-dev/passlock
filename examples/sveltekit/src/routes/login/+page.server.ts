@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import { getPasskeysByUserId, getUserByEmail } from '$lib/server/repository.js';
+import { getAccountByEmail, getPasskeysByUserId } from '$lib/server/repository.js';
 import { superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
@@ -15,14 +15,21 @@ const schema = v.object({
 	)
 });
 
-export const load = (async ({ locals }) => {
+export const load = (async ({ locals, url }) => {
 	if (locals.user) {
 		redirect(302, '/');
 	}
 
-	const form = await superValidate(valibot(schema));
+	const username = url.searchParams.get('username') ?? undefined;
+	const reason = url.searchParams.get('reason');
 
-	return { form };
+	const form = await superValidate({ username }, valibot(schema), { errors: false });
+	const notice =
+		reason === 'account-exists'
+			? 'An account already exists for that email. Login to continue.'
+			: null;
+
+	return { form, notice };
 }) satisfies PageServerLoad;
 
 export const actions = {
@@ -33,16 +40,19 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		const user = await getUserByEmail(form.data.username);
-		if (user) {
-			const passkeys = await getPasskeysByUserId(user.userId);
+		const account = await getAccountByEmail(form.data.username);
+		if (account) {
+			const passkeys = await getPasskeysByUserId(account.userId);
 			if (passkeys.length > 0) {
 				const username = encodeURIComponent(form.data.username);
 				redirect(303, `/login/passkey?username=${username}`);
 			}
+
+			const username = encodeURIComponent(form.data.username);
+			redirect(303, `/login/email?username=${username}`);
 		}
 
-		const username = encodeURIComponent(form.data.username);
-		redirect(303, `/login/password?username=${username}`);
+		const email = encodeURIComponent(form.data.username);
+		redirect(303, `/signup?email=${email}&reason=no-account`);
 	}
 } satisfies Actions;

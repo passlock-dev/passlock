@@ -1,3 +1,4 @@
+import { dev } from '$app/environment';
 import OneTimeCode from '$lib/emails/OneTimeCode.svelte';
 import { render } from 'svelte/server';
 
@@ -14,8 +15,10 @@ export type SendOtcEmail = {
 
 export const sendOtcEmail = async (input: SendOtcEmail) => {
 	const email = renderOtcEmail(input);
+	void email;
 
-	console.log(`Sending One Time Code to ${input.email} [STUBBED]`);
-	console.log(`One Time Code: ${input.code}`);
-	console.log(email);
+  if (dev) {
+    console.log(`Sending one-time code email to ${input.email} [STUBBED]`);
+    console.log(`Code: ${input.code}`)
+  }
 };

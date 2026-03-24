@@ -15,12 +15,22 @@ import {
 export const OTC_VERIFICATION_PENDING_COOKIE_NAME = 'otc-pending';
 export const OTC_CODE_TTL_MS = 10 * 60 * 1000;
 export const OTC_CHALLENGE_TTL_MS = 30 * 60 * 1000;
+export const OTC_MAX_ATTEMPTS = 5;
+export const OTC_RESEND_COOLDOWN_MS = 60 * 1000;
 export const OTC_CHALLENGE_ID_LENGTH = SESSION_ID_LENGTH;
 export const OTC_CHALLENGE_SECRET_LENGTH = SESSION_SECRET_LENGTH;
 
 export const generateCode = (): string => randomInt(0, 1_000_000).toString().padStart(6, '0');
 
-export const parseOtcToken = parseSessionToken;
+export const parseOtcToken = (token: string): { sessionId: string; sessionSecret: string } | null => {
+	const parts = token.split('.');
+	if (parts.length !== 2) return null;
+
+	const [sessionId, sessionSecret] = parts;
+	if (!sessionId || !sessionSecret) return null;
+
+	return { sessionId, sessionSecret };
+};
 
 export const getOtcCookie = (cookies: Cookies) => cookies.get(OTC_VERIFICATION_PENDING_COOKIE_NAME);
 

@@ -53,14 +53,22 @@ export const otcChallengesTable = sqliteTable(
 	'one_time_code_challenges',
 	{
 		id: text().primaryKey(),
+		purpose: text().notNull(),
 		userId: int()
-			.notNull()
 			.references(() => usersTable.id, { onDelete: 'cascade' }),
+		email: text().notNull(),
+		givenName: text(),
+		familyName: text(),
 		secretHash: text().notNull(),
 		codeHash: text().notNull(),
+		failedAttempts: int().notNull(),
+		consumedAt: int(),
 		createdAt: int().notNull(),
 		codeExpiresAt: int().notNull(),
 		challengeExpiresAt: int().notNull()
 	},
-	(table) => [index('one_time_code_challenges_user_id_idx').on(table.userId)]
+	(table) => [
+		index('one_time_code_challenges_user_id_idx').on(table.userId),
+		index('one_time_code_challenges_email_idx').on(table.email)
+	]
 );

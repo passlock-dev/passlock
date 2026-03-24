@@ -4,4 +4,4 @@
 
 Dear {firstName},
 <br />
-Here is your login code: {code}
+Here is your one-time code: {code}

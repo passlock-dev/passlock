@@ -8,7 +8,6 @@ import * as v from 'valibot';
 import { getPasslockClientConfig } from '$lib/server/passkeys';
 
 const schema = v.object({
-	username: v.pipe(v.string(), v.nonEmpty('Username is required')),
 	givenName: v.pipe(v.string(), v.trim(), v.nonEmpty('First name is required')),
 	familyName: v.pipe(v.string(), v.trim(), v.nonEmpty('Last name is required'))
 });
@@ -22,7 +21,6 @@ export const load = (async ({ locals }) => {
 
 	const form = await superValidate(
 		{
-			username: locals.user.email,
 			givenName: locals.user.givenName,
 			familyName: locals.user.familyName
 		},
@@ -31,6 +29,7 @@ export const load = (async ({ locals }) => {
 
 	return {
 		form,
+		email: locals.user.email,
 		...passlockConfig
 	};
 }) satisfies PageServerLoad;
@@ -48,17 +47,12 @@ export const actions = {
 		}
 
 		const user = await updateUserProfile(locals.user.userId, {
-			email: form.data.username,
 			givenName: form.data.givenName,
 			familyName: form.data.familyName
 		});
 
 		if (!user) {
-			return setError(form, 'username', 'Unable to update this account');
-		}
-
-		if ('_tag' in user && user._tag === 'DuplicateUser') {
-			return setError(form, 'username', 'Username is already in use');
+			return setError(form, 'givenName', 'Unable to update this account');
 		}
 
 		return message(form, 'Account details updated');

@@ -16,15 +16,19 @@
 <div class="mx-auto flex h-full max-w-5xl items-center justify-center">
 	<div class="flex flex-col items-center lg:flex-row lg:gap-8">
 		<div class="px-2 text-center lg:text-left">
-			<h1 class="text-5xl font-bold">Sign up today!</h1>
+			<h1 class="text-5xl font-bold">Create your account</h1>
 			<p class="py-6">
-				Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem
-				quasi. In deleniti eaque aut repudiandae et a id nisi.
+				Enter your details and we’ll send a one-time code to verify your email before creating the
+				account.
 			</p>
 		</div>
 
 		<form method="post" class="w-full max-w-md">
 			<fieldset class="fieldset rounded-box border border-base-300 bg-base-200 p-10">
+				{#if data.notice}
+					<p class="mb-4 text-sm text-error max-w-sm">{data.notice}</p>
+				{/if}
+
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div>
 						<label for="givenName" class="label">First name</label>
@@ -72,17 +76,12 @@
 					required />
 				{#if $errors.email}<span class="text-error">{$errors.email}</span>{/if}
 
-				<label for="password" class="label mt-2">Password</label>
-				<input
-					id="password"
-					type="password"
-					autocomplete="new-password"
-					name="password"
-					class="input w-full"
-					bind:value={$form.password}
-					required />
+				<button class="btn mt-4 btn-primary">Send sign up code</button>
 
-				<button class="btn mt-4 btn-primary">Sign up</button>
+				<p class="mt-4 text-center text-sm">
+					Already have an account?
+					<a href="/login" class="ml-1 text-primary hover:underline">Login</a>
+				</p>
 			</fieldset>
 		</form>
 	</div>

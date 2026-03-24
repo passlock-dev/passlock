@@ -31,7 +31,7 @@
 	<div class="rounded-lg bg-base-200 p-10 pt-8">
 		<h2 class="text-center text-xl font-semibold">Login using your passkey</h2>
 		<p class="mt-3 w-xs text-center text-sm text-base-content/80">
-			Use your device passkey to sign in without typing your password.
+			Use your device passkey to sign in without waiting for an email code.
 		</p>
 
 		<button type="button" class="btn mt-6 w-full btn-primary" onclick={login} disabled={loading}>
@@ -43,16 +43,16 @@
 		{/if}
 
 		<p class="mt-4 text-center text-sm">
-			Need password login?
+			Need email login instead?
 			{#if data.username}
 				<a
 					class="ml-1 text-primary hover:underline"
-					href="{resolve('/login/password')}?username={encodeURIComponent(data.username)}">
-					Use email and password
+					href="{resolve('/login/email')}?username={encodeURIComponent(data.username)}">
+					Use an emailed code
 				</a>
 			{:else}
 				<a class="ml-1 text-primary hover:underline" href={resolve('/login')}>
-					Use email and password
+					Use an emailed code
 				</a>
 			{/if}
 		</p>

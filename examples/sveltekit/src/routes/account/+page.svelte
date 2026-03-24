@@ -12,7 +12,11 @@
 		applyAction: true,
 		invalidateAll: 'pessimistic',
 		onUpdated: async ({ form }) => {
-			const result = await updateUserPasskeys({ ...data, ...form.data });
+			const result = await updateUserPasskeys({
+				username: data.email,
+				givenName: form.data.givenName,
+				familyName: form.data.familyName
+			});
 			if (result._tag === '@error/UpdatePasskeyError') {
 				setError(data.form, result.message);
 			}
@@ -28,7 +32,7 @@
 	<form method="POST" use:enhance class="w-full max-w-sm rounded-lg bg-base-200 p-10 pt-8">
 		<h2 class="text-center text-xl font-semibold">My account</h2>
 		<p class="mt-3 text-center text-sm text-base-content/80">
-			Update your username, first name, and last name.
+			Update your name. Your email address is fixed for this example.
 		</p>
 
 		{#if $message}
@@ -40,20 +44,14 @@
 		{/if}
 
 		<fieldset class="fieldset">
-			<label for="username" class="label mt-2">Username</label>
+			<label for="email" class="label mt-2">Email</label>
 			<input
-				id="username"
+				id="email"
 				type="email"
-				name="username"
 				autocomplete="email"
-				class={['input', { 'input-error': $errors.username }]}
-				bind:value={$form.username}
-				required />
-			{#if $errors.username}
-				{#each $errors.username as error (error)}
-					<span class="text-error">{error}</span>
-				{/each}
-			{/if}
+				class="input text-base-content/60"
+				value={data.email}
+				readonly />
 
 			<div class="mt-2 grid gap-4 sm:grid-cols-2">
 				<div>
@@ -100,8 +98,8 @@
 <!-- TODO Delete me -->
 <DevNotes>
 	<p>
-		We want to align passkeys with any account changes. Therefore changes to the account username or
-		name result in several operations:
+		We want to align passkeys with account profile changes. Therefore name updates result in several
+		operations:
 	</p>
 
 	<ol class="mt-2 list-inside list-decimal">
@@ -111,7 +109,7 @@
 	</ol>
 
 	<p class="mt-2 font-semibold">
-		Test this by updating your username or name, then visiting the
+		Test this by updating your name, then visiting the
 		<a href={resolve('/passkeys')} class="link text-primary">passkeys</a>
 		page and checking your local passkey manager 🚀
 	</p>
