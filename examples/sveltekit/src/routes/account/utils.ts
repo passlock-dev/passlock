@@ -29,11 +29,12 @@ export const reAuthenticateIfNecessary = async (input: {
 	endpoint?: string | undefined;
 }) => {
 	clearFormErrors(input.errors);
+  const error = { _tag: "@error/ReAuthenticationFailure" as const };
 
   // if the form is invalid there's no point doing anything
 	const validation = await input.validateForm();
 	if (!validation.valid) {
-		return null;
+		return error;
 	}
 
   // call the /passkeys/+server.ts endpoint to fetch the user's 
@@ -41,12 +42,15 @@ export const reAuthenticateIfNecessary = async (input: {
 	const passkeyStatus = await getPasskeyStatus();
 	if (passkeyStatus._tag === '@error/PasskeyStatusError') {
 		setFormError(input.errors, passkeyStatus.message);
-		return null;
+		return error;
 	}
 
   // no-op
 	if (passkeyStatus.passkeyIds.length === 0 || !passkeyStatus.reauthenticationRequired) {
-		return { passkeyIds: passkeyStatus.passkeyIds } as const;
+		return { 
+      _tag: "ReAuthenticationSuccess", 
+      passkeyIds: passkeyStatus.passkeyIds 
+    } as const;
 	}
 
   // kick off authentication, send the code to the /re-authenticate
@@ -60,10 +64,13 @@ export const reAuthenticateIfNecessary = async (input: {
 	});
 
 	if (result._tag === 'PasslockLoginSuccess') {
-		return { passkeyIds: passkeyStatus.passkeyIds } as const;
+		return { 
+      _tag: "ReAuthenticationSuccess", 
+      passkeyIds: passkeyStatus.passkeyIds 
+    } as const;
 	}
 
   // authentication failed for some reason
 	setFormError(input.errors, result.message);
-	return null;
+	return error;
 };

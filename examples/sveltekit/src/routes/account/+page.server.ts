@@ -89,7 +89,7 @@ export const load = (async ({ locals, url }) => {
 	const emailUpdated = url.searchParams.get('email-updated') === '1';
 	const emailStatusMessage = emailUpdated ? 'Email address updated.' : null;
   if (emailStatusMessage) {
-    setMessage(emailForm, emailStatusMessage)
+    setMessage(emailForm, emailStatusMessage);
   }
 
 	// if we couldn't verify the new email address
@@ -97,7 +97,7 @@ export const load = (async ({ locals, url }) => {
 	const emailVerificationError = url.searchParams.get('email-error');
 	const emailStatusError = getEmailStatusError(emailVerificationError);
   if (emailStatusError) {
-    setError(emailForm, emailStatusError)
+    setError(emailForm, emailStatusError);
   }
 
 	return {
@@ -105,9 +105,7 @@ export const load = (async ({ locals, url }) => {
 		emailForm,
 		currentEmail: user.email,
 		hasPasskeys,
-		emailUpdated,
-		emailStatusMessage,
-		emailStatusError,
+    clearQueryState: emailUpdated || emailStatusError,
 		syncPasskeysOnLoad: emailUpdated && hasPasskeys,
 		...passlockConfig
 	};

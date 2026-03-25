@@ -28,21 +28,21 @@
 		onSubmit: async ({ cancel }) => {
 			warning = '';
 
-			const status = await reAuthenticateIfNecessary({
+			const authResult = await reAuthenticateIfNecessary({
 				errors,
 				validateForm: () => validateForm({ update: true }),
 				tenancyId: data.tenancyId,
 				endpoint: data.endpoint
 			});
 
-			if (!status) {
+			if (authResult._tag === "@error/ReAuthenticationFailure") {
 				cancel();
 				return;
 			}
 
       // we don't need to perform client side passkey deletion
       // so go ahead an submit the form to close the account
-			if (status.passkeyIds.length === 0) {
+			if (authResult.passkeyIds.length === 0) {
 				return;
 			}
 

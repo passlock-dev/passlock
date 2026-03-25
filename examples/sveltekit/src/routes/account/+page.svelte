@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { superForm } from 'sveltekit-superforms';
+	import { superForm, setMessage } from 'sveltekit-superforms';
 	import { valibotClient } from 'sveltekit-superforms/adapters';
 	import { emailSchema, profileSchema } from './schemas.js';
 	import { updateUserPasskeys } from '$lib/client/passkeys';
@@ -13,7 +13,6 @@
 
 	let { data }: PageProps = $props();
 
-	let emailStatusMessage = $derived(data.emailStatusMessage);
 	let syncingUpdatedEmailPasskeys = $state(false);
 
 	type FormErrors = SuperFormErrors<{}>;
@@ -32,7 +31,7 @@
    * we've displayed the error or synced the passkeys
    * so clear the query params
    */
-	const clearEmailQueryState = () => {
+	const clearQueryState = () => {
 		const url = new URL(window.location.href);
 		url.searchParams.delete('email-updated');
 		url.searchParams.delete('email-error');
@@ -41,8 +40,8 @@
 	};
 
   /**
-   * update the passkeys in the user's local passkey
-   * manager to align with the new account information
+   * Update the passkeys in the user's local passkey
+   * manager to align with the new account information.
    */
 	const syncPasskeys = async () => {
 		syncingUpdatedEmailPasskeys = true;
@@ -60,13 +59,13 @@
 				'Email address updated, but local passkeys could not be refreshed automatically.'
 			);
 			syncingUpdatedEmailPasskeys = false;
-			clearEmailQueryState();
+			clearQueryState();
 			return;
 		}
 
-		emailStatusMessage = 'Email address updated and passkeys refreshed.';
+    emailMessage.set('Email address updated and passkeys refreshed.');
 		syncingUpdatedEmailPasskeys = false;
-		clearEmailQueryState();
+		clearQueryState();
 	};
 
 	onMount(() => {
@@ -78,12 +77,8 @@
 			return;
 		}
 
-		if (data.emailStatusError) {
-			setFormError(emailErrors, data.emailStatusError);
-		}
-
-		if (data.emailUpdated || data.emailStatusError) {
-			clearEmailQueryState();
+		if (data.clearQueryState) {
+			clearQueryState();
 		}
 	});
 
@@ -99,7 +94,7 @@
 		invalidateAll: 'pessimistic',
 		validators: valibotClient(profileSchema),
 		onSubmit: async ({ cancel }) => {
-			const confirmation = await reAuthenticateIfNecessary({
+			const authResult = await reAuthenticateIfNecessary({
 				errors: profileErrors,
 				validateForm: () => validateProfileForm({ update: true }),
 				tenancyId: data.tenancyId,
@@ -107,7 +102,7 @@
 			});
 
       // something went wrong, abort
-			if (!confirmation) {
+			if (authResult._tag === "@error/ReAuthenticationFailure") {
 				cancel();
 			}
 		},
@@ -136,6 +131,7 @@
 	const {
 		form: emailForm,
 		errors: emailErrors,
+    message: emailMessage,
 		enhance: emailEnhance,
 		validateForm: validateEmailForm
 	} = superForm(data.emailForm, {
@@ -143,14 +139,14 @@
 		invalidateAll: 'pessimistic',
 		validators: valibotClient(emailSchema),
 		onSubmit: async ({ cancel }) => {
-			const confirmation = await reAuthenticateIfNecessary({
+			const authResult = await reAuthenticateIfNecessary({
 				errors: emailErrors,
 				validateForm: () => validateEmailForm({ update: true }),
 				tenancyId: data.tenancyId,
 				endpoint: data.endpoint
 			});
 
-			if (!confirmation) {
+			if (authResult._tag === "@error/ReAuthenticationFailure") {
 				cancel();
 			}
 		}
@@ -224,12 +220,10 @@
 				We’ll send a verification code to your new email before updating your account.
 			</p>
 
-			{#if emailStatusMessage}
-				<p class="mt-4 text-center text-sm text-success">{emailStatusMessage}</p>
-			{/if}
-
 			{#if syncingUpdatedEmailPasskeys}
 				<p class="mt-4 text-center text-sm text-base-content/80">Refreshing your passkeys...</p>
+      {:else if $emailMessage}
+        <p class="mt-4 text-center text-sm text-success">{$emailMessage}</p>
 			{/if}
 
 			{#if $emailErrors._errors}
