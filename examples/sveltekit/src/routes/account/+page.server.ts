@@ -7,7 +7,7 @@ import { getPasslockClientConfig } from '$lib/server/passkeys.js';
 import { emailSchema, profileSchema } from './schemas.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
-import { message, setError, superValidate } from 'sveltekit-superforms';
+import { message, setError, setMessage, superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 
 const createProfileForm = (input?: { givenName?: string; familyName?: string }) =>
@@ -88,11 +88,17 @@ export const load = (async ({ locals, url }) => {
 	// see /verify-email/+server.ts#redirectToAccountWithError
 	const emailUpdated = url.searchParams.get('email-updated') === '1';
 	const emailStatusMessage = emailUpdated ? 'Email address updated.' : null;
+  if (emailStatusMessage) {
+    setMessage(emailForm, emailStatusMessage)
+  }
 
 	// if we couldn't verify the new email address
 	// the user is redirected back here with a failure code
 	const emailVerificationError = url.searchParams.get('email-error');
 	const emailStatusError = getEmailStatusError(emailVerificationError);
+  if (emailStatusError) {
+    setError(emailForm, emailStatusError)
+  }
 
 	return {
 		profileForm,

@@ -4,7 +4,8 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { valibotClient } from 'sveltekit-superforms/adapters';
 	import { emailSchema, profileSchema } from './schemas.js';
-	import { authenticatePasskey, getPasskeyStatus, updateUserPasskeys } from '$lib/client/passkeys';
+	import { updateUserPasskeys } from '$lib/client/passkeys';
+	import { reAuthenticateIfNecessary } from './utils.js';
 	import DevNotes from '$lib/components/DevNotes.svelte';
 	import type { PageProps } from './$types';
 	import { replaceState } from '$app/navigation';
@@ -25,59 +26,6 @@
 	// set a form level error
 	const setFormError = (errors: FormErrors, message: string) => {
 		errors.update((current) => ({ ...current, _errors: [message] }));
-	};
-
-  /**
-   * if the user used their passkey recently we can skip re-authentication
-   * and just submit the form, otherwise they'll be prompted to authenticate again
-   * @param input
-   */
-	const requireAccountPasskeyConfirmation = async (input: {
-		errors: FormErrors;
-		validateForm: () => Promise<{ valid: boolean }>;
-	}) => {
-		clearFormErrors(input.errors);
-
-		// no point going through authentication if the form is invalid
-		const validation = await input.validateForm();
-		if (!validation.valid) {
-			return false;
-		}
-
-    // fetch the user's passkeys
-		const passkeyStatus = await getPasskeyStatus();
-		if (passkeyStatus._tag === '@error/PasskeyStatusError') {
-			setFormError(input.errors, passkeyStatus.message);
-			return false;
-		}
-
-		// recently authenticated so skip passkey auth
-		if (!passkeyStatus.reauthenticationRequired || passkeyStatus.passkeyIds.length === 0) {
-			return passkeyStatus;
-		}
-
-    // prompt user to authenticate again
-		const result = await authenticatePasskey({
-			tenancyId: data.tenancyId,
-			endpoint: data.endpoint,
-      // if the user has two accounts we want them to choose the 
-      // correct passkey here so we can pre-select it for them
-			existingPasskeys: [...passkeyStatus.passkeyIds],
-			// we want local re-authentication here
-      userVerification: 'required',
-      // this route will set the user's passkey authentication timestamp
-      // on the session so they don't need to go through this again
-      // after we submit the profile or email form the form action
-      // will also check this timestamp
-			verificationRoute: '/account/re-authenticate'
-		});
-
-		if (result._tag === 'PasslockLoginSuccess') {
-			return true;
-		}
-
-		setFormError(input.errors, result.message);
-		return false;
 	};
 
   /**
@@ -151,13 +99,15 @@
 		invalidateAll: 'pessimistic',
 		validators: valibotClient(profileSchema),
 		onSubmit: async ({ cancel }) => {
-			const canSubmit = await requireAccountPasskeyConfirmation({
+			const confirmation = await reAuthenticateIfNecessary({
 				errors: profileErrors,
-				validateForm: () => validateProfileForm({ update: true })
+				validateForm: () => validateProfileForm({ update: true }),
+				tenancyId: data.tenancyId,
+				endpoint: data.endpoint
 			});
 
       // something went wrong, abort
-			if (!canSubmit) {
+			if (!confirmation) {
 				cancel();
 			}
 		},
@@ -193,12 +143,14 @@
 		invalidateAll: 'pessimistic',
 		validators: valibotClient(emailSchema),
 		onSubmit: async ({ cancel }) => {
-			const canSubmit = await requireAccountPasskeyConfirmation({
+			const confirmation = await reAuthenticateIfNecessary({
 				errors: emailErrors,
-				validateForm: () => validateEmailForm({ update: true })
+				validateForm: () => validateEmailForm({ update: true }),
+				tenancyId: data.tenancyId,
+				endpoint: data.endpoint
 			});
 
-			if (!canSubmit) {
+			if (!confirmation) {
 				cancel();
 			}
 		}

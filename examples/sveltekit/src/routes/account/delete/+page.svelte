@@ -1,10 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import {
-		authenticatePasskey,
-		deleteAccountPasskeys,
-		getPasskeyStatus
-	} from '$lib/client/passkeys';
+	import { deleteAccountPasskeys } from '$lib/client/passkeys';
+	import { reAuthenticateIfNecessary } from '../utils.js';
 	import { superForm } from 'sveltekit-superforms';
 	import { valibotClient } from 'sveltekit-superforms/adapters';
 	import type { SuperFormErrors } from 'sveltekit-superforms/client';
@@ -19,54 +16,8 @@
 
 	type FormErrors = SuperFormErrors<{}>;
 
-	const clearFormErrors = (formErrors: FormErrors) => {
-		formErrors.update((current) => ({ ...current, _errors: undefined }));
-	};
-
 	const setFormError = (formErrors: FormErrors, message: string) => {
 		formErrors.update((current) => ({ ...current, _errors: [message] }));
-	};
-
-	const requireAccountPasskeyConfirmation = async (input: {
-		errors: FormErrors;
-		validateForm: () => Promise<{ valid: boolean }>;
-	}) => {
-		clearFormErrors(input.errors);
-		warning = '';
-
-		const validation = await input.validateForm();
-		if (!validation.valid) {
-			return null;
-		}
-
-		const passkeyStatus = await getPasskeyStatus();
-		if (passkeyStatus._tag === '@error/PasskeyStatusError') {
-			setFormError(input.errors, passkeyStatus.message);
-			return null;
-		}
-
-		if (passkeyStatus.passkeyIds.length === 0) {
-			return { shouldDeletePasskeys: false };
-		}
-
-		if (!passkeyStatus.reauthenticationRequired) {
-			return { shouldDeletePasskeys: true };
-		}
-
-		const result = await authenticatePasskey({
-			tenancyId: data.tenancyId,
-			endpoint: data.endpoint,
-			existingPasskeys: [...passkeyStatus.passkeyIds],
-			userVerification: 'required',
-			verificationRoute: '/account/re-authenticate'
-		});
-
-		if (result._tag === 'PasslockLoginSuccess') {
-			return { shouldDeletePasskeys: true };
-		}
-
-		setFormError(input.errors, result.message);
-		return null;
 	};
 
 	// svelte-ignore state_referenced_locally
@@ -75,30 +26,40 @@
 		invalidateAll: 'pessimistic',
 		validators: valibotClient(deleteAccountSchema),
 		onSubmit: async ({ cancel }) => {
-			const confirmation = await requireAccountPasskeyConfirmation({
+			warning = '';
+
+			const status = await reAuthenticateIfNecessary({
 				errors,
-				validateForm: () => validateForm({ update: true })
+				validateForm: () => validateForm({ update: true }),
+				tenancyId: data.tenancyId,
+				endpoint: data.endpoint
 			});
 
-			if (!confirmation) {
+			if (!status) {
 				cancel();
 				return;
 			}
 
-			if (!confirmation.shouldDeletePasskeys) {
+      // we don't need to perform client side passkey deletion
+      // so go ahead an submit the form to close the account
+			if (status.passkeyIds.length === 0) {
 				return;
 			}
 
+      // delete the passkeys (client and server-side)
 			deletingPasskeys = true;
 			const result = await deleteAccountPasskeys();
 			deletingPasskeys = false;
 
+      // abort account deletion
 			if (result._tag === '@error/DeletePasskeyError') {
 				setFormError(errors, result.message);
 				cancel();
 				return;
 			}
 
+      // we closed the account but were unable to programmatically 
+      // delete the passkeys from the user's device
 			if (result._tag === '@warning/PasskeyDeletePaused') {
 				warning = result.message;
 			}
