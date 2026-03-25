@@ -36,9 +36,7 @@ export const actions = {
 		}
 
 		const deleted = await deleteUserAccount(user.userId);
-		if (!deleted) {
-			return setError(form, 'intent', 'Unable to delete this account');
-		}
+		if (!deleted) return setError(form, 'intent', 'Unable to delete this account');
 
 		deleteSessionTokenCookie(cookies);
 		redirect(303, '/');

@@ -38,6 +38,11 @@ export const sessionsTable = sqliteTable(
 	(table) => [index('sessions_user_id_idx').on(table.userId)]
 );
 
+/**
+ * Serves several purposes:
+ * 1) signup - acts as a transient user record pending email verification
+ * 2) change email - used to verify ownership of the new address
+ */
 export const otcChallengesTable = sqliteTable(
 	'one_time_code_challenges',
 	{
@@ -45,7 +50,9 @@ export const otcChallengesTable = sqliteTable(
 		purpose: text().notNull(),
 		userId: int().references(() => usersTable.id, { onDelete: 'cascade' }),
 		email: text().notNull(),
-		givenName: text(),
+		// signup
+    givenName: text(),
+    // signup
 		familyName: text(),
 		secretHash: text().notNull(),
 		codeHash: text().notNull(),

@@ -3,7 +3,7 @@ import {
 	consumeEmailChangeChallenge as verifyChangeEmailChallenge,
 	upsertEmailChallenge,
 	getPasskeysByUserId,
-	getPendingOtcContext
+	getPendingOtcChallenge
 } from '$lib/server/repository.js';
 import { sendEmailUpdated, sendOtcEmail } from '$lib/server/email.js';
 import {
@@ -44,44 +44,46 @@ const createResendForm = () =>
  */
 const redirectToAccountWithError = (reason: 'expired' | 'taken', email?: string): never => {
 	const params = new URLSearchParams({ 'email-error': reason });
-	if (email) {
-		params.set('email', email);
-	}
-
-	redirect(303, `${resolve('/account')}?${params.toString()}`);
+	if (email) params.set('email', email);
+  redirect(303, `${resolve('/account')}?${params.toString()}`);
 };
 
-const getPendingEmailChangeContext = async (
+/**
+ * Fetch the challenge (including code) 
+ * associated with this change email request
+ * 
+ * @param token 
+ * @param userId 
+ * @param clearCookie 
+ * @returns 
+ */
+const getChangeEmailChallenge = async (
 	token: string | undefined,
 	userId: number,
 	clearCookie: () => void
 ) => {
-	if (!token) {
-		redirect(303, resolve('/account'));
-	}
+	if (!token) redirect(303, resolve('/account'));
 
-	const pending = await getPendingOtcContext(token);
+	const challenge = await getPendingOtcChallenge(token);
 	if (
-		!pending ||
-		pending.challenge.purpose !== 'email-change' ||
-		pending.challenge.userId !== userId
+		!challenge ||
+		challenge.purpose !== 'email-change' ||
+		challenge.userId !== userId
 	) {
 		clearCookie();
 		redirect(303, resolve('/account'));
 	}
 
-	return pending;
+	return challenge;
 };
 
 export const load = (async ({ locals, cookies }) => {
-	if (!locals.user) {
-		redirect(302, resolve('/login'));
-	}
+	if (!locals.user) redirect(302, resolve('/login'));
 
 	// the token allows us to display the email address in question
 	// before the user has entered the code
 	const token = getEmailChangeOtcCookie(cookies);
-	const { challenge } = await getPendingEmailChangeContext(token, locals.user.userId, () =>
+	const { email } = await getChangeEmailChallenge(token, locals.user.userId, () =>
 		deleteEmailChangeOtcCookie(cookies)
 	);
 
@@ -91,15 +93,13 @@ export const load = (async ({ locals, cookies }) => {
 	return {
 		verifyForm,
 		resendForm,
-		email: challenge.email
+		email
 	};
 }) satisfies PageServerLoad;
 
 export const actions = {
 	verify: async ({ request, locals, cookies }) => {
-		if (!locals.user) {
-			redirect(302, resolve('/login'));
-		}
+		if (!locals.user) redirect(302, resolve('/login'));
 
 		const user = locals.user;
 
@@ -108,14 +108,12 @@ export const actions = {
 			id: 'verify-code-form'
 		});
 
-		if (!verifyForm.valid) {
-			return fail(400, { verifyForm, resendForm });
-		}
+		if (!verifyForm.valid) return fail(400, { verifyForm, resendForm });
 
 		// supplying the code is not enough, the user must also
 		// present the token (stored as a cookie)
 		const token = getEmailChangeOtcCookie(cookies);
-		const { challenge } = await getPendingEmailChangeContext(token, user.userId, () =>
+		const challenge = await getChangeEmailChallenge(token, user.userId, () =>
 			deleteEmailChangeOtcCookie(cookies)
 		);
 
@@ -175,9 +173,7 @@ export const actions = {
 		return fail(400, { verifyForm, resendForm, email: challenge.email });
 	},
 	resend: async ({ request, locals, cookies }) => {
-		if (!locals.user) {
-			redirect(302, resolve('/login'));
-		}
+		if (!locals.user) redirect(302, resolve('/login'));
 		const user = locals.user;
 
 		const resendForm = await superValidate(request, valibot(resendCodeSchema), {
@@ -186,18 +182,16 @@ export const actions = {
 
 		const verifyForm = await createVerifyForm();
 
-		if (!resendForm.valid) {
-			return fail(400, { verifyForm, resendForm });
-		}
+		if (!resendForm.valid) return fail(400, { verifyForm, resendForm });
 
 		const token = getEmailChangeOtcCookie(cookies);
-		const pending = await getPendingEmailChangeContext(token, user.userId, () =>
+		const challenge = await getChangeEmailChallenge(token, user.userId, () =>
 			deleteEmailChangeOtcCookie(cookies)
 		);
 
 		const result = await upsertEmailChallenge({
 			userId: user.userId,
-			email: pending.challenge.email
+			email: challenge.email
 		});
 
 		if (result._tag === '@error/AccountNotFound') {
@@ -207,13 +201,13 @@ export const actions = {
 
 		if (result._tag === '@error/DuplicateUser') {
 			deleteEmailChangeOtcCookie(cookies);
-			redirectToAccountWithError('taken', pending.challenge.email);
+			redirectToAccountWithError('taken', challenge.email);
 		}
 
 		if (result._tag === '@error/ChallengeRateLimited') {
 			const seconds = Math.ceil(result.retryAfterMs / 1000);
 			resendForm.message = `Please wait ${seconds} seconds before requesting another code.`;
-			return { verifyForm, resendForm, email: pending.challenge.email };
+			return { verifyForm, resendForm, email: challenge.email };
 		}
 
 		if (result._tag !== 'CreatedOtcChallenge') {

@@ -38,7 +38,7 @@ export const DeleteUserPasskeysSuccess = v.object({
 });
 
 export const PasskeyStatusSuccess = v.object({
-  _tag: v.literal('PasskeyStatusSuccess'),
+	_tag: v.literal('PasskeyStatusSuccess'),
 	passkeyIds: v.pipe(v.array(v.string()), v.readonly()),
 	reauthenticationRequired: v.boolean()
 });

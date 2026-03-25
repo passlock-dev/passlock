@@ -27,10 +27,10 @@
 		errors.update((current) => ({ ...current, _errors: [message] }));
 	};
 
-  /**
-   * we've displayed the error or synced the passkeys
-   * so clear the query params
-   */
+	/**
+	 * We've displayed the error or synced the passkeys
+	 * so clear the query params
+	 */
 	const clearQueryState = () => {
 		const url = new URL(window.location.href);
 		url.searchParams.delete('email-updated');
@@ -39,10 +39,10 @@
 		replaceState(url, {});
 	};
 
-  /**
-   * Update the passkeys in the user's local passkey
-   * manager to align with the new account information.
-   */
+	/**
+	 * Update the passkeys in the user's local passkey
+	 * manager to align with the new account information.
+	 */
 	const syncPasskeys = async () => {
 		syncingUpdatedEmailPasskeys = true;
 		clearFormErrors(emailErrors);
@@ -63,21 +63,19 @@
 			return;
 		}
 
-    emailMessage.set('Email address updated and passkeys refreshed.');
+		emailMessage.set('Email address updated and passkeys refreshed.');
 		syncingUpdatedEmailPasskeys = false;
 		clearQueryState();
 	};
 
 	onMount(() => {
-		// after the user verifies their new email address
-		// they are redirected back to this route with a ?email-updated=1 flag set
-		// ultimately this results in the local passkeys being refreshed
+		// After the user verifies their new email address
+		// they are redirected back to this route with a ?email-updated=1 flag set.
+		// Ultimately this results in the local passkeys being refreshed
 		if (data.syncPasskeysOnLoad) {
 			void syncPasskeys();
 			return;
-		}
-
-		if (data.clearQueryState) {
+		} else if (data.clearQueryState) {
 			clearQueryState();
 		}
 	});
@@ -101,8 +99,8 @@
 				endpoint: data.endpoint
 			});
 
-      // something went wrong, abort
-			if (authResult._tag === "@error/ReAuthenticationFailure") {
+			// something went wrong, abort
+			if (authResult._tag === '@error/ReAuthenticationFailure') {
 				cancel();
 			}
 		},
@@ -113,8 +111,8 @@
 				return;
 			}
 
-      // refresh the passkeys with the new names 
-      // (email/username will be unchanged)
+			// refresh the passkeys with the new names
+			// (email/username will be unchanged)
 			const result = await updateUserPasskeys({
 				username: data.currentEmail,
 				givenName: form.data.givenName,
@@ -131,7 +129,7 @@
 	const {
 		form: emailForm,
 		errors: emailErrors,
-    message: emailMessage,
+		message: emailMessage,
 		enhance: emailEnhance,
 		validateForm: validateEmailForm
 	} = superForm(data.emailForm, {
@@ -146,7 +144,7 @@
 				endpoint: data.endpoint
 			});
 
-			if (authResult._tag === "@error/ReAuthenticationFailure") {
+			if (authResult._tag === '@error/ReAuthenticationFailure') {
 				cancel();
 			}
 		}
@@ -222,8 +220,8 @@
 
 			{#if syncingUpdatedEmailPasskeys}
 				<p class="mt-4 text-center text-sm text-base-content/80">Refreshing your passkeys...</p>
-      {:else if $emailMessage}
-        <p class="mt-4 text-center text-sm text-success">{$emailMessage}</p>
+			{:else if $emailMessage}
+				<p class="mt-4 text-center text-sm text-success">{$emailMessage}</p>
 			{/if}
 
 			{#if $emailErrors._errors}

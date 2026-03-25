@@ -16,16 +16,13 @@ export const getAccountPasskeyContext = async (
 ): Promise<AccountPasskeyContext | null> => {
 	const user = locals.user;
 	const session = locals.session;
-
-	if (!user || !session) {
-		return null;
-	}
+	if (!user || !session) return null;
 
 	const passkeys = await getPasskeysByUserId(user.userId);
 	const passkeyIds = passkeys.map(({ passkeyId }) => passkeyId);
 	const hasPasskeys = passkeyIds.length > 0;
-  const reauthenticationRequired = 
-    hasPasskeys && !isRecentAuthentication(session.lastPasskeyAuthenticationAt)
+	const reauthenticationRequired =
+		hasPasskeys && !isRecentAuthentication(session.lastPasskeyAuthenticationAt);
 
 	return {
 		user,
@@ -40,10 +37,7 @@ export const requireAccountPasskeyConfirmation = async (
 	locals: App.Locals
 ): Promise<AccountPasskeyContext> => {
 	const context = await getAccountPasskeyContext(locals);
-
-	if (!context) {
-		redirect(302, resolve('/login'));
-	}
+	if (!context) redirect(302, resolve('/login'));
 
 	return context;
 };

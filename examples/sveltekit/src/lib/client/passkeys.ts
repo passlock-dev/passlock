@@ -81,28 +81,28 @@ export const registerPasskey = async (input: CreatePasskeyInput) => {
 };
 
 export type AuthenticatePasskeyInput = {
-  /**
-   * generally we want to verify the code and log the user in 
-   * so we default to the login route. however for re-authentication
-   * we just want to bump the passkey authenticated at timestamp so
-   * send the code to the re-authenticate route
-   */
+	/**
+	 * generally we want to verify the code and log the user in
+	 * so we default to the login route. however for re-authentication
+	 * we just want to bump the passkey authenticated at timestamp so
+	 * send the code to the re-authenticate route
+	 */
 	verificationRoute?: string | undefined;
 	userVerification?: 'preferred' | 'required';
 	autofill?: boolean;
-  /**
-   * used alongside autofill so we can trigger stuff when the user
-   * authenticates
-   * @param event 
-   * @returns 
-   */
+	/**
+	 * used alongside autofill so we can trigger stuff when the user
+	 * authenticates
+	 * @param event
+	 * @returns
+	 */
 	onEvent?: (event: PasslockClient.AuthenticationEvent) => void;
-  /**
-   * Pre-select suitable passkeys for the user
-   */
+	/**
+	 * Pre-select suitable passkeys for the user
+	 */
 	existingPasskeys?: Array<string> | undefined;
 	tenancyId: string;
-	endpoint?: string | undefined;  
+	endpoint?: string | undefined;
 };
 
 /**
@@ -146,7 +146,7 @@ export const authenticatePasskey = async (input: AuthenticatePasskeyInput) => {
 /**
  * Does the user need to re-authenticate?
  * If so, which passkey(s) should they use
- * 
+ *
  * @returns
  */
 export const getPasskeyStatus = async () => {

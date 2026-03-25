@@ -89,7 +89,7 @@
 	</p>
 	<p class="mt-2">
 		In the meantime <span class="font-semibold">check the dev server logs</span>
-		, where we have logged the code to the console.
+		where we have logged the code to the console.
 	</p>
 	<p class="mt-2 font-semibold text-error">Be sure to remove this before going into production!</p>
 </DevNotes>

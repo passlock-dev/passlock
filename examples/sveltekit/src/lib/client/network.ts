@@ -11,7 +11,7 @@ export const fetchData = async <A, E>({
 	on2xx,
 	orElse
 }: {
-  url: string;
+	url: string;
 	body?: object;
 	method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
 	on2xx: (response: unknown) => A;

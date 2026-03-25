@@ -35,31 +35,29 @@
 				endpoint: data.endpoint
 			});
 
-			if (authResult._tag === "@error/ReAuthenticationFailure") {
+			if (authResult._tag === '@error/ReAuthenticationFailure') {
 				cancel();
 				return;
 			}
 
-      // we don't need to perform client side passkey deletion
-      // so go ahead an submit the form to close the account
-			if (authResult.passkeyIds.length === 0) {
-				return;
-			}
+			// we don't need to perform client side passkey deletion
+			// so go ahead an submit the form to close the account
+			if (authResult.passkeyIds.length === 0) return;
 
-      // delete the passkeys (client and server-side)
+			// delete the passkeys (client and server-side)
 			deletingPasskeys = true;
 			const result = await deleteAccountPasskeys();
 			deletingPasskeys = false;
 
-      // abort account deletion
+			// abort account deletion
 			if (result._tag === '@error/DeletePasskeyError') {
 				setFormError(errors, result.message);
 				cancel();
 				return;
 			}
 
-      // we closed the account but were unable to programmatically 
-      // delete the passkeys from the user's device
+			// we closed the account but were unable to programmatically
+			// delete the passkeys from the user's device
 			if (result._tag === '@warning/PasskeyDeletePaused') {
 				warning = result.message;
 			}

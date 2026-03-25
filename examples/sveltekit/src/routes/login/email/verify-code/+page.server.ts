@@ -5,7 +5,7 @@ import {
 	createOrRefreshLoginChallenge,
 	createSession,
 	getPasskeysByUserId,
-	getPendingOtcContext
+	getPendingOtcChallenge
 } from '$lib/server/repository.js';
 import { sendOtcEmail } from '$lib/server/email.js';
 import { deleteOtcCookie, getOtcCookie, setOtcCookie } from '$lib/server/oneTimeCode.js';
@@ -37,20 +37,20 @@ const createResendForm = () =>
 const getPendingLoginContext = async (token: string | undefined, clearCookie: () => void) => {
 	if (!token) redirect(303, resolve('/login'));
 
-	const pending = await getPendingOtcContext(token);
-	if (!pending || pending.challenge.purpose !== 'login') {
+	const challenge = await getPendingOtcChallenge(token);
+	if (!challenge || challenge.purpose !== 'login') {
 		clearCookie();
 		redirect(303, resolve('/login'));
 	}
 
-	return pending;
+	return challenge;
 };
 
 export const load = (async ({ locals, cookies }) => {
 	if (locals.user) redirect(302, '/');
 
 	const token = getOtcCookie(cookies);
-	const pending = await getPendingLoginContext(token, () => deleteOtcCookie(cookies));
+	const { email } = await getPendingLoginContext(token, () => deleteOtcCookie(cookies));
 
 	const verifyForm = await createVerifyForm();
 	const resendForm = await createResendForm();
@@ -58,7 +58,7 @@ export const load = (async ({ locals, cookies }) => {
 	return {
 		verifyForm,
 		resendForm,
-		email: pending.challenge.email
+		email
 	};
 }) satisfies PageServerLoad;
 
@@ -72,7 +72,7 @@ export const actions = {
 		if (!verifyForm.valid) return fail(400, { verifyForm, resendForm });
 
 		const token = getOtcCookie(cookies);
-		const pending = await getPendingLoginContext(token, () => deleteOtcCookie(cookies));
+		const challenge = await getPendingLoginContext(token, () => deleteOtcCookie(cookies));
 
 		const result = await consumeChallenge({
 			token: token!,
@@ -109,7 +109,7 @@ export const actions = {
 						: 'Invalid code';
 
 			setError(verifyForm, 'code', message);
-			return fail(400, { verifyForm, resendForm, email: pending.challenge.email });
+			return fail(400, { verifyForm, resendForm, email: challenge.email });
 		}
 
 		deleteOtcCookie(cookies);
@@ -126,18 +126,18 @@ export const actions = {
 		}
 
 		const token = getOtcCookie(cookies);
-		const pending = await getPendingLoginContext(token, () => deleteOtcCookie(cookies));
+		const challenge = await getPendingLoginContext(token, () => deleteOtcCookie(cookies));
 
-		const result = await createOrRefreshLoginChallenge(pending.challenge.email);
+		const result = await createOrRefreshLoginChallenge(challenge.email);
 		if (result._tag === '@error/AccountNotFound') {
 			deleteOtcCookie(cookies);
-			const email = encodeURIComponent(pending.challenge.email);
+			const email = encodeURIComponent(challenge.email);
 			redirect(303, `${resolve('/signup')}?email=${email}&reason=no-account`);
 		}
 		if (result._tag === '@error/ChallengeRateLimited') {
 			const seconds = Math.ceil(result.retryAfterMs / 1000);
 			resendForm.message = `Please wait ${seconds} seconds before requesting another code.`;
-			return { verifyForm, resendForm, email: pending.challenge.email };
+			return { verifyForm, resendForm, email: challenge.email };
 		}
 
 		await sendOtcEmail({

@@ -3,7 +3,7 @@ import type { PageServerLoad } from './$types';
 import {
 	createOrRefreshLoginChallenge,
 	getAccountByEmail,
-	getPendingOtcContext
+	getPendingOtcChallenge
 } from '$lib/server/repository.js';
 import { sendOtcEmail } from '$lib/server/email.js';
 import { getOtcCookie, setOtcCookie } from '$lib/server/oneTimeCode.js';
@@ -21,8 +21,8 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 
 	const pendingToken = getOtcCookie(cookies);
 	if (pendingToken) {
-		const pending = await getPendingOtcContext(pendingToken);
-		if (pending?.challenge.purpose === 'login' && pending.challenge.email === account.email) {
+		const challenge = await getPendingOtcChallenge(pendingToken);
+		if (challenge?.purpose === 'login' && challenge.email === account.email) {
 			redirect(303, resolve('/login/email/verify-code'));
 		}
 	}

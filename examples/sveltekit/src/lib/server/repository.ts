@@ -97,10 +97,6 @@ export type OtcChallenge = {
 	challengeExpiresAt: number;
 };
 
-export type PendingOtcContext = {
-	challenge: OtcChallenge;
-};
-
 export type CreatedOtcChallenge = {
 	_tag: 'CreatedOtcChallenge';
 	challenge: OtcChallenge;
@@ -675,7 +671,7 @@ export const upsertEmailChallenge = async (input: {
 	});
 };
 
-export const getPendingOtcContext = async (token: string): Promise<PendingOtcContext | null> => {
+export const getPendingOtcChallenge = async (token: string): Promise<OtcChallenge | null> => {
 	const challenge = await getChallengeByToken(token);
 	if (!challenge) return null;
 	if (challenge.consumedAt !== null) return null;
@@ -684,7 +680,7 @@ export const getPendingOtcContext = async (token: string): Promise<PendingOtcCon
 		return null;
 	}
 
-	return { challenge };
+	return challenge;
 };
 
 export const consumeChallenge = async (input: {

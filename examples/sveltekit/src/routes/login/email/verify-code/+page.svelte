@@ -39,7 +39,7 @@
 			We sent a 6-digit login code to <span class="font-semibold">{data.email}</span>
 			.
 		</p>
-		<p class="mt-2 text-center text-sm text-base-content/80">Codes stay valid for 10 minutes.</p>
+		<p class="mt-2 text-center text-sm text-base-content/80">Codes remain valid for 10 minutes.</p>
 
 		<form method="POST" action="?/verify" use:verifyEnhance class="mt-6">
 			<fieldset class="fieldset">
@@ -87,7 +87,7 @@
 	</p>
 	<p class="mt-2">
 		In the meantime <span class="font-semibold">check the dev server logs</span>
-		, where we have logged the code to the console.
+		where we have logged the code to the console.
 	</p>
 	<p class="mt-2 font-semibold text-error">Be sure to remove this before going into production!</p>
 </DevNotes>

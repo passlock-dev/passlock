@@ -47,8 +47,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		return errorResponse('That passkey does not belong to this account.', 403);
 	}
 
-  // set the passkey authenticated at timestamp
-  // this will be checked when the profile or email change forme is submitted
+	// set the passkey authenticated at timestamp
+	// this will be checked when the profile or email change forme is submitted
 	await markSessionPasskeyVerified(locals.session.id);
 
 	return json({ success: true });

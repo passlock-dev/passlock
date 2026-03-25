@@ -13,42 +13,40 @@ import { valibot } from 'sveltekit-superforms/adapters';
 const createProfileForm = (input?: { givenName?: string; familyName?: string }) =>
 	superValidate(
 		{
-			givenName: input?.givenName ?? '',
-			familyName: input?.familyName ?? ''
+			givenName: input?.givenName,
+			familyName: input?.familyName
 		},
 		valibot(profileSchema),
 		{ id: 'profile-form' }
 	);
 
 const createEmailForm = (input?: { email?: string }, options?: { errors?: boolean }) =>
-	superValidate({ email: input?.email ?? '' }, valibot(emailSchema), {
+	superValidate({ email: input?.email }, valibot(emailSchema), {
 		id: 'email-form',
 		errors: options?.errors
 	});
 
-const failProfileReauthenticationRequired = (
+/**
+ * The user submitted the form but the authentication timestamp expired.
+ * Something of an edge case as we validate on the client side, but could
+ * happen if the delay between the client side check and the request hitting
+ * the form action pushes the timestamp outside the allowable window.
+ */
+const authenticationRequired = (
 	profileForm: Awaited<ReturnType<typeof createProfileForm>>,
 	emailForm: Awaited<ReturnType<typeof createEmailForm>>,
+	formToDisplayError: 'profile' | 'email',
 	user: Awaited<ReturnType<typeof requireAccountPasskeyConfirmation>>['user'],
 	hasPasskeys: boolean
 ) => {
-	setError(profileForm, '', 'Confirm your passkey before saving account changes.');
-
-	return fail(400, {
-		profileForm,
-		emailForm,
-		currentEmail: user.email,
-		hasPasskeys
-	});
-};
-
-const failEmailReauthenticationRequired = (
-	profileForm: Awaited<ReturnType<typeof createProfileForm>>,
-	emailForm: Awaited<ReturnType<typeof createEmailForm>>,
-	user: Awaited<ReturnType<typeof requireAccountPasskeyConfirmation>>['user'],
-	hasPasskeys: boolean
-) => {
-	setError(emailForm, '', 'Confirm your passkey before saving account changes.');
+	switch (formToDisplayError) {
+		case 'profile':
+			setError(profileForm, 'Confirm your passkey before saving account changes.');
+			break;
+		case 'email':
+			setError(emailForm, 'Confirm your passkey before saving account changes.');
+			break;
+	}
 
 	return fail(400, {
 		profileForm,
@@ -73,7 +71,7 @@ export const load = (async ({ locals, url }) => {
 		familyName: user.familyName
 	});
 
-	// if the user tries to verify their email after the code
+	// If the user tries to verify their email after the code
 	// has expired we redirect them back to the account page but
 	// we pre-fill the email so they don't have to enter it again
 	// see /verify-email/+server.ts#redirectToAccountWithError
@@ -83,29 +81,25 @@ export const load = (async ({ locals, url }) => {
 		{ errors: false }
 	);
 
-	// after the user successfully enters the email verification code
+	// After the user successfully enters the email verification code
 	// they are redirected back here with ?email-updated=1
-	// see /verify-email/+server.ts#redirectToAccountWithError
+	// see /verify-email/+server.ts (~ line 140)
 	const emailUpdated = url.searchParams.get('email-updated') === '1';
 	const emailStatusMessage = emailUpdated ? 'Email address updated.' : null;
-  if (emailStatusMessage) {
-    setMessage(emailForm, emailStatusMessage);
-  }
+	if (emailStatusMessage) setMessage(emailForm, emailStatusMessage);
 
-	// if we couldn't verify the new email address
+	// If we couldn't verify the new email address
 	// the user is redirected back here with a failure code
 	const emailVerificationError = url.searchParams.get('email-error');
 	const emailStatusError = getEmailStatusError(emailVerificationError);
-  if (emailStatusError) {
-    setError(emailForm, emailStatusError);
-  }
+	if (emailStatusError) setError(emailForm, emailStatusError);
 
 	return {
 		profileForm,
 		emailForm,
 		currentEmail: user.email,
 		hasPasskeys,
-    clearQueryState: emailUpdated || emailStatusError,
+		clearQueryState: emailUpdated || emailStatusError,
 		syncPasskeysOnLoad: emailUpdated && hasPasskeys,
 		...passlockConfig
 	};
@@ -132,7 +126,7 @@ export const actions = {
 
 		if (reauthenticationRequired) {
 			// user didn't authenticate with the passkey in the last 10 mins
-			return failProfileReauthenticationRequired(profileForm, emailForm, user, hasPasskeys);
+			return authenticationRequired(profileForm, emailForm, 'profile', user, hasPasskeys);
 		}
 
 		const updatedUser = await updateUserProfile(user.userId, {
@@ -186,7 +180,7 @@ export const actions = {
 
 		if (reauthenticationRequired) {
 			// user didn't authenticate with the passkey in the last 10 mins
-			return failEmailReauthenticationRequired(profileForm, emailForm, user, hasPasskeys);
+			return authenticationRequired(profileForm, emailForm, 'email', user, hasPasskeys);
 		}
 
 		// we dont actually update the email at this point
