@@ -37,6 +37,12 @@ export const DeleteUserPasskeysSuccess = v.object({
 	deleted: v.pipe(v.array(DeletedCredential), v.readonly())
 });
 
+export const PasskeyStatusSuccess = v.object({
+  _tag: v.literal('PasskeyStatusSuccess'),
+	passkeyIds: v.pipe(v.array(v.string()), v.readonly()),
+	reauthenticationRequired: v.boolean()
+});
+
 export const Error = v.object({
 	_tag: v.literal('@error/Error'),
 	message: v.string()

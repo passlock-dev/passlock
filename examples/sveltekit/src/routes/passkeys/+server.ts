@@ -1,10 +1,12 @@
 import { getPasslockConfig, syncUserPasskeyUsernames } from '$lib/server/passkeys.js';
+import { getAccountPasskeyContext } from '$lib/server/account.js';
 import { createPasskey } from '$lib/server/repository.js';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import * as v from 'valibot';
 import {
 	DeleteUserPasskeysSuccess,
+	PasskeyStatusSuccess as PasskeyStatusSchema,
 	RegisterPasskeySuccess,
 	UpdatePasskeysSuccess
 } from '$lib/shared/schemas';
@@ -17,6 +19,23 @@ import {
 
 const errorResponse = (message: string, status: number) =>
 	json({ _tag: '@error/Error' as const, message }, { status });
+
+type PasskeyStatusResponse = v.InferOutput<typeof PasskeyStatusSchema>;
+
+export const GET: RequestHandler = async (event) => {
+	const context = await getAccountPasskeyContext(event.locals);
+	if (!context) {
+		return errorResponse('Authentication required.', 401);
+	}
+
+	const response: PasskeyStatusResponse = {
+		_tag: 'PasskeyStatusSuccess',
+		passkeyIds: context.passkeyIds,
+		reauthenticationRequired: context.reauthenticationRequired
+	};
+
+	return json(response);
+};
 
 const CreatePasskeyPayload = v.object({
 	code: v.pipe(v.string(), v.trim(), v.minLength(8))
@@ -73,7 +92,7 @@ export const POST: RequestHandler = async (event) => {
 		platformIcon: passlockPasskey.platform?.icon ?? null
 	});
 
-	if (localPasskey._tag === 'DuplicatePasskey') {
+	if (localPasskey._tag === '@error/DuplicatePasskey') {
 		return errorResponse('This passkey has already been linked to an account.', 409);
 	}
 
@@ -146,7 +165,8 @@ type DeleteUserPasskeysSuccess = v.InferOutput<typeof DeleteUserPasskeysSuccess>
  * @returns
  */
 export const DELETE: RequestHandler = async (event) => {
-	if (!event.locals.user) {
+	const context = await getAccountPasskeyContext(event.locals);
+	if (!context) {
 		return errorResponse('Authentication required.', 401);
 	}
 
@@ -157,10 +177,14 @@ export const DELETE: RequestHandler = async (event) => {
 		return errorResponse("Invalid request. Expected scope: 'user'.", 400);
 	}
 
+	if (context.reauthenticationRequired) {
+		return errorResponse('Confirm your passkey before deleting passkeys.', 403);
+	}
+
 	// delete all user passkeys (called from the /account/delete route)
 	const vaultResult = await deletePasskeysByUserId({
 		...getPasslockConfig(),
-		userId: String(event.locals.user.userId)
+		userId: String(context.user.userId)
 	});
 
 	if (vaultResult.failure) {

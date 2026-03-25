@@ -1,42 +1,41 @@
 import type { Actions, PageServerLoad } from './$types';
-import { deleteUserAccount, getPasskeysByUserId } from '$lib/server/repository.js';
+import { requireAccountPasskeyConfirmation } from '$lib/server/account.js';
+import { deleteUserAccount } from '$lib/server/repository.js';
+import { getPasslockClientConfig } from '$lib/server/passkeys.js';
 import { deleteSessionTokenCookie } from '$lib/server/session.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate, setError } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
-import * as v from 'valibot';
-
-const schema = v.object({
-	intent: v.literal('delete-account')
-});
+import { deleteAccountSchema } from './schema.js';
 
 export const load = (async ({ locals }) => {
-	if (!locals.user) {
-		redirect(302, '/login');
-	}
+	const { user, passkeyIds } = await requireAccountPasskeyConfirmation(locals);
 
-	const form = await superValidate({ intent: 'delete-account' }, valibot(schema));
-	const passkeys = await getPasskeysByUserId(locals.user.userId);
+	const form = await superValidate({ intent: 'delete-account' }, valibot(deleteAccountSchema));
 
 	return {
 		form,
-		passkeyCount: passkeys.length,
-		user: locals.user
+		passkeyCount: passkeyIds.length,
+		user,
+		...getPasslockClientConfig()
 	};
 }) satisfies PageServerLoad;
 
 export const actions = {
 	default: async ({ request, locals, cookies }) => {
-		if (!locals.user) {
-			redirect(302, '/login');
-		}
+		const { user, hasPasskeys, reauthenticationRequired } =
+			await requireAccountPasskeyConfirmation(locals);
 
-		const form = await superValidate(request, valibot(schema));
+		const form = await superValidate(request, valibot(deleteAccountSchema));
 		if (!form.valid) {
 			return fail(400, { form });
 		}
 
-		const deleted = await deleteUserAccount(locals.user.userId);
+		if (reauthenticationRequired && hasPasskeys) {
+			return setError(form, '', 'Confirm your passkey before deleting your account.');
+		}
+
+		const deleted = await deleteUserAccount(user.userId);
 		if (!deleted) {
 			return setError(form, 'intent', 'Unable to delete this account');
 		}

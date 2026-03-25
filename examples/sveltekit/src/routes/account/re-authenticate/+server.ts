@@ -37,7 +37,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		code: payload.output.code
 	});
 
-	if (principal._tag !== 'ExtendedPrincipal') {
+	if (principal.failure) {
 		const status = principal._tag === '@error/InvalidCode' ? 401 : 500;
 		return errorResponse(principal.message, status);
 	}
@@ -47,6 +47,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		return errorResponse('That passkey does not belong to this account.', 403);
 	}
 
+  // set the passkey authenticated at timestamp
+  // this will be checked when the profile or email change forme is submitted
 	await markSessionPasskeyVerified(locals.session.id);
 
 	return json({ success: true });

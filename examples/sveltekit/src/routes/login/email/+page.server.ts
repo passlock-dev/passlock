@@ -28,11 +28,11 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 	}
 
 	const result = await createOrRefreshLoginChallenge(account.email);
-	if (result._tag === 'AccountNotFound') {
+	if (result._tag === '@error/AccountNotFound') {
 		const email = encodeURIComponent(account.email);
 		redirect(303, `${resolve('/signup')}?email=${email}&reason=no-account`);
 	}
-	if (result._tag === 'ChallengeRateLimited') {
+	if (result._tag === '@error/ChallengeRateLimited') {
 		const email = encodeURIComponent(account.email);
 		redirect(303, `${resolve('/login')}?username=${email}`);
 	}

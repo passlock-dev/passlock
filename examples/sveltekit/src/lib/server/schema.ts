@@ -33,7 +33,7 @@ export const sessionsTable = sqliteTable(
 		secretHash: text().notNull(),
 		createdAt: int().notNull(),
 		lastVerifiedAt: int().notNull(),
-		lastAuthenticatedAt: int()
+		lastPasskeyAuthenticationAt: int()
 	},
 	(table) => [index('sessions_user_id_idx').on(table.userId)]
 );

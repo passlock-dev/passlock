@@ -38,9 +38,9 @@ const createResendForm = () =>
 /**
  * Redirect the user back to the account page but set a couple
  * of query params which read by the load function.
- * 
- * @param reason 
- * @param email 
+ *
+ * @param reason
+ * @param email
  */
 const redirectToAccountWithError = (reason: 'expired' | 'taken', email?: string): never => {
 	const params = new URLSearchParams({ 'email-error': reason });
@@ -78,8 +78,8 @@ export const load = (async ({ locals, cookies }) => {
 		redirect(302, resolve('/login'));
 	}
 
-  // the token allows us to display the email address in question
-  // before the user has entered the code
+	// the token allows us to display the email address in question
+	// before the user has entered the code
 	const token = getEmailChangeOtcCookie(cookies);
 	const { challenge } = await getPendingEmailChangeContext(token, locals.user.userId, () =>
 		deleteEmailChangeOtcCookie(cookies)
@@ -112,8 +112,8 @@ export const actions = {
 			return fail(400, { verifyForm, resendForm });
 		}
 
-    // supplying the code is not enough, the user must also 
-    // present the token (stored as a cookie)
+		// supplying the code is not enough, the user must also
+		// present the token (stored as a cookie)
 		const token = getEmailChangeOtcCookie(cookies);
 		const { challenge } = await getPendingEmailChangeContext(token, user.userId, () =>
 			deleteEmailChangeOtcCookie(cookies)
@@ -128,27 +128,27 @@ export const actions = {
 		if (result._tag === 'EmailChangeSuccess') {
 			deleteEmailChangeOtcCookie(cookies);
 
-      // send an email to the old address telling 
-      // them that the email was changed.
-      await sendEmailUpdated({
-        email: result.oldEmail,
-        firstName: result.user.givenName
-      });
+			// send an email to the old address telling
+			// them that the email was changed.
+			await sendEmailUpdated({
+				email: result.oldEmail,
+				firstName: result.user.givenName
+			});
 
-      // ?email-updated=1 will do two things:
-      // 1) display a confirmation message
-      // 2) trigger a client side passkey update/refresh to align
-      //    the passkeys in the user's passkey manager with the 
-      //    updated email/username
+			// ?email-updated=1 will do two things:
+			// 1) display a confirmation message
+			// 2) trigger a client side passkey update/refresh to align
+			//    the passkeys in the user's passkey manager with the
+			//    updated email/username
 			redirect(303, `${resolve('/account')}?email-updated=1`);
 		}
 
-		if (result._tag === 'DuplicateUser') {
+		if (result._tag === '@error/DuplicateUser') {
 			deleteEmailChangeOtcCookie(cookies);
 			redirectToAccountWithError('taken', challenge.email);
 		}
 
-		if (result._tag !== 'ChallengeVerificationError') {
+		if (result._tag !== '@error/ChallengeVerificationError') {
 			throw new Error('Unexpected email change verification result');
 		}
 
@@ -200,17 +200,17 @@ export const actions = {
 			email: pending.challenge.email
 		});
 
-		if (result._tag === 'AccountNotFound') {
+		if (result._tag === '@error/AccountNotFound') {
 			deleteEmailChangeOtcCookie(cookies);
 			redirect(303, resolve('/login'));
 		}
 
-		if (result._tag === 'DuplicateUser') {
+		if (result._tag === '@error/DuplicateUser') {
 			deleteEmailChangeOtcCookie(cookies);
 			redirectToAccountWithError('taken', pending.challenge.email);
 		}
 
-		if (result._tag === 'ChallengeRateLimited') {
+		if (result._tag === '@error/ChallengeRateLimited') {
 			const seconds = Math.ceil(result.retryAfterMs / 1000);
 			resendForm.message = `Please wait ${seconds} seconds before requesting another code.`;
 			return { verifyForm, resendForm, email: pending.challenge.email };

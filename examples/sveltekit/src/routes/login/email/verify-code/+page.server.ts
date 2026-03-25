@@ -91,7 +91,7 @@ export const actions = {
 			redirect(303, redirectTo);
 		}
 
-		if (result._tag === 'ChallengeVerificationError') {
+		if (result._tag === '@error/ChallengeVerificationError') {
 			if (
 				result.code === 'CHALLENGE_EXPIRED' ||
 				result.code === 'ACCOUNT_NOT_FOUND' ||
@@ -129,12 +129,12 @@ export const actions = {
 		const pending = await getPendingLoginContext(token, () => deleteOtcCookie(cookies));
 
 		const result = await createOrRefreshLoginChallenge(pending.challenge.email);
-		if (result._tag === 'AccountNotFound') {
+		if (result._tag === '@error/AccountNotFound') {
 			deleteOtcCookie(cookies);
 			const email = encodeURIComponent(pending.challenge.email);
 			redirect(303, `${resolve('/signup')}?email=${email}&reason=no-account`);
 		}
-		if (result._tag === 'ChallengeRateLimited') {
+		if (result._tag === '@error/ChallengeRateLimited') {
 			const seconds = Math.ceil(result.retryAfterMs / 1000);
 			resendForm.message = `Please wait ${seconds} seconds before requesting another code.`;
 			return { verifyForm, resendForm, email: pending.challenge.email };

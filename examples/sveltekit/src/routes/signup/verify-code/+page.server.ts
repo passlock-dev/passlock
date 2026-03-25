@@ -88,7 +88,7 @@ export const actions = {
 			redirect(303, resolve('/passkeys'));
 		}
 
-		if (result._tag === 'DuplicateUser') {
+		if (result._tag === '@error/DuplicateUser') {
 			deleteOtcCookie(cookies);
 			const username = encodeURIComponent(result.email);
 			redirect(303, `${resolve('/login')}?username=${username}&reason=account-exists`);
@@ -132,12 +132,12 @@ export const actions = {
 			givenName: pending.challenge.givenName ?? '',
 			familyName: pending.challenge.familyName ?? ''
 		});
-		if (result._tag === 'DuplicateUser') {
+		if (result._tag === '@error/DuplicateUser') {
 			deleteOtcCookie(cookies);
 			const username = encodeURIComponent(result.email);
 			redirect(303, `${resolve('/login')}?username=${username}&reason=account-exists`);
 		}
-		if (result._tag === 'ChallengeRateLimited') {
+		if (result._tag === '@error/ChallengeRateLimited') {
 			const seconds = Math.ceil(result.retryAfterMs / 1000);
 			resendForm.message = `Please wait ${seconds} seconds before requesting another code.`;
 			return { verifyForm, resendForm, email: pending.challenge.email };

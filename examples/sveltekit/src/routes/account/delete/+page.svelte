@@ -1,33 +1,100 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { deleteAccountPasskeys } from '$lib/client/passkeys';
+	import {
+		authenticatePasskey,
+		deleteAccountPasskeys,
+		getPasskeyStatus
+	} from '$lib/client/passkeys';
 	import { superForm } from 'sveltekit-superforms';
+	import { valibotClient } from 'sveltekit-superforms/adapters';
+	import type { SuperFormErrors } from 'sveltekit-superforms/client';
 	import type { PageProps } from './$types';
+	import { deleteAccountSchema } from './schema.js';
 
 	let { data }: PageProps = $props();
 	let passkeyCount = $derived(data.passkeyCount);
 
 	let warning = $state('');
-	let error = $state('');
 	let deletingPasskeys = $state(false);
-	let passkeyStepCompleted = $state(false);
+
+	type FormErrors = SuperFormErrors<{}>;
+
+	const clearFormErrors = (formErrors: FormErrors) => {
+		formErrors.update((current) => ({ ...current, _errors: undefined }));
+	};
+
+	const setFormError = (formErrors: FormErrors, message: string) => {
+		formErrors.update((current) => ({ ...current, _errors: [message] }));
+	};
+
+	const requireAccountPasskeyConfirmation = async (input: {
+		errors: FormErrors;
+		validateForm: () => Promise<{ valid: boolean }>;
+	}) => {
+		clearFormErrors(input.errors);
+		warning = '';
+
+		const validation = await input.validateForm();
+		if (!validation.valid) {
+			return null;
+		}
+
+		const passkeyStatus = await getPasskeyStatus();
+		if (passkeyStatus._tag === '@error/PasskeyStatusError') {
+			setFormError(input.errors, passkeyStatus.message);
+			return null;
+		}
+
+		if (passkeyStatus.passkeyIds.length === 0) {
+			return { shouldDeletePasskeys: false };
+		}
+
+		if (!passkeyStatus.reauthenticationRequired) {
+			return { shouldDeletePasskeys: true };
+		}
+
+		const result = await authenticatePasskey({
+			tenancyId: data.tenancyId,
+			endpoint: data.endpoint,
+			existingPasskeys: [...passkeyStatus.passkeyIds],
+			userVerification: 'required',
+			verificationRoute: '/account/re-authenticate'
+		});
+
+		if (result._tag === 'PasslockLoginSuccess') {
+			return { shouldDeletePasskeys: true };
+		}
+
+		setFormError(input.errors, result.message);
+		return null;
+	};
 
 	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance } = superForm(data.form, {
+	const { form, errors, enhance, validateForm } = superForm(data.form, {
 		applyAction: true,
 		invalidateAll: 'pessimistic',
+		validators: valibotClient(deleteAccountSchema),
 		onSubmit: async ({ cancel }) => {
-			if (passkeyCount === 0 || passkeyStepCompleted) return;
+			const confirmation = await requireAccountPasskeyConfirmation({
+				errors,
+				validateForm: () => validateForm({ update: true })
+			});
 
-			warning = '';
-			error = '';
+			if (!confirmation) {
+				cancel();
+				return;
+			}
+
+			if (!confirmation.shouldDeletePasskeys) {
+				return;
+			}
+
 			deletingPasskeys = true;
-
 			const result = await deleteAccountPasskeys();
 			deletingPasskeys = false;
 
 			if (result._tag === '@error/DeletePasskeyError') {
-				error = result.message;
+				setFormError(errors, result.message);
 				cancel();
 				return;
 			}
@@ -35,8 +102,6 @@
 			if (result._tag === '@warning/PasskeyDeletePaused') {
 				warning = result.message;
 			}
-
-			passkeyStepCompleted = true;
 		}
 	});
 </script>
@@ -66,8 +131,10 @@
 			<p class="mt-4 text-sm text-warning">{warning}</p>
 		{/if}
 
-		{#if error}
-			<p class="mt-4 text-sm text-error">{error}</p>
+		{#if $errors._errors}
+			{#each $errors._errors as error (error)}
+				<p class="mt-4 text-sm text-error">{error}</p>
+			{/each}
 		{/if}
 
 		{#if $errors.intent}

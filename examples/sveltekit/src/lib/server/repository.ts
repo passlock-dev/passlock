@@ -45,12 +45,12 @@ export type User = {
 };
 
 export type DuplicateUser = {
-	_tag: 'DuplicateUser';
+	_tag: '@error/DuplicateUser';
 	email: string;
 };
 
 export type AccountNotFound = {
-	_tag: 'AccountNotFound';
+	_tag: '@error/AccountNotFound';
 	email: string;
 };
 
@@ -64,12 +64,12 @@ export type Passkey = {
 };
 
 export type DuplicatePasskey = {
-	_tag: 'DuplicatePasskey';
+	_tag: '@error/DuplicatePasskey';
 	passkeyId: string;
 };
 
 export type PasskeyNotFound = {
-	_tag: 'PasskeyNotFound';
+	_tag: '@error/PasskeyNotFound';
 	passkeyId: string;
 };
 
@@ -109,12 +109,12 @@ export type CreatedOtcChallenge = {
 };
 
 export type ChallengeRateLimited = {
-	_tag: 'ChallengeRateLimited';
+	_tag: '@error/ChallengeRateLimited';
 	retryAfterMs: number;
 };
 
 export type ChallengeVerificationError = {
-	_tag: 'ChallengeVerificationError';
+	_tag: '@error/ChallengeVerificationError';
 	code:
 		| 'INVALID_CODE'
 		| 'CODE_EXPIRED'
@@ -142,7 +142,7 @@ export type Session = {
 	userId: number;
 	createdAt: number;
 	lastVerifiedAt: number;
-	lastAuthenticatedAt: number | null;
+	lastPasskeyAuthenticationAt: number | null;
 };
 
 export type SessionUser = {
@@ -177,7 +177,7 @@ type VerifiedChallenge = {
 };
 
 const isDuplicateUser = (user: SessionUser | DuplicateUser): user is DuplicateUser =>
-	(user as DuplicateUser)._tag === 'DuplicateUser';
+	(user as DuplicateUser)._tag === '@error/DuplicateUser';
 
 const isSqliteConstraintError = (e: unknown): e is DrizzleQueryError & { cause: LibsqlError } => {
 	if (!(e instanceof DrizzleQueryError)) return false;
@@ -443,7 +443,7 @@ const createChallengeForEmailScope = async (input: {
 	if (existingChallenge) {
 		const retryAfterMs = OTC_RESEND_COOLDOWN_MS - (Date.now() - existingChallenge.createdAt);
 		if (retryAfterMs > 0) {
-			return { _tag: 'ChallengeRateLimited', retryAfterMs };
+			return { _tag: '@error/ChallengeRateLimited', retryAfterMs };
 		}
 
 		await deleteOtherActiveChallengesByEmail(input.email, input.purpose);
@@ -465,7 +465,7 @@ const createChallengeForUserScope = async (input: {
 	if (existingChallenge) {
 		const retryAfterMs = OTC_RESEND_COOLDOWN_MS - (Date.now() - existingChallenge.createdAt);
 		if (retryAfterMs > 0) {
-			return { _tag: 'ChallengeRateLimited', retryAfterMs };
+			return { _tag: '@error/ChallengeRateLimited', retryAfterMs };
 		}
 
 		await deleteOtherActiveChallengesByUserId(input.userId, input.purpose);
@@ -497,19 +497,19 @@ const verifyChallenge = async (input: {
 	purpose: OtcPurpose;
 }): Promise<VerifiedChallenge | ChallengeVerificationError> => {
 	const challenge = await getChallengeByToken(input.token);
-	if (!challenge) return { _tag: 'ChallengeVerificationError', code: 'CHALLENGE_EXPIRED' };
+	if (!challenge) return { _tag: '@error/ChallengeVerificationError', code: 'CHALLENGE_EXPIRED' };
 	if (challenge.purpose !== input.purpose) {
-		return { _tag: 'ChallengeVerificationError', code: 'PURPOSE_MISMATCH' };
+		return { _tag: '@error/ChallengeVerificationError', code: 'PURPOSE_MISMATCH' };
 	}
 	if (challenge.consumedAt !== null || Date.now() > challenge.challengeExpiresAt) {
 		await db.delete(otcChallengesTable).where(eq(otcChallengesTable.id, challenge.id));
-		return { _tag: 'ChallengeVerificationError', code: 'CHALLENGE_EXPIRED' };
+		return { _tag: '@error/ChallengeVerificationError', code: 'CHALLENGE_EXPIRED' };
 	}
 	if (challenge.failedAttempts >= OTC_MAX_ATTEMPTS) {
-		return { _tag: 'ChallengeVerificationError', code: 'TOO_MANY_ATTEMPTS' };
+		return { _tag: '@error/ChallengeVerificationError', code: 'TOO_MANY_ATTEMPTS' };
 	}
 	if (Date.now() > challenge.codeExpiresAt) {
-		return { _tag: 'ChallengeVerificationError', code: 'CODE_EXPIRED' };
+		return { _tag: '@error/ChallengeVerificationError', code: 'CODE_EXPIRED' };
 	}
 
 	const suppliedCodeHash = hashText(input.code);
@@ -524,7 +524,7 @@ const verifyChallenge = async (input: {
 		const nextFailedAttempts = challenge.failedAttempts + 1;
 		await incrementChallengeFailures(challenge.id, nextFailedAttempts);
 		return {
-			_tag: 'ChallengeVerificationError',
+			_tag: '@error/ChallengeVerificationError',
 			code: nextFailedAttempts >= OTC_MAX_ATTEMPTS ? 'TOO_MANY_ATTEMPTS' : 'INVALID_CODE'
 		};
 	}
@@ -545,7 +545,7 @@ export const createUser = async (newUser: CreateUser): Promise<User | DuplicateU
 		return { _tag: 'User', userId: user[0].userId, email, createdAt: user[0].createdAt };
 	} catch (e) {
 		if (!isSqliteConstraintError(e) || e.cause.extendedCode !== 'SQLITE_CONSTRAINT_UNIQUE') throw e;
-		return { _tag: 'DuplicateUser', email };
+		return { _tag: '@error/DuplicateUser', email };
 	}
 };
 
@@ -588,7 +588,7 @@ export const updateUserEmail = async (
 		return users[0] ?? null;
 	} catch (e) {
 		if (!isSqliteConstraintError(e) || e.cause.extendedCode !== 'SQLITE_CONSTRAINT_UNIQUE') throw e;
-		return { _tag: 'DuplicateUser', email };
+		return { _tag: '@error/DuplicateUser', email };
 	}
 };
 
@@ -626,7 +626,7 @@ export const createOrRefreshLoginChallenge = async (
 	email: string
 ): Promise<CreatedOtcChallenge | AccountNotFound | ChallengeRateLimited> => {
 	const account = await getAccountByEmail(email);
-	if (!account) return { _tag: 'AccountNotFound', email };
+	if (!account) return { _tag: '@error/AccountNotFound', email };
 
 	return createChallengeForEmailScope({
 		purpose: 'login',
@@ -643,7 +643,7 @@ export const createOrRefreshSignupChallenge = async (input: {
 	familyName: string;
 }): Promise<CreatedOtcChallenge | DuplicateUser | ChallengeRateLimited> => {
 	const existingAccount = await getAccountByEmail(input.email);
-	if (existingAccount) return { _tag: 'DuplicateUser', email: input.email };
+	if (existingAccount) return { _tag: '@error/DuplicateUser', email: input.email };
 
 	return createChallengeForEmailScope({
 		purpose: 'signup',
@@ -659,11 +659,11 @@ export const upsertEmailChallenge = async (input: {
 	email: string;
 }): Promise<CreatedOtcChallenge | AccountNotFound | DuplicateUser | ChallengeRateLimited> => {
 	const account = await getAccountByUserId(input.userId);
-	if (!account) return { _tag: 'AccountNotFound', email: input.email };
+	if (!account) return { _tag: '@error/AccountNotFound', email: input.email };
 
 	const existingAccount = await getAccountByEmail(input.email);
 	if (existingAccount && existingAccount.userId !== input.userId) {
-		return { _tag: 'DuplicateUser', email: input.email };
+		return { _tag: '@error/DuplicateUser', email: input.email };
 	}
 
 	return createChallengeForUserScope({
@@ -700,13 +700,13 @@ export const consumeChallenge = async (input: {
 	if (input.purpose === 'signup') {
 		const existingAccount = await getAccountByEmail(challenge.email);
 		if (existingAccount) {
-			return { _tag: 'DuplicateUser', email: challenge.email };
+			return { _tag: '@error/DuplicateUser', email: challenge.email };
 		}
 
 		const givenName = challenge.givenName?.trim();
 		const familyName = challenge.familyName?.trim();
 		if (!givenName || !familyName) {
-			return { _tag: 'ChallengeVerificationError', code: 'ACCOUNT_NOT_FOUND' };
+			return { _tag: '@error/ChallengeVerificationError', code: 'ACCOUNT_NOT_FOUND' };
 		}
 
 		const createdUser = await createUser({
@@ -715,7 +715,7 @@ export const consumeChallenge = async (input: {
 			familyName
 		});
 
-		if (createdUser._tag === 'DuplicateUser') {
+		if (createdUser._tag === '@error/DuplicateUser') {
 			return createdUser;
 		}
 	}
@@ -723,7 +723,7 @@ export const consumeChallenge = async (input: {
 	const user = await getAccountByEmail(challenge.email);
 	if (!user) {
 		return {
-			_tag: 'ChallengeVerificationError',
+			_tag: '@error/ChallengeVerificationError',
 			code: 'ACCOUNT_NOT_FOUND',
 			email: challenge.email
 		};
@@ -749,22 +749,22 @@ export const consumeEmailChangeChallenge = async (input: {
 
 	const { challenge } = verified;
 	if (challenge.userId !== input.userId) {
-		return { _tag: 'ChallengeVerificationError', code: 'UNAUTHORIZED' };
+		return { _tag: '@error/ChallengeVerificationError', code: 'UNAUTHORIZED' };
 	}
 
 	const currentAccount = await getAccountByUserId(input.userId);
 	if (!currentAccount) {
-		return { _tag: 'ChallengeVerificationError', code: 'ACCOUNT_NOT_FOUND' };
+		return { _tag: '@error/ChallengeVerificationError', code: 'ACCOUNT_NOT_FOUND' };
 	}
 
 	const existingAccount = await getAccountByEmail(challenge.email);
 	if (existingAccount && existingAccount.userId !== input.userId) {
-		return { _tag: 'DuplicateUser', email: challenge.email };
+		return { _tag: '@error/DuplicateUser', email: challenge.email };
 	}
 
 	const updatedUser = await updateUserEmail(input.userId, challenge.email);
 	if (!updatedUser) {
-		return { _tag: 'ChallengeVerificationError', code: 'ACCOUNT_NOT_FOUND' };
+		return { _tag: '@error/ChallengeVerificationError', code: 'ACCOUNT_NOT_FOUND' };
 	}
 	if (isDuplicateUser(updatedUser)) {
 		return updatedUser;
@@ -798,7 +798,7 @@ export const createPasskey = async (
 		});
 	} catch (e) {
 		if (!isSqliteConstraintError(e)) throw e;
-		return { _tag: 'DuplicatePasskey', passkeyId };
+		return { _tag: '@error/DuplicatePasskey', passkeyId };
 	}
 
 	return {
@@ -884,7 +884,7 @@ export const createSession = async (
 		const secretHash = hashText(sessionSecret);
 		const token = `${sessionId}.${sessionSecret}`;
 		const now = Date.now();
-		const lastAuthenticatedAt = options?.passkeyVerified ? now : null;
+		const lastPasskeyAuthenticationAt = options?.passkeyVerified ? now : null;
 
 		try {
 			await db.insert(sessionsTable).values({
@@ -893,7 +893,7 @@ export const createSession = async (
 				secretHash,
 				createdAt: now,
 				lastVerifiedAt: now,
-				lastAuthenticatedAt
+				lastPasskeyAuthenticationAt
 			});
 		} catch (e) {
 			if (isSqliteConstraintError(e) && e.cause.extendedCode === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
@@ -909,7 +909,7 @@ export const createSession = async (
 				userId,
 				createdAt: now,
 				lastVerifiedAt: now,
-				lastAuthenticatedAt
+				lastPasskeyAuthenticationAt
 			},
 			token
 		};
@@ -931,7 +931,7 @@ export const validateSessionToken = async (
 			secretHash: sessionsTable.secretHash,
 			createdAt: sessionsTable.createdAt,
 			lastVerifiedAt: sessionsTable.lastVerifiedAt,
-			lastAuthenticatedAt: sessionsTable.lastAuthenticatedAt,
+			lastAuthenticatedAt: sessionsTable.lastPasskeyAuthenticationAt,
 			email: usersTable.email,
 			givenName: usersTable.givenName,
 			familyName: usersTable.familyName
@@ -971,7 +971,7 @@ export const validateSessionToken = async (
 			userId: row.userId,
 			createdAt: row.createdAt,
 			lastVerifiedAt,
-			lastAuthenticatedAt: row.lastAuthenticatedAt
+			lastPasskeyAuthenticationAt: row.lastAuthenticatedAt
 		},
 		user: {
 			userId: row.userId,
@@ -986,13 +986,12 @@ export const validateSessionToken = async (
 export const markSessionPasskeyVerified = async (sessionId: string): Promise<void> => {
 	await db
 		.update(sessionsTable)
-		.set({ lastAuthenticatedAt: Date.now() })
+		.set({ lastPasskeyAuthenticationAt: Date.now() })
 		.where(eq(sessionsTable.id, sessionId));
 };
 
 export const invalidateSession = async (sessionId: string): Promise<void> => {
-	const x = await db.delete(sessionsTable).where(eq(sessionsTable.id, sessionId));
-  console.log(x);
+	await db.delete(sessionsTable).where(eq(sessionsTable.id, sessionId));
 };
 
 export const invalidateSessionsByUserId = async (userId: number): Promise<void> => {

@@ -44,11 +44,11 @@ export const actions = {
 		}
 
 		const result = await createOrRefreshSignupChallenge(form.data);
-		if (result._tag === 'DuplicateUser') {
+		if (result._tag === '@error/DuplicateUser') {
 			const username = encodeURIComponent(form.data.email);
 			redirect(303, `/login?username=${username}&reason=account-exists`);
 		}
-		if (result._tag === 'ChallengeRateLimited') {
+		if (result._tag === '@error/ChallengeRateLimited') {
 			const seconds = Math.ceil(result.retryAfterMs / 1000);
 			return setError(
 				form,

@@ -55,11 +55,11 @@ export const actions = {
 			}
 
 			const result = await createOrRefreshLoginChallenge(account.email);
-			if (result._tag === 'AccountNotFound') {
+			if (result._tag === '@error/AccountNotFound') {
 				const email = encodeURIComponent(form.data.username);
 				redirect(303, `/signup?email=${email}&reason=no-account`);
 			}
-			if (result._tag === 'ChallengeRateLimited') {
+			if (result._tag === '@error/ChallengeRateLimited') {
 				const seconds = Math.ceil(result.retryAfterMs / 1000);
 				return setError(
 					form,
