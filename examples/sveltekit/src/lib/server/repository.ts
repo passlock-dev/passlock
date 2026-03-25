@@ -142,7 +142,7 @@ export type Session = {
 	userId: number;
 	createdAt: number;
 	lastVerifiedAt: number;
-	lastPasskeyVerifiedAt: number | null;
+	lastAuthenticatedAt: number | null;
 };
 
 export type SessionUser = {
@@ -654,7 +654,7 @@ export const createOrRefreshSignupChallenge = async (input: {
 	});
 };
 
-export const createOrRefreshEmailChangeChallenge = async (input: {
+export const upsertEmailChallenge = async (input: {
 	userId: number;
 	email: string;
 }): Promise<CreatedOtcChallenge | AccountNotFound | DuplicateUser | ChallengeRateLimited> => {
@@ -884,7 +884,7 @@ export const createSession = async (
 		const secretHash = hashText(sessionSecret);
 		const token = `${sessionId}.${sessionSecret}`;
 		const now = Date.now();
-		const lastPasskeyVerifiedAt = options?.passkeyVerified ? now : null;
+		const lastAuthenticatedAt = options?.passkeyVerified ? now : null;
 
 		try {
 			await db.insert(sessionsTable).values({
@@ -893,7 +893,7 @@ export const createSession = async (
 				secretHash,
 				createdAt: now,
 				lastVerifiedAt: now,
-				lastPasskeyVerifiedAt
+				lastAuthenticatedAt
 			});
 		} catch (e) {
 			if (isSqliteConstraintError(e) && e.cause.extendedCode === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
@@ -909,7 +909,7 @@ export const createSession = async (
 				userId,
 				createdAt: now,
 				lastVerifiedAt: now,
-				lastPasskeyVerifiedAt
+				lastAuthenticatedAt
 			},
 			token
 		};
@@ -931,7 +931,7 @@ export const validateSessionToken = async (
 			secretHash: sessionsTable.secretHash,
 			createdAt: sessionsTable.createdAt,
 			lastVerifiedAt: sessionsTable.lastVerifiedAt,
-			lastPasskeyVerifiedAt: sessionsTable.lastPasskeyVerifiedAt,
+			lastAuthenticatedAt: sessionsTable.lastAuthenticatedAt,
 			email: usersTable.email,
 			givenName: usersTable.givenName,
 			familyName: usersTable.familyName
@@ -971,7 +971,7 @@ export const validateSessionToken = async (
 			userId: row.userId,
 			createdAt: row.createdAt,
 			lastVerifiedAt,
-			lastPasskeyVerifiedAt: row.lastPasskeyVerifiedAt
+			lastAuthenticatedAt: row.lastAuthenticatedAt
 		},
 		user: {
 			userId: row.userId,
@@ -986,12 +986,13 @@ export const validateSessionToken = async (
 export const markSessionPasskeyVerified = async (sessionId: string): Promise<void> => {
 	await db
 		.update(sessionsTable)
-		.set({ lastPasskeyVerifiedAt: Date.now() })
+		.set({ lastAuthenticatedAt: Date.now() })
 		.where(eq(sessionsTable.id, sessionId));
 };
 
 export const invalidateSession = async (sessionId: string): Promise<void> => {
-	await db.delete(sessionsTable).where(eq(sessionsTable.id, sessionId));
+	const x = await db.delete(sessionsTable).where(eq(sessionsTable.id, sessionId));
+  console.log(x);
 };
 
 export const invalidateSessionsByUserId = async (userId: number): Promise<void> => {

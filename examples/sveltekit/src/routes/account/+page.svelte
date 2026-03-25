@@ -10,14 +10,9 @@
 	let { data }: PageProps = $props();
 
 	let profileSyncError = $state('');
-	let emailStatusMessage = $state('');
-	let emailStatusError = $state('');
+	let emailStatusMessage = $derived(data.emailStatusMessage ?? '');
+	let emailStatusError = $derived(data.emailStatusError ?? '');
 	let syncingUpdatedEmailPasskeys = $state(false);
-
-	$effect(() => {
-		emailStatusMessage = data.emailStatusMessage ?? '';
-		emailStatusError = data.emailStatusError ?? '';
-	});
 
 	const clearEmailQueryState = () => {
 		const url = new URL(window.location.href);
@@ -27,17 +22,16 @@
 		replaceState(url, {});
 	};
 
-	const syncUpdatedEmailPasskeys = async () => {
+	const syncPasskeys = async () => {
 		syncingUpdatedEmailPasskeys = true;
 		const result = await updateUserPasskeys({
-			username: data.email,
+			username: data.currentEmail,
 			givenName: data.user?.givenName,
 			familyName: data.user?.familyName
 		});
 
 		if (result._tag === '@error/UpdatePasskeyError') {
-			emailStatusError =
-				'Email address updated, but local passkeys could not be refreshed automatically.';
+			emailStatusError = 'Email address updated, but local passkeys could not be refreshed automatically.';
 			syncingUpdatedEmailPasskeys = false;
 			clearEmailQueryState();
 			return;
@@ -49,8 +43,11 @@
 	};
 
 	onMount(() => {
+    // after the user verifies their new email address
+    // they are redirected here with a ?email-updated=1 flag
+    // ultimate this results in the local passkeys being refreshed
 		if (data.syncPasskeysOnLoad) {
-			void syncUpdatedEmailPasskeys();
+			void syncPasskeys();
 			return;
 		}
 
@@ -76,7 +73,7 @@
 			}
 
 			const result = await updateUserPasskeys({
-				username: data.email,
+				username: data.currentEmail,
 				givenName: form.data.givenName,
 				familyName: form.data.familyName
 			});
@@ -111,7 +108,7 @@
 			</p>
 
 			{#if $profileMessage}
-				<p class="mt-4 text-center text-sm">{$profileMessage}</p>
+				<p class="mt-4 text-center text-sm text-success">{$profileMessage}</p>
 			{/if}
 
 			{#if profileSyncError}
@@ -164,7 +161,7 @@
 			</p>
 
 			{#if emailStatusMessage}
-				<p class="mt-4 text-center text-sm">{emailStatusMessage}</p>
+				<p class="mt-4 text-center text-sm text-success">{emailStatusMessage}</p>
 			{/if}
 
 			{#if syncingUpdatedEmailPasskeys}
@@ -183,7 +180,7 @@
             type="email"
             autocomplete="email"
             class="input w-full mt-2 text-base-content/60"
-            value={data.email}
+            value={data.currentEmail}
             readonly />
         </div>
 
@@ -219,11 +216,23 @@
 
 <DevNotes>
 	<p>
-		Name and email changes both keep passkeys aligned with the local account, the Passlock vault,
-		and the user’s device password manager.
+		Changing the <span class="font-mono font-semibold">name</span> 
+    will also change the display name 
+    for any passkeys associated with the current account 
+    in the user's local passkey manager.
 	</p>
 
 	<p class="mt-2">
-		Email updates are verified first, then the old email address receives an alert notification.
+		Changing the <span class="font-mono font-semibold">email</span> 
+    will first result in a verification code being
+    sent to the new address. When the code is entered we:
 	</p>
+
+  <ol class="mt-2 ml-2 list-inside list-decimal space-y-2">
+    <li>Update the local account</li>
+    <li>Update any associated passkeys in the Passlock vault</li>
+    <li>Update the passkeys in the user's local passkey manager</li>
+    <li>Send a notification email to the <span class="font-semibold">old address</span> 
+      informing the user of the change</li>
+  </ol>
 </DevNotes>

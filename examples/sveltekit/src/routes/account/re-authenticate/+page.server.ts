@@ -1,6 +1,6 @@
 import { getPasslockClientConfig } from '$lib/server/passkeys.js';
 import { getPasskeysByUserId } from '$lib/server/repository.js';
-import { isRecentPasskeyReauthentication } from '$lib/server/session.js';
+import { isRecentAuthentication } from '$lib/server/session.js';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -13,7 +13,7 @@ export const load = (async ({ locals, url }) => {
 	const returnTo =
 		requestedReturnTo && requestedReturnTo.startsWith('/account') ? requestedReturnTo : '/account';
 
-	if (isRecentPasskeyReauthentication(locals.session.lastPasskeyVerifiedAt)) {
+	if (isRecentAuthentication(locals.session.lastAuthenticatedAt)) {
 		redirect(303, returnTo);
 	}
 

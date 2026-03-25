@@ -82,7 +82,8 @@ export const registerPasskey = async (input: CreatePasskeyInput) => {
 export type AuthenticatePasskeyInput = {
 	tenancyId: string;
 	endpoint?: string | undefined;
-	serverPath?: string | undefined;
+	verificationRoute?: string | undefined;
+  userVerification?: 'preferred' | 'required'
 	autofill?: boolean;
 	onEvent?: (event: PasslockClient.AuthenticationEvent) => void;
 	existingPasskeys?: Array<string> | undefined;
@@ -100,14 +101,11 @@ export const authenticatePasskey = async (input: AuthenticatePasskeyInput) => {
 	const ERROR_TAG = '@error/PasslockLoginError';
 
 	// Passlock uses the WebAuthn term 'allowCredentials'
-	const { existingPasskeys: allowCredentials, serverPath = '/login/passkey' } = input;
-
-	console.log({ allowCredentials });
+	const { existingPasskeys: allowCredentials, verificationRoute = '/login/passkey' } = input;
 
 	// kick of passkey auth locally
 	const clientResult = await PasslockClient.authenticatePasskey({
 		...input,
-		userVerification: 'preferred',
 		allowCredentials
 	});
 
@@ -118,7 +116,7 @@ export const authenticatePasskey = async (input: AuthenticatePasskeyInput) => {
 
 	// send the code to the backend for verification, session creation etc.
 	return await fetchData({
-		url: serverPath,
+		url: verificationRoute,
 		method: 'POST',
 		body: { code: clientResult.code },
 		on2xx: () => ({ _tag: 'PasslockLoginSuccess' }) as const,

@@ -45,7 +45,7 @@ export const parseSessionToken = (
 	return { sessionId, sessionSecret };
 };
 
-export const isRecentPasskeyReauthentication = (lastPasskeyVerifiedAt: number | null): boolean => {
-	if (lastPasskeyVerifiedAt === null) return false;
-	return Date.now() - lastPasskeyVerifiedAt < SESSION_PASSKEY_REAUTH_WINDOW_MS;
+export const isRecentAuthentication = (lastAuthenticatedAt: number | null): boolean => {
+	if (lastAuthenticatedAt === null) return false;
+	return Date.now() - lastAuthenticatedAt < SESSION_PASSKEY_REAUTH_WINDOW_MS;
 };

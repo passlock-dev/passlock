@@ -16,7 +16,8 @@
 
 		const result = await authenticatePasskey({
 			...data,
-			serverPath: '/account/re-authenticate'
+      userVerification: "required",
+			verificationRoute: '/account/re-authenticate'
 		});
 
 		if (result._tag === 'PasslockLoginSuccess') {
