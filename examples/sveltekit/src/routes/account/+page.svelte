@@ -17,12 +17,12 @@
 
 	type FormErrors = SuperFormErrors<{}>;
 
-	// clear form level errors
+	// Clear form level errors
 	const clearFormErrors = (errors: FormErrors) => {
 		errors.update((current) => ({ ...current, _errors: undefined }));
 	};
 
-	// set a form level error
+	// Set a form level error
 	const setFormError = (errors: FormErrors, message: string) => {
 		errors.update((current) => ({ ...current, _errors: [message] }));
 	};
@@ -70,7 +70,7 @@
 
 	onMount(() => {
 		// After the user verifies their new email address
-		// they are redirected back to this route with a ?email-updated=1 flag set.
+		// they're redirected back to this route with a ?email-updated=1 flag set.
 		// Ultimately this results in the local passkeys being refreshed
 		if (data.syncPasskeysOnLoad) {
 			void syncPasskeys();
@@ -80,13 +80,24 @@
 		}
 	});
 
-	// svelte-ignore state_referenced_locally
+  /**
+   * When the user submits the profile form (first and last name) we:
+   * 
+   * 1. Check if they authenticated within the last N mins
+   * 2. If not kick off passkey based authentication
+   * 3. Once re-authenticated we submit the form and update the records
+   * 4. Update the passkey(s) display name in the user's local passkey manager
+   * 
+   * svelte-ignore state_referenced_locally
+   */
 	const {
 		form: profileForm,
 		errors: profileErrors,
 		message: profileMessage,
 		enhance: profileEnhance,
-		validateForm: validateProfileForm
+		validateForm: validateProfileForm,
+    constraints: profileConstraints
+    // svelte-ignore state_referenced_locally
 	} = superForm(data.profileForm, {
 		applyAction: true,
 		invalidateAll: 'pessimistic',
@@ -125,13 +136,26 @@
 		}
 	});
 
-	// svelte-ignore state_referenced_locally
+  /**
+   * When the user changes their email we:
+   * 
+   * 1. Check if they authenticated within the last N mins
+   * 2. If not kick off passkey based authentication
+   * 3. Once re-authenticated we submit the form and update the records
+   * 
+   * This will result in an account verification email being sent
+   * and we redirect the user to the /verify-email route.
+   * 
+   * Note: at this point no changes will be made to the account email
+   */
 	const {
-		form: emailForm,
+    form: emailForm,
 		errors: emailErrors,
 		message: emailMessage,
 		enhance: emailEnhance,
-		validateForm: validateEmailForm
+		validateForm: validateEmailForm,
+    constraints: emailConstraints
+    // svelte-ignore state_referenced_locally
 	} = superForm(data.emailForm, {
 		applyAction: true,
 		invalidateAll: 'pessimistic',
@@ -183,7 +207,7 @@
 						autocomplete="given-name"
 						class={['input mt-2 w-full', { 'input-error': $profileErrors.givenName }]}
 						bind:value={$profileForm.givenName}
-						required />
+						{...$profileConstraints.givenName} />
 					{#if $profileErrors.givenName}
 						{#each $profileErrors.givenName as error (error)}
 							<span class="text-error">{error}</span>
@@ -199,7 +223,7 @@
 						autocomplete="family-name"
 						class={['input mt-2 w-full', { 'input-error': $profileErrors.familyName }]}
 						bind:value={$profileForm.familyName}
-						required />
+						{...$profileConstraints.familyName} />
 					{#if $profileErrors.familyName}
 						{#each $profileErrors.familyName as error (error)}
 							<span class="text-error">{error}</span>
@@ -251,7 +275,7 @@
 						autocomplete="email"
 						class={['input mt-2 w-full', { 'input-error': $emailErrors.email }]}
 						bind:value={$emailForm.email}
-						required />
+						{...$emailConstraints.email} />
 
 					{#if $emailErrors.email}
 						{#each $emailErrors.email as error (error)}
