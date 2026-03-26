@@ -206,7 +206,7 @@ export const DeletedPasskeys = Schema.TaggedStruct("DeletedPasskeys", {
 })
 
 /**
- * Public schema returned when passkeys are deleted.
+ * Public schema returned when a single passkey is deleted.
  *
  * @category Passkeys
  */

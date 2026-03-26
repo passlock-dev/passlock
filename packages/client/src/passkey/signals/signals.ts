@@ -94,10 +94,13 @@ export type DeleteCredentialOptions = {
  * If you pass a Passlock `passkeyId`, the library first fetches the associated
  * credential metadata from Passlock. If you pass a credential payload or
  * {@link OrphanedPasskeyError}, it can signal the browser directly.
+ * Support and metadata lookup failures are surfaced as {@link DeleteError}.
+ * Browser-side signalling failures are logged as warnings and do not fail the
+ * effect.
  *
  * @param options Passkey identifier/credential details and Passlock tenancy options.
  * @returns A Micro effect that resolves with a {@link DeleteSuccess} once the
- * removal signal has been queued, or fails with {@link DeleteError}.
+ * local removal workflow has been started.
  */
 export const deletePasskey = (
   options: DeletePasskeyOptions | DeleteCredentialOptions | OrphanedPasskeyError
@@ -171,6 +174,7 @@ export interface PrunePasskeyOptions extends PasslockOptions {
 
 /**
  * Indicates the library finished the accepted-credentials signalling flow.
+ * This does not guarantee the browser removed any local passkeys.
  *
  * @category Passkeys (core)
  */
@@ -209,10 +213,13 @@ export const isPruningSuccess = (
  * jdoe@gmail.com account and remove passkey2. However as passkey3 is registered to a
  * different account, the device will retain it.
  *
+ * Support and metadata lookup failures are surfaced as {@link PruningError}.
+ * Browser-side signalling failures are logged as warnings and do not fail the
+ * effect.
+ *
  * @param options Passlock tenancy/endpoint options and the passkey IDs to keep.
  * @returns A Micro effect that resolves with a {@link PruningSuccess} once the
- * accepted-credentials signal has been sent, or fails with
- * {@link PruningError}.
+ * accepted-credentials signalling attempt has completed.
  */
 export const prunePasskeys = (options: PrunePasskeyOptions) =>
   Micro.gen(function* () {
@@ -351,12 +358,14 @@ export const isUpdateSuccess = (payload: unknown): payload is UpdateSuccess => {
  * credential list into this function so the same account label is shown in the
  * user's password manager.
  *
+ * Support failures are surfaced as {@link UpdateError}. Browser-side
+ * signalling failures are logged as warnings and do not fail the effect.
+ *
  * @param options Credential identifiers plus the updated username/display name,
  * typically taken from `@passlock/server`'s `updatePasskeyUsernames`
  * response.
  * @returns A Micro effect that resolves with a {@link UpdateSuccess} once the
- * browser has been asked to refresh those details, or fails with
- * {@link UpdateError}.
+ * local update workflows have been started.
  */
 export const updatePasskeyUsernames = (
   options: ReadonlyArray<UpdateCredentialOptions>
@@ -391,9 +400,12 @@ export const updatePasskeyUsernames = (
  * returned `deleted` array into this function so the user’s password manager is
  * updated too.
  *
+ * Support failures are surfaced as {@link DeleteError}. Browser-side
+ * signalling failures are logged as warnings and do not fail the effect.
+ *
  * @param options Credentials derived from deleted server-side passkeys.
  * @returns A Micro effect that resolves with a {@link DeleteSuccess} once the
- * removal signals have been queued, or fails with {@link DeleteError}.
+ * local removal workflows have been started.
  */
 export const deleteUserPasskeys = (
   options: ReadonlyArray<Credential>
@@ -426,10 +438,13 @@ export const deleteUserPasskeys = (
  * device local passkey. Otherwise the passkey associated with your new-name@gmail.com
  * account would still show up in their password manager as old-name@gmail.com.
  *
+ * Support and metadata lookup failures are surfaced as {@link UpdateError}.
+ * Browser-side signalling failures are logged as warnings and do not fail the
+ * effect.
+ *
  * @param options Passkey update options.
  * @returns A Micro effect that resolves with a {@link UpdateSuccess} once the
- * browser has been asked to refresh the local details, or fails with
- * {@link UpdateError}.
+ * local update workflow has been started.
  */
 export const updatePasskey = (
   options: UpdatePasskeyOptions | UpdateCredentialOptions
@@ -558,6 +573,12 @@ type IPasskeyNotFound = {
   rpId: string
 }
 
+/**
+ * Indicates the library finished preparing local passkey removal signalling.
+ * This does not guarantee the browser removed the passkey.
+ *
+ * @category Passkeys (core)
+ */
 export type DeleteSuccess = {
   _tag: "DeleteSuccess"
 }
@@ -576,11 +597,14 @@ export const isDeleteSuccess = (payload: unknown): payload is DeleteSuccess => {
 }
 
 /**
- * Queue a browser removal signal for a credential.
+ * Attempt a browser removal signal for a credential.
+ *
+ * Support failures are surfaced as {@link DeleteError}. Browser-side
+ * signalling failures are logged as warnings and do not fail the effect.
  *
  * @param credential Credential or missing-passkey payload.
  * @returns A Micro effect that resolves with a {@link DeleteSuccess} once the
- * removal signal has been queued, or fails with {@link DeleteError}.
+ * local removal workflow has been started.
  */
 export const signalCredentialRemoval = (
   credential: Credential | IPasskeyNotFound
@@ -626,10 +650,12 @@ export const signalCredentialRemoval = (
 /**
  * Tell the browser which credentials are still accepted for a user.
  *
+ * Support failures are surfaced as {@link PruningError}. Browser-side
+ * signalling failures are logged as warnings and do not fail the effect.
+ *
  * @param credentials Accepted credentials for the user.
  * @returns A Micro effect that resolves with a {@link PruningSuccess} once the
- * accepted-credentials signal has been sent, or fails with
- * {@link PruningError}.
+ * accepted-credentials signalling attempt has completed.
  */
 export const signalAcceptedCredentials = (
   credentials: UserCredentials
@@ -685,10 +711,13 @@ export type CredentialUserId = {
  * Tell the browser to refresh the username and display name shown for a local
  * passkey.
  *
+ * Support failures are surfaced as {@link UpdateError}. Browser-side
+ * signalling failures are logged as warnings and do not fail the effect.
+ *
  * @param credential Credential identity used to find the passkey.
  * @param updates Updated username/display-name values.
  * @returns A Micro effect that resolves with an {@link UpdateSuccess} once the
- * signal has been sent, or fails with {@link UpdateError}.
+ * local update workflow has been started.
  */
 export const signalCurrentUserDetails = (
   credential: CredentialUserId,

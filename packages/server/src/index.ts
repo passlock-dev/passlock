@@ -5,7 +5,11 @@
  * Unexpected runtime defects may still throw.
  *
  * @categoryDescription Passkeys
- * Functions and related types for managing passkeys
+ * Functions and related types for managing passkeys.
+ *
+ * @categoryDescription Principal
+ * Functions and related types for exchanging client codes and verifying
+ * Passlock tokens.
  *
  * @showCategories
  *
@@ -80,13 +84,15 @@ export const updatePasskey = (
 ): Promise<Passkey> => pipe(updatePasskeyE(request), Effect.runPromise)
 
 /**
- * Update the username and/or display name for all passkeys belonging to a given user.
+ * Update the stored username metadata for all passkeys belonging to a given
+ * user, and prepare client-side credential updates for those passkeys.
  *
- * **Important:** changing these values has no bearing on authentication, as
- * it's typically only used in the client-side component of the passkey
- * (so the user knows which account the passkey relates to).
+ * **Important:** changing these values has no bearing on authentication. The
+ * server-side operation updates the username stored in Passlock. The optional
+ * `displayName` is only included in the returned credential updates for
+ * follow-up use with `@passlock/client`; it is not persisted in the vault.
  *
- * However you might choose to align the names in your vault with the
+ * However you might choose to align the username in your vault with the
  * client-side component to simplify end user support.
  *
  * **Note:** This can be used alongside `@passlock/client`'s
@@ -229,6 +235,7 @@ export type {
   Credential,
   DeletePasskeyOptions,
   DeleteUserPasskeysOptions,
+  DeletedPasskey,
   DeletedPasskeys,
   FindAllPasskeys,
   GetPasskeyOptions,

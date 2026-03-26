@@ -1,7 +1,8 @@
 import { Context, Micro } from "effect"
 
 /**
- * Allows us to plug in specific implementations.
+ * Effect service used by the client modules for structured logging.
+ *
  * @see consoleLogger and eventLogger
  */
 export class Logger extends Context.Tag("ClientLogger")<
@@ -15,7 +16,7 @@ export class Logger extends Context.Tag("ClientLogger")<
 >() {}
 
 /**
- * Logs to the JS console
+ * Logger implementation that writes messages to the browser console.
  */
 export const consoleLogger: typeof Logger.Service = {
   logDebug: (message: string | object, ...optionalArgs: Array<unknown>) =>
@@ -39,6 +40,9 @@ export const consoleLogger: typeof Logger.Service = {
     }),
 }
 
+/**
+ * Available log levels emitted by {@link LogEvent}.
+ */
 export enum LogLevel {
   DEBUG = "DEBUG",
   INFO = "INFO",
@@ -47,7 +51,7 @@ export enum LogLevel {
 }
 
 /**
- * Custom event representing a log message
+ * DOM event emitted for a single log entry.
  */
 export class LogEvent extends Event {
   readonly #message: string
@@ -78,8 +82,10 @@ const logEvent = (level: LogLevel) => (message: string) =>
   })
 
 /**
- * Fires JS events instead of writing to the console.
- * Hook into it by listening for PasslockLogEvent events
+ * Logger implementation that emits {@link LogEvent} DOM events instead of
+ * writing to the console. Hook into it by listening for
+ * `PasslockLogEvent` events.
+ *
  * @see LogEvent
  */
 export const eventLogger: typeof Logger.Service = {

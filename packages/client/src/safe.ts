@@ -202,14 +202,17 @@ export const authenticatePasskey = (
  *
  * By calling this function and supplying a new username/display name, their local
  * password manager will align with their updated account identifier.
+ * Support and metadata lookup failures populate the error branch as
+ * {@link UpdateError}. Browser-side signalling failures are logged as warnings
+ * and do not populate the error branch.
  *
  * @param options You will typically supply a target `passkeyId` via
  * {@link UpdatePasskeyOptions}. {@link UpdateCredentialOptions} is intended
  * for credential-scoped updates, for example when replaying data returned by
  * `@passlock/server`.
  * @returns A {@link PasslockClient} whose success branch contains an
- * {@link UpdateSuccess} after the browser has been asked to refresh the local
- * passkey details, and whose error branch contains an {@link UpdateError}.
+ * {@link UpdateSuccess} after the local update workflow has been started, and
+ * whose error branch contains an {@link UpdateError}.
  * Existing {@link isUpdateSuccess}, {@link isUpdateError}, and `_tag` checks
  * still work.
  *
@@ -226,7 +229,7 @@ export const authenticatePasskey = (
  * const result = await updatePasskey({ tenancyId, passkeyId, username, displayName });
  *
  * if (result.success) {
- *   console.log("passkey update signal sent");
+ *   console.log("passkey update requested");
  * } else if (result.failure && isUpdateError(result.error)) {
  *   // narrowed to an UpdateError type
  *   console.log(result.error.code);
@@ -255,12 +258,15 @@ export const updatePasskey = (
  *
  * By calling this function and supplying a new username/display name, their local
  * password manager will align with their updated account identifier.
+ * Support failures populate the error branch as {@link UpdateError}.
+ * Browser-side signalling failures are logged as warnings and do not populate
+ * the error branch.
  *
  * @param options The `credentials` array returned by
  * `@passlock/server/safe`'s `updatePasskeyUsernames` success branch.
  * @returns A {@link PasslockClient} whose success branch contains an
- * {@link UpdateSuccess} after the browser has been asked to refresh the local
- * passkey details, and whose error branch contains an {@link UpdateError}.
+ * {@link UpdateSuccess} after the local update workflows have been started,
+ * and whose error branch contains an {@link UpdateError}.
  * Existing {@link isUpdateSuccess}, {@link isUpdateError}, and `_tag` checks
  * still work.
  *
@@ -303,11 +309,14 @@ export const updatePasskeyUsernames = (
  * Use this after deleting the server-side passkeys. The `deleted` array returned
  * by `@passlock/server/safe` already has the right shape, so you can pass it
  * straight into this function.
+ * Support failures populate the error branch as {@link DeleteError}.
+ * Browser-side signalling failures are logged as warnings and do not populate
+ * the error branch.
  *
  * @param options Credentials derived from deleted backend passkeys.
  * @returns A {@link PasslockClient} whose success branch contains a
- * {@link DeleteSuccess} once the browser removal signals have been queued, and
- * whose error branch contains a {@link DeleteError}. Existing
+ * {@link DeleteSuccess} once the local removal workflows have been started,
+ * and whose error branch contains a {@link DeleteError}. Existing
  * {@link isDeleteSuccess}, {@link isDeleteError}, and `_tag` checks still work.
  * @see {@link isDeleteSuccess}
  * @see {@link isDeleteError}
@@ -354,12 +363,15 @@ export const deleteUserPasskeys = (
  *
  * See [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/) and
  * [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/) in the documentation.
+ * Support and metadata lookup failures populate the error branch as
+ * {@link DeleteError}. Browser-side signalling failures are logged as warnings
+ * and do not populate the error branch.
  *
  * @param options You will typically pass {@link DeletePasskeyOptions}. Use
  * {@link DeleteCredentialOptions} or {@link OrphanedPasskeyError} when you
  * already have the credential metadata.
  * @returns A {@link PasslockClient} whose success branch contains a
- * {@link DeleteSuccess} once the browser removal signal has been queued, and
+ * {@link DeleteSuccess} once the local removal workflow has been started, and
  * whose error branch contains a {@link DeleteError}. Existing
  * {@link isDeleteSuccess}, {@link isDeleteError}, and `_tag` checks still work.
  * @see {@link isDeleteSuccess}
@@ -373,7 +385,7 @@ export const deleteUserPasskeys = (
  * const result = await deletePasskey({ tenancyId, passkeyId });
  *
  * if (result.success) {
- *   console.log("passkey removal signal sent");
+ *   console.log("passkey removal requested");
  * } else if (result.failure && isDeleteError(result.error)) {
  *   // narrowed to a DeleteError type
  *   console.log(result.error.code);
@@ -400,11 +412,14 @@ export const deletePasskey = (
  *
  * This is useful when your backend is the source of truth for which passkeys
  * should still exist for a given account on this device.
+ * Support and metadata lookup failures populate the error branch as
+ * {@link PruningError}. Browser-side signalling failures are logged as
+ * warnings and do not populate the error branch.
  *
  * @param options Pass the passkeys you **want to retain**.
  * @returns A {@link PasslockClient} whose success branch contains a
- * {@link PruningSuccess} once the browser has been told which credentials
- * should remain accepted, and whose error branch contains a
+ * {@link PruningSuccess} once the accepted-credentials signalling attempt has
+ * completed, and whose error branch contains a
  * {@link PruningError}. Existing {@link isPruningSuccess},
  * {@link isPruningError}, and `_tag` checks still work.
  *
@@ -419,7 +434,7 @@ export const deletePasskey = (
  * const result = await prunePasskeys({ tenancyId, allowablePasskeyIds });
  *
  * if (result.success) {
- *   console.log("accepted credentials signal sent");
+ *   console.log("accepted credentials sync requested");
  * } else if (result.failure && isPruningError(result.error)) {
  *   // narrowed to a PruningError type
  *   console.log(result.error.code);

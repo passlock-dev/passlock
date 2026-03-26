@@ -211,7 +211,7 @@ export type _Credential = satisfy<
 /* DeletedPasskey */
 
 /**
- * Result payload returned when all passkeys for a user have been deleted.
+ * Result payload returned when a single passkey has been deleted.
  *
  * @category Passkeys
  */
@@ -283,6 +283,11 @@ export type FindAllPasskeys = {
   readonly records: ReadonlyArray<PasskeySummary>
 }
 
+/**
+ * Type guard for {@link FindAllPasskeys}.
+ *
+ * @category Passkeys
+ */
 export const isFindAllPasskeys = (
   payload: unknown
 ): payload is FindAllPasskeys =>
@@ -303,7 +308,10 @@ export type _FindAllPasskeys = satisfy<
  * Client-facing credential update payload returned by
  * {@link updatePasskeyUsernames}.
  *
- * Each entry describes one credential to update on the user's device.
+ * Each entry describes one credential to update on the user's device. The
+ * returned `displayName` is derived from
+ * {@link UpdateUsernamesOptions#displayName} when provided, otherwise it falls
+ * back to the stored username.
  *
  * @category Passkeys
  */
@@ -794,8 +802,8 @@ export const deleteUserPasskeys = (
 /* Update user details by userId */
 
 /**
- * Options for updating the username and display name for all passkeys that
- * share a custom user ID.
+ * Options for updating username metadata for all passkeys that share a custom
+ * user ID, plus optional display-name data to return for client-side updates.
  *
  * @category Passkeys
  */
@@ -821,6 +829,8 @@ export interface UpdateUsernamesOptions extends AuthenticatedOptions {
  *
  * The resulting payload is designed to be passed to
  * `@passlock/client` so matching device credentials can be updated.
+ * The optional `displayName` is not stored in Passlock; it is only copied into
+ * the returned client payload.
  *
  * @param options Request options including the custom user ID and username metadata.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
