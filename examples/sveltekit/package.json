@@ -1,6 +1,6 @@
 {
 	"name": "@passlock/sveltekit-example",
-	"description": "",
+	"description": "SvelteKit app making full use of passkeys along with email based one time login codes",
 	"private": true,
 	"version": "2.2.1",
 	"type": "module",

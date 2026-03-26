@@ -5,7 +5,9 @@
   "access": "public",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
-  "fixed": [["@passlock/client", "@passlock/server"]],
+  "fixed": [
+    ["@passlock/client", "@passlock/server", "@passlock/sveltekit-example"]
+  ],
   "ignore": [],
   "prettier": false
 }
