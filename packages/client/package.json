@@ -1,6 +1,6 @@
 {
   "name": "@passlock/client",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Flexible passkey authentication for Astro, SvelteKit, NextJS and other frameworks",
   "keywords": [
     "passkey",
@@ -73,7 +73,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/language-service": "^0.80.0",
+    "@effect/language-service": "^0.84.0",
     "@fetch-mock/vitest": "^0.2.18",
     "@typescript/lib-dom": "npm:@types/web@^0.0.344",
     "globals": "catalog:",
@@ -81,9 +81,9 @@
     "publint": "catalog:",
     "rimraf": "catalog:",
     "tsx": "catalog:",
-    "typedoc": "^0.28.17",
+    "typedoc": "^0.28.18",
     "typescript": "catalog:",
     "vitest": "^4.0.16"
   },
-  "packageManager": "pnpm@10.32.1"
+  "packageManager": "pnpm@10.33.0"
 }

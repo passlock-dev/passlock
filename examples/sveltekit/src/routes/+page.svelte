@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import svelteLogo from '$lib/assets/svelte-logo.svg';
-	import { Chromium, RectangleEllipsis, Database, Trash2, Smartphone, List } from '@lucide/svelte';
+	import RectangleEllipsis from '@lucide/svelte/icons/rectangle-ellipsis';
+	import Database from '@lucide/svelte/icons/database';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import Smartphone from '@lucide/svelte/icons/smartphone';
+	import List from '@lucide/svelte/icons/list';
+	import Fingerprint from '@lucide/svelte/icons/fingerprint-pattern';
 
 	const headlineFeature = {
 		icon: RectangleEllipsis,
@@ -16,7 +21,7 @@
 			description: 'Lucia sessions deliver great power & flexibility, with no framework lock-in.'
 		},
 		{
-			icon: Chromium,
+			icon: Fingerprint,
 			title: 'Passkey platform data',
 			description:
 				'Informs the user which platform a passkey belongs to e.g. Apple or Google Chrome.'

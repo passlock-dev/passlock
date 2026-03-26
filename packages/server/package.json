@@ -1,6 +1,6 @@
 {
   "name": "@passlock/server",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Passkey authentication library for Fetch capable backends (Node, Bun, Vercel, Cloudflare workers etc.)",
   "keywords": [
     "passkey",
@@ -77,18 +77,18 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/vitest": "^0.28.0",
+    "@effect/vitest": "^0.29.0",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
     "publint": "catalog:",
     "rimraf": "catalog:",
     "tsx": "catalog:",
-    "typedoc": "^0.28.17",
+    "typedoc": "^0.28.18",
     "typescript": "catalog:",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@10.32.1",
+  "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=20"
   }

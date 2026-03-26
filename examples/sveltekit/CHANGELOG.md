@@ -1,5 +1,11 @@
 # @passlock/sveltekit-example
 
+## 2.3.1
+
+### Patch Changes
+
+- a5a2ecb: Update npm dependencies
+
 ## 2.3.0
 
 ### Minor Changes

@@ -1,5 +1,10 @@
 # @passlock/cli
 
+## 2.1.2
+### Patch Changes
+
+- a5a2ecb: Update npm dependencies
+
 ## 2.1.1
 ### Patch Changes
 
