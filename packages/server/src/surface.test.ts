@@ -22,11 +22,11 @@ import type {
   VerificationError,
 } from "./safe.js"
 import {
-  deleteUserPasskeys,
-  exchangeCode,
+  type deleteUserPasskeys,
+  type exchangeCode,
   isExtendedPrincipal,
   isForbiddenError,
-  verifyIdToken,
+  type verifyIdToken,
 } from "./safe.js"
 import type {
   AuthenticatedOptions,
@@ -66,9 +66,7 @@ describe("public surface", () => {
     type _4 = Assert<IsEqual<Passkey, UnsafePasskey>>
     type _5 = Assert<IsEqual<DeletedPasskeys, UnsafeDeletedPasskeys>>
     type _6 = Assert<IsEqual<Credential, UnsafeCredential>>
-    type _7 = Assert<
-      IsEqual<PasskeyCredential, UnsafePasskeyCredential>
-    >
+    type _7 = Assert<IsEqual<PasskeyCredential, UnsafePasskeyCredential>>
 
     expect(true).toBe(true)
   })

@@ -5,7 +5,7 @@ import {
   deleteUserPasskeys,
   isDeleteError,
   isDeleteSuccess,
-  Logger,
+  type Logger,
 } from "../src/safe.js"
 
 const originalPublicKeyCredential = globalThis.PublicKeyCredential

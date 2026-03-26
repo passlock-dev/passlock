@@ -32,8 +32,8 @@
  */
 
 import { Micro, pipe } from "effect"
-import type { Result as PasslockClient } from "./internal/result.js"
 import { runToPromise } from "./internal/index.js"
+import type { Result as PasslockClient } from "./internal/result.js"
 import { eventLogger, Logger } from "./logger.js"
 import type {
   AuthenticationError,
@@ -487,8 +487,8 @@ export const isPasskeyUpdateSupport = () =>
 
 /* Re-exports */
 
-export type { Err, Ok, Result } from "./internal/result.js"
 export { isNetworkError, NetworkError } from "./internal/network.js"
+export type { Err, Ok, Result } from "./internal/result.js"
 export {
   LogEvent,
   Logger,

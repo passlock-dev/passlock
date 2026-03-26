@@ -34,7 +34,7 @@ export type Result<T extends object, E extends object> =
   | (E extends unknown ? Err<E> : never)
 
 const hasOwnProperty = (payload: object, property: PropertyKey): boolean =>
-  Object.prototype.hasOwnProperty.call(payload, property)
+  Object.hasOwn(payload, property)
 
 const toSelfAccessor = <T extends object>(payload: T) => ({
   configurable: false,

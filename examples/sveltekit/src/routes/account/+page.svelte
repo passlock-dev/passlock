@@ -89,7 +89,7 @@
 	 * 4. Update the passkey(s) display name in the user's local passkey manager
 	 *
 	 */
-  // svelte-ignore state_referenced_locally
+	// svelte-ignore state_referenced_locally
 	const {
 		form: profileForm,
 		errors: profileErrors,
@@ -148,7 +148,7 @@
 	 * Note: at this point no changes will be made to the account email
 	 *
 	 */
-  // svelte-ignore state_referenced_locally
+	// svelte-ignore state_referenced_locally
 	const {
 		form: emailForm,
 		errors: emailErrors,

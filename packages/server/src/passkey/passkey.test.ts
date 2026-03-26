@@ -513,7 +513,10 @@ describe(deleteUserPasskeys.name, () => {
         })
 
         const result = yield* pipe(
-          deleteUserPasskeys({ apiKey, tenancyId, userId: "dummyUserId" }, TestLayer)
+          deleteUserPasskeys(
+            { apiKey, tenancyId, userId: "dummyUserId" },
+            TestLayer
+          )
         )
 
         expect(result).toStrictEqual(expectedDeletedPasskeys)
@@ -542,7 +545,10 @@ describe(deleteUserPasskeys.name, () => {
         )
 
         const error = yield* pipe(
-          deleteUserPasskeys({ apiKey, tenancyId, userId: "dummyUserId" }, TestLayer),
+          deleteUserPasskeys(
+            { apiKey, tenancyId, userId: "dummyUserId" },
+            TestLayer
+          ),
           Effect.flip
         )
 
@@ -566,7 +572,10 @@ describe(deleteUserPasskeys.name, () => {
         )
 
         const error = yield* pipe(
-          deleteUserPasskeys({ apiKey, tenancyId, userId: "dummyUserId" }, TestLayer),
+          deleteUserPasskeys(
+            { apiKey, tenancyId, userId: "dummyUserId" },
+            TestLayer
+          ),
           Effect.flip
         )
 

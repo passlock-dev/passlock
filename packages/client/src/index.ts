@@ -33,10 +33,10 @@ import {
   registerPasskey as registerPasskeyM,
 } from "./passkey/registration/registration.js"
 import type {
+  Credential,
   DeleteCredentialOptions,
   DeletePasskeyOptions,
   DeleteSuccess,
-  Credential,
   PrunePasskeyOptions,
   PruningSuccess,
   UpdateCredentialOptions,

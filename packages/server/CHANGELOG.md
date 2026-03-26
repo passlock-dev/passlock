@@ -1,5 +1,14 @@
 # @passlock/server
 
+## 2.3.0
+### Minor Changes
+
+- bf8fbeb: SvelteKit example app now supports:
+  
+  1. Email based one time login codes
+  2. Mailbox verification emails
+  3. Step up authentication for account management
+
 ## 2.2.1
 ### Patch Changes
 

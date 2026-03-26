@@ -2,19 +2,19 @@ import {
   Array,
   Chunk,
   Effect,
+  type Layer,
   Match,
   Option,
   pipe,
   Schema,
   Stream,
-  type Layer,
 } from "effect"
 import type { satisfy } from "src/schemas/satisfy.js"
 import {
   fetchNetwork,
   matchStatus,
-  NetworkFetchLive,
   type NetworkFetch,
+  NetworkFetchLive,
   type NetworkPayloadError,
   type NetworkRequestError,
   type NetworkResponse,
@@ -225,9 +225,7 @@ export type DeletedPasskey = {
  *
  * @category Passkeys
  */
-export const isDeletedPasskey = (
-  payload: unknown
-): payload is DeletedPasskey =>
+export const isDeletedPasskey = (payload: unknown): payload is DeletedPasskey =>
   Schema.is(PasskeySchemas.DeletedPasskey)(payload)
 
 /**
@@ -764,14 +762,11 @@ export const deleteUserPasskeys = (
         | typeof PasskeySchemas.DeletedPasskeysResponse.Type
         | NotFoundError
         | ForbiddenError = yield* matchStatus(response, {
-          "2xx": (res) =>
-            decodeResponseJson(res, PasskeySchemas.DeletedPasskeysResponse),
-          orElse: (res) =>
-            decodeResponseJson(
-              res,
-              Schema.Union(NotFoundError, ForbiddenError)
-            ),
-        })
+        "2xx": (res) =>
+          decodeResponseJson(res, PasskeySchemas.DeletedPasskeysResponse),
+        orElse: (res) =>
+          decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
+      })
 
       return yield* pipe(
         Match.value(encoded),

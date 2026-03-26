@@ -407,9 +407,7 @@ export const updatePasskeyUsernames = (
  * @returns A Micro effect that resolves with a {@link DeleteSuccess} once the
  * local removal workflows have been started.
  */
-export const deleteUserPasskeys = (
-  options: ReadonlyArray<Credential>
-) =>
+export const deleteUserPasskeys = (options: ReadonlyArray<Credential>) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
 
@@ -522,9 +520,7 @@ export type Credential = {
   rpId: string
 }
 
-const isCredential = (
-  payload: unknown
-): payload is Credential => {
+const isCredential = (payload: unknown): payload is Credential => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
 
@@ -549,9 +545,7 @@ export type UserCredentials = {
   allAcceptedCredentialIds: string[]
 }
 
-const isUserCredentials = (
-  payload: unknown
-): payload is UserCredentials => {
+const isUserCredentials = (payload: unknown): payload is UserCredentials => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
 

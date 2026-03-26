@@ -19,9 +19,10 @@
 import { Effect, pipe } from "effect"
 import type {
   AssignUserOptions,
+  DeletedPasskey,
+  DeletedPasskeys,
   DeletePasskeyOptions,
   DeleteUserPasskeysOptions,
-  DeletedPasskeys,
   FindAllPasskeys,
   GetPasskeyOptions,
   ListPasskeyOptions,
@@ -29,7 +30,6 @@ import type {
   UpdatedCredentials,
   UpdatePasskeyOptions,
   UpdateUsernamesOptions,
-  DeletedPasskey,
 } from "./passkey/passkey.js"
 import {
   assignUser as assignUserE,
@@ -233,10 +233,10 @@ export {
 export type {
   AssignUserOptions,
   Credential,
-  DeletePasskeyOptions,
-  DeleteUserPasskeysOptions,
   DeletedPasskey,
   DeletedPasskeys,
+  DeletePasskeyOptions,
+  DeleteUserPasskeysOptions,
   FindAllPasskeys,
   GetPasskeyOptions,
   ListPasskeyOptions,
@@ -244,8 +244,8 @@ export type {
   PasskeyCredential,
   PasskeySummary,
   Platform,
-  UpdatedPasskeys,
   UpdatedCredentials as UpdatedUserDetails,
+  UpdatedPasskeys,
   UpdatePasskeyOptions,
   UpdateUsernamesOptions as UpdateUserDetailsOptions,
 } from "./passkey/passkey.js"

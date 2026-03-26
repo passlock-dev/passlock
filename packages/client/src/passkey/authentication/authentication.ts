@@ -6,7 +6,12 @@ import {
 } from "@simplewebauthn/browser"
 import { Context, Micro, pipe } from "effect"
 import type { Principal } from "src/principal"
-import { Endpoint, makeEndpoint, makeRequest, TenancyId } from "../../internal/index.js"
+import {
+  Endpoint,
+  makeEndpoint,
+  makeRequest,
+  TenancyId,
+} from "../../internal/index.js"
 import type { NetworkError } from "../../internal/network.js"
 import { Logger } from "../../logger.js"
 import type { PasslockOptions } from "../../options.js"
