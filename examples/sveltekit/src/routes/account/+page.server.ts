@@ -1,10 +1,10 @@
 import type { Actions, PageServerLoad } from './$types';
-import { upsertEmailChallenge, updateUserProfile } from '$lib/server/repository.js';
-import { requireAccountPasskeyConfirmation } from '$lib/server/account.js';
-import { sendOtcEmail } from '$lib/server/email.js';
-import { setEmailChangeOtcCookie } from '$lib/server/oneTimeCode.js';
+import { createOrRefreshEmailChallenge, updateUserNames } from '$lib/server/repository.js';
+import { requireAccountContext } from '$lib/server/account.js';
+import { sendCodeChallengeEmail } from '$lib/server/email.js';
+import { setEmailChangeCookie } from '$lib/server/challenge.js';
 import { getPasslockClientConfig } from '$lib/server/passkeys.js';
-import { emailSchema, profileSchema } from './schemas.js';
+import { EmailSchema, ProfileSchema } from '$lib/shared/schemas.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
 import { message, setError, setMessage, superValidate } from 'sveltekit-superforms';
@@ -16,12 +16,12 @@ const createProfileForm = (input?: { givenName?: string; familyName?: string }) 
 			givenName: input?.givenName,
 			familyName: input?.familyName
 		},
-		valibot(profileSchema),
+		valibot(ProfileSchema),
 		{ id: 'profile-form' }
 	);
 
 const createEmailForm = (input?: { email?: string }, options?: { errors?: boolean }) =>
-	superValidate({ email: input?.email }, valibot(emailSchema), {
+	superValidate({ email: input?.email }, valibot(EmailSchema), {
 		id: 'email-form',
 		errors: options?.errors
 	});
@@ -36,7 +36,7 @@ const authenticationRequired = (
 	profileForm: Awaited<ReturnType<typeof createProfileForm>>,
 	emailForm: Awaited<ReturnType<typeof createEmailForm>>,
 	formToDisplayError: 'profile' | 'email',
-	user: Awaited<ReturnType<typeof requireAccountPasskeyConfirmation>>['user'],
+	user: Awaited<ReturnType<typeof requireAccountContext>>['user'],
 	hasPasskeys: boolean
 ) => {
 	switch (formToDisplayError) {
@@ -63,7 +63,7 @@ const getEmailStatusError = (reason: string | null) => {
 };
 
 export const load = (async ({ locals, url }) => {
-	const { user, hasPasskeys } = await requireAccountPasskeyConfirmation(locals);
+	const { user, hasPasskeys } = await requireAccountContext(locals);
 	const passlockConfig = getPasslockClientConfig();
 
 	const profileForm = await createProfileForm({
@@ -107,11 +107,10 @@ export const load = (async ({ locals, url }) => {
 
 export const actions = {
 	profile: async ({ request, locals }) => {
-		const { user, hasPasskeys, reauthenticationRequired } =
-			await requireAccountPasskeyConfirmation(locals);
+		const { user, hasPasskeys, reauthenticationRequired } = await requireAccountContext(locals);
 
 		const emailForm = await createEmailForm(undefined, { errors: false });
-		const profileForm = await superValidate(request, valibot(profileSchema), {
+		const profileForm = await superValidate(request, valibot(ProfileSchema), {
 			id: 'profile-form'
 		});
 
@@ -129,7 +128,7 @@ export const actions = {
 			return authenticationRequired(profileForm, emailForm, 'profile', user, hasPasskeys);
 		}
 
-		const updatedUser = await updateUserProfile(user.userId, {
+		const updatedUser = await updateUserNames(user.userId, {
 			givenName: profileForm.data.givenName,
 			familyName: profileForm.data.familyName
 		});
@@ -147,15 +146,14 @@ export const actions = {
 		return message(profileForm, 'Account details updated');
 	},
 	email: async ({ request, locals, cookies }) => {
-		const { user, hasPasskeys, reauthenticationRequired } =
-			await requireAccountPasskeyConfirmation(locals);
+		const { user, hasPasskeys, reauthenticationRequired } = await requireAccountContext(locals);
 
 		const profileForm = await createProfileForm({
 			givenName: user.givenName,
 			familyName: user.familyName
 		});
 
-		const emailForm = await superValidate(request, valibot(emailSchema), {
+		const emailForm = await superValidate(request, valibot(EmailSchema), {
 			id: 'email-form'
 		});
 
@@ -186,7 +184,7 @@ export const actions = {
 		// we dont actually update the email at this point
 		// instead we generate a new verification code to
 		// send to the new new email
-		const result = await upsertEmailChallenge({
+		const result = await createOrRefreshEmailChallenge({
 			userId: user.userId,
 			email: emailForm.data.email
 		});
@@ -228,14 +226,14 @@ export const actions = {
 		}
 
 		// send the verification code to the new email
-		await sendOtcEmail({
+		await sendCodeChallengeEmail({
 			email: result.challenge.email,
 			firstName: user.givenName,
 			code: result.code
 		});
 
 		// verification requires the 6 digit code and the token
-		setEmailChangeOtcCookie(cookies, result.token);
+		setEmailChangeCookie(cookies, result.token);
 
 		redirect(303, resolve('/account/verify-email'));
 	}

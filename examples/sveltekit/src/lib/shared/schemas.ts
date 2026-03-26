@@ -43,6 +43,20 @@ export const PasskeyStatusSuccess = v.object({
 	reauthenticationRequired: v.boolean()
 });
 
+export const ProfileSchema = v.object({
+	givenName: v.pipe(v.string(), v.trim(), v.nonEmpty('First name is required')),
+	familyName: v.pipe(v.string(), v.trim(), v.nonEmpty('Last name is required'))
+});
+
+export const EmailSchema = v.object({
+	email: v.pipe(
+		v.string(),
+		v.trim(),
+		v.nonEmpty('Email is required'),
+		v.email('Enter a valid email address')
+	)
+});
+
 export const Error = v.object({
 	_tag: v.literal('@error/Error'),
 	message: v.string()

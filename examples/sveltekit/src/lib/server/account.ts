@@ -3,7 +3,11 @@ import { redirect } from '@sveltejs/kit';
 import { getPasskeysByUserId, type Session, type SessionUser } from './repository.js';
 import { isRecentAuthentication } from './session.js';
 
-export type AccountPasskeyContext = {
+/**
+ * To determine if the user needs to authenticate
+ * and if so which passkey(s) should be used
+ */
+export type AccountContext = {
 	user: SessionUser;
 	session: Session;
 	passkeyIds: string[];
@@ -11,9 +15,7 @@ export type AccountPasskeyContext = {
 	reauthenticationRequired: boolean;
 };
 
-export const getAccountPasskeyContext = async (
-	locals: App.Locals
-): Promise<AccountPasskeyContext | null> => {
+export const getAccountContext = async (locals: App.Locals): Promise<AccountContext | null> => {
 	const user = locals.user;
 	const session = locals.session;
 	if (!user || !session) return null;
@@ -22,7 +24,7 @@ export const getAccountPasskeyContext = async (
 	const passkeyIds = passkeys.map(({ passkeyId }) => passkeyId);
 	const hasPasskeys = passkeyIds.length > 0;
 	const reauthenticationRequired =
-		hasPasskeys && !isRecentAuthentication(session.lastPasskeyAuthenticationAt);
+		hasPasskeys && !isRecentAuthentication(session.passkeyAuthenticatedAt);
 
 	return {
 		user,
@@ -33,10 +35,14 @@ export const getAccountPasskeyContext = async (
 	};
 };
 
-export const requireAccountPasskeyConfirmation = async (
-	locals: App.Locals
-): Promise<AccountPasskeyContext> => {
-	const context = await getAccountPasskeyContext(locals);
+/**
+ * Get the account context if logged in, otherwise redirect to /login
+ *
+ * @param locals
+ * @returns
+ */
+export const requireAccountContext = async (locals: App.Locals): Promise<AccountContext> => {
+	const context = await getAccountContext(locals);
 	if (!context) redirect(302, resolve('/login'));
 
 	return context;

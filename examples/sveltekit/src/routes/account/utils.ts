@@ -1,7 +1,7 @@
 import type { SuperFormErrors } from 'sveltekit-superforms/client';
 import { authenticatePasskey, getPasskeyStatus } from '$lib/client/passkeys';
 
-type FormErrors = SuperFormErrors<{}>;
+type FormErrors = SuperFormErrors<Record<string, unknown>>;
 
 const clearFormErrors = (errors: FormErrors) => {
 	errors.update((current) => ({ ...current, _errors: undefined }));

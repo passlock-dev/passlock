@@ -1,16 +1,15 @@
 import type { Actions, PageServerLoad } from './$types';
 import {
-	consumeEmailChangeChallenge as verifyChangeEmailChallenge,
-	upsertEmailChallenge,
-	getPasskeysByUserId,
-	getPendingOtcChallenge
+	consumeEmailChallenge as verifyChangeEmailChallenge,
+	createOrRefreshEmailChallenge,
+	getChallenge
 } from '$lib/server/repository.js';
-import { sendEmailUpdated, sendOtcEmail } from '$lib/server/email.js';
+import { sendEmailUpdated, sendCodeChallengeEmail } from '$lib/server/email.js';
 import {
-	deleteEmailChangeOtcCookie,
-	getEmailChangeOtcCookie,
-	setEmailChangeOtcCookie
-} from '$lib/server/oneTimeCode.js';
+	deleteEmailChangeCookie,
+	getEmailChangeCookie,
+	setEmailChangeCookie
+} from '$lib/server/challenge.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
 import { setError, superValidate } from 'sveltekit-superforms';
@@ -45,17 +44,17 @@ const createResendForm = () =>
 const redirectToAccountWithError = (reason: 'expired' | 'taken', email?: string): never => {
 	const params = new URLSearchParams({ 'email-error': reason });
 	if (email) params.set('email', email);
-  redirect(303, `${resolve('/account')}?${params.toString()}`);
+	redirect(303, `${resolve('/account')}?${params.toString()}`);
 };
 
 /**
- * Fetch the challenge (including code) 
+ * Fetch the challenge (including code)
  * associated with this change email request
- * 
- * @param token 
- * @param userId 
- * @param clearCookie 
- * @returns 
+ *
+ * @param token
+ * @param userId
+ * @param clearCookie
+ * @returns
  */
 const getChangeEmailChallenge = async (
 	token: string | undefined,
@@ -64,12 +63,8 @@ const getChangeEmailChallenge = async (
 ) => {
 	if (!token) redirect(303, resolve('/account'));
 
-	const challenge = await getPendingOtcChallenge(token);
-	if (
-		!challenge ||
-		challenge.purpose !== 'email-change' ||
-		challenge.userId !== userId
-	) {
+	const challenge = await getChallenge(token);
+	if (!challenge || challenge.purpose !== 'email-change' || challenge.userId !== userId) {
 		clearCookie();
 		redirect(303, resolve('/account'));
 	}
@@ -82,9 +77,9 @@ export const load = (async ({ locals, cookies }) => {
 
 	// the token allows us to display the email address in question
 	// before the user has entered the code
-	const token = getEmailChangeOtcCookie(cookies);
+	const token = getEmailChangeCookie(cookies);
 	const { email } = await getChangeEmailChallenge(token, locals.user.userId, () =>
-		deleteEmailChangeOtcCookie(cookies)
+		deleteEmailChangeCookie(cookies)
 	);
 
 	const verifyForm = await createVerifyForm();
@@ -112,9 +107,9 @@ export const actions = {
 
 		// supplying the code is not enough, the user must also
 		// present the token (stored as a cookie)
-		const token = getEmailChangeOtcCookie(cookies);
+		const token = getEmailChangeCookie(cookies);
 		const challenge = await getChangeEmailChallenge(token, user.userId, () =>
-			deleteEmailChangeOtcCookie(cookies)
+			deleteEmailChangeCookie(cookies)
 		);
 
 		const result = await verifyChangeEmailChallenge({
@@ -124,7 +119,7 @@ export const actions = {
 		});
 
 		if (result._tag === 'EmailChangeSuccess') {
-			deleteEmailChangeOtcCookie(cookies);
+			deleteEmailChangeCookie(cookies);
 
 			// send an email to the old address telling
 			// them that the email was changed.
@@ -142,7 +137,7 @@ export const actions = {
 		}
 
 		if (result._tag === '@error/DuplicateUser') {
-			deleteEmailChangeOtcCookie(cookies);
+			deleteEmailChangeCookie(cookies);
 			redirectToAccountWithError('taken', challenge.email);
 		}
 
@@ -157,7 +152,7 @@ export const actions = {
 			error.code === 'PURPOSE_MISMATCH' ||
 			error.code === 'UNAUTHORIZED'
 		) {
-			deleteEmailChangeOtcCookie(cookies);
+			deleteEmailChangeCookie(cookies);
 			redirectToAccountWithError('expired', challenge.email);
 		}
 
@@ -184,23 +179,23 @@ export const actions = {
 
 		if (!resendForm.valid) return fail(400, { verifyForm, resendForm });
 
-		const token = getEmailChangeOtcCookie(cookies);
+		const token = getEmailChangeCookie(cookies);
 		const challenge = await getChangeEmailChallenge(token, user.userId, () =>
-			deleteEmailChangeOtcCookie(cookies)
+			deleteEmailChangeCookie(cookies)
 		);
 
-		const result = await upsertEmailChallenge({
+		const result = await createOrRefreshEmailChallenge({
 			userId: user.userId,
 			email: challenge.email
 		});
 
 		if (result._tag === '@error/AccountNotFound') {
-			deleteEmailChangeOtcCookie(cookies);
+			deleteEmailChangeCookie(cookies);
 			redirect(303, resolve('/login'));
 		}
 
 		if (result._tag === '@error/DuplicateUser') {
-			deleteEmailChangeOtcCookie(cookies);
+			deleteEmailChangeCookie(cookies);
 			redirectToAccountWithError('taken', challenge.email);
 		}
 
@@ -210,16 +205,16 @@ export const actions = {
 			return { verifyForm, resendForm, email: challenge.email };
 		}
 
-		if (result._tag !== 'CreatedOtcChallenge') {
+		if (result._tag !== 'CreatedChallenge') {
 			throw new Error('Unexpected email change challenge result');
 		}
 
-		await sendOtcEmail({
+		await sendCodeChallengeEmail({
 			email: result.challenge.email,
 			firstName: user.givenName,
 			code: result.code
 		});
-		setEmailChangeOtcCookie(cookies, result.token);
+		setEmailChangeCookie(cookies, result.token);
 		resendForm.message = 'A new code has been sent';
 
 		return { verifyForm, resendForm, email: result.challenge.email };

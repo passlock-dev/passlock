@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { superForm, setMessage } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 	import { valibotClient } from 'sveltekit-superforms/adapters';
-	import { emailSchema, profileSchema } from './schemas.js';
+	import { EmailSchema, ProfileSchema } from '$lib/shared/schemas.js';
 	import { updateUserPasskeys } from '$lib/client/passkeys';
 	import { reAuthenticateIfNecessary } from './utils.js';
 	import DevNotes from '$lib/components/DevNotes.svelte';
@@ -15,7 +15,7 @@
 
 	let syncingUpdatedEmailPasskeys = $state(false);
 
-	type FormErrors = SuperFormErrors<{}>;
+	type FormErrors = SuperFormErrors<Record<string, unknown>>;
 
 	// Clear form level errors
 	const clearFormErrors = (errors: FormErrors) => {
@@ -36,7 +36,7 @@
 		url.searchParams.delete('email-updated');
 		url.searchParams.delete('email-error');
 		url.searchParams.delete('email');
-		replaceState(url, {});
+		replaceState(resolve('/account'), {});
 	};
 
 	/**
@@ -80,28 +80,27 @@
 		}
 	});
 
-  /**
-   * When the user submits the profile form (first and last name) we:
-   * 
-   * 1. Check if they authenticated within the last N mins
-   * 2. If not kick off passkey based authentication
-   * 3. Once re-authenticated we submit the form and update the records
-   * 4. Update the passkey(s) display name in the user's local passkey manager
-   * 
-   * svelte-ignore state_referenced_locally
-   */
+	/**
+	 * When the user submits the profile form (first and last name) we:
+	 *
+	 * 1. Check if they authenticated within the last N mins
+	 * 2. If not kick off passkey based authentication
+	 * 3. Once re-authenticated we submit the form and update the records
+	 * 4. Update the passkey(s) display name in the user's local passkey manager
+	 *
+	 * svelte-ignore state_referenced_locally
+	 */
 	const {
 		form: profileForm,
 		errors: profileErrors,
 		message: profileMessage,
 		enhance: profileEnhance,
 		validateForm: validateProfileForm,
-    constraints: profileConstraints
-    // svelte-ignore state_referenced_locally
+		constraints: profileConstraints
 	} = superForm(data.profileForm, {
 		applyAction: true,
 		invalidateAll: 'pessimistic',
-		validators: valibotClient(profileSchema),
+		validators: valibotClient(ProfileSchema),
 		onSubmit: async ({ cancel }) => {
 			const authResult = await reAuthenticateIfNecessary({
 				errors: profileErrors,
@@ -136,30 +135,31 @@
 		}
 	});
 
-  /**
-   * When the user changes their email we:
-   * 
-   * 1. Check if they authenticated within the last N mins
-   * 2. If not kick off passkey based authentication
-   * 3. Once re-authenticated we submit the form and update the records
-   * 
-   * This will result in an account verification email being sent
-   * and we redirect the user to the /verify-email route.
-   * 
-   * Note: at this point no changes will be made to the account email
-   */
+	/**
+	 * When the user changes their email we:
+	 *
+	 * 1. Check if they authenticated within the last N mins
+	 * 2. If not kick off passkey based authentication
+	 * 3. Once re-authenticated we submit the form and update the records
+	 *
+	 * This will result in an account verification email being sent
+	 * and we redirect the user to the /verify-email route.
+	 *
+	 * Note: at this point no changes will be made to the account email
+	 *
+	 * svelte-ignore state_referenced_locally
+	 */
 	const {
-    form: emailForm,
+		form: emailForm,
 		errors: emailErrors,
 		message: emailMessage,
 		enhance: emailEnhance,
 		validateForm: validateEmailForm,
-    constraints: emailConstraints
-    // svelte-ignore state_referenced_locally
+		constraints: emailConstraints
 	} = superForm(data.emailForm, {
 		applyAction: true,
 		invalidateAll: 'pessimistic',
-		validators: valibotClient(emailSchema),
+		validators: valibotClient(EmailSchema),
 		onSubmit: async ({ cancel }) => {
 			const authResult = await reAuthenticateIfNecessary({
 				errors: emailErrors,

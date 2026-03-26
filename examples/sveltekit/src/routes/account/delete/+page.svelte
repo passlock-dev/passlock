@@ -14,7 +14,7 @@
 	let warning = $state('');
 	let deletingPasskeys = $state(false);
 
-	type FormErrors = SuperFormErrors<{}>;
+	type FormErrors = SuperFormErrors<Record<string, unknown>>;
 
 	const setFormError = (formErrors: FormErrors, message: string) => {
 		formErrors.update((current) => ({ ...current, _errors: [message] }));

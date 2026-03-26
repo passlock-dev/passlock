@@ -1,5 +1,5 @@
-import { getPasslockConfig, syncUserPasskeyUsernames } from '$lib/server/passkeys.js';
-import { getAccountPasskeyContext } from '$lib/server/account.js';
+import { getPasslockConfig, updatePasskeyUsernames } from '$lib/server/passkeys.js';
+import { getAccountContext } from '$lib/server/account.js';
 import { createPasskey } from '$lib/server/repository.js';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
@@ -23,7 +23,7 @@ const errorResponse = (message: string, status: number) =>
 type PasskeyStatusResponse = v.InferOutput<typeof PasskeyStatusSchema>;
 
 export const GET: RequestHandler = async (event) => {
-	const context = await getAccountPasskeyContext(event.locals);
+	const context = await getAccountContext(event.locals);
 	if (!context) {
 		return errorResponse('Authentication required.', 401);
 	}
@@ -132,7 +132,7 @@ export const PATCH: RequestHandler = async (event) => {
 	// update the passkeys in the Passlock vault.
 	// not strictly necessary but good to keep your local db and vault
 	// in sync to aid debugging, logging etc.
-	const vaultResult = await syncUserPasskeyUsernames({
+	const vaultResult = await updatePasskeyUsernames({
 		userId: event.locals.user.userId,
 		...payload.output
 	});
@@ -165,7 +165,7 @@ type DeleteUserPasskeysSuccess = v.InferOutput<typeof DeleteUserPasskeysSuccess>
  * @returns
  */
 export const DELETE: RequestHandler = async (event) => {
-	const context = await getAccountPasskeyContext(event.locals);
+	const context = await getAccountContext(event.locals);
 	if (!context) {
 		return errorResponse('Authentication required.', 401);
 	}

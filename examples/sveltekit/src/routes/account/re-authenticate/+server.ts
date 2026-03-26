@@ -2,7 +2,7 @@ import { getPasslockConfig } from '$lib/server/passkeys.js';
 import {
 	getPasskeysByUserId,
 	getUserByPasskeyId,
-	markSessionPasskeyVerified
+	refreshPasskeyAuthenticatedAt
 } from '$lib/server/repository.js';
 import { json } from '@sveltejs/kit';
 import { exchangeCode } from '@passlock/server/safe';
@@ -49,7 +49,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	// set the passkey authenticated at timestamp
 	// this will be checked when the profile or email change forme is submitted
-	await markSessionPasskeyVerified(locals.session.id);
+	await refreshPasskeyAuthenticatedAt(locals.session.id);
 
 	return json({ success: true });
 };

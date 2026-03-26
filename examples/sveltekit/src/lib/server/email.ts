@@ -5,15 +5,22 @@ import { render } from 'svelte/server';
 
 /**
  * Simple implementation to render an HTML email using a Svelte component
+ *
  * @param param0
  * @returns
  */
-export const renderOtcEmail = ({ firstName, code }: { firstName: string; code: string }) => {
+export const renderCodeChallengeEmail = ({
+	firstName,
+	code
+}: {
+	firstName: string;
+	code: string;
+}) => {
 	const emailOutput = render(OneTimeCode, { props: { firstName, code } });
 	return `<html><body>${emailOutput.body}</body></html>`;
 };
 
-export type SendOtcEmail = {
+export type SendCodeChallengeEmail = {
 	email: string;
 	firstName: string;
 	code: string;
@@ -21,10 +28,11 @@ export type SendOtcEmail = {
 
 /**
  * Stubbed implementation
+ *
  * @param input
  */
-export const sendOtcEmail = async (input: SendOtcEmail) => {
-	const email = renderOtcEmail(input);
+export const sendCodeChallengeEmail = async (input: SendCodeChallengeEmail) => {
+	const email = renderCodeChallengeEmail(input);
 	void email;
 
 	if (dev) {
@@ -35,6 +43,7 @@ export const sendOtcEmail = async (input: SendOtcEmail) => {
 
 /**
  * Simple implementation to render an HTML email using a Svelte component
+ *
  * @param param0
  * @returns
  */
@@ -50,6 +59,7 @@ export type SendEmailUpdated = {
 
 /**
  * Stubbed implementation
+ *
  * @param input
  */
 export const sendEmailUpdated = async (input: SendEmailUpdated) => {

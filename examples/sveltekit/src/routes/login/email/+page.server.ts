@@ -2,26 +2,26 @@ import type { PageServerLoad } from './$types';
 
 import {
 	createOrRefreshLoginChallenge,
-	getAccountByEmail,
-	getPendingOtcChallenge
+	getUserByEmail,
+	getChallenge
 } from '$lib/server/repository.js';
-import { sendOtcEmail } from '$lib/server/email.js';
-import { getOtcCookie, setOtcCookie } from '$lib/server/oneTimeCode.js';
+import { sendCodeChallengeEmail } from '$lib/server/email.js';
+import { getSignupLoginCookie, setSignupLoginCookie } from '$lib/server/challenge.js';
 import { redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
 
 const sendLoginCode = async (username: string | null, cookies: import('@sveltejs/kit').Cookies) => {
 	if (!username) redirect(302, resolve('/login'));
 
-	const account = await getAccountByEmail(username);
+	const account = await getUserByEmail(username);
 	if (!account) {
 		const email = encodeURIComponent(username);
 		redirect(303, `${resolve('/signup')}?email=${email}&reason=no-account`);
 	}
 
-	const pendingToken = getOtcCookie(cookies);
+	const pendingToken = getSignupLoginCookie(cookies);
 	if (pendingToken) {
-		const challenge = await getPendingOtcChallenge(pendingToken);
+		const challenge = await getChallenge(pendingToken);
 		if (challenge?.purpose === 'login' && challenge.email === account.email) {
 			redirect(303, resolve('/login/email/verify-code'));
 		}
@@ -37,12 +37,12 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 		redirect(303, `${resolve('/login')}?username=${email}`);
 	}
 
-	await sendOtcEmail({
+	await sendCodeChallengeEmail({
 		email: result.challenge.email,
 		firstName: result.challenge.givenName ?? 'there',
 		code: result.code
 	});
-	setOtcCookie(cookies, result.token);
+	setSignupLoginCookie(cookies, result.token);
 
 	redirect(303, resolve('/login/email/verify-code'));
 };

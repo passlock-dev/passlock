@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
+	import { resolve } from '$app/paths';
 
 	let { data }: PageProps = $props();
 
@@ -80,7 +81,7 @@
 
 				<p class="mt-4 text-center text-sm">
 					Already have an account?
-					<a href="/login" class="ml-1 text-primary hover:underline">Login</a>
+					<a href={resolve('/login')} class="ml-1 text-primary hover:underline">Login</a>
 				</p>
 			</fieldset>
 		</form>

@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { createOrRefreshSignupChallenge } from '$lib/server/repository.js';
-import { sendOtcEmail } from '$lib/server/email.js';
-import { setOtcCookie } from '$lib/server/oneTimeCode.js';
+import { sendCodeChallengeEmail } from '$lib/server/email.js';
+import { setSignupLoginCookie } from '$lib/server/challenge.js';
 
 import { superValidate, setError } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
@@ -57,12 +57,12 @@ export const actions = {
 			);
 		}
 
-		await sendOtcEmail({
+		await sendCodeChallengeEmail({
 			email: result.challenge.email,
 			firstName: result.challenge.givenName ?? 'there',
 			code: result.code
 		});
-		setOtcCookie(cookies, result.token);
+		setSignupLoginCookie(cookies, result.token);
 
 		redirect(303, '/signup/verify-code');
 	}

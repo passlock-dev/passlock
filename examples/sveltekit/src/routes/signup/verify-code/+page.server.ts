@@ -1,13 +1,17 @@
 import type { Actions, PageServerLoad } from './$types';
 
 import {
-	consumeChallenge,
+	consumeSignupChallenge,
 	createOrRefreshSignupChallenge,
 	createSession,
-	getPendingOtcChallenge
+	getChallenge
 } from '$lib/server/repository.js';
-import { sendOtcEmail } from '$lib/server/email.js';
-import { deleteOtcCookie, getOtcCookie, setOtcCookie } from '$lib/server/oneTimeCode.js';
+import { sendCodeChallengeEmail } from '$lib/server/email.js';
+import {
+	deleteSignupLoginCookie,
+	getSignupLoginCookie,
+	setSignupLoginCookie
+} from '$lib/server/challenge.js';
 import { setSessionTokenCookie } from '$lib/server/session.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
@@ -36,7 +40,7 @@ const createResendForm = () =>
 const getPendingSignupContext = async (token: string | undefined, clearCookie: () => void) => {
 	if (!token) redirect(303, resolve('/signup'));
 
-	const challenge = await getPendingOtcChallenge(token);
+	const challenge = await getChallenge(token);
 	if (!challenge || challenge.purpose !== 'signup') {
 		clearCookie();
 		redirect(303, resolve('/signup'));
@@ -48,8 +52,8 @@ const getPendingSignupContext = async (token: string | undefined, clearCookie: (
 export const load = (async ({ locals, cookies }) => {
 	if (locals.user) redirect(302, '/');
 
-	const token = getOtcCookie(cookies);
-	const { email } = await getPendingSignupContext(token, () => deleteOtcCookie(cookies));
+	const token = getSignupLoginCookie(cookies);
+	const { email } = await getPendingSignupContext(token, () => deleteSignupLoginCookie(cookies));
 
 	const verifyForm = await createVerifyForm();
 	const resendForm = await createResendForm();
@@ -70,17 +74,16 @@ export const actions = {
 
 		if (!verifyForm.valid) return fail(400, { verifyForm, resendForm });
 
-		const token = getOtcCookie(cookies);
-		const challenge = await getPendingSignupContext(token, () => deleteOtcCookie(cookies));
+		const token = getSignupLoginCookie(cookies);
+		const challenge = await getPendingSignupContext(token, () => deleteSignupLoginCookie(cookies));
 
-		const result = await consumeChallenge({
+		const result = await consumeSignupChallenge({
 			token: token!,
-			code: verifyForm.data.code,
-			purpose: 'signup'
+			code: verifyForm.data.code
 		});
 
 		if (result._tag === 'ChallengeConsumed') {
-			deleteOtcCookie(cookies);
+			deleteSignupLoginCookie(cookies);
 
 			const { token: sessionToken } = await createSession(result.user.userId);
 			setSessionTokenCookie(cookies, sessionToken);
@@ -89,18 +92,18 @@ export const actions = {
 		}
 
 		if (result._tag === '@error/DuplicateUser') {
-			deleteOtcCookie(cookies);
+			deleteSignupLoginCookie(cookies);
 			const username = encodeURIComponent(result.email);
 			redirect(303, `${resolve('/login')}?username=${username}&reason=account-exists`);
 		}
 
 		if (result.code === 'CHALLENGE_EXPIRED' || result.code === 'PURPOSE_MISMATCH') {
-			deleteOtcCookie(cookies);
+			deleteSignupLoginCookie(cookies);
 			redirect(303, resolve('/signup'));
 		}
 
 		if (result.code === 'ACCOUNT_NOT_FOUND') {
-			deleteOtcCookie(cookies);
+			deleteSignupLoginCookie(cookies);
 			redirect(303, resolve('/signup'));
 		}
 
@@ -124,8 +127,8 @@ export const actions = {
 			return fail(400, { verifyForm, resendForm });
 		}
 
-		const token = getOtcCookie(cookies);
-		const challenge = await getPendingSignupContext(token, () => deleteOtcCookie(cookies));
+		const token = getSignupLoginCookie(cookies);
+		const challenge = await getPendingSignupContext(token, () => deleteSignupLoginCookie(cookies));
 
 		const result = await createOrRefreshSignupChallenge({
 			email: challenge.email,
@@ -133,7 +136,7 @@ export const actions = {
 			familyName: challenge.familyName ?? ''
 		});
 		if (result._tag === '@error/DuplicateUser') {
-			deleteOtcCookie(cookies);
+			deleteSignupLoginCookie(cookies);
 			const username = encodeURIComponent(result.email);
 			redirect(303, `${resolve('/login')}?username=${username}&reason=account-exists`);
 		}
@@ -143,12 +146,12 @@ export const actions = {
 			return { verifyForm, resendForm, email: challenge.email };
 		}
 
-		await sendOtcEmail({
+		await sendCodeChallengeEmail({
 			email: result.challenge.email,
 			firstName: result.challenge.givenName ?? 'there',
 			code: result.code
 		});
-		setOtcCookie(cookies, result.token);
+		setSignupLoginCookie(cookies, result.token);
 		resendForm.message = 'A new code has been sent';
 
 		return { verifyForm, resendForm, email: result.challenge.email };
