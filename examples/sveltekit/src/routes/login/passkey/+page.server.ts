@@ -5,7 +5,7 @@ import { getPasskeysByUsername } from '$lib/server/repository';
 
 export const load = (async ({ locals, url }) => {
 	if (locals.user) {
-		throw redirect(302, '/');
+		redirect(302, '/');
 	}
 
 	const passlockConfig = getPasslockClientConfig();

@@ -24,17 +24,37 @@ export const UpdatePasskeysSuccess = v.object({
 
 export const DeletePasskeyWarning = v.object({
 	_tag: v.literal('@warning/PasskeyNotFound'),
-  message: v.string()
+	message: v.string()
 });
 
 export const DeletePasskeySuccess = v.object({
 	_tag: v.literal('DeletePasskeySuccess'),
-  deleted: DeletedCredential
+	deleted: DeletedCredential
 });
 
 export const DeleteUserPasskeysSuccess = v.object({
 	_tag: v.literal('DeleteUserPasskeysSuccess'),
 	deleted: v.pipe(v.array(DeletedCredential), v.readonly())
+});
+
+export const PasskeyStatusSuccess = v.object({
+	_tag: v.literal('PasskeyStatusSuccess'),
+	passkeyIds: v.pipe(v.array(v.string()), v.readonly()),
+	reauthenticationRequired: v.boolean()
+});
+
+export const ProfileSchema = v.object({
+	givenName: v.pipe(v.string(), v.trim(), v.nonEmpty('First name is required')),
+	familyName: v.pipe(v.string(), v.trim(), v.nonEmpty('Last name is required'))
+});
+
+export const EmailSchema = v.object({
+	email: v.pipe(
+		v.string(),
+		v.trim(),
+		v.nonEmpty('Email is required'),
+		v.email('Enter a valid email address')
+	)
 });
 
 export const Error = v.object({

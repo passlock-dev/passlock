@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
+	import { resolve } from '$app/paths';
 
 	let { data }: PageProps = $props();
 
@@ -16,15 +17,19 @@
 <div class="mx-auto flex h-full max-w-5xl items-center justify-center">
 	<div class="flex flex-col items-center lg:flex-row lg:gap-8">
 		<div class="px-2 text-center lg:text-left">
-			<h1 class="text-5xl font-bold">Sign up today!</h1>
+			<h1 class="text-5xl font-bold">Create your account</h1>
 			<p class="py-6">
-				Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem
-				quasi. In deleniti eaque aut repudiandae et a id nisi.
+				Enter your details and we’ll send a one-time code to verify your email before creating the
+				account.
 			</p>
 		</div>
 
 		<form method="post" class="w-full max-w-md">
 			<fieldset class="fieldset rounded-box border border-base-300 bg-base-200 p-10">
+				{#if data.notice}
+					<p class="mb-4 max-w-sm text-sm text-error">{data.notice}</p>
+				{/if}
+
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div>
 						<label for="givenName" class="label">First name</label>
@@ -33,7 +38,7 @@
 							type="text"
 							autocomplete="given-name"
 							name="givenName"
-							class={['input w-full mt-2', { 'input-error': $errors.givenName }]}
+							class={['input mt-2 w-full', { 'input-error': $errors.givenName }]}
 							bind:value={$form.givenName}
 							required />
 						{#if $errors.givenName}
@@ -50,7 +55,7 @@
 							type="text"
 							autocomplete="family-name"
 							name="familyName"
-							class={['input w-full mt-2', { 'input-error': $errors.familyName }]}
+							class={['input mt-2 w-full', { 'input-error': $errors.familyName }]}
 							bind:value={$form.familyName}
 							required />
 						{#if $errors.familyName}
@@ -72,17 +77,12 @@
 					required />
 				{#if $errors.email}<span class="text-error">{$errors.email}</span>{/if}
 
-				<label for="password" class="label mt-2">Password</label>
-				<input
-					id="password"
-					type="password"
-					autocomplete="new-password"
-					name="password"
-					class="input w-full"
-					bind:value={$form.password}
-					required />
+				<button class="btn mt-4 btn-primary">Send sign up code</button>
 
-				<button class="btn mt-4 btn-primary">Sign up</button>
+				<p class="mt-4 text-center text-sm">
+					Already have an account?
+					<a href={resolve('/login')} class="ml-1 text-primary hover:underline">Login</a>
+				</p>
 			</fieldset>
 		</form>
 	</div>

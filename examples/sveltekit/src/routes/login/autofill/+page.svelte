@@ -32,7 +32,7 @@
 			// force the layout to refresh
 			await invalidateAll();
 			await goto(resolve('/'));
-      disabled = false;
+			disabled = false;
 		} else {
 			console.log(result.message);
 			disabled = false;
@@ -76,7 +76,7 @@
 <DevNotes>
 	<p>
 		Uses passkey autofill. Essentially allows users with passkeys to login in a single step vs the
-		"usual"
+		usual
 		<a href={resolve('/login')} class="link link-secondary">two step login</a>
 		flow.
 	</p>

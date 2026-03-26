@@ -1,24 +1,28 @@
-export type PostDataInput<A, E> = {
-	url: string;
-	body: object;
-	method: 'POST' | 'PATCH' | 'DELETE';
-	on2xx: (response: unknown) => A;
-	orElse: (response: unknown) => E;
-};
-
 /**
  * Simple wrapper around fetch
- * 
- * @param param0 
- * @returns 
+ *
+ * @param param0
+ * @returns
  */
-export const fetchData = async <A, E>({ url, method, body, on2xx, orElse }: PostDataInput<A, E>) => {
+export const fetchData = async <A, E>({
+	url,
+	method,
+	body,
+	on2xx,
+	orElse
+}: {
+	url: string;
+	body?: object;
+	method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+	on2xx: (response: unknown) => A;
+	orElse: (response: unknown) => E;
+}) => {
 	const response = await fetch(url, {
 		method,
 		headers: {
 			'content-type': 'application/json'
 		},
-		body: JSON.stringify(body)
+		...(body ? { body: JSON.stringify(body) } : {})
 	});
 
 	const jsonResponse = await response.json();

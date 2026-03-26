@@ -5,7 +5,7 @@ import { deleteSessionTokenCookie } from '$lib/server/session.js';
 
 export const load = (async ({ locals }) => {
 	if (!locals.user) {
-		throw redirect(302, '/');
+		redirect(302, '/');
 	}
 }) satisfies PageServerLoad;
 
@@ -16,6 +16,6 @@ export const actions = {
 		}
 
 		deleteSessionTokenCookie(cookies);
-		throw redirect(303, '/');
+		redirect(303, '/');
 	}
 } satisfies Actions;

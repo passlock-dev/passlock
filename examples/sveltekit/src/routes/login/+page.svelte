@@ -19,6 +19,10 @@
 	<form method="POST" class="rounded-lg bg-base-200 p-10 pt-8">
 		<h2 class="text-center text-xl font-semibold">Login</h2>
 
+		{#if data.notice}
+			<p class="mt-3 max-w-xs text-center text-sm text-error">{data.notice}</p>
+		{/if}
+
 		<fieldset class="fieldset w-xs">
 			<label for="username" class="label">Email</label>
 			<input
@@ -54,7 +58,8 @@
 	<ol class="mt-2 list-inside list-decimal">
 		<li class="mt-2">First we identify the user and check if they have a passkey.</li>
 		<li class="mt-2">
-			If they have a passkey we use it for authentication, otherwise we fallback to passwords.
+			If they have a passkey we use it for authentication, otherwise we fallback to an emailed
+			one-time code.
 		</li>
 	</ol>
 	<p class="mt-2">

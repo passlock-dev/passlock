@@ -1,66 +1,240 @@
 import type { Actions, PageServerLoad } from './$types';
-import { updateUserProfile } from '$lib/server/repository.js';
-
-import { superValidate, setError, message } from 'sveltekit-superforms';
-import { valibot } from 'sveltekit-superforms/adapters';
+import { createOrRefreshEmailChallenge, updateUserNames } from '$lib/server/repository.js';
+import { requireAccountContext } from '$lib/server/account.js';
+import { sendCodeChallengeEmail } from '$lib/server/email.js';
+import { setEmailChangeCookie } from '$lib/server/challenge.js';
+import { getPasslockClientConfig } from '$lib/server/passkeys.js';
+import { EmailSchema, ProfileSchema } from '$lib/shared/schemas.js';
+import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
-import * as v from 'valibot';
-import { getPasslockClientConfig } from '$lib/server/passkeys';
+import { message, setError, setMessage, superValidate } from 'sveltekit-superforms';
+import { valibot } from 'sveltekit-superforms/adapters';
 
-const schema = v.object({
-	username: v.pipe(v.string(), v.nonEmpty('Username is required')),
-	givenName: v.pipe(v.string(), v.trim(), v.nonEmpty('First name is required')),
-	familyName: v.pipe(v.string(), v.trim(), v.nonEmpty('Last name is required'))
-});
-
-export const load = (async ({ locals }) => {
-	if (!locals.user) {
-		throw redirect(302, '/login');
-	}
-
-	const passlockConfig = getPasslockClientConfig();
-
-	const form = await superValidate(
+const createProfileForm = (input?: { givenName?: string; familyName?: string }) =>
+	superValidate(
 		{
-			username: locals.user.email,
-			givenName: locals.user.givenName,
-			familyName: locals.user.familyName
+			givenName: input?.givenName,
+			familyName: input?.familyName
 		},
-		valibot(schema)
+		valibot(ProfileSchema),
+		{ id: 'profile-form' }
 	);
 
+const createEmailForm = (input?: { email?: string }, options?: { errors?: boolean }) =>
+	superValidate({ email: input?.email }, valibot(EmailSchema), {
+		id: 'email-form',
+		errors: options?.errors
+	});
+
+/**
+ * The user submitted the form but the authentication timestamp expired.
+ * Something of an edge case as we validate on the client side, but could
+ * happen if the delay between the client side check and the request hitting
+ * the form action pushes the timestamp outside the allowable window.
+ */
+const authenticationRequired = (
+	profileForm: Awaited<ReturnType<typeof createProfileForm>>,
+	emailForm: Awaited<ReturnType<typeof createEmailForm>>,
+	formToDisplayError: 'profile' | 'email',
+	user: Awaited<ReturnType<typeof requireAccountContext>>['user'],
+	hasPasskeys: boolean
+) => {
+	switch (formToDisplayError) {
+		case 'profile':
+			setError(profileForm, 'Confirm your passkey before saving account changes.');
+			break;
+		case 'email':
+			setError(emailForm, 'Confirm your passkey before saving account changes.');
+			break;
+	}
+
+	return fail(400, {
+		profileForm,
+		emailForm,
+		currentEmail: user.email,
+		hasPasskeys
+	});
+};
+
+const getEmailStatusError = (reason: string | null) => {
+	if (reason === 'taken') return 'That email address is already in use.';
+	if (reason === 'expired') return 'Your email verification session expired. Start again.';
+	return null;
+};
+
+export const load = (async ({ locals, url }) => {
+	const { user, hasPasskeys } = await requireAccountContext(locals);
+	const passlockConfig = getPasslockClientConfig();
+
+	const profileForm = await createProfileForm({
+		givenName: user.givenName,
+		familyName: user.familyName
+	});
+
+	// If the user tries to verify their email after the code
+	// has expired we redirect them back to the account page but
+	// we pre-fill the email so they don't have to enter it again
+	// see /verify-email/+server.ts#redirectToAccountWithError
+	const emailForm = await createEmailForm(
+		// this is the NEW email address
+		{ email: url.searchParams.get('email') ?? undefined },
+		{ errors: false }
+	);
+
+	// After the user successfully enters the email verification code
+	// they are redirected back here with ?email-updated=1
+	// see /verify-email/+server.ts (~ line 140)
+	const emailUpdated = url.searchParams.get('email-updated') === '1';
+	const emailStatusMessage = emailUpdated ? 'Email address updated.' : null;
+	if (emailStatusMessage) setMessage(emailForm, emailStatusMessage);
+
+	// If we couldn't verify the new email address
+	// the user is redirected back here with a failure code
+	const emailVerificationError = url.searchParams.get('email-error');
+	const emailStatusError = getEmailStatusError(emailVerificationError);
+	if (emailStatusError) setError(emailForm, emailStatusError);
+
 	return {
-		form,
+		profileForm,
+		emailForm,
+		currentEmail: user.email,
+		hasPasskeys,
+		clearQueryState: emailUpdated || emailStatusError,
+		syncPasskeysOnLoad: emailUpdated && hasPasskeys,
 		...passlockConfig
 	};
 }) satisfies PageServerLoad;
 
 export const actions = {
-	default: async ({ request, locals }) => {
-		if (!locals.user) {
-			throw redirect(302, '/login');
-		}
+	profile: async ({ request, locals }) => {
+		const { user, hasPasskeys, reauthenticationRequired } = await requireAccountContext(locals);
 
-		const form = await superValidate(request, valibot(schema));
-
-		if (!form.valid) {
-			return fail(400, { form });
-		}
-
-		const user = await updateUserProfile(locals.user.userId, {
-			email: form.data.username,
-			givenName: form.data.givenName,
-			familyName: form.data.familyName
+		const emailForm = await createEmailForm(undefined, { errors: false });
+		const profileForm = await superValidate(request, valibot(ProfileSchema), {
+			id: 'profile-form'
 		});
 
-		if (!user) {
-			return setError(form, 'username', 'Unable to update this account');
+		if (!profileForm.valid) {
+			return fail(400, {
+				profileForm,
+				emailForm,
+				currentEmail: user.email,
+				hasPasskeys
+			});
 		}
 
-		if ('_tag' in user && user._tag === 'DuplicateUser') {
-			return setError(form, 'username', 'Username is already in use');
+		if (reauthenticationRequired) {
+			// user didn't authenticate with the passkey in the last 10 mins
+			return authenticationRequired(profileForm, emailForm, 'profile', user, hasPasskeys);
 		}
 
-		return message(form, 'Account details updated');
+		const updatedUser = await updateUserNames(user.userId, {
+			givenName: profileForm.data.givenName,
+			familyName: profileForm.data.familyName
+		});
+
+		if (!updatedUser) {
+			setError(profileForm, 'givenName', 'Unable to update this account');
+			return fail(400, {
+				profileForm,
+				emailForm,
+				currentEmail: user.email,
+				hasPasskeys
+			});
+		}
+
+		return message(profileForm, 'Account details updated');
+	},
+	email: async ({ request, locals, cookies }) => {
+		const { user, hasPasskeys, reauthenticationRequired } = await requireAccountContext(locals);
+
+		const profileForm = await createProfileForm({
+			givenName: user.givenName,
+			familyName: user.familyName
+		});
+
+		const emailForm = await superValidate(request, valibot(EmailSchema), {
+			id: 'email-form'
+		});
+
+		if (!emailForm.valid) {
+			return fail(400, {
+				profileForm,
+				emailForm,
+				currentEmail: user.email,
+				hasPasskeys
+			});
+		}
+
+		if (emailForm.data.email === user.email) {
+			setError(emailForm, 'email', 'Enter a different email address.');
+			return fail(400, {
+				profileForm,
+				emailForm,
+				currentEmail: user.email,
+				hasPasskeys
+			});
+		}
+
+		if (reauthenticationRequired) {
+			// user didn't authenticate with the passkey in the last 10 mins
+			return authenticationRequired(profileForm, emailForm, 'email', user, hasPasskeys);
+		}
+
+		// we dont actually update the email at this point
+		// instead we generate a new verification code to
+		// send to the new new email
+		const result = await createOrRefreshEmailChallenge({
+			userId: user.userId,
+			email: emailForm.data.email
+		});
+
+		// shouldn't normally happen but could occur
+		// if the user has two tabs/windows open and decided
+		// to close their account then submit the change email form
+		if (result._tag === '@error/AccountNotFound') {
+			redirect(303, resolve('/login'));
+		}
+
+		if (result._tag === '@error/DuplicateUser') {
+			setError(emailForm, 'email', 'That email address is already in use.');
+			return fail(400, {
+				profileForm,
+				emailForm,
+				currentEmail: user.email,
+				hasPasskeys
+			});
+		}
+
+		// we dont want to fire off emails every time the user hits
+		// the submit button
+		if (result._tag === '@error/ChallengeRateLimited') {
+			const seconds = Math.ceil(result.retryAfterMs / 1000);
+
+			setError(
+				emailForm,
+				'email',
+				`A code was just sent. Please wait ${seconds} seconds and try again.`
+			);
+
+			return fail(400, {
+				profileForm,
+				emailForm,
+				currentEmail: user.email,
+				hasPasskeys
+			});
+		}
+
+		// send the verification code to the new email
+		await sendCodeChallengeEmail({
+			email: result.challenge.email,
+			firstName: user.givenName,
+			code: result.code
+		});
+
+		// verification requires the 6 digit code and the token
+		setEmailChangeCookie(cookies, result.token);
+
+		redirect(303, resolve('/account/verify-email'));
 	}
 } satisfies Actions;

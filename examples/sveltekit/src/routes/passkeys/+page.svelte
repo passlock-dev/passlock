@@ -59,7 +59,7 @@
 			return;
 		}
 
-		if (result._tag === "@warning/PasskeyNotFound") {
+		if (result._tag === '@warning/PasskeyNotFound') {
 			warning = result.message;
 		} else {
 			info = 'Passkey deleted from your account';
@@ -79,7 +79,7 @@
 		<div class="rounded-lg bg-base-200 p-10 pt-8">
 			<h2 class="text-center text-xl font-semibold">Create a passkey</h2>
 			<p class="mt-3 w-xs text-center text-sm text-base-content/80">
-				Create a passkey to sign in faster and without entering a password.
+				Create a passkey to sign in faster and without waiting for an email code.
 			</p>
 
 			<button

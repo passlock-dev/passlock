@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import { getPasskeysByUserId, getUserByEmail } from '$lib/server/repository.js';
+import { getUserByEmail, getPasskeysByUserId } from '$lib/server/repository.js';
 import { superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
@@ -18,7 +18,7 @@ const schema = v.object({
 
 export const load = (async ({ locals }) => {
 	if (locals.user) {
-		throw redirect(302, '/');
+		redirect(302, '/');
 	}
 
 	const config = getPasslockClientConfig();
@@ -37,16 +37,19 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		const user = await getUserByEmail(form.data.username);
-		if (user) {
-			const passkeys = await getPasskeysByUserId(user.userId);
+		const account = await getUserByEmail(form.data.username);
+		if (account) {
+			const passkeys = await getPasskeysByUserId(account.userId);
 			if (passkeys.length > 0) {
 				const username = encodeURIComponent(form.data.username);
-				throw redirect(303, `/login/passkey?username=${username}`);
+				redirect(303, `/login/passkey?username=${username}`);
 			}
+
+			const username = encodeURIComponent(form.data.username);
+			redirect(303, `/login/email?username=${username}`);
 		}
 
-		const username = encodeURIComponent(form.data.username);
-		throw redirect(303, `/login/password?username=${username}`);
+		const email = encodeURIComponent(form.data.username);
+		redirect(303, `/signup?email=${email}&reason=no-account`);
 	}
 } satisfies Actions;

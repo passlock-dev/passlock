@@ -1,28 +1,37 @@
 import type { PageServerLoad } from './$types';
-import { createSession, createUser, getPasskeysByUserId } from '$lib/server/repository.js';
-import { hashPassword } from '$lib/server/password.js';
-import { setSessionTokenCookie } from '$lib/server/session.js';
+import { createOrRefreshSignupChallenge } from '$lib/server/repository.js';
+import { sendCodeChallengeEmail } from '$lib/server/email.js';
+import { setSignupLoginCookie } from '$lib/server/challenge.js';
 
 import { superValidate, setError } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { resolve } from '$app/paths';
 
 const schema = v.object({
-	email: v.string(),
+	email: v.pipe(
+		v.string(),
+		v.trim(),
+		v.nonEmpty('Email is required'),
+		v.email('Enter a valid email address')
+	),
 	givenName: v.pipe(v.string(), v.trim(), v.nonEmpty('First name is required')),
-	familyName: v.pipe(v.string(), v.trim(), v.nonEmpty('Last name is required')),
-	password: v.string()
+	familyName: v.pipe(v.string(), v.trim(), v.nonEmpty('Last name is required'))
 });
 
-export const load = (async ({ locals }) => {
+export const load = (async ({ locals, url }) => {
 	if (locals.user) {
-		throw redirect(302, '/');
+		redirect(302, '/');
 	}
 
-	const form = await superValidate(valibot(schema));
-	return { form };
+	const email = url.searchParams.get('email') ?? undefined;
+	const reason = url.searchParams.get('reason');
+
+	const form = await superValidate({ email }, valibot(schema), { errors: false });
+	const notice =
+		reason === 'no-account' ? 'No account exists for that email. Create one to continue.' : null;
+
+	return { form, notice };
 }) satisfies PageServerLoad;
 
 export const actions = {
@@ -34,22 +43,27 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		const email = form.data.email;
-		const givenName = form.data.givenName;
-		const familyName = form.data.familyName;
-
-		const passwordHash = await hashPassword(form.data.password);
-		const user = await createUser({ email, givenName, familyName, passwordHash });
-
-		if (user._tag === 'DuplicateUser') {
-			return setError(form, 'email', 'Account already exists');
+		const result = await createOrRefreshSignupChallenge(form.data);
+		if (result._tag === '@error/DuplicateUser') {
+			const username = encodeURIComponent(form.data.email);
+			redirect(303, `/login?username=${username}&reason=account-exists`);
+		}
+		if (result._tag === '@error/ChallengeRateLimited') {
+			const seconds = Math.ceil(result.retryAfterMs / 1000);
+			return setError(
+				form,
+				'email',
+				`A code was just sent. Please wait ${seconds} seconds and try again.`
+			);
 		}
 
-		const { token } = await createSession(user.userId);
-		setSessionTokenCookie(cookies, token);
+		await sendCodeChallengeEmail({
+			email: result.challenge.email,
+			firstName: result.challenge.givenName ?? 'there',
+			code: result.code
+		});
+		setSignupLoginCookie(cookies, result.token);
 
-		const passkeys = await getPasskeysByUserId(user.userId);
-		const redirectTo = passkeys.length === 0 ? resolve('/passkeys') : resolve('/');
-		throw redirect(303, redirectTo);
+		redirect(303, '/signup/verify-code');
 	}
 };

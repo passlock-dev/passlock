@@ -6,7 +6,7 @@
 	const headlineFeature = {
 		icon: RectangleEllipsis,
 		title: 'Progressive enhancement',
-		description: 'Supports passkeys alongside existing/legacy password based authentication.'
+		description: 'Supports passkeys alongside email based one-time-code authentication.'
 	};
 
 	const features = [
@@ -38,7 +38,7 @@
 			icon: RectangleEllipsis,
 			title: 'Passkey autofill',
 			description:
-				'One click login for passkey users, falling back to username/password for others.'
+				'One click login for passkey users, falling back to emailed one-time codes for others.'
 		},
 		{
 			icon: List,
@@ -52,7 +52,8 @@
 	<title>SvelteKit + Passlock Sample App</title>
 </svelte:head>
 
-<div class="mx-auto flex w-full flex-col gap-10 px-6 lg:flex-row lg:items-center lg:px-12 lg:pt-20">
+<div
+	class="mx-auto flex h-full w-full flex-col gap-10 p-6 lg:-mt-10 lg:flex-row lg:items-center lg:px-12 lg:pt-0">
 	<div class="flex flex-col justify-center gap-5 lg:basis-1/2">
 		<div
 			class="flex w-fit items-center gap-2 rounded-xl border border-neutral/10 bg-base-300 px-2 py-1">
@@ -67,9 +68,9 @@
 		</div>
 		<div>
 			<p class="text-lg leading-relaxed">
-				Sample SvelteKit app illustrating how to support passkey authentication alongside password
-				based authentication. Includes advanced features including autofill, local passkey updates,
-				deletion and more.
+				Sample SvelteKit app illustrating how to support passkey authentication alongside email
+				one-time-code authentication. Includes advanced features including autofill, local passkey
+				updates, deletion and more.
 			</p>
 		</div>
 		<div class="flex items-center gap-6">

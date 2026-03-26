@@ -30,20 +30,20 @@ export const DELETE: RequestHandler = async (event) => {
 		return errorResponse('Invalid request. Expected passkey id.', 400);
 	}
 
-  // ensure we're not deleting another user's passkey
+	// ensure we're not deleting another user's passkey
 	const associatedUser = await getUserByPasskeyId(passkeyId.output);
 	if (!associatedUser || associatedUser.userId !== event.locals.user.userId) {
 		return errorResponse('Passkey not found for this account.', 404);
 	}
 
-  // delete it from the Passlock vault
+	// delete it from the Passlock vault
 	const vaultResult = await deletePasskey({
 		...getPasslockConfig(),
 		passkeyId: passkeyId.output
 	});
 
-  // we don't want to fail fast because it's possible the passkey was already deleted
-  // in which case it's not an error (see the warning below)
+	// we don't want to fail fast because it's possible the passkey was already deleted
+	// in which case it's not an error (see the warning below)
 	if (vaultResult._tag === '@error/Forbidden') {
 		return errorResponse('Unable to delete passkey', 500);
 	}

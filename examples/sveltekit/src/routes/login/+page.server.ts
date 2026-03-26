@@ -1,7 +1,13 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import { getPasskeysByUserId, getUserByEmail } from '$lib/server/repository.js';
-import { superValidate } from 'sveltekit-superforms';
+import {
+	createOrRefreshLoginChallenge,
+	getUserByEmail,
+	getPasskeysByUserId
+} from '$lib/server/repository.js';
+import { sendCodeChallengeEmail } from '$lib/server/email.js';
+import { setSignupLoginCookie } from '$lib/server/challenge.js';
+import { superValidate, setError } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
@@ -15,35 +21,64 @@ const schema = v.object({
 	)
 });
 
-export const load = (async ({ locals }) => {
+export const load = (async ({ locals, url }) => {
 	if (locals.user) {
-		throw redirect(302, '/');
+		redirect(302, '/');
 	}
 
-	const form = await superValidate(valibot(schema));
+	const username = url.searchParams.get('username') ?? undefined;
+	const reason = url.searchParams.get('reason');
 
-	return { form };
+	const form = await superValidate({ username }, valibot(schema), { errors: false });
+	const notice =
+		reason === 'account-exists'
+			? 'An account already exists for that email. Login to continue.'
+			: null;
+
+	return { form, notice };
 }) satisfies PageServerLoad;
 
 export const actions = {
-	default: async ({ request }) => {
+	default: async ({ request, cookies }) => {
 		const form = await superValidate(request, valibot(schema));
 
 		if (!form.valid) {
-			// Return { form } and things will just work.
 			return fail(400, { form });
 		}
 
-		const user = await getUserByEmail(form.data.username);
-		if (user) {
-			const passkeys = await getPasskeysByUserId(user.userId);
+		const account = await getUserByEmail(form.data.username);
+		if (account) {
+			const passkeys = await getPasskeysByUserId(account.userId);
 			if (passkeys.length > 0) {
 				const username = encodeURIComponent(form.data.username);
-				throw redirect(303, `/login/passkey?username=${username}`);
+				redirect(303, `/login/passkey?username=${username}`);
 			}
+
+			const result = await createOrRefreshLoginChallenge(account.email);
+			if (result._tag === '@error/AccountNotFound') {
+				const email = encodeURIComponent(form.data.username);
+				redirect(303, `/signup?email=${email}&reason=no-account`);
+			}
+			if (result._tag === '@error/ChallengeRateLimited') {
+				const seconds = Math.ceil(result.retryAfterMs / 1000);
+				return setError(
+					form,
+					'username',
+					`A code was just sent. Please wait ${seconds} seconds and try again.`
+				);
+			}
+
+			await sendCodeChallengeEmail({
+				email: result.challenge.email,
+				firstName: result.challenge.givenName ?? 'there',
+				code: result.code
+			});
+			setSignupLoginCookie(cookies, result.token);
+
+			redirect(303, '/login/email/verify-code');
 		}
 
-		const username = encodeURIComponent(form.data.username);
-		throw redirect(303, `/login/password?username=${username}`);
+		const email = encodeURIComponent(form.data.username);
+		redirect(303, `/signup?email=${email}&reason=no-account`);
 	}
 } satisfies Actions;
