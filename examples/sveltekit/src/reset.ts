@@ -1,5 +1,12 @@
 import db from '$lib/server/db';
-import { challengesTable, passkeysTable, sessionsTable, usersTable } from '$lib/server/dbSchema';
+import {
+	challengesTable,
+	passkeysTable,
+	sessionsTable,
+	signupChallengesTable,
+	userChallengesTable,
+	usersTable
+} from '$lib/server/dbSchema';
 import {
 	PUBLIC_PASSLOCK_TENANCY_ID as tenancyId,
 	PUBLIC_PASSLOCK_ENDPOINT as endpoint
@@ -33,6 +40,8 @@ const reset = async () => {
 	await db.delete(sessionsTable);
 
 	log.info(`Deleting one time codes`);
+	await db.delete(signupChallengesTable);
+	await db.delete(userChallengesTable);
 	await db.delete(challengesTable);
 
 	log.info(`Deleting users`);

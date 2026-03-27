@@ -3,10 +3,17 @@
  */
 
 import { DrizzleQueryError } from 'drizzle-orm/errors';
-import { and, desc, eq, gte, isNull, lt, ne } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, isNull, lt, ne } from 'drizzle-orm';
 import { LibsqlError } from '@libsql/client';
 import db from './db';
-import { challengesTable, passkeysTable, sessionsTable, usersTable } from './dbSchema';
+import {
+	challengesTable,
+	passkeysTable,
+	sessionsTable,
+	signupChallengesTable,
+	userChallengesTable,
+	usersTable
+} from './dbSchema';
 import { hashText, isEqualHash } from './hashing';
 import {
 	generateCode,
@@ -83,6 +90,7 @@ export type UserPasskey = {
 };
 
 export type ChallengePurpose = 'login' | 'signup' | 'email-change';
+type UserChallengePurpose = Exclude<ChallengePurpose, 'signup'>;
 
 export type Challenge = {
 	id: string;
@@ -188,10 +196,10 @@ const isSqliteConstraintError = (e: unknown): e is DrizzleQueryError & { cause: 
 	);
 };
 
-const challengeFromDbRow = (row: {
+const userChallengeFromDbRow = (row: {
 	id: string;
 	purpose: string;
-	userId: number | null;
+	userId: number;
 	email: string;
 	givenName: string | null;
 	familyName: string | null;
@@ -205,40 +213,117 @@ const challengeFromDbRow = (row: {
 	purpose: row.purpose as ChallengePurpose
 });
 
+const signupChallengeFromDbRow = (row: {
+	id: string;
+	userId: number | null;
+	email: string;
+	givenName: string;
+	familyName: string;
+	failedAttempts: number;
+	consumedAt: number | null;
+	createdAt: number;
+	codeExpiresAt: number;
+	challengeExpiresAt: number;
+}): Challenge => ({
+	...row,
+	purpose: 'signup'
+});
+
+const userChallengeSelect = {
+	id: challengesTable.id,
+	purpose: userChallengesTable.purpose,
+	userId: userChallengesTable.userId,
+	email: challengesTable.email,
+	givenName: usersTable.givenName,
+	familyName: usersTable.familyName,
+	failedAttempts: challengesTable.failedAttempts,
+	consumedAt: challengesTable.consumedAt,
+	createdAt: challengesTable.createdAt,
+	codeExpiresAt: challengesTable.codeExpiresAt,
+	challengeExpiresAt: userChallengesTable.challengeExpiresAt
+};
+
+const userChallengeWithSecretSelect = {
+	...userChallengeSelect,
+	secretHash: challengesTable.secretHash
+};
+
+const signupChallengeSelect = {
+	id: challengesTable.id,
+	userId: signupChallengesTable.userId,
+	email: challengesTable.email,
+	givenName: signupChallengesTable.givenName,
+	familyName: signupChallengesTable.familyName,
+	failedAttempts: challengesTable.failedAttempts,
+	consumedAt: challengesTable.consumedAt,
+	createdAt: challengesTable.createdAt,
+	codeExpiresAt: challengesTable.codeExpiresAt,
+	challengeExpiresAt: signupChallengesTable.challengeExpiresAt
+};
+
+const signupChallengeWithSecretSelect = {
+	...signupChallengeSelect,
+	secretHash: challengesTable.secretHash
+};
+
+const deleteChallenges = async (challengeIds: string[]): Promise<void> => {
+	if (challengeIds.length === 0) return;
+
+	await db.delete(challengesTable).where(inArray(challengesTable.id, challengeIds));
+};
+
 const getChallengeByToken = async (token: string): Promise<Challenge | null> => {
 	const parsedToken = parseChallengeToken(token);
 	if (!parsedToken) return null;
 
-	const rows = await db
-		.select({
-			id: challengesTable.id,
-			purpose: challengesTable.purpose,
-			userId: challengesTable.userId,
-			email: challengesTable.email,
-			givenName: challengesTable.givenName,
-			familyName: challengesTable.familyName,
-			failedAttempts: challengesTable.failedAttempts,
-			consumedAt: challengesTable.consumedAt,
-			createdAt: challengesTable.createdAt,
-			codeExpiresAt: challengesTable.codeExpiresAt,
-			challengeExpiresAt: challengesTable.challengeExpiresAt,
-			secretHash: challengesTable.secretHash
-		})
+	const userRows = await db
+		.select(userChallengeWithSecretSelect)
 		.from(challengesTable)
+		.innerJoin(userChallengesTable, eq(userChallengesTable.challengeId, challengesTable.id))
+		.leftJoin(usersTable, eq(usersTable.id, userChallengesTable.userId))
 		.where(eq(challengesTable.id, parsedToken.id))
 		.limit(1);
 
-	const row = rows[0];
-	if (!row) return null;
+	const userRow = userRows[0];
+	if (userRow) {
+		const suppliedSecretHash = hashText(parsedToken.secret);
+		if (!isEqualHash(userRow.secretHash, suppliedSecretHash)) return null;
+
+		return userChallengeFromDbRow(userRow);
+	}
+
+	const signupRows = await db
+		.select(signupChallengeWithSecretSelect)
+		.from(challengesTable)
+		.innerJoin(signupChallengesTable, eq(signupChallengesTable.challengeId, challengesTable.id))
+		.where(eq(challengesTable.id, parsedToken.id))
+		.limit(1);
+
+	const signupRow = signupRows[0];
+	if (!signupRow) return null;
 
 	const suppliedSecretHash = hashText(parsedToken.secret);
-	if (!isEqualHash(row.secretHash, suppliedSecretHash)) return null;
+	if (!isEqualHash(signupRow.secretHash, suppliedSecretHash)) return null;
 
-	return challengeFromDbRow(row);
+	return signupChallengeFromDbRow(signupRow);
 };
 
 const deleteExpiredChallenges = async (): Promise<void> => {
-	await db.delete(challengesTable).where(lt(challengesTable.challengeExpiresAt, Date.now()));
+	const expiredUserChallenges = await db
+		.select({ id: userChallengesTable.challengeId })
+		.from(userChallengesTable)
+		.where(lt(userChallengesTable.challengeExpiresAt, Date.now()));
+
+	const expiredSignupChallenges = await db
+		.select({ id: signupChallengesTable.challengeId })
+		.from(signupChallengesTable)
+		.where(lt(signupChallengesTable.challengeExpiresAt, Date.now()));
+
+	await deleteChallenges([
+		...new Set(
+			[...expiredUserChallenges, ...expiredSignupChallenges].map((challenge) => challenge.id)
+		)
+	]);
 };
 
 const deleteChallengesByEmail = async (
@@ -247,46 +332,81 @@ const deleteChallengesByEmail = async (
 	excludeId?: string
 ): Promise<void> => {
 	const now = Date.now();
-	const where = excludeId
-		? and(
-				eq(challengesTable.email, email),
-				eq(challengesTable.purpose, purpose),
-				isNull(challengesTable.consumedAt),
-				gte(challengesTable.challengeExpiresAt, now),
-				ne(challengesTable.id, excludeId)
-			)
-		: and(
-				eq(challengesTable.email, email),
-				eq(challengesTable.purpose, purpose),
-				isNull(challengesTable.consumedAt),
-				gte(challengesTable.challengeExpiresAt, now)
-			);
+	const rows =
+		purpose === 'signup'
+			? await db
+					.select({ id: challengesTable.id })
+					.from(challengesTable)
+					.innerJoin(
+						signupChallengesTable,
+						eq(signupChallengesTable.challengeId, challengesTable.id)
+					)
+					.where(
+						excludeId
+							? and(
+									eq(challengesTable.email, email),
+									isNull(challengesTable.consumedAt),
+									gte(signupChallengesTable.challengeExpiresAt, now),
+									ne(challengesTable.id, excludeId)
+								)
+							: and(
+									eq(challengesTable.email, email),
+									isNull(challengesTable.consumedAt),
+									gte(signupChallengesTable.challengeExpiresAt, now)
+								)
+					)
+			: await db
+					.select({ id: challengesTable.id })
+					.from(challengesTable)
+					.innerJoin(userChallengesTable, eq(userChallengesTable.challengeId, challengesTable.id))
+					.where(
+						excludeId
+							? and(
+									eq(challengesTable.email, email),
+									eq(userChallengesTable.purpose, purpose),
+									isNull(challengesTable.consumedAt),
+									gte(userChallengesTable.challengeExpiresAt, now),
+									ne(challengesTable.id, excludeId)
+								)
+							: and(
+									eq(challengesTable.email, email),
+									eq(userChallengesTable.purpose, purpose),
+									isNull(challengesTable.consumedAt),
+									gte(userChallengesTable.challengeExpiresAt, now)
+								)
+					);
 
-	await db.delete(challengesTable).where(where);
+	await deleteChallenges(rows.map((challenge) => challenge.id));
 };
 
 const deleteChallengesByUserId = async (
 	userId: number,
-	purpose: ChallengePurpose,
+	purpose: UserChallengePurpose,
 	excludeId?: string
 ): Promise<void> => {
 	const now = Date.now();
-	const where = excludeId
-		? and(
-				eq(challengesTable.userId, userId),
-				eq(challengesTable.purpose, purpose),
-				isNull(challengesTable.consumedAt),
-				gte(challengesTable.challengeExpiresAt, now),
-				ne(challengesTable.id, excludeId)
-			)
-		: and(
-				eq(challengesTable.userId, userId),
-				eq(challengesTable.purpose, purpose),
-				isNull(challengesTable.consumedAt),
-				gte(challengesTable.challengeExpiresAt, now)
-			);
+	const rows = await db
+		.select({ id: challengesTable.id })
+		.from(challengesTable)
+		.innerJoin(userChallengesTable, eq(userChallengesTable.challengeId, challengesTable.id))
+		.where(
+			excludeId
+				? and(
+						eq(userChallengesTable.userId, userId),
+						eq(userChallengesTable.purpose, purpose),
+						isNull(challengesTable.consumedAt),
+						gte(userChallengesTable.challengeExpiresAt, now),
+						ne(challengesTable.id, excludeId)
+					)
+				: and(
+						eq(userChallengesTable.userId, userId),
+						eq(userChallengesTable.purpose, purpose),
+						isNull(challengesTable.consumedAt),
+						gte(userChallengesTable.challengeExpiresAt, now)
+					)
+		);
 
-	await db.delete(challengesTable).where(where);
+	await deleteChallenges(rows.map((challenge) => challenge.id));
 };
 
 const getLatestChallengeByEmail = async (
@@ -294,69 +414,68 @@ const getLatestChallengeByEmail = async (
 	purpose: ChallengePurpose
 ): Promise<Challenge | null> => {
 	const now = Date.now();
+	if (purpose === 'signup') {
+		const rows = await db
+			.select(signupChallengeSelect)
+			.from(challengesTable)
+			.innerJoin(signupChallengesTable, eq(signupChallengesTable.challengeId, challengesTable.id))
+			.where(
+				and(
+					eq(challengesTable.email, email),
+					isNull(challengesTable.consumedAt),
+					gte(signupChallengesTable.challengeExpiresAt, now)
+				)
+			)
+			.orderBy(desc(challengesTable.createdAt))
+			.limit(1);
+
+		const row = rows[0];
+		return row ? signupChallengeFromDbRow(row) : null;
+	}
+
 	const rows = await db
-		.select({
-			id: challengesTable.id,
-			purpose: challengesTable.purpose,
-			userId: challengesTable.userId,
-			email: challengesTable.email,
-			givenName: challengesTable.givenName,
-			familyName: challengesTable.familyName,
-			failedAttempts: challengesTable.failedAttempts,
-			consumedAt: challengesTable.consumedAt,
-			createdAt: challengesTable.createdAt,
-			codeExpiresAt: challengesTable.codeExpiresAt,
-			challengeExpiresAt: challengesTable.challengeExpiresAt
-		})
+		.select(userChallengeSelect)
 		.from(challengesTable)
+		.innerJoin(userChallengesTable, eq(userChallengesTable.challengeId, challengesTable.id))
+		.leftJoin(usersTable, eq(usersTable.id, userChallengesTable.userId))
 		.where(
 			and(
 				eq(challengesTable.email, email),
-				eq(challengesTable.purpose, purpose),
+				eq(userChallengesTable.purpose, purpose),
 				isNull(challengesTable.consumedAt),
-				gte(challengesTable.challengeExpiresAt, now)
+				gte(userChallengesTable.challengeExpiresAt, now)
 			)
 		)
 		.orderBy(desc(challengesTable.createdAt))
 		.limit(1);
 
 	const row = rows[0];
-	return row ? challengeFromDbRow(row) : null;
+	return row ? userChallengeFromDbRow(row) : null;
 };
 
 const getLatestChallengeByUserId = async (
 	userId: number,
-	purpose: ChallengePurpose
+	purpose: UserChallengePurpose
 ): Promise<Challenge | null> => {
 	const now = Date.now();
 	const rows = await db
-		.select({
-			id: challengesTable.id,
-			purpose: challengesTable.purpose,
-			userId: challengesTable.userId,
-			email: challengesTable.email,
-			givenName: challengesTable.givenName,
-			familyName: challengesTable.familyName,
-			failedAttempts: challengesTable.failedAttempts,
-			consumedAt: challengesTable.consumedAt,
-			createdAt: challengesTable.createdAt,
-			codeExpiresAt: challengesTable.codeExpiresAt,
-			challengeExpiresAt: challengesTable.challengeExpiresAt
-		})
+		.select(userChallengeSelect)
 		.from(challengesTable)
+		.innerJoin(userChallengesTable, eq(userChallengesTable.challengeId, challengesTable.id))
+		.leftJoin(usersTable, eq(usersTable.id, userChallengesTable.userId))
 		.where(
 			and(
-				eq(challengesTable.userId, userId),
-				eq(challengesTable.purpose, purpose),
+				eq(userChallengesTable.userId, userId),
+				eq(userChallengesTable.purpose, purpose),
 				isNull(challengesTable.consumedAt),
-				gte(challengesTable.challengeExpiresAt, now)
+				gte(userChallengesTable.challengeExpiresAt, now)
 			)
 		)
 		.orderBy(desc(challengesTable.createdAt))
 		.limit(1);
 
 	const row = rows[0];
-	return row ? challengeFromDbRow(row) : null;
+	return row ? userChallengeFromDbRow(row) : null;
 };
 
 const insertChallenge = async (input: {
@@ -374,20 +493,44 @@ const insertChallenge = async (input: {
 		const now = Date.now();
 
 		try {
-			await db.insert(challengesTable).values({
-				id: challengeId,
-				purpose: input.purpose,
-				userId: input.userId,
-				email: input.email,
-				givenName: input.givenName,
-				familyName: input.familyName,
-				secretHash: hashText(challengeSecret),
-				codeHash: hashText(code),
-				failedAttempts: 0,
-				consumedAt: null,
-				createdAt: now,
-				codeExpiresAt: now + CHALLENGE_CODE_TTL_MS,
-				challengeExpiresAt: now + CHALLENGE_FLOW_TTL_MS
+			await db.transaction(async (tx) => {
+				await tx.insert(challengesTable).values({
+					id: challengeId,
+					email: input.email,
+					secretHash: hashText(challengeSecret),
+					codeHash: hashText(code),
+					failedAttempts: 0,
+					consumedAt: null,
+					createdAt: now,
+					codeExpiresAt: now + CHALLENGE_CODE_TTL_MS
+				});
+
+				if (input.purpose === 'signup') {
+					const givenName = input.givenName?.trim();
+					const familyName = input.familyName?.trim();
+					if (!givenName || !familyName) {
+						throw new Error('Signup challenge requires given and family names');
+					}
+
+					await tx.insert(signupChallengesTable).values({
+						challengeId,
+						userId: input.userId,
+						challengeExpiresAt: now + CHALLENGE_FLOW_TTL_MS,
+						givenName,
+						familyName
+					});
+				} else {
+					if (input.userId === null) {
+						throw new Error('User challenge requires a user id');
+					}
+
+					await tx.insert(userChallengesTable).values({
+						challengeId,
+						purpose: input.purpose,
+						userId: input.userId,
+						challengeExpiresAt: now + CHALLENGE_FLOW_TTL_MS
+					});
+				}
 			});
 		} catch (e) {
 			if (isSqliteConstraintError(e) && e.cause.extendedCode === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
@@ -443,7 +586,7 @@ const createChallengeByEmail = async (input: {
 };
 
 const createChallengeByUserId = async (input: {
-	purpose: ChallengePurpose;
+	purpose: UserChallengePurpose;
 	userId: number;
 	email: string;
 	givenName: string | null;
@@ -692,7 +835,7 @@ export const consumeEmailChallenge = async (input: {
 	}
 
 	await markChallengeConsumed(challenge.id);
-	await deleteChallengesByUserId(input.userId, challenge.purpose, challenge.id);
+	await deleteChallengesByUserId(input.userId, 'email-change', challenge.id);
 
 	return {
 		_tag: 'EmailChangeSuccess',
@@ -795,7 +938,23 @@ export const deleteUser = async (userId: number): Promise<boolean> => {
 	return await db.transaction(async (tx) => {
 		await tx.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
 		await tx.delete(passkeysTable).where(eq(passkeysTable.userId, userId));
-		await tx.delete(challengesTable).where(eq(challengesTable.userId, userId));
+		const userChallenges = await tx
+			.select({ id: userChallengesTable.challengeId })
+			.from(userChallengesTable)
+			.where(eq(userChallengesTable.userId, userId));
+
+		const signupChallenges = await tx
+			.select({ id: signupChallengesTable.challengeId })
+			.from(signupChallengesTable)
+			.where(eq(signupChallengesTable.userId, userId));
+
+		const challengeIds = [
+			...new Set([...userChallenges, ...signupChallenges].map((challenge) => challenge.id))
+		];
+
+		if (challengeIds.length > 0) {
+			await tx.delete(challengesTable).where(inArray(challengesTable.id, challengeIds));
+		}
 
 		const deletedUsers = await tx
 			.delete(usersTable)
