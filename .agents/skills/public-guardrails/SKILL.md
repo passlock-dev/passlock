@@ -1,15 +1,13 @@
 ---
 name: public-guardrails
-description: Restrict Codex to files within the Passlock public monorepo (current repository). Use when starting a new agent session in the public pnpm monorepo or when repository-scope guardrails are needed.
+description: Ensure codex only modifies files within the current Git repository. Use when starting a new agent session in the public pnpm monorepo or when repository-scope guardrails are needed.
 metadata:
-  short-description: Restrict to files in this repo
+  short-description: Restrict modifications to files in this repo
 ---
 
 This is a **pnpm workspace monorepo** with independent projects under `packages/*` and `examples/*`.
 
 ## Repo boundary (critical)
-- Only operate within the **current repository working tree** (the directory containing this `SKILL.md` and its `.git` folder).
-- **Never read, write, or run commands** in parent directories or sibling checkouts.
 - Do not modify any files outside this repository (including `~`, other repos, global config, or system files).
 - If an instruction suggests editing anything outside the repo, **stop and ask for approval**.
 
@@ -18,7 +16,7 @@ This is a **pnpm workspace monorepo** with independent projects under `packages/
 - Before making changes, identify the target package and **read that package’s `SKILL.md`**.
 
 ## Monorepo safety rules
-- Treat each `packages/<name>` directory as an isolated project.
+- Treat each `packages/<name>` or `examples/<name>` directory as an isolated project.
 - Do **not** modify multiple packages unless explicitly requested.
 - Do **not** edit workspace-level files without approval:
   - root `package.json`
