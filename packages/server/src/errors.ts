@@ -74,6 +74,80 @@ export type InvalidCodeError = {
 export const isInvalidCodeError =
   isTagged<InvalidCodeError>("@error/InvalidCode")
 
+/* InvalidChallenge */
+
+/**
+ * Error payload returned when a mailbox challenge token is invalid.
+ *
+ * @category Mailbox
+ */
+export type InvalidChallengeError = {
+  _tag: "@error/InvalidChallenge"
+  message: string
+}
+
+/**
+ * Type guard for {@link InvalidChallengeError}.
+ */
+export const isInvalidChallengeError =
+  isTagged<InvalidChallengeError>("@error/InvalidChallenge")
+
+/* InvalidChallengeCode */
+
+/**
+ * Error payload returned when a mailbox challenge code is invalid.
+ *
+ * @category Mailbox
+ */
+export type InvalidChallengeCodeError = {
+  _tag: "@error/InvalidChallengeCode"
+  message: string
+}
+
+/**
+ * Type guard for {@link InvalidChallengeCodeError}.
+ */
+export const isInvalidChallengeCodeError = isTagged<InvalidChallengeCodeError>(
+  "@error/InvalidChallengeCode"
+)
+
+/* ChallengeExpired */
+
+/**
+ * Error payload returned when a mailbox challenge has expired.
+ *
+ * @category Mailbox
+ */
+export type ChallengeExpiredError = {
+  _tag: "@error/ChallengeExpired"
+  message: string
+}
+
+/**
+ * Type guard for {@link ChallengeExpiredError}.
+ */
+export const isChallengeExpiredError =
+  isTagged<ChallengeExpiredError>("@error/ChallengeExpired")
+
+/* ChallengeAttemptsExceeded */
+
+/**
+ * Error payload returned when mailbox challenge verification has exceeded the
+ * maximum number of attempts.
+ *
+ * @category Mailbox
+ */
+export type ChallengeAttemptsExceededError = {
+  _tag: "@error/ChallengeAttemptsExceeded"
+  message: string
+}
+
+/**
+ * Type guard for {@link ChallengeAttemptsExceededError}.
+ */
+export const isChallengeAttemptsExceededError =
+  isTagged<ChallengeAttemptsExceededError>("@error/ChallengeAttemptsExceeded")
+
 /* VerificationFailure */
 
 /**

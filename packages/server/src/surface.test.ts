@@ -1,5 +1,7 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type {
+  MailboxChallenge as UnsafeMailboxChallenge,
+  MailboxChallengeCreated as UnsafeMailboxChallengeCreated,
   Credential as UnsafeCredential,
   DeletedPasskeys as UnsafeDeletedPasskeys,
   ExtendedPrincipal as UnsafeExtendedPrincipal,
@@ -7,10 +9,13 @@ import type {
   PasskeyCredential as UnsafePasskeyCredential,
 } from "./index.js"
 import type {
+  MailboxChallenge,
+  MailboxChallengeCreated,
   Credential,
   DeletedPasskeys,
   Err,
   ExtendedPrincipal,
+  InvalidChallengeCodeError,
   ForbiddenError,
   InvalidCodeError,
   NotFoundError,
@@ -22,8 +27,11 @@ import type {
   VerificationError,
 } from "./safe.js"
 import {
+  type createMailboxChallenge,
+  type verifyMailboxChallenge,
   type deleteUserPasskeys,
   type exchangeCode,
+  isMailboxChallengeCreated,
   isExtendedPrincipal,
   isForbiddenError,
   type verifyIdToken,
@@ -52,6 +60,7 @@ describe("public surface", () => {
   it("exports shared types and guards", () => {
     expectTypeOf(isExtendedPrincipal).toBeFunction()
     expectTypeOf(isForbiddenError).toBeFunction()
+    expectTypeOf(isMailboxChallengeCreated).toBeFunction()
   })
 
   it("keeps shared types identical", () => {
@@ -67,6 +76,10 @@ describe("public surface", () => {
     type _5 = Assert<IsEqual<DeletedPasskeys, UnsafeDeletedPasskeys>>
     type _6 = Assert<IsEqual<Credential, UnsafeCredential>>
     type _7 = Assert<IsEqual<PasskeyCredential, UnsafePasskeyCredential>>
+    type _8 = Assert<IsEqual<MailboxChallenge, UnsafeMailboxChallenge>>
+    type _9 = Assert<
+      IsEqual<MailboxChallengeCreated, UnsafeMailboxChallengeCreated>
+    >
 
     expect(true).toBe(true)
   })
@@ -93,6 +106,25 @@ describe("public surface", () => {
       IsEqual<
         Awaited<ReturnType<typeof deleteUserPasskeys>>,
         Result<DeletedPasskeys, ForbiddenError | NotFoundError>
+      >
+    >
+    type _4 = Assert<
+      IsEqual<
+        Awaited<ReturnType<typeof createMailboxChallenge>>,
+        Result<MailboxChallengeCreated, ForbiddenError>
+      >
+    >
+    type _5 = Assert<
+      IsEqual<
+        Awaited<ReturnType<typeof verifyMailboxChallenge>>,
+        Result<
+          { _tag: "ChallengeVerified" },
+          | ForbiddenError
+          | InvalidChallengeCodeError
+          | import("./safe.js").InvalidChallengeError
+          | import("./safe.js").ChallengeExpiredError
+          | import("./safe.js").ChallengeAttemptsExceededError
+        >
       >
     >
 
