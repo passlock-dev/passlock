@@ -1,10 +1,14 @@
 ## Overview
 
-This is a PNPM monorepo containing the public Passlock code, mostly frontend (browser) and backend (Node.js) client libraries. Most of the client libraries are published as (public) npmjs packages. The monorepo itself is pushed to a public GitHub remote repository.
+This is a PNPM monorepo containing the public Passlock code, mostly frontend (browser) and backend (Node.js/Bun/Deno) client libraries. We also include some sample projects, illustrating how to use the client libraries. Most of the client libraries are published as (public) npmjs packages. The monorepo itself is pushed to a public GitHub remote repository.
 
 ## Relationship to the private repo
 
-The private monorepo contains the code and infrastructure for the Passlock cloud framework, including the REST APIs, RPC endpoints, the management console and other tooling. Projects in this monorepo are typically client libraries that interact with the REST APIs in the private repo. 
+The private monorepo contains the code and infrastructure for the Passlock cloud framework, including the REST APIs, RPC endpoints, the management console and other tooling. Projects in this monorepo are typically client libraries that interact with the REST APIs in the private repo. The private repo is sibling to this repository i.e. `../private`
+
+## Package names
+
+When instructing agents, we often refer to projects by their NPM package names as defined in the relevant package.json file e.g. `@passlock/client`.
 
 ## Monorepo structure
 
