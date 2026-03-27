@@ -40,35 +40,56 @@ export const sessionsTable = sqliteTable(
 	(table) => [index('sessions_user_id_idx').on(table.userId)]
 );
 
-/**
- * Serves several purposes:
- * 1) signup - acts as a transient user record pending email verification
- * 2) change email - used to verify ownership of the new address
- */
 export const challengesTable = sqliteTable(
 	'challenges',
 	{
 		id: text().primaryKey(),
-		purpose: text().notNull(),
-		userId: int().references(() => usersTable.id, { onDelete: 'cascade' }),
 		email: text().notNull(),
-		// signup
-		givenName: text(),
-		familyName: text(),
 		secretHash: text().notNull(),
 		codeHash: text().notNull(),
 		failedAttempts: int().notNull(),
 		consumedAt: int(),
 		createdAt: int().notNull(),
 		// after N mins the code expires and the user must request a new code
-		codeExpiresAt: int().notNull(),
+		codeExpiresAt: int().notNull()
+	},
+	(table) => [index('challenges_email_idx').on(table.email)]
+);
+
+export const userChallengesTable = sqliteTable(
+	'user_challenges',
+	{
+		challengeId: text()
+			.primaryKey()
+			.references(() => challengesTable.id, { onDelete: 'cascade' }),
+		purpose: text().notNull(),
+		userId: int()
+			.notNull()
+			.references(() => usersTable.id, { onDelete: 'cascade' }),
 		// after N mins the whole process must be restarted i.e. the user
 		// will have to sign up again or go back to the account management
 		// screen and change their password again.
 		challengeExpiresAt: int().notNull()
 	},
 	(table) => [
-		index('challenges_user_id_idx').on(table.userId),
-		index('challenges_email_idx').on(table.email)
+		index('user_challenges_user_id_idx').on(table.userId),
+		index('user_challenges_purpose_idx').on(table.purpose)
 	]
+);
+
+export const signupChallengesTable = sqliteTable(
+	'signup_challenges',
+	{
+		challengeId: text()
+			.primaryKey()
+			.references(() => challengesTable.id, { onDelete: 'cascade' }),
+		userId: int().references(() => usersTable.id, { onDelete: 'cascade' }),
+		// after N mins the whole process must be restarted i.e. the user
+		// will have to sign up again or go back to the account management
+		// screen and change their password again.
+		challengeExpiresAt: int().notNull(),
+		givenName: text().notNull(),
+		familyName: text().notNull()
+	},
+	(table) => [index('signup_challenges_user_id_idx').on(table.userId)]
 );

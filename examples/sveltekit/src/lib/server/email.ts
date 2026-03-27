@@ -32,12 +32,9 @@ export type SendCodeChallengeEmail = {
  * @param input
  */
 export const sendCodeChallengeEmail = async (input: SendCodeChallengeEmail) => {
-	const email = renderCodeChallengeEmail(input);
-	void email;
-
 	if (dev) {
-		console.log(`Sending one-time code email to ${input.email} [STUBBED]`);
-		console.log(`Code: ${input.code}`);
+    console.log(`*** Sending One Time Code to ${input.email} [STUBBED] ***`);
+		console.log(`*** One Time Code: ${input.code} [DEV ONLY] ***`);
 	}
 };
 
@@ -63,10 +60,7 @@ export type SendEmailUpdated = {
  * @param input
  */
 export const sendEmailUpdated = async (input: SendEmailUpdated) => {
-	const email = renderEmailChanged(input);
-	void email;
-
 	if (dev) {
-		console.log(`Sending email change alert to ${input.email} [STUBBED]`);
+		console.log(`*** Sending email changed alert to ${input.email} [STUBBED] ***`);
 	}
 };

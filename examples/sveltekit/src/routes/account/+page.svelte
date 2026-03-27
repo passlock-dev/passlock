@@ -305,11 +305,11 @@
 		authenticate again during the save.
 	</p>
 
-	<h2 class="mt-2 text-lg font-semibold">Changing the email address</h2>
+	<h2 class="mt-2 text-lg font-semibold">Changing the email</h2>
 
 	<p class="mt-2">
-		Changing the <span class="font-mono font-semibold">email</span>
-		will first result in a verification code being sent to the new address. When the code is entered we:
+		Changing the email will first result in a verification code being sent to the new address. When
+		the code is entered we:
 	</p>
 
 	<ol class="mt-2 ml-2 list-inside list-decimal space-y-2">
@@ -325,8 +325,7 @@
 	<h2 class="mt-2 text-lg font-semibold">Changing a name</h2>
 
 	<p class="mt-2">
-		Changing the <span class="font-mono font-semibold">name</span>
-		will also change the display name for any passkeys associated with the current account in the user's
-		local passkey manager.
+		Changing the first or last names will also change the display name for any passkeys associated
+		with the current account in the user's local passkey manager.
 	</p>
 </DevNotes>
