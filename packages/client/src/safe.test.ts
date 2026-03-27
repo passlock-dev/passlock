@@ -6,7 +6,7 @@ import {
   isDeleteError,
   isDeleteSuccess,
   type Logger,
-} from "../src/safe.js"
+} from "./safe.js"
 
 const originalPublicKeyCredential = globalThis.PublicKeyCredential
 

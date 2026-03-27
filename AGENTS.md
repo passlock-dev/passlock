@@ -24,8 +24,6 @@ The repo includes several PNPM projects/packages under the packages/ directory:
 
 * `packages/server (@passlock/server)` - A server-side/backend library used for managing passkeys. Typically used to verify a passkey registration or authentication performed using the `@passlock/client` package. Code in this package also invokes APIs exposed via the private `@passlock/api` package.
 
-* `packages/example (@passlock/example)` - A basic Vite project, used largely for shakedown testing of the different packages and components.
-
 It also includes example projects, illustrating how Passlock can be used in the real world. The examples live under the examples/ directory:
 
 * `examples/sveltekit (@passlock/sveltekit-example)` - A full featured SvelteKit project utilitising many of Passlock's features. 
@@ -34,7 +32,7 @@ It also includes example projects, illustrating how Passlock can be used in the 
 
 Our language of choice is TypeScript.
 
-Wherever possible we use the [Effect](https://effect.website/docs) framework. We prefer a functional style.
+Wherever possible we use the [Effect](https://effect.website/docs) framework. We prefer a functional style. The exception to this is the sample projects e.g. `examples/sveltekit` which will typically not use Effect.
 
 More details can be found in the AGENTS.md files within the projects.
 

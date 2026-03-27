@@ -1,6 +1,6 @@
 ## Overview
 
-The `@passlock/server` library is the primary library for interacting with Passlock in backend code. It includes functions for verifying frontend registration and authentication operations performed using the [@passlock/client](../client/) project. It also includes functions to manage passkeys in the Passlock vault.
+The `@passlock/server` library is the primary library for interacting with Passlock in backend code. It includes functions for verifying frontend registration and authentication operations performed using the [@passlock/client](../client/) project. It also includes functions to manage passkeys in the Passlock vault along with other capabilities.
 
 ## Project structure
 
@@ -33,6 +33,10 @@ For developers who prefer the traditional try/catch style of coding, we offer "u
 
 The entry point into the unsafe functions is `src/index.ts`.
 
+## Test suite location
+
+Wherever possible we try to co-locate module code and tests alongside each other e.g. `src/passkey/registration/registration.ts` and  `src/passkey/registration/registration.test.ts`. The exception is shared test fixtures and helpers that would sit in the `test/*` directory.
+
 ## Build and test commands
 
 We largely rely on pnpm scripts for build and test:
@@ -57,7 +61,11 @@ We largely rely on pnpm scripts for build and test:
 
 ## Important
 
-After making code changes run `pnpm run typecheck` to ensure TypeScript is happy. `pnpm run test:all` should also be run after significant code changes.
+After making code changes run `pnpm run typecheck` to ensure TypeScript is happy. 
+
+Execute `pnpm run format` and `pnpm run lint:fix` to ensure the formatting and linting rules have been followed.
+
+`pnpm run test:unit` should also be run after significant code changes.
 
 [effect]: https://effect.website
 [platform]: https://effect.website/docs/platform/introduction/

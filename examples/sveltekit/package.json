@@ -9,7 +9,7 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
-		"db:push": "drizzle-kit push",
+		"db:push": "drizzle-kit push --force",
 		"reset": "vite-node --options.transformMode.ssr='/.*/' src/reset.ts",
 		"typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
