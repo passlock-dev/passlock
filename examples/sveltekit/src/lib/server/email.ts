@@ -33,7 +33,7 @@ export type SendCodeChallengeEmail = {
  */
 export const sendCodeChallengeEmail = async (input: SendCodeChallengeEmail) => {
 	if (dev) {
-    console.log(`*** Sending One Time Code to ${input.email} [STUBBED] ***`);
+		console.log(`*** Sending One Time Code to ${input.email} [STUBBED] ***`);
 		console.log(`*** One Time Code: ${input.code} [DEV ONLY] ***`);
 	}
 };

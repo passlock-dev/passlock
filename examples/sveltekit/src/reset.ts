@@ -1,6 +1,5 @@
 import db from '$lib/server/db';
 import {
-	challengesTable,
 	passkeysTable,
 	sessionsTable,
 	signupChallengesTable,
@@ -12,7 +11,7 @@ import {
 	PUBLIC_PASSLOCK_ENDPOINT as endpoint
 } from '$env/static/public';
 import { PASSLOCK_API_KEY as apiKey } from '$env/static/private';
-import { deletePasskey } from '@passlock/server';
+import { deleteMailboxChallenge, deletePasskey } from '@passlock/server';
 import { eq } from 'drizzle-orm';
 import { intro, outro, log, confirm, isCancel } from '@clack/prompts';
 
@@ -23,11 +22,35 @@ const findAllPasskeys = async () => {
 	return passkeys.map((passkey) => passkey.passkeyId);
 };
 
+const findAllChallengeIds = async () => {
+	const [userChallenges, signupChallenges] = await Promise.all([
+		db.selectDistinct({ challengeId: userChallengesTable.challengeId }).from(userChallengesTable),
+		db
+			.selectDistinct({ challengeId: signupChallengesTable.challengeId })
+			.from(signupChallengesTable)
+	]);
+
+	return [
+		...new Set([...userChallenges, ...signupChallenges].map((challenge) => challenge.challengeId))
+	];
+};
+
 const deletePasskeys = async (passkeyIds: Array<string>) => {
 	for (const passkeyId of passkeyIds) {
 		await deletePasskey({ tenancyId, apiKey, endpoint, passkeyId });
 		await db.delete(passkeysTable).where(eq(passkeysTable.passkeyId, passkeyId));
 		console.log(`Deleted passkey ${passkeyId}`);
+	}
+};
+
+const deleteMailboxChallenges = async (challengeIds: string[]) => {
+	for (const challengeId of challengeIds) {
+		try {
+			await deleteMailboxChallenge({ tenancyId, apiKey, endpoint, challengeId });
+			console.log(`Deleted challenge ${challengeId}`);
+		} catch (error) {
+			console.warn(`Unable to delete challenge ${challengeId}`, error);
+		}
 	}
 };
 
@@ -40,9 +63,10 @@ const reset = async () => {
 	await db.delete(sessionsTable);
 
 	log.info(`Deleting one time codes`);
+	const challengeIds = await findAllChallengeIds();
+	await deleteMailboxChallenges(challengeIds);
 	await db.delete(signupChallengesTable);
 	await db.delete(userChallengesTable);
-	await db.delete(challengesTable);
 
 	log.info(`Deleting users`);
 	await db.delete(usersTable);

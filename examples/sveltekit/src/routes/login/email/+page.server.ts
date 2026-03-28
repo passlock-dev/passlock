@@ -2,8 +2,8 @@ import type { PageServerLoad } from './$types';
 
 import {
 	createOrRefreshLoginChallenge,
-	getUserByEmail,
-	getChallenge
+	getPendingChallenge,
+	getUserByEmail
 } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { getSignupLoginCookie, setSignupLoginCookie } from '$lib/server/challenge.js';
@@ -21,7 +21,7 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 
 	const pendingToken = getSignupLoginCookie(cookies);
 	if (pendingToken) {
-		const challenge = await getChallenge(pendingToken);
+		const challenge = await getPendingChallenge(pendingToken.challengeId);
 		if (challenge?.purpose === 'login' && challenge.email === account.email) {
 			redirect(303, resolve('/login/email/verify-code'));
 		}
@@ -32,17 +32,16 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 		const email = encodeURIComponent(account.email);
 		redirect(303, `${resolve('/signup')}?email=${email}&reason=no-account`);
 	}
-	if (result._tag === '@error/ChallengeRateLimited') {
-		const email = encodeURIComponent(account.email);
-		redirect(303, `${resolve('/login')}?username=${email}`);
-	}
 
 	await sendCodeChallengeEmail({
 		email: result.challenge.email,
 		firstName: result.challenge.givenName ?? 'there',
 		code: result.code
 	});
-	setSignupLoginCookie(cookies, result.token);
+	setSignupLoginCookie(cookies, {
+		challengeId: result.challenge.id,
+		token: result.token
+	});
 
 	redirect(303, resolve('/login/email/verify-code'));
 };

@@ -16,23 +16,23 @@ This application makes extensive use of the client and server packages.
 
 ## Project structure
 
-* `src/lib/client` - Code intended to run client side, but could also run on the server during SSR/SSG rendering. This code should use the `@passlock/client` library, it **should not** use `@passlock/server` or make authenticated REST calls to the Passlock API.
+- `src/lib/client` - Code intended to run client side, but could also run on the server during SSR/SSG rendering. This code should use the `@passlock/client` library, it **should not** use `@passlock/server` or make authenticated REST calls to the Passlock API.
 
-* `src/lib/server` - Server side code responsible for verifying passkey registration and authentication operations, managing passkeys in the Passlock vault and other tasks. This code will generally use the `@passlock/server` library, it **should not** use `@passlock/client`.
+- `src/lib/server` - Server side code responsible for verifying passkey registration and authentication operations, managing passkeys in the Passlock vault and other tasks. This code will generally use the `@passlock/server` library, it **should not** use `@passlock/client`.
 
-* `src/lib/server/dbSchema.ts` - The [Drizzle ORM][drizzle] schema.
+- `src/lib/server/dbSchema.ts` - The [Drizzle ORM][drizzle] schema.
 
-* `src/lib/shared` - Typically [Valibot][valibot] schemas and typed routes. Used by client and server side code.
+- `src/lib/shared` - Typically [Valibot][valibot] schemas and typed routes. Used by client and server side code.
 
 ### Routes
 
-* `/account` - Account management including name and email changes along with account deletion.
+- `/account` - Account management including name and email changes along with account deletion.
 
-* `/login` - Login related routes
+- `/login` - Login related routes
 
-* `/passkeys` - Registration and deletion of passkeys. Note: updates to passkey usernames/display names happen via the `/account` routes.
+- `/passkeys` - Registration and deletion of passkeys. Note: updates to passkey usernames/display names happen via the `/account` routes.
 
-* `/signup` - Account creation/registration
+- `/signup` - Account creation/registration
 
 ### +server.ts endpoints
 
@@ -48,7 +48,7 @@ We have several `/+server.ts` endpoints. The general pattern is:
 
 ## Database
 
-We use [Drizzle ORM][drizzle] with a [SQLite][sqlite] database. 
+We use [Drizzle ORM][drizzle] with a [SQLite][sqlite] database.
 
 Don't worry about supporting/migrating existing data in the database. This is a sample project/learning resource, not a production app so it's quite acceptable to drop and re-create the database during development.
 
@@ -56,17 +56,17 @@ Don't worry about supporting/migrating existing data in the database. This is a 
 
 We largely rely on pnpm scripts for build and test:
 
-* `pnpm run typecheck` - Invoke TSC to typecheck the project
+- `pnpm run typecheck` - Invoke TSC to typecheck the project
 
-* `pnpm run format` - Format using Biome.js
+- `pnpm run format` - Format using Biome.js
 
-* `pnpm run lint:fix` - Lint using Biome.js and attempt to fix any issues
+- `pnpm run lint:fix` - Lint using Biome.js and attempt to fix any issues
 
-* `pnpm run db:push` - Used to migrate the dev database.
+- `pnpm run db:push` - Used to migrate the dev database.
 
 ## Important
 
-After making code changes run `pnpm run typecheck` to ensure SvelteKit is happy. 
+After making code changes run `pnpm run typecheck` to ensure SvelteKit is happy.
 
 Execute `pnpm run format` and `pnpm run lint:fix` to ensure the formatting and linting rules have been followed.
 

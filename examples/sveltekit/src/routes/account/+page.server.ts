@@ -206,25 +206,6 @@ export const actions = {
 			});
 		}
 
-		// we dont want to fire off emails every time the user hits
-		// the submit button
-		if (result._tag === '@error/ChallengeRateLimited') {
-			const seconds = Math.ceil(result.retryAfterMs / 1000);
-
-			setError(
-				emailForm,
-				'email',
-				`A code was just sent. Please wait ${seconds} seconds and try again.`
-			);
-
-			return fail(400, {
-				profileForm,
-				emailForm,
-				currentEmail: user.email,
-				hasPasskeys
-			});
-		}
-
 		// send the verification code to the new email
 		await sendCodeChallengeEmail({
 			email: result.challenge.email,
@@ -233,7 +214,10 @@ export const actions = {
 		});
 
 		// verification requires the 6 digit code and the token
-		setEmailChangeCookie(cookies, result.token);
+		setEmailChangeCookie(cookies, {
+			challengeId: result.challenge.id,
+			token: result.token
+		});
 
 		redirect(303, resolve('/account/verify-email'));
 	}
