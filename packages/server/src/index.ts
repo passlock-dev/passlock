@@ -7,6 +7,9 @@
  * @categoryDescription Passkeys
  * Functions and related types for managing passkeys.
  *
+ * @categoryDescription Mailbox
+ * Functions and related types for managing mailbox one-time-code challenges.
+ *
  * @categoryDescription Principal
  * Functions and related types for exchanging client codes and verifying
  * Passlock tokens.
@@ -17,6 +20,19 @@
  */
 
 import { Effect, pipe } from "effect"
+import type {
+  CreateMailboxChallengeOptions,
+  DeleteMailboxChallengeOptions,
+  MailboxChallengeCreated,
+  MailboxChallengeDeleted,
+  MailboxChallengeVerified,
+  VerifyMailboxChallengeOptions,
+} from "./mailbox/mailbox.js"
+import {
+  createMailboxChallenge as createMailboxChallengeE,
+  deleteMailboxChallenge as deleteMailboxChallengeE,
+  verifyMailboxChallenge as verifyMailboxChallengeE,
+} from "./mailbox/mailbox.js"
 import type {
   AssignUserOptions,
   DeletedPasskey,
@@ -49,6 +65,52 @@ import {
   verifyIdToken as verifyIdTokenE,
 } from "./principal/principal.js"
 import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
+
+/**
+ * Create a mailbox one-time-code challenge.
+ *
+ * @param options
+ * @returns A promise resolving to the created mailbox challenge payload.
+ * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
+ *
+ * @category Mailbox
+ */
+export const createMailboxChallenge = (
+  options: CreateMailboxChallengeOptions
+): Promise<MailboxChallengeCreated> =>
+  pipe(createMailboxChallengeE(options), Effect.runPromise)
+
+/**
+ * Verify a mailbox one-time-code challenge.
+ *
+ * @param options
+ * @returns A promise resolving to a verification payload.
+ * @throws {@link InvalidChallengeError} if the challenge token is invalid
+ * @throws {@link InvalidChallengeCodeError} if the one-time code is invalid
+ * @throws {@link ChallengeExpiredError} if the challenge has expired
+ * @throws {@link ChallengeAttemptsExceededError} if the maximum verification attempts have been exceeded
+ * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
+ *
+ * @category Mailbox
+ */
+export const verifyMailboxChallenge = (
+  options: VerifyMailboxChallengeOptions
+): Promise<MailboxChallengeVerified> =>
+  pipe(verifyMailboxChallengeE(options), Effect.runPromise)
+
+/**
+ * Delete a mailbox one-time-code challenge.
+ *
+ * @param options
+ * @returns A promise resolving to a delete payload.
+ * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
+ *
+ * @category Mailbox
+ */
+export const deleteMailboxChallenge = (
+  options: DeleteMailboxChallengeOptions
+): Promise<MailboxChallengeDeleted> =>
+  pipe(deleteMailboxChallengeE(options), Effect.runPromise)
 
 /**
  * Assign a custom user ID to a passkey in the Passlock vault.
@@ -208,9 +270,13 @@ export const verifyIdToken = (
 
 export type {
   BadRequestError,
+  ChallengeAttemptsExceededError,
+  ChallengeExpiredError,
   DuplicateEmailError,
   ForbiddenError,
   InvalidCodeError,
+  InvalidChallengeCodeError,
+  InvalidChallengeError,
   InvalidEmailError,
   InvalidTenancyError,
   NotFoundError,
@@ -220,9 +286,13 @@ export type {
 } from "./errors.js"
 export {
   isBadRequestError,
+  isChallengeAttemptsExceededError,
+  isChallengeExpiredError,
   isDuplicateEmailError,
   isForbiddenError,
   isInvalidCodeError,
+  isInvalidChallengeCodeError,
+  isInvalidChallengeError,
   isInvalidEmailError,
   isInvalidTenancyError,
   isNotFoundError,
@@ -230,6 +300,21 @@ export {
   isUnauthorizedError,
   isVerificationError,
 } from "./errors.js"
+export type {
+  CreateMailboxChallengeOptions,
+  DeleteMailboxChallengeOptions,
+  MailboxChallenge,
+  MailboxChallengeCreated,
+  MailboxChallengeDeleted,
+  MailboxChallengeVerified,
+  VerifyMailboxChallengeOptions,
+} from "./mailbox/mailbox.js"
+export {
+  isMailboxChallenge,
+  isMailboxChallengeCreated,
+  isMailboxChallengeDeleted,
+  isMailboxChallengeVerified,
+} from "./mailbox/mailbox.js"
 export type {
   AssignUserOptions,
   Credential,

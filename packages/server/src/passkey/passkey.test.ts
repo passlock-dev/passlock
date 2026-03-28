@@ -105,6 +105,15 @@ const expectedDeletedPasskeys: DeletedPasskeys = {
   ],
 }
 
+const expectedDeletedPasskey = {
+  _tag: "DeletedPasskey",
+  deleted: {
+    credentialId: "dummyWebAuthnId",
+    userId: "dummyWebAuthnUserId",
+    rpId: "localhost",
+  },
+} as const
+
 describe(listPasskeys.name, () => {
   describe("when no cursor is provided", () => {
     it.effect("should not send it", () =>
@@ -450,7 +459,7 @@ describe(deletePasskey.name, () => {
           deletePasskey({ passkeyId, apiKey, tenancyId }, TestLayer)
         )
 
-        expect(result).toStrictEqual(expectedPasskey)
+        expect(result).toStrictEqual(expectedDeletedPasskey)
 
         expect(invokedUrl).toEqual(
           "https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId"

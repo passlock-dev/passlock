@@ -40,6 +40,67 @@ export const isInvalidCodeError = (
   payload: unknown
 ): payload is InvalidCodeError => Schema.is(InvalidCodeError)(payload)
 
+/* InvalidChallenge */
+
+/** @internal */
+export class InvalidChallengeError extends Schema.TaggedError<InvalidChallengeError>()(
+  "@error/InvalidChallenge",
+  {
+    message: Schema.String,
+  }
+) {}
+
+/** @internal */
+export const isInvalidChallengeError = (
+  payload: unknown
+): payload is InvalidChallengeError => Schema.is(InvalidChallengeError)(payload)
+
+/* InvalidChallengeCode */
+
+/** @internal */
+export class InvalidChallengeCodeError extends Schema.TaggedError<InvalidChallengeCodeError>()(
+  "@error/InvalidChallengeCode",
+  {
+    message: Schema.String,
+  }
+) {}
+
+/** @internal */
+export const isInvalidChallengeCodeError = (
+  payload: unknown
+): payload is InvalidChallengeCodeError =>
+  Schema.is(InvalidChallengeCodeError)(payload)
+
+/* ChallengeExpired */
+
+/** @internal */
+export class ChallengeExpiredError extends Schema.TaggedError<ChallengeExpiredError>()(
+  "@error/ChallengeExpired",
+  {
+    message: Schema.String,
+  }
+) {}
+
+/** @internal */
+export const isChallengeExpiredError = (
+  payload: unknown
+): payload is ChallengeExpiredError => Schema.is(ChallengeExpiredError)(payload)
+
+/* ChallengeAttemptsExceeded */
+
+/** @internal */
+export class ChallengeAttemptsExceededError extends Schema.TaggedError<
+  ChallengeAttemptsExceededError
+>()("@error/ChallengeAttemptsExceeded", {
+  message: Schema.String,
+}) {}
+
+/** @internal */
+export const isChallengeAttemptsExceededError = (
+  payload: unknown
+): payload is ChallengeAttemptsExceededError =>
+  Schema.is(ChallengeAttemptsExceededError)(payload)
+
 /* InvalidTenancy */
 
 /** @internal */

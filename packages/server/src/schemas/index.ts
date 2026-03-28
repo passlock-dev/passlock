@@ -1,3 +1,4 @@
+export * from "./challenge.js"
 export * from "./errors.js"
 export * from "./passkey.js"
 export * from "./principal.js"

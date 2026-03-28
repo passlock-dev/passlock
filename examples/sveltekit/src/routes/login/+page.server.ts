@@ -7,7 +7,7 @@ import {
 } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setSignupLoginCookie } from '$lib/server/challenge.js';
-import { superValidate, setError } from 'sveltekit-superforms';
+import { superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
@@ -59,21 +59,16 @@ export const actions = {
 				const email = encodeURIComponent(form.data.username);
 				redirect(303, `/signup?email=${email}&reason=no-account`);
 			}
-			if (result._tag === '@error/ChallengeRateLimited') {
-				const seconds = Math.ceil(result.retryAfterMs / 1000);
-				return setError(
-					form,
-					'username',
-					`A code was just sent. Please wait ${seconds} seconds and try again.`
-				);
-			}
 
 			await sendCodeChallengeEmail({
 				email: result.challenge.email,
 				firstName: result.challenge.givenName ?? 'there',
 				code: result.code
 			});
-			setSignupLoginCookie(cookies, result.token);
+			setSignupLoginCookie(cookies, {
+				challengeId: result.challenge.id,
+				token: result.token
+			});
 
 			redirect(303, '/login/email/verify-code');
 		}

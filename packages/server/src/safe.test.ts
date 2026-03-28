@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 const code = "dummyCode"
 const tenancyId = "dummyTenancyId"
 const apiKey = "dummyApiKey"
+const challengeId = "dummyChallengeId"
 const originalFetch = globalThis.fetch
 
 const principalResponse = {
@@ -59,6 +60,51 @@ describe("safe result envelopes", () => {
     expect(JSON.stringify(result)).not.toContain('"value"')
   })
 
+  it("decorates mailbox challenge creation results without breaking _tag narrowing", async () => {
+    globalThis.fetch = vi.fn<typeof fetch>(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            _tag: "ChallengeCreated",
+            challenge: {
+              id: challengeId,
+              purpose: "LOGIN_CODE",
+              email: "user@example.com",
+              token: `${challengeId}.secret`,
+              code: "123456",
+              createdAt: 1,
+              expiresAt: 2,
+            },
+          }),
+          { status: 201 }
+        )
+      )
+    )
+
+    const { createMailboxChallenge, isMailboxChallengeCreated } = await import(
+      "./safe.js"
+    )
+    const result = await createMailboxChallenge({
+      apiKey,
+      email: "user@example.com",
+      purpose: "LOGIN_CODE",
+      tenancyId,
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.failure).toBe(false)
+    if (!result.success) {
+      throw new Error("Expected a successful result")
+    }
+    expect(result.value).toBe(result)
+    expect(result._tag).toEqual("ChallengeCreated")
+    expect(isMailboxChallengeCreated(result)).toBe(true)
+    expect(result.challenge.id).toEqual(challengeId)
+    expect(Object.keys(result)).not.toContain("success")
+    expect(Object.keys(result)).not.toContain("failure")
+    expect(Object.keys(result)).not.toContain("value")
+  })
+
   it("decorates expected errors without breaking _tag narrowing", async () => {
     globalThis.fetch = vi.fn<typeof fetch>(() =>
       Promise.resolve(
@@ -90,5 +136,42 @@ describe("safe result envelopes", () => {
     expect(JSON.stringify(result)).not.toContain('"success"')
     expect(JSON.stringify(result)).not.toContain('"failure"')
     expect(JSON.stringify(result)).not.toContain('"error"')
+  })
+
+  it("decorates mailbox verification errors without breaking _tag narrowing", async () => {
+    globalThis.fetch = vi.fn<typeof fetch>(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            _tag: "@error/InvalidChallengeCode",
+            message: "Invalid challenge code",
+          }),
+          { status: 400 }
+        )
+      )
+    )
+
+    const { isInvalidChallengeCodeError, verifyMailboxChallenge } = await import(
+      "./safe.js"
+    )
+    const result = await verifyMailboxChallenge({
+      apiKey,
+      code: "000000",
+      tenancyId,
+      token: `${challengeId}.secret`,
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.failure).toBe(true)
+    if (result.success) {
+      throw new Error("Expected an error result")
+    }
+    expect(result.error).toBe(result)
+    expect(result._tag).toEqual("@error/InvalidChallengeCode")
+    expect(isInvalidChallengeCodeError(result)).toBe(true)
+    expect(result.message).toEqual("Invalid challenge code")
+    expect(Object.keys(result)).not.toContain("success")
+    expect(Object.keys(result)).not.toContain("failure")
+    expect(Object.keys(result)).not.toContain("error")
   })
 })

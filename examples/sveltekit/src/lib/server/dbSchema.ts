@@ -40,32 +40,16 @@ export const sessionsTable = sqliteTable(
 	(table) => [index('sessions_user_id_idx').on(table.userId)]
 );
 
-export const challengesTable = sqliteTable(
-	'challenges',
-	{
-		id: text().primaryKey(),
-		email: text().notNull(),
-		secretHash: text().notNull(),
-		codeHash: text().notNull(),
-		failedAttempts: int().notNull(),
-		consumedAt: int(),
-		createdAt: int().notNull(),
-		// after N mins the code expires and the user must request a new code
-		codeExpiresAt: int().notNull()
-	},
-	(table) => [index('challenges_email_idx').on(table.email)]
-);
-
 export const userChallengesTable = sqliteTable(
 	'user_challenges',
 	{
-		challengeId: text()
-			.primaryKey()
-			.references(() => challengesTable.id, { onDelete: 'cascade' }),
+		challengeId: text().primaryKey(),
 		purpose: text().notNull(),
 		userId: int()
 			.notNull()
 			.references(() => usersTable.id, { onDelete: 'cascade' }),
+		email: text().notNull(),
+		createdAt: int().notNull(),
 		// after N mins the whole process must be restarted i.e. the user
 		// will have to sign up again or go back to the account management
 		// screen and change their password again.
@@ -73,23 +57,23 @@ export const userChallengesTable = sqliteTable(
 	},
 	(table) => [
 		index('user_challenges_user_id_idx').on(table.userId),
-		index('user_challenges_purpose_idx').on(table.purpose)
+		index('user_challenges_purpose_idx').on(table.purpose),
+		index('user_challenges_email_idx').on(table.email)
 	]
 );
 
 export const signupChallengesTable = sqliteTable(
 	'signup_challenges',
 	{
-		challengeId: text()
-			.primaryKey()
-			.references(() => challengesTable.id, { onDelete: 'cascade' }),
-		userId: int().references(() => usersTable.id, { onDelete: 'cascade' }),
+		challengeId: text().primaryKey(),
+		email: text().notNull(),
 		// after N mins the whole process must be restarted i.e. the user
 		// will have to sign up again or go back to the account management
 		// screen and change their password again.
 		challengeExpiresAt: int().notNull(),
+		createdAt: int().notNull(),
 		givenName: text().notNull(),
 		familyName: text().notNull()
 	},
-	(table) => [index('signup_challenges_user_id_idx').on(table.userId)]
+	(table) => [index('signup_challenges_email_idx').on(table.email)]
 );

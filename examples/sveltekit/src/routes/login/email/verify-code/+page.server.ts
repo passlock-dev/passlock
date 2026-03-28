@@ -5,7 +5,7 @@ import {
 	createOrRefreshLoginChallenge,
 	createSession,
 	getPasskeysByUserId,
-	getChallenge
+	getPendingChallenge
 } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import {
@@ -38,10 +38,13 @@ const createResendForm = () =>
 		id: 'resend-code-form'
 	});
 
-const getPendingLoginContext = async (token: string | undefined, clearCookie: () => void) => {
-	if (!token) redirect(303, resolve('/login'));
+const getPendingLoginContext = async (
+	pending: ReturnType<typeof getSignupLoginCookie>,
+	clearCookie: () => void
+) => {
+	if (!pending) redirect(303, resolve('/login'));
 
-	const challenge = await getChallenge(token);
+	const challenge = await getPendingChallenge(pending.challengeId);
 	if (!challenge || challenge.purpose !== 'login') {
 		clearCookie();
 		redirect(303, resolve('/login'));
@@ -53,8 +56,8 @@ const getPendingLoginContext = async (token: string | undefined, clearCookie: ()
 export const load = (async ({ locals, cookies }) => {
 	if (locals.user) redirect(302, '/');
 
-	const token = getSignupLoginCookie(cookies);
-	const { email } = await getPendingLoginContext(token, () => deleteSignupLoginCookie(cookies));
+	const pending = getSignupLoginCookie(cookies);
+	const { email } = await getPendingLoginContext(pending, () => deleteSignupLoginCookie(cookies));
 
 	const verifyForm = await createVerifyForm();
 	const resendForm = await createResendForm();
@@ -75,11 +78,12 @@ export const actions = {
 
 		if (!verifyForm.valid) return fail(400, { verifyForm, resendForm });
 
-		const token = getSignupLoginCookie(cookies);
-		const challenge = await getPendingLoginContext(token, () => deleteSignupLoginCookie(cookies));
+		const pending = getSignupLoginCookie(cookies);
+		const challenge = await getPendingLoginContext(pending, () => deleteSignupLoginCookie(cookies));
 
 		const result = await consumeLoginChallenge({
-			token: token!,
+			challengeId: pending!.challengeId,
+			token: pending!.token,
 			code: verifyForm.data.code
 		});
 
@@ -128,8 +132,8 @@ export const actions = {
 			return fail(400, { verifyForm, resendForm });
 		}
 
-		const token = getSignupLoginCookie(cookies);
-		const challenge = await getPendingLoginContext(token, () => deleteSignupLoginCookie(cookies));
+		const pending = getSignupLoginCookie(cookies);
+		const challenge = await getPendingLoginContext(pending, () => deleteSignupLoginCookie(cookies));
 
 		const result = await createOrRefreshLoginChallenge(challenge.email);
 		if (result._tag === '@error/AccountNotFound') {
@@ -137,18 +141,16 @@ export const actions = {
 			const email = encodeURIComponent(challenge.email);
 			redirect(303, `${resolve('/signup')}?email=${email}&reason=no-account`);
 		}
-		if (result._tag === '@error/ChallengeRateLimited') {
-			const seconds = Math.ceil(result.retryAfterMs / 1000);
-			resendForm.message = `Please wait ${seconds} seconds before requesting another code.`;
-			return { verifyForm, resendForm, email: challenge.email };
-		}
 
 		await sendCodeChallengeEmail({
 			email: result.challenge.email,
 			firstName: result.challenge.givenName ?? 'there',
 			code: result.code
 		});
-		setSignupLoginCookie(cookies, result.token);
+		setSignupLoginCookie(cookies, {
+			challengeId: result.challenge.id,
+			token: result.token
+		});
 		resendForm.message = 'A new code has been sent';
 
 		return { verifyForm, resendForm, email: result.challenge.email };

@@ -29,6 +29,9 @@
  * @categoryDescription Passkeys
  * Functions and related types for managing passkeys.
  *
+ * @categoryDescription Mailbox
+ * Functions and related types for managing mailbox one-time-code challenges.
+ *
  * @categoryDescription Principal
  * Functions and related types for exchanging client codes and verifying
  * Passlock tokens.
@@ -40,11 +43,28 @@
 
 import { Effect, pipe } from "effect"
 import type {
+  ChallengeAttemptsExceededError,
+  ChallengeExpiredError,
   ForbiddenError,
   InvalidCodeError,
+  InvalidChallengeCodeError,
+  InvalidChallengeError,
   NotFoundError,
   VerificationError,
 } from "./errors.js"
+import type {
+  CreateMailboxChallengeOptions,
+  DeleteMailboxChallengeOptions,
+  MailboxChallengeCreated,
+  MailboxChallengeDeleted,
+  MailboxChallengeVerified,
+  VerifyMailboxChallengeOptions,
+} from "./mailbox/mailbox.js"
+import {
+  createMailboxChallenge as createMailboxChallengeE,
+  deleteMailboxChallenge as deleteMailboxChallengeE,
+  verifyMailboxChallenge as verifyMailboxChallengeE,
+} from "./mailbox/mailbox.js"
 import type {
   AssignUserOptions,
   DeletedPasskey,
@@ -90,6 +110,56 @@ const runSafe = <A extends object, E extends object>(
     }),
     Effect.runPromise
   )
+
+/**
+ * Create a mailbox one-time-code challenge.
+ *
+ * @param options
+ * @returns A promise resolving to a {@link Result} whose success branch contains
+ * the created mailbox challenge payload and whose error branch contains an API error.
+ *
+ * @category Mailbox
+ */
+export const createMailboxChallenge = (
+  options: CreateMailboxChallengeOptions
+): Promise<Result<MailboxChallengeCreated, ForbiddenError>> =>
+  runSafe(createMailboxChallengeE(options))
+
+/**
+ * Verify a mailbox one-time-code challenge.
+ *
+ * @param options
+ * @returns A promise resolving to a {@link Result} whose success branch contains
+ * the verification payload and whose error branch contains an API error.
+ *
+ * @category Mailbox
+ */
+export const verifyMailboxChallenge = (
+  options: VerifyMailboxChallengeOptions
+): Promise<
+  Result<
+    MailboxChallengeVerified,
+    | ForbiddenError
+    | InvalidChallengeError
+    | InvalidChallengeCodeError
+    | ChallengeExpiredError
+    | ChallengeAttemptsExceededError
+  >
+> => runSafe(verifyMailboxChallengeE(options))
+
+/**
+ * Delete a mailbox one-time-code challenge.
+ *
+ * @param options
+ * @returns A promise resolving to a {@link Result} whose success branch contains
+ * the delete payload and whose error branch contains an API error.
+ *
+ * @category Mailbox
+ */
+export const deleteMailboxChallenge = (
+  options: DeleteMailboxChallengeOptions
+): Promise<Result<MailboxChallengeDeleted, ForbiddenError>> =>
+  runSafe(deleteMailboxChallengeE(options))
 
 /**
  * Assign a custom User ID to a passkey. Will be reflected in the next
@@ -287,9 +357,13 @@ export const verifyIdToken = (
 
 export type {
   BadRequestError,
+  ChallengeAttemptsExceededError,
+  ChallengeExpiredError,
   DuplicateEmailError,
   ForbiddenError,
   InvalidCodeError,
+  InvalidChallengeCodeError,
+  InvalidChallengeError,
   InvalidEmailError,
   InvalidTenancyError,
   NotFoundError,
@@ -299,9 +373,13 @@ export type {
 } from "./errors.js"
 export {
   isBadRequestError,
+  isChallengeAttemptsExceededError,
+  isChallengeExpiredError,
   isDuplicateEmailError,
   isForbiddenError,
   isInvalidCodeError,
+  isInvalidChallengeCodeError,
+  isInvalidChallengeError,
   isInvalidEmailError,
   isInvalidTenancyError,
   isNotFoundError,
@@ -309,6 +387,21 @@ export {
   isUnauthorizedError,
   isVerificationError,
 } from "./errors.js"
+export type {
+  CreateMailboxChallengeOptions,
+  DeleteMailboxChallengeOptions,
+  MailboxChallenge,
+  MailboxChallengeCreated,
+  MailboxChallengeDeleted,
+  MailboxChallengeVerified,
+  VerifyMailboxChallengeOptions,
+} from "./mailbox/mailbox.js"
+export {
+  isMailboxChallenge,
+  isMailboxChallengeCreated,
+  isMailboxChallengeDeleted,
+  isMailboxChallengeVerified,
+} from "./mailbox/mailbox.js"
 export type {
   AssignUserOptions,
   Credential,

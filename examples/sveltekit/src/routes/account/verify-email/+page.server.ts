@@ -2,7 +2,7 @@ import type { Actions, PageServerLoad } from './$types';
 import {
 	consumeEmailChallenge as verifyChangeEmailChallenge,
 	createOrRefreshEmailChallenge,
-	getChallenge
+	getPendingChallenge
 } from '$lib/server/repository.js';
 import { sendEmailUpdated, sendCodeChallengeEmail } from '$lib/server/email.js';
 import {
@@ -57,13 +57,13 @@ const redirectToAccountWithError = (reason: 'expired' | 'taken', email?: string)
  * @returns
  */
 const getChangeEmailChallenge = async (
-	token: string | undefined,
+	pending: ReturnType<typeof getEmailChangeCookie>,
 	userId: number,
 	clearCookie: () => void
 ) => {
-	if (!token) redirect(303, resolve('/account'));
+	if (!pending) redirect(303, resolve('/account'));
 
-	const challenge = await getChallenge(token);
+	const challenge = await getPendingChallenge(pending.challengeId);
 	if (!challenge || challenge.purpose !== 'email-change' || challenge.userId !== userId) {
 		clearCookie();
 		redirect(303, resolve('/account'));
@@ -77,8 +77,8 @@ export const load = (async ({ locals, cookies }) => {
 
 	// the token allows us to display the email address in question
 	// before the user has entered the code
-	const token = getEmailChangeCookie(cookies);
-	const { email } = await getChangeEmailChallenge(token, locals.user.userId, () =>
+	const pending = getEmailChangeCookie(cookies);
+	const { email } = await getChangeEmailChallenge(pending, locals.user.userId, () =>
 		deleteEmailChangeCookie(cookies)
 	);
 
@@ -107,13 +107,14 @@ export const actions = {
 
 		// supplying the code is not enough, the user must also
 		// present the token (stored as a cookie)
-		const token = getEmailChangeCookie(cookies);
-		const challenge = await getChangeEmailChallenge(token, user.userId, () =>
+		const pending = getEmailChangeCookie(cookies);
+		const challenge = await getChangeEmailChallenge(pending, user.userId, () =>
 			deleteEmailChangeCookie(cookies)
 		);
 
 		const result = await verifyChangeEmailChallenge({
-			token: token!,
+			challengeId: pending!.challengeId,
+			token: pending!.token,
 			code: verifyForm.data.code,
 			userId: user.userId
 		});
@@ -179,8 +180,8 @@ export const actions = {
 
 		if (!resendForm.valid) return fail(400, { verifyForm, resendForm });
 
-		const token = getEmailChangeCookie(cookies);
-		const challenge = await getChangeEmailChallenge(token, user.userId, () =>
+		const pending = getEmailChangeCookie(cookies);
+		const challenge = await getChangeEmailChallenge(pending, user.userId, () =>
 			deleteEmailChangeCookie(cookies)
 		);
 
@@ -199,12 +200,6 @@ export const actions = {
 			redirectToAccountWithError('taken', challenge.email);
 		}
 
-		if (result._tag === '@error/ChallengeRateLimited') {
-			const seconds = Math.ceil(result.retryAfterMs / 1000);
-			resendForm.message = `Please wait ${seconds} seconds before requesting another code.`;
-			return { verifyForm, resendForm, email: challenge.email };
-		}
-
 		if (result._tag !== 'CreatedChallenge') {
 			throw new Error('Unexpected email change challenge result');
 		}
@@ -214,7 +209,10 @@ export const actions = {
 			firstName: user.givenName,
 			code: result.code
 		});
-		setEmailChangeCookie(cookies, result.token);
+		setEmailChangeCookie(cookies, {
+			challengeId: result.challenge.id,
+			token: result.token
+		});
 		resendForm.message = 'A new code has been sent';
 
 		return { verifyForm, resendForm, email: result.challenge.email };
