@@ -1,5 +1,5 @@
 import { updatePasskeysByUserId } from '$lib/server/repository';
-import { getPasslockConfig, getPasslockClientConfig } from './passlock.js';
+import { getPasslockConfig } from './passlock.js';
 import * as PasslockServer from '@passlock/server/safe';
 
 /**

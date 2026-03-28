@@ -124,6 +124,41 @@ describe(createMailboxChallenge.name, () => {
       expect(result.challenge.userId).toBeUndefined()
     })
   )
+
+  it.effect("returns ChallengeRateLimited errors", () =>
+    Effect.gen(function* () {
+      const error = yield* pipe(
+        createMailboxChallenge(
+          {
+            apiKey,
+            email: "user@example.com",
+            purpose: "LOGIN_CODE",
+            tenancyId,
+          },
+          Layer.succeed(NetworkFetch, () =>
+            Promise.resolve(
+              new Response(
+                JSON.stringify({
+                  _tag: "@error/ChallengeRateLimited",
+                  message: "Too many challenges requested",
+                  retryAfterSeconds: 60,
+                }),
+                { status: 429 }
+              )
+            )
+          )
+        ),
+        Effect.flip
+      )
+
+      expect(error._tag).toEqual("@error/ChallengeRateLimited")
+      if (error._tag !== "@error/ChallengeRateLimited") {
+        throw new Error("Expected a ChallengeRateLimited error")
+      }
+      expect(error.message).toEqual("Too many challenges requested")
+      expect(error.retryAfterSeconds).toEqual(60)
+    })
+  )
 })
 
 describe(verifyMailboxChallenge.name, () => {

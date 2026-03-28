@@ -2,7 +2,7 @@ import type { Actions, PageServerLoad } from './$types';
 import {
 	consumeEmailChallenge as verifyChangeEmailChallenge,
 	createOrRefreshEmailChallenge,
-	getPendingChallenge
+	getPendingEmailChallenge
 } from '$lib/server/repository.js';
 import { sendEmailUpdated, sendCodeChallengeEmail } from '$lib/server/email.js';
 import {
@@ -10,6 +10,7 @@ import {
 	getEmailChangeCookie,
 	setEmailChangeCookie
 } from '$lib/server/challenge.js';
+import { createChallengeRateLimitView } from '$lib/server/passlock.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
 import { setError, superValidate } from 'sveltekit-superforms';
@@ -63,8 +64,8 @@ const getChangeEmailChallenge = async (
 ) => {
 	if (!pending) redirect(303, resolve('/account'));
 
-	const challenge = await getPendingChallenge(pending.challengeId);
-	if (!challenge || challenge.purpose !== 'email-change' || challenge.userId !== userId) {
+	const challenge = await getPendingEmailChallenge(pending.challengeId);
+	if (!challenge || challenge.userId !== userId) {
 		clearCookie();
 		redirect(303, resolve('/account'));
 	}
@@ -88,7 +89,8 @@ export const load = (async ({ locals, cookies }) => {
 	return {
 		verifyForm,
 		resendForm,
-		email
+		email,
+		resendRateLimit: null
 	};
 }) satisfies PageServerLoad;
 
@@ -199,6 +201,14 @@ export const actions = {
 			deleteEmailChangeCookie(cookies);
 			redirectToAccountWithError('taken', challenge.email);
 		}
+		if (result._tag === '@error/ChallengeRateLimited') {
+			return fail(429, {
+				verifyForm,
+				resendForm,
+				email: challenge.email,
+				resendRateLimit: createChallengeRateLimitView(result.retryAfterSeconds)
+			});
+		}
 
 		if (result._tag !== 'CreatedChallenge') {
 			throw new Error('Unexpected email change challenge result');
@@ -215,6 +225,11 @@ export const actions = {
 		});
 		resendForm.message = 'A new code has been sent';
 
-		return { verifyForm, resendForm, email: result.challenge.email };
+		return {
+			verifyForm,
+			resendForm,
+			email: result.challenge.email,
+			resendRateLimit: null
+		};
 	}
 } satisfies Actions;

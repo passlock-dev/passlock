@@ -1,23 +1,24 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type {
-  MailboxChallenge as UnsafeMailboxChallenge,
-  MailboxChallengeCreated as UnsafeMailboxChallengeCreated,
   Credential as UnsafeCredential,
   DeletedPasskeys as UnsafeDeletedPasskeys,
   ExtendedPrincipal as UnsafeExtendedPrincipal,
+  MailboxChallenge as UnsafeMailboxChallenge,
+  MailboxChallengeCreated as UnsafeMailboxChallengeCreated,
   Passkey as UnsafePasskey,
   PasskeyCredential as UnsafePasskeyCredential,
 } from "./index.js"
 import type {
-  MailboxChallenge,
-  MailboxChallengeCreated,
+  ChallengeRateLimitedError,
   Credential,
   DeletedPasskeys,
   Err,
   ExtendedPrincipal,
-  InvalidChallengeCodeError,
   ForbiddenError,
+  InvalidChallengeCodeError,
   InvalidCodeError,
+  MailboxChallenge,
+  MailboxChallengeCreated,
   NotFoundError,
   Ok,
   Passkey,
@@ -28,13 +29,14 @@ import type {
 } from "./safe.js"
 import {
   type createMailboxChallenge,
-  type verifyMailboxChallenge,
   type deleteUserPasskeys,
   type exchangeCode,
-  isMailboxChallengeCreated,
+  isChallengeRateLimitedError,
   isExtendedPrincipal,
   isForbiddenError,
+  isMailboxChallengeCreated,
   type verifyIdToken,
+  type verifyMailboxChallenge,
 } from "./safe.js"
 import type {
   AuthenticatedOptions,
@@ -60,6 +62,7 @@ describe("public surface", () => {
   it("exports shared types and guards", () => {
     expectTypeOf(isExtendedPrincipal).toBeFunction()
     expectTypeOf(isForbiddenError).toBeFunction()
+    expectTypeOf(isChallengeRateLimitedError).toBeFunction()
     expectTypeOf(isMailboxChallengeCreated).toBeFunction()
   })
 
@@ -111,7 +114,10 @@ describe("public surface", () => {
     type _4 = Assert<
       IsEqual<
         Awaited<ReturnType<typeof createMailboxChallenge>>,
-        Result<MailboxChallengeCreated, ForbiddenError>
+        Result<
+          MailboxChallengeCreated,
+          ForbiddenError | ChallengeRateLimitedError
+        >
       >
     >
     type _5 = Assert<

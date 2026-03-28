@@ -71,6 +71,7 @@ import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
  *
  * @param options
  * @returns A promise resolving to the created mailbox challenge payload.
+ * @throws {@link ChallengeRateLimitedError} if mailbox challenge creation has been rate limited
  * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
  *
  * @category Mailbox
@@ -272,11 +273,12 @@ export type {
   BadRequestError,
   ChallengeAttemptsExceededError,
   ChallengeExpiredError,
+  ChallengeRateLimitedError,
   DuplicateEmailError,
   ForbiddenError,
-  InvalidCodeError,
   InvalidChallengeCodeError,
   InvalidChallengeError,
+  InvalidCodeError,
   InvalidEmailError,
   InvalidTenancyError,
   NotFoundError,
@@ -288,11 +290,12 @@ export {
   isBadRequestError,
   isChallengeAttemptsExceededError,
   isChallengeExpiredError,
+  isChallengeRateLimitedError,
   isDuplicateEmailError,
   isForbiddenError,
-  isInvalidCodeError,
   isInvalidChallengeCodeError,
   isInvalidChallengeError,
+  isInvalidCodeError,
   isInvalidEmailError,
   isInvalidTenancyError,
   isNotFoundError,

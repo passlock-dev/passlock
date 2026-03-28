@@ -2,8 +2,36 @@
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
 	import { resolve } from '$app/paths';
+	import ChallengeRateLimitNotice from '$lib/components/ChallengeRateLimitNotice.svelte';
+	import type { ChallengeRateLimitView } from '$lib/shared/challengeRateLimit.js';
 
-	let { data }: PageProps = $props();
+	let { data, form: actionData }: PageProps = $props();
+	type RateLimit = ChallengeRateLimitView | null;
+
+	const getActionRateLimit = (value: PageProps['form']): RateLimit | undefined => {
+		if (!value || typeof value !== 'object' || !('rateLimit' in value)) return undefined;
+		return value.rateLimit as RateLimit;
+	};
+
+	const getInitialRateLimit = (): RateLimit => {
+		const initialActionRateLimit = getActionRateLimit(actionData);
+		return initialActionRateLimit === undefined ? data.rateLimit : initialActionRateLimit;
+	};
+
+	const isRateLimitActive = (value: RateLimit) =>
+		Boolean(value && value.initialRemainingSeconds > 0);
+
+	const initialRateLimit = getInitialRateLimit();
+	let rateLimit = $state<RateLimit>(initialRateLimit);
+	let rateLimitActive = $state(isRateLimitActive(initialRateLimit));
+
+	$effect(() => {
+		const nextRateLimit = getActionRateLimit(actionData);
+		if (nextRateLimit === undefined) return;
+
+		rateLimit = nextRateLimit;
+		rateLimitActive = isRateLimitActive(nextRateLimit);
+	});
 
 	/* can be ignored as superforms uses stores for dynamic state */
 	// svelte-ignore state_referenced_locally
@@ -28,6 +56,21 @@
 			<fieldset class="fieldset rounded-box border border-base-300 bg-base-200 p-10">
 				{#if data.notice}
 					<p class="mb-4 max-w-sm text-sm text-error">{data.notice}</p>
+				{/if}
+
+				{#if rateLimit}
+					<ChallengeRateLimitNotice
+						onActiveChange={(active) => {
+							rateLimitActive = active;
+						}}
+						{rateLimit}
+						className="mb-4 max-w-sm text-sm" />
+				{/if}
+
+				{#if $errors._errors}
+					{#each $errors._errors as error (error)}
+						<p class="mb-4 max-w-sm text-sm text-error">{error}</p>
+					{/each}
 				{/if}
 
 				<div class="grid gap-4 sm:grid-cols-2">
@@ -77,7 +120,7 @@
 					required />
 				{#if $errors.email}<span class="text-error">{$errors.email}</span>{/if}
 
-				<button class="btn mt-4 btn-primary">Send sign up code</button>
+				<button class="btn mt-4 btn-primary" disabled={rateLimitActive}>Send sign up code</button>
 
 				<p class="mt-4 text-center text-sm">
 					Already have an account?

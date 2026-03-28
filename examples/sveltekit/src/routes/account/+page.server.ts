@@ -3,6 +3,7 @@ import { createOrRefreshEmailChallenge, updateUserNames } from '$lib/server/repo
 import { requireAccountContext } from '$lib/server/account.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setEmailChangeCookie } from '$lib/server/challenge.js';
+import { createChallengeRateLimitView } from '$lib/server/passlock.js';
 import { getPasslockClientConfig } from '$lib/server/passkeys.js';
 import { EmailSchema, ProfileSchema } from '$lib/shared/schemas.js';
 import { resolve } from '$app/paths';
@@ -97,6 +98,7 @@ export const load = (async ({ locals, url }) => {
 	return {
 		profileForm,
 		emailForm,
+		emailRateLimit: null,
 		currentEmail: user.email,
 		hasPasskeys,
 		clearQueryState: emailUpdated || emailStatusError,
@@ -201,6 +203,15 @@ export const actions = {
 			return fail(400, {
 				profileForm,
 				emailForm,
+				currentEmail: user.email,
+				hasPasskeys
+			});
+		}
+		if (result._tag === '@error/ChallengeRateLimited') {
+			return fail(429, {
+				profileForm,
+				emailForm,
+				emailRateLimit: createChallengeRateLimitView(result.retryAfterSeconds),
 				currentEmail: user.email,
 				hasPasskeys
 			});

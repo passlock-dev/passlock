@@ -1,5 +1,4 @@
 import { Effect, type Layer, Match, pipe, Schema } from "effect"
-import type { satisfy } from "../schemas/satisfy.js"
 import {
   fetchNetwork,
   matchStatus,
@@ -10,14 +9,16 @@ import {
   type NetworkResponse,
   type NetworkResponseError,
 } from "../network.js"
+import * as ChallengeSchemas from "../schemas/challenge.js"
 import {
   ChallengeAttemptsExceededError,
   ChallengeExpiredError,
+  ChallengeRateLimitedError,
   ForbiddenError,
   InvalidChallengeCodeError,
   InvalidChallengeError,
 } from "../schemas/errors.js"
-import * as ChallengeSchemas from "../schemas/challenge.js"
+import type { satisfy } from "../schemas/satisfy.js"
 import type { AuthenticatedOptions } from "../shared.js"
 
 /**
@@ -43,7 +44,8 @@ export type MailboxChallenge = {
  */
 export const isMailboxChallenge = (
   payload: unknown
-): payload is MailboxChallenge => Schema.is(ChallengeSchemas.MailboxChallenge)(payload)
+): payload is MailboxChallenge =>
+  Schema.is(ChallengeSchemas.MailboxChallenge)(payload)
 
 /**
  * needed to ensure the MailboxChallenge === MailboxChallenge.Type
@@ -182,7 +184,10 @@ export interface CreateMailboxChallengeOptions extends AuthenticatedOptions {
 export const createMailboxChallenge = (
   options: CreateMailboxChallengeOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<MailboxChallengeCreated, ForbiddenError> =>
+): Effect.Effect<
+  MailboxChallengeCreated,
+  ForbiddenError | ChallengeRateLimitedError
+> =>
   pipe(
     Effect.gen(function* () {
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
@@ -198,17 +203,24 @@ export const createMailboxChallenge = (
         }
       )
 
-      const encoded: MailboxChallengeCreated | ForbiddenError =
-        yield* matchStatus(response, {
-          "2xx": (res) =>
-            decodeResponseJson(res, ChallengeSchemas.MailboxChallengeCreated),
-          orElse: (res) => decodeResponseJson(res, ForbiddenError),
-        })
+      const encoded:
+        | MailboxChallengeCreated
+        | ForbiddenError
+        | ChallengeRateLimitedError = yield* matchStatus(response, {
+        "2xx": (res) =>
+          decodeResponseJson(res, ChallengeSchemas.MailboxChallengeCreated),
+        orElse: (res) =>
+          decodeResponseJson(
+            res,
+            Schema.Union(ForbiddenError, ChallengeRateLimitedError)
+          ),
+      })
 
       return yield* pipe(
         Match.value(encoded),
         Match.tag("ChallengeCreated", (result) => Effect.succeed(result)),
         Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
+        Match.tag("@error/ChallengeRateLimited", (err) => Effect.fail(err)),
         Match.exhaustive
       )
     }),
@@ -302,7 +314,9 @@ export const verifyMailboxChallenge = (
         Match.tag("@error/InvalidChallenge", (err) => Effect.fail(err)),
         Match.tag("@error/InvalidChallengeCode", (err) => Effect.fail(err)),
         Match.tag("@error/ChallengeExpired", (err) => Effect.fail(err)),
-        Match.tag("@error/ChallengeAttemptsExceeded", (err) => Effect.fail(err)),
+        Match.tag("@error/ChallengeAttemptsExceeded", (err) =>
+          Effect.fail(err)
+        ),
         Match.exhaustive
       )
     }),

@@ -5,7 +5,7 @@ import {
 	createOrRefreshLoginChallenge,
 	createSession,
 	getPasskeysByUserId,
-	getPendingChallenge
+	getPendingLoginChallenge
 } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import {
@@ -13,6 +13,7 @@ import {
 	getSignupLoginCookie,
 	setSignupLoginCookie
 } from '$lib/server/challenge.js';
+import { createChallengeRateLimitView } from '$lib/server/passlock.js';
 import { setSessionTokenCookie } from '$lib/server/session.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
@@ -44,8 +45,8 @@ const getPendingLoginContext = async (
 ) => {
 	if (!pending) redirect(303, resolve('/login'));
 
-	const challenge = await getPendingChallenge(pending.challengeId);
-	if (!challenge || challenge.purpose !== 'login') {
+	const challenge = await getPendingLoginChallenge(pending.challengeId);
+	if (!challenge) {
 		clearCookie();
 		redirect(303, resolve('/login'));
 	}
@@ -65,7 +66,8 @@ export const load = (async ({ locals, cookies }) => {
 	return {
 		verifyForm,
 		resendForm,
-		email
+		email,
+		resendRateLimit: null
 	};
 }) satisfies PageServerLoad;
 
@@ -141,6 +143,14 @@ export const actions = {
 			const email = encodeURIComponent(challenge.email);
 			redirect(303, `${resolve('/signup')}?email=${email}&reason=no-account`);
 		}
+		if (result._tag === '@error/ChallengeRateLimited') {
+			return fail(429, {
+				verifyForm,
+				resendForm,
+				email: challenge.email,
+				resendRateLimit: createChallengeRateLimitView(result.retryAfterSeconds)
+			});
+		}
 
 		await sendCodeChallengeEmail({
 			email: result.challenge.email,
@@ -153,6 +163,11 @@ export const actions = {
 		});
 		resendForm.message = 'A new code has been sent';
 
-		return { verifyForm, resendForm, email: result.challenge.email };
+		return {
+			verifyForm,
+			resendForm,
+			email: result.challenge.email,
+			resendRateLimit: null
+		};
 	}
 } satisfies Actions;

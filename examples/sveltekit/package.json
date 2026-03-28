@@ -12,8 +12,8 @@
 		"db:push": "drizzle-kit push --force",
 		"reset": "vite-node --options.transformMode.ssr='/.*/' src/reset.ts",
 		"typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
+		"lint:fix": "prettier --write . && eslint --fix .",
 		"format": "prettier --write ."
 	},
 	"devDependencies": {

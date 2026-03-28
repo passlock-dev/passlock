@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { superForm } from 'sveltekit-superforms';
 	import { valibotClient } from 'sveltekit-superforms/adapters';
+	import ChallengeRateLimitNotice from '$lib/components/ChallengeRateLimitNotice.svelte';
 	import { EmailSchema, ProfileSchema } from '$lib/shared/schemas.js';
 	import { updateUserPasskeys } from '$lib/client/passkeys';
 	import { reAuthenticateIfNecessary } from './utils.js';
@@ -10,10 +11,39 @@
 	import type { PageProps } from './$types';
 	import { replaceState } from '$app/navigation';
 	import type { SuperFormErrors } from 'sveltekit-superforms/client';
+	import type { ChallengeRateLimitView } from '$lib/shared/challengeRateLimit.js';
 
-	let { data }: PageProps = $props();
+	let { data, form: actionData }: PageProps = $props();
 
 	let syncingUpdatedEmailPasskeys = $state(false);
+	type EmailRateLimit = ChallengeRateLimitView | null;
+
+	const getActionEmailRateLimit = (value: PageProps['form']): EmailRateLimit | undefined => {
+		if (!value || typeof value !== 'object' || !('emailRateLimit' in value)) return undefined;
+		return value.emailRateLimit as EmailRateLimit;
+	};
+
+	const getInitialEmailRateLimit = (): EmailRateLimit => {
+		const initialActionEmailRateLimit = getActionEmailRateLimit(actionData);
+		return initialActionEmailRateLimit === undefined
+			? data.emailRateLimit
+			: initialActionEmailRateLimit;
+	};
+
+	const isEmailRateLimitActive = (value: EmailRateLimit) =>
+		Boolean(value && value.initialRemainingSeconds > 0);
+
+	const initialEmailRateLimit = getInitialEmailRateLimit();
+	let emailRateLimit = $state<EmailRateLimit>(initialEmailRateLimit);
+	let emailRateLimitActive = $state(isEmailRateLimitActive(initialEmailRateLimit));
+
+	$effect(() => {
+		const nextEmailRateLimit = getActionEmailRateLimit(actionData);
+		if (nextEmailRateLimit === undefined) return;
+
+		emailRateLimit = nextEmailRateLimit;
+		emailRateLimitActive = isEmailRateLimitActive(nextEmailRateLimit);
+	});
 
 	type FormErrors = SuperFormErrors<Record<string, unknown>>;
 
@@ -248,6 +278,15 @@
 				<p class="mt-4 text-center text-sm text-success">{$emailMessage}</p>
 			{/if}
 
+			{#if emailRateLimit}
+				<ChallengeRateLimitNotice
+					onActiveChange={(active) => {
+						emailRateLimitActive = active;
+					}}
+					rateLimit={emailRateLimit}
+					className="mt-4 text-center text-sm" />
+			{/if}
+
 			{#if $emailErrors._errors}
 				{#each $emailErrors._errors as error (error)}
 					<p class="mt-4 text-center text-sm text-error">{error}</p>
@@ -285,7 +324,9 @@
 				</div>
 			</div>
 
-			<button class="btn mt-4 btn-block btn-primary">Verify new email</button>
+			<button class="btn mt-4 btn-block btn-primary" disabled={emailRateLimitActive}>
+				Verify new email
+			</button>
 		</form>
 
 		<div class="divider"></div>
