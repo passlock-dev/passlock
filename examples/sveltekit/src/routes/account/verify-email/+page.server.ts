@@ -7,6 +7,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { setError, superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import * as v from 'valibot';
+import { toAccountLocation } from '$lib/shared/queryState.js';
 import {
 	getAccountEmailErrorLocation,
 	getPendingEmailChangeChallengeContext
@@ -90,7 +91,7 @@ export const actions = {
 			// 2) trigger a client side passkey update/refresh to align
 			//    the passkeys in the user's passkey manager with the
 			//    updated email/username
-			redirect(303, `${resolve('/account')}?email-updated=1`);
+			redirect(303, toAccountLocation({ emailUpdated: true }));
 		}
 
 		if (result._tag === '@error/DuplicateUser') {

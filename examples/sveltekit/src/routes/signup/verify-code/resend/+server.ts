@@ -6,6 +6,7 @@ import {
 	resendSuccessResponse
 } from '$lib/server/resend.js';
 import { createOrRefreshSignupChallenge } from '$lib/server/repository.js';
+import { toLoginLocation } from '$lib/shared/queryState.js';
 import type { RequestHandler } from './$types';
 import { getPendingSignupChallengeContext } from '../challenge.js';
 
@@ -29,8 +30,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 	if (result._tag === '@error/DuplicateUser') {
 		deleteSignupLoginCookie(cookies);
-		const username = encodeURIComponent(result.email);
-		return resendRedirectResponse(`/login?username=${username}&reason=account-exists`);
+		return resendRedirectResponse(toLoginLocation({ username: result.email, reason: 'account-exists' }));
 	}
 
 	if (result._tag === '@error/ChallengeRateLimited') {

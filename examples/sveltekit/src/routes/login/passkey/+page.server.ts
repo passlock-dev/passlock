@@ -1,4 +1,5 @@
 import { getPasslockClientConfig } from '$lib/server/passkeys.js';
+import { getLoginPasskeyQueryState } from '$lib/shared/queryState.js';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getPasskeysByUsername } from '$lib/server/repository';
@@ -9,7 +10,7 @@ export const load = (async ({ locals, url }) => {
 	}
 
 	const passlockConfig = getPasslockClientConfig();
-	const username = url.searchParams.get('username');
+	const { username } = getLoginPasskeyQueryState(url);
 	const passkeys = username ? await getPasskeysByUsername(username) : [];
 	const existingPasskeys = passkeys.map(({ passkeyId }) => passkeyId);
 

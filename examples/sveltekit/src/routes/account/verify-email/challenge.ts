@@ -1,12 +1,10 @@
 import { getEmailChangeCookie } from '$lib/server/challenge.js';
 import { getPendingEmailChallenge } from '$lib/server/repository.js';
+import { toAccountLocation, type AccountEmailErrorReason } from '$lib/shared/queryState.js';
 import type { Cookies } from '@sveltejs/kit';
 
-export const getAccountEmailErrorLocation = (reason: 'expired' | 'taken', email?: string) => {
-	const params = new URLSearchParams({ 'email-error': reason });
-	if (email) params.set('email', email);
-	return `/account?${params.toString()}` as const;
-};
+export const getAccountEmailErrorLocation = (reason: AccountEmailErrorReason, email?: string) =>
+	toAccountLocation({ emailError: reason, email });
 
 export type PendingEmailChangeChallengeContext =
 	| { _tag: 'MissingPendingEmailChangeChallenge' }

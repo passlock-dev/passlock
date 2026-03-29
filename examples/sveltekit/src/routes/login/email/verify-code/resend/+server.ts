@@ -6,6 +6,7 @@ import {
 	resendSuccessResponse
 } from '$lib/server/resend.js';
 import { createOrRefreshLoginChallenge } from '$lib/server/repository.js';
+import { toSignupLocation } from '$lib/shared/queryState.js';
 import type { RequestHandler } from './$types';
 import { getPendingLoginChallengeContext } from '../challenge.js';
 
@@ -25,8 +26,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 	if (result._tag === '@error/AccountNotFound') {
 		deleteSignupLoginCookie(cookies);
-		const email = encodeURIComponent(challenge.email);
-		return resendRedirectResponse(`/signup?email=${email}&reason=no-account`, 404);
+		return resendRedirectResponse(toSignupLocation({ email: challenge.email, reason: 'no-account' }), 404);
 	}
 
 	if (result._tag === '@error/ChallengeRateLimited') {

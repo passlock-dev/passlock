@@ -6,6 +6,11 @@ import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { getPasslockClientConfig } from '$lib/server/passkeys';
+import {
+	toLoginEmailLocation,
+	toLoginPasskeyLocation,
+	toSignupLocation
+} from '$lib/shared/queryState.js';
 
 const schema = v.object({
 	username: v.pipe(
@@ -41,15 +46,12 @@ export const actions = {
 		if (account) {
 			const passkeys = await getPasskeysByUserId(account.userId);
 			if (passkeys.length > 0) {
-				const username = encodeURIComponent(form.data.username);
-				redirect(303, `/login/passkey?username=${username}`);
+				redirect(303, toLoginPasskeyLocation({ username: form.data.username }));
 			}
 
-			const username = encodeURIComponent(form.data.username);
-			redirect(303, `/login/email?username=${username}`);
+			redirect(303, toLoginEmailLocation({ username: form.data.username }));
 		}
 
-		const email = encodeURIComponent(form.data.username);
-		redirect(303, `/signup?email=${email}&reason=no-account`);
+		redirect(303, toSignupLocation({ email: form.data.username, reason: 'no-account' }));
 	}
 } satisfies Actions;
