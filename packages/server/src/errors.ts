@@ -89,8 +89,9 @@ export type InvalidChallengeError = {
 /**
  * Type guard for {@link InvalidChallengeError}.
  */
-export const isInvalidChallengeError =
-  isTagged<InvalidChallengeError>("@error/InvalidChallenge")
+export const isInvalidChallengeError = isTagged<InvalidChallengeError>(
+  "@error/InvalidChallenge"
+)
 
 /* InvalidChallengeCode */
 
@@ -126,8 +127,9 @@ export type ChallengeExpiredError = {
 /**
  * Type guard for {@link ChallengeExpiredError}.
  */
-export const isChallengeExpiredError =
-  isTagged<ChallengeExpiredError>("@error/ChallengeExpired")
+export const isChallengeExpiredError = isTagged<ChallengeExpiredError>(
+  "@error/ChallengeExpired"
+)
 
 /* ChallengeAttemptsExceeded */
 
@@ -147,6 +149,26 @@ export type ChallengeAttemptsExceededError = {
  */
 export const isChallengeAttemptsExceededError =
   isTagged<ChallengeAttemptsExceededError>("@error/ChallengeAttemptsExceeded")
+
+/* ChallengeRateLimited */
+
+/**
+ * Error payload returned when mailbox challenge creation has been rate limited.
+ *
+ * @category Mailbox
+ */
+export type ChallengeRateLimitedError = {
+  _tag: "@error/ChallengeRateLimited"
+  message: string
+  retryAfterSeconds: number
+}
+
+/**
+ * Type guard for {@link ChallengeRateLimitedError}.
+ */
+export const isChallengeRateLimitedError = isTagged<ChallengeRateLimitedError>(
+  "@error/ChallengeRateLimited"
+)
 
 /* VerificationFailure */
 

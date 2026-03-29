@@ -2,6 +2,7 @@ import type { PageServerLoad } from './$types';
 import { createOrRefreshSignupChallenge } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setSignupLoginCookie } from '$lib/server/challenge.js';
+import { createChallengeRateLimitView } from '$lib/server/passlock.js';
 
 import { superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
@@ -31,7 +32,7 @@ export const load = (async ({ locals, url }) => {
 	const notice =
 		reason === 'no-account' ? 'No account exists for that email. Create one to continue.' : null;
 
-	return { form, notice };
+	return { form, notice, rateLimit: null };
 }) satisfies PageServerLoad;
 
 export const actions = {
@@ -47,6 +48,12 @@ export const actions = {
 		if (result._tag === '@error/DuplicateUser') {
 			const username = encodeURIComponent(form.data.email);
 			redirect(303, `/login?username=${username}&reason=account-exists`);
+		}
+		if (result._tag === '@error/ChallengeRateLimited') {
+			return fail(429, {
+				form,
+				rateLimit: createChallengeRateLimitView(result.retryAfterSeconds)
+			});
 		}
 
 		await sendCodeChallengeEmail({

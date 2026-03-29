@@ -2,9 +2,37 @@
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
 	import { resolve } from '$app/paths';
+	import ChallengeRateLimitNotice from '$lib/components/ChallengeRateLimitNotice.svelte';
 	import DevNotes from '$lib/components/DevNotes.svelte';
+	import type { ChallengeRateLimitView } from '$lib/shared/challengeRateLimit.js';
 
-	let { data }: PageProps = $props();
+	let { data, form: actionData }: PageProps = $props();
+	type RateLimit = ChallengeRateLimitView | null;
+
+	const getActionRateLimit = (value: PageProps['form']): RateLimit | undefined => {
+		if (!value || typeof value !== 'object' || !('rateLimit' in value)) return undefined;
+		return value.rateLimit as RateLimit;
+	};
+
+	const getInitialRateLimit = (): RateLimit => {
+		const initialActionRateLimit = getActionRateLimit(actionData);
+		return initialActionRateLimit === undefined ? data.rateLimit : initialActionRateLimit;
+	};
+
+	const isRateLimitActive = (value: RateLimit) =>
+		Boolean(value && value.initialRemainingSeconds > 0);
+
+	const initialRateLimit = getInitialRateLimit();
+	let rateLimit = $state<RateLimit>(initialRateLimit);
+	let rateLimitActive = $state(isRateLimitActive(initialRateLimit));
+
+	$effect(() => {
+		const nextRateLimit = getActionRateLimit(actionData);
+		if (nextRateLimit === undefined) return;
+
+		rateLimit = nextRateLimit;
+		rateLimitActive = isRateLimitActive(nextRateLimit);
+	});
 
 	/* can be ignored as superforms uses stores for dynamic state */
 	// svelte-ignore state_referenced_locally
@@ -23,6 +51,21 @@
 			<p class="mt-3 max-w-xs text-center text-sm text-error">{data.notice}</p>
 		{/if}
 
+		{#if rateLimit}
+			<ChallengeRateLimitNotice
+				onActiveChange={(active) => {
+					rateLimitActive = active;
+				}}
+				{rateLimit}
+				className="mt-3 max-w-xs text-center text-sm" />
+		{/if}
+
+		{#if $errors._errors}
+			{#each $errors._errors as error (error)}
+				<p class="mt-3 max-w-xs text-center text-sm text-error">{error}</p>
+			{/each}
+		{/if}
+
 		<fieldset class="fieldset w-xs">
 			<label for="username" class="label">Email</label>
 			<input
@@ -35,7 +78,7 @@
 				required />
 			{#if $errors.username}<span class="text-error">{$errors.username}</span>{/if}
 
-			<button class="btn mt-4 btn-primary">Continue</button>
+			<button class="btn mt-4 btn-primary" disabled={rateLimitActive}>Continue</button>
 		</fieldset>
 
 		<p class="mt-4 text-center text-sm">

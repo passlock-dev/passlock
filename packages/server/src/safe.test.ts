@@ -105,6 +105,47 @@ describe("safe result envelopes", () => {
     expect(Object.keys(result)).not.toContain("value")
   })
 
+  it("decorates mailbox creation rate-limit errors without breaking _tag narrowing", async () => {
+    globalThis.fetch = vi.fn<typeof fetch>(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            _tag: "@error/ChallengeRateLimited",
+            message: "Too many challenges requested",
+            retryAfterSeconds: 60,
+          }),
+          { status: 429 }
+        )
+      )
+    )
+
+    const { createMailboxChallenge, isChallengeRateLimitedError } =
+      await import("./safe.js")
+    const result = await createMailboxChallenge({
+      apiKey,
+      email: "user@example.com",
+      purpose: "LOGIN_CODE",
+      tenancyId,
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.failure).toBe(true)
+    if (result.success) {
+      throw new Error("Expected an error result")
+    }
+    expect(result.error).toBe(result)
+    expect(result._tag).toEqual("@error/ChallengeRateLimited")
+    expect(isChallengeRateLimitedError(result)).toBe(true)
+    if (result._tag !== "@error/ChallengeRateLimited") {
+      throw new Error("Expected a ChallengeRateLimited error")
+    }
+    expect(result.message).toEqual("Too many challenges requested")
+    expect(result.retryAfterSeconds).toEqual(60)
+    expect(Object.keys(result)).not.toContain("success")
+    expect(Object.keys(result)).not.toContain("failure")
+    expect(Object.keys(result)).not.toContain("error")
+  })
+
   it("decorates expected errors without breaking _tag narrowing", async () => {
     globalThis.fetch = vi.fn<typeof fetch>(() =>
       Promise.resolve(
@@ -151,9 +192,8 @@ describe("safe result envelopes", () => {
       )
     )
 
-    const { isInvalidChallengeCodeError, verifyMailboxChallenge } = await import(
-      "./safe.js"
-    )
+    const { isInvalidChallengeCodeError, verifyMailboxChallenge } =
+      await import("./safe.js")
     const result = await verifyMailboxChallenge({
       apiKey,
       code: "000000",

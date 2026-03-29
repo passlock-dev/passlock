@@ -89,17 +89,35 @@ export const isChallengeExpiredError = (
 /* ChallengeAttemptsExceeded */
 
 /** @internal */
-export class ChallengeAttemptsExceededError extends Schema.TaggedError<
-  ChallengeAttemptsExceededError
->()("@error/ChallengeAttemptsExceeded", {
-  message: Schema.String,
-}) {}
+export class ChallengeAttemptsExceededError extends Schema.TaggedError<ChallengeAttemptsExceededError>()(
+  "@error/ChallengeAttemptsExceeded",
+  {
+    message: Schema.String,
+  }
+) {}
 
 /** @internal */
 export const isChallengeAttemptsExceededError = (
   payload: unknown
 ): payload is ChallengeAttemptsExceededError =>
   Schema.is(ChallengeAttemptsExceededError)(payload)
+
+/* ChallengeRateLimited */
+
+/** @internal */
+export class ChallengeRateLimitedError extends Schema.TaggedError<ChallengeRateLimitedError>()(
+  "@error/ChallengeRateLimited",
+  {
+    message: Schema.String,
+    retryAfterSeconds: Schema.Number,
+  }
+) {}
+
+/** @internal */
+export const isChallengeRateLimitedError = (
+  payload: unknown
+): payload is ChallengeRateLimitedError =>
+  Schema.is(ChallengeRateLimitedError)(payload)
 
 /* InvalidTenancy */
 

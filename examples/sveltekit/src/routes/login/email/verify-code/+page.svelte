@@ -3,6 +3,7 @@
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
 	import DevNotes from '$lib/components/DevNotes.svelte';
+	import ResendChallengeButton from '$lib/components/ResendChallengeButton.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -13,16 +14,6 @@
 		enhance: verifyEnhance,
 		constraints: verifyConstraints
 	} = superForm(data.verifyForm, {
-		applyAction: true,
-		invalidateAll: 'pessimistic'
-	});
-
-	// svelte-ignore state_referenced_locally
-	const {
-		form: resendForm,
-		message: resendMessage,
-		enhance: resendEnhance
-	} = superForm(data.resendForm, {
 		applyAction: true,
 		invalidateAll: 'pessimistic'
 	});
@@ -63,14 +54,7 @@
 			</fieldset>
 		</form>
 
-		{#if $resendMessage}
-			<p class="mt-4 text-center text-sm text-success">{$resendMessage}</p>
-		{/if}
-
-		<form method="POST" action="?/resend" use:resendEnhance class="mt-4">
-			<input type="hidden" name="intent" bind:value={$resendForm.intent} />
-			<button class="btn w-full btn-outline">Send a new code</button>
-		</form>
+		<ResendChallengeButton url={resolve('/login/email/verify-code/resend')} />
 
 		<p class="mt-4 text-center text-sm">
 			Need to start over?

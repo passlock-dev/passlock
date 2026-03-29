@@ -7,6 +7,10 @@ import {
 } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setSignupLoginCookie } from '$lib/server/challenge.js';
+import {
+	createChallengeRateLimitView,
+	restoreChallengeRateLimitView
+} from '$lib/server/passlock.js';
 import { superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
@@ -28,14 +32,19 @@ export const load = (async ({ locals, url }) => {
 
 	const username = url.searchParams.get('username') ?? undefined;
 	const reason = url.searchParams.get('reason');
+	const rateLimit =
+		reason === 'challenge-rate-limited'
+			? restoreChallengeRateLimitView(Number(url.searchParams.get('retryAtMs')))
+			: null;
 
 	const form = await superValidate({ username }, valibot(schema), { errors: false });
+
 	const notice =
 		reason === 'account-exists'
 			? 'An account already exists for that email. Login to continue.'
 			: null;
 
-	return { form, notice };
+	return { form, notice, rateLimit };
 }) satisfies PageServerLoad;
 
 export const actions = {
@@ -58,6 +67,12 @@ export const actions = {
 			if (result._tag === '@error/AccountNotFound') {
 				const email = encodeURIComponent(form.data.username);
 				redirect(303, `/signup?email=${email}&reason=no-account`);
+			}
+			if (result._tag === '@error/ChallengeRateLimited') {
+				return fail(429, {
+					form,
+					rateLimit: createChallengeRateLimitView(result.retryAfterSeconds)
+				});
 			}
 
 			await sendCodeChallengeEmail({

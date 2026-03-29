@@ -45,10 +45,11 @@ import { Effect, pipe } from "effect"
 import type {
   ChallengeAttemptsExceededError,
   ChallengeExpiredError,
+  ChallengeRateLimitedError,
   ForbiddenError,
-  InvalidCodeError,
   InvalidChallengeCodeError,
   InvalidChallengeError,
+  InvalidCodeError,
   NotFoundError,
   VerificationError,
 } from "./errors.js"
@@ -122,8 +123,9 @@ const runSafe = <A extends object, E extends object>(
  */
 export const createMailboxChallenge = (
   options: CreateMailboxChallengeOptions
-): Promise<Result<MailboxChallengeCreated, ForbiddenError>> =>
-  runSafe(createMailboxChallengeE(options))
+): Promise<
+  Result<MailboxChallengeCreated, ForbiddenError | ChallengeRateLimitedError>
+> => runSafe(createMailboxChallengeE(options))
 
 /**
  * Verify a mailbox one-time-code challenge.
@@ -359,11 +361,12 @@ export type {
   BadRequestError,
   ChallengeAttemptsExceededError,
   ChallengeExpiredError,
+  ChallengeRateLimitedError,
   DuplicateEmailError,
   ForbiddenError,
-  InvalidCodeError,
   InvalidChallengeCodeError,
   InvalidChallengeError,
+  InvalidCodeError,
   InvalidEmailError,
   InvalidTenancyError,
   NotFoundError,
@@ -375,11 +378,12 @@ export {
   isBadRequestError,
   isChallengeAttemptsExceededError,
   isChallengeExpiredError,
+  isChallengeRateLimitedError,
   isDuplicateEmailError,
   isForbiddenError,
-  isInvalidCodeError,
   isInvalidChallengeCodeError,
   isInvalidChallengeError,
+  isInvalidCodeError,
   isInvalidEmailError,
   isInvalidTenancyError,
   isNotFoundError,
