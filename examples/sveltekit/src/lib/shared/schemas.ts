@@ -1,4 +1,5 @@
 import * as v from 'valibot';
+import { ChallengeRateLimitViewSchema } from './challengeRateLimit.js';
 
 export const RegisterPasskeySuccess = v.object({
 	_tag: v.literal('RegisterPasskeySuccess')
@@ -61,3 +62,25 @@ export const Error = v.object({
 	_tag: v.literal('@error/Error'),
 	message: v.string()
 });
+
+export const ResendChallengeSuccess = v.object({
+	_tag: v.literal('ResendChallengeSuccess'),
+	message: v.string()
+});
+
+export const ResendChallengeRateLimited = v.object({
+	_tag: v.literal('ResendChallengeRateLimited'),
+	rateLimit: ChallengeRateLimitViewSchema
+});
+
+export const ResendChallengeRedirect = v.object({
+	_tag: v.literal('ResendChallengeRedirect'),
+	location: v.string()
+});
+
+export const ResendChallengeResponse = v.variant('_tag', [
+	ResendChallengeSuccess,
+	ResendChallengeRateLimited,
+	ResendChallengeRedirect,
+	Error
+]);

@@ -1,28 +1,19 @@
 import type { Actions, PageServerLoad } from './$types';
-import {
-	consumeEmailChallenge as verifyChangeEmailChallenge,
-	createOrRefreshEmailChallenge,
-	getPendingEmailChallenge
-} from '$lib/server/repository.js';
-import { sendEmailUpdated, sendCodeChallengeEmail } from '$lib/server/email.js';
-import {
-	deleteEmailChangeCookie,
-	getEmailChangeCookie,
-	setEmailChangeCookie
-} from '$lib/server/challenge.js';
-import { createChallengeRateLimitView } from '$lib/server/passlock.js';
+import { consumeEmailChallenge as verifyChangeEmailChallenge } from '$lib/server/repository.js';
+import { sendEmailUpdated } from '$lib/server/email.js';
+import { deleteEmailChangeCookie } from '$lib/server/challenge.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
 import { setError, superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import * as v from 'valibot';
+import {
+	getAccountEmailErrorLocation,
+	getPendingEmailChangeChallengeContext
+} from './challenge.js';
 
 const verifyCodeSchema = v.object({
 	code: v.pipe(v.string(), v.trim(), v.regex(/^\d{6}$/, 'Enter the 6-digit code'))
-});
-
-const resendCodeSchema = v.object({
-	intent: v.literal('resend-code')
 });
 
 const createVerifyForm = () =>
@@ -30,67 +21,25 @@ const createVerifyForm = () =>
 		id: 'verify-code-form'
 	});
 
-const createResendForm = () =>
-	superValidate({ intent: 'resend-code' }, valibot(resendCodeSchema), {
-		id: 'resend-code-form'
-	});
-
-/**
- * Redirect the user back to the account page but set a couple
- * of query params which read by the load function.
- *
- * @param reason
- * @param email
- */
-const redirectToAccountWithError = (reason: 'expired' | 'taken', email?: string): never => {
-	const params = new URLSearchParams({ 'email-error': reason });
-	if (email) params.set('email', email);
-	redirect(303, `${resolve('/account')}?${params.toString()}`);
-};
-
-/**
- * Fetch the challenge (including code)
- * associated with this change email request
- *
- * @param token
- * @param userId
- * @param clearCookie
- * @returns
- */
-const getChangeEmailChallenge = async (
-	pending: ReturnType<typeof getEmailChangeCookie>,
-	userId: number,
-	clearCookie: () => void
-) => {
-	if (!pending) redirect(303, resolve('/account'));
-
-	const challenge = await getPendingEmailChallenge(pending.challengeId);
-	if (!challenge || challenge.userId !== userId) {
-		clearCookie();
-		redirect(303, resolve('/account'));
-	}
-
-	return challenge;
-};
-
 export const load = (async ({ locals, cookies }) => {
 	if (!locals.user) redirect(302, resolve('/login'));
 
 	// the token allows us to display the email address in question
 	// before the user has entered the code
-	const pending = getEmailChangeCookie(cookies);
-	const { email } = await getChangeEmailChallenge(pending, locals.user.userId, () =>
-		deleteEmailChangeCookie(cookies)
-	);
+	const pendingContext = await getPendingEmailChangeChallengeContext(cookies, locals.user.userId);
+	if (pendingContext._tag === 'MissingPendingEmailChangeChallenge') {
+		redirect(303, resolve('/account'));
+	}
+	if (pendingContext._tag === 'InvalidPendingEmailChangeChallenge') {
+		deleteEmailChangeCookie(cookies);
+		redirect(303, resolve('/account'));
+	}
 
 	const verifyForm = await createVerifyForm();
-	const resendForm = await createResendForm();
 
 	return {
 		verifyForm,
-		resendForm,
-		email,
-		resendRateLimit: null
+		email: pendingContext.challenge.email
 	};
 }) satisfies PageServerLoad;
 
@@ -100,23 +49,28 @@ export const actions = {
 
 		const user = locals.user;
 
-		const resendForm = await createResendForm();
 		const verifyForm = await superValidate(request, valibot(verifyCodeSchema), {
 			id: 'verify-code-form'
 		});
 
-		if (!verifyForm.valid) return fail(400, { verifyForm, resendForm });
+		if (!verifyForm.valid) return fail(400, { verifyForm });
 
 		// supplying the code is not enough, the user must also
 		// present the token (stored as a cookie)
-		const pending = getEmailChangeCookie(cookies);
-		const challenge = await getChangeEmailChallenge(pending, user.userId, () =>
-			deleteEmailChangeCookie(cookies)
-		);
+		const pendingContext = await getPendingEmailChangeChallengeContext(cookies, user.userId);
+		if (pendingContext._tag === 'MissingPendingEmailChangeChallenge') {
+			redirect(303, resolve('/account'));
+		}
+		if (pendingContext._tag === 'InvalidPendingEmailChangeChallenge') {
+			deleteEmailChangeCookie(cookies);
+			redirect(303, resolve('/account'));
+		}
+
+		const { challenge, pending } = pendingContext;
 
 		const result = await verifyChangeEmailChallenge({
-			challengeId: pending!.challengeId,
-			token: pending!.token,
+			challengeId: pending.challengeId,
+			token: pending.token,
 			code: verifyForm.data.code,
 			userId: user.userId
 		});
@@ -141,7 +95,7 @@ export const actions = {
 
 		if (result._tag === '@error/DuplicateUser') {
 			deleteEmailChangeCookie(cookies);
-			redirectToAccountWithError('taken', challenge.email);
+			redirect(303, getAccountEmailErrorLocation('taken', challenge.email));
 		}
 
 		if (result._tag !== '@error/ChallengeVerificationError') {
@@ -156,7 +110,7 @@ export const actions = {
 			error.code === 'UNAUTHORIZED'
 		) {
 			deleteEmailChangeCookie(cookies);
-			redirectToAccountWithError('expired', challenge.email);
+			redirect(303, getAccountEmailErrorLocation('expired', challenge.email));
 		}
 
 		const message =
@@ -168,68 +122,6 @@ export const actions = {
 
 		setError(verifyForm, 'code', message);
 
-		return fail(400, { verifyForm, resendForm, email: challenge.email });
-	},
-	resend: async ({ request, locals, cookies }) => {
-		if (!locals.user) redirect(302, resolve('/login'));
-		const user = locals.user;
-
-		const resendForm = await superValidate(request, valibot(resendCodeSchema), {
-			id: 'resend-code-form'
-		});
-
-		const verifyForm = await createVerifyForm();
-
-		if (!resendForm.valid) return fail(400, { verifyForm, resendForm });
-
-		const pending = getEmailChangeCookie(cookies);
-		const challenge = await getChangeEmailChallenge(pending, user.userId, () =>
-			deleteEmailChangeCookie(cookies)
-		);
-
-		const result = await createOrRefreshEmailChallenge({
-			userId: user.userId,
-			email: challenge.email
-		});
-
-		if (result._tag === '@error/AccountNotFound') {
-			deleteEmailChangeCookie(cookies);
-			redirect(303, resolve('/login'));
-		}
-
-		if (result._tag === '@error/DuplicateUser') {
-			deleteEmailChangeCookie(cookies);
-			redirectToAccountWithError('taken', challenge.email);
-		}
-		if (result._tag === '@error/ChallengeRateLimited') {
-			return fail(429, {
-				verifyForm,
-				resendForm,
-				email: challenge.email,
-				resendRateLimit: createChallengeRateLimitView(result.retryAfterSeconds)
-			});
-		}
-
-		if (result._tag !== 'CreatedChallenge') {
-			throw new Error('Unexpected email change challenge result');
-		}
-
-		await sendCodeChallengeEmail({
-			email: result.challenge.email,
-			firstName: user.givenName,
-			code: result.code
-		});
-		setEmailChangeCookie(cookies, {
-			challengeId: result.challenge.id,
-			token: result.token
-		});
-		resendForm.message = 'A new code has been sent';
-
-		return {
-			verifyForm,
-			resendForm,
-			email: result.challenge.email,
-			resendRateLimit: null
-		};
+		return fail(400, { verifyForm, email: challenge.email });
 	}
 } satisfies Actions;

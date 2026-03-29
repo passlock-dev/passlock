@@ -1,0 +1,52 @@
+import { deleteSignupLoginCookie, setSignupLoginCookie } from '$lib/server/challenge.js';
+import { sendCodeChallengeEmail } from '$lib/server/email.js';
+import {
+	resendRateLimitResponse,
+	resendRedirectResponse,
+	resendSuccessResponse
+} from '$lib/server/resend.js';
+import { createOrRefreshSignupChallenge } from '$lib/server/repository.js';
+import type { RequestHandler } from './$types';
+import { getPendingSignupChallengeContext } from '../challenge.js';
+
+export const POST: RequestHandler = async ({ cookies }) => {
+	const pendingContext = await getPendingSignupChallengeContext(cookies);
+	if (pendingContext._tag === 'MissingPendingSignupChallenge') {
+		return resendRedirectResponse('/signup');
+	}
+	if (pendingContext._tag === 'InvalidPendingSignupChallenge') {
+		deleteSignupLoginCookie(cookies);
+		return resendRedirectResponse('/signup');
+	}
+
+	const { challenge } = pendingContext;
+
+	const result = await createOrRefreshSignupChallenge({
+		email: challenge.email,
+		givenName: challenge.givenName ?? '',
+		familyName: challenge.familyName ?? ''
+	});
+
+	if (result._tag === '@error/DuplicateUser') {
+		deleteSignupLoginCookie(cookies);
+		const username = encodeURIComponent(result.email);
+		return resendRedirectResponse(`/login?username=${username}&reason=account-exists`);
+	}
+
+	if (result._tag === '@error/ChallengeRateLimited') {
+		return resendRateLimitResponse(result.retryAfterSeconds);
+	}
+
+	await sendCodeChallengeEmail({
+		email: result.challenge.email,
+		firstName: result.challenge.givenName ?? 'there',
+		code: result.code
+	});
+
+	setSignupLoginCookie(cookies, {
+		challengeId: result.challenge.id,
+		token: result.token
+	});
+
+	return resendSuccessResponse();
+};

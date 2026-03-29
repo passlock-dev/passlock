@@ -1,31 +1,17 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import {
-	consumeSignupChallenge,
-	createOrRefreshSignupChallenge,
-	createSession,
-	getPendingSignupChallenge
-} from '$lib/server/repository.js';
-import { sendCodeChallengeEmail } from '$lib/server/email.js';
-import {
-	deleteSignupLoginCookie,
-	getSignupLoginCookie,
-	setSignupLoginCookie
-} from '$lib/server/challenge.js';
-import { createChallengeRateLimitView } from '$lib/server/passlock.js';
+import { consumeSignupChallenge, createSession } from '$lib/server/repository.js';
+import { deleteSignupLoginCookie } from '$lib/server/challenge.js';
 import { setSessionTokenCookie } from '$lib/server/session.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
 import { setError, superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import * as v from 'valibot';
+import { getPendingSignupChallengeContext } from './challenge.js';
 
 const verifyCodeSchema = v.object({
 	code: v.pipe(v.string(), v.trim(), v.regex(/^\d{6}$/, 'Enter the 6-digit code'))
-});
-
-const resendCodeSchema = v.object({
-	intent: v.literal('resend-code')
 });
 
 const createVerifyForm = () =>
@@ -33,58 +19,44 @@ const createVerifyForm = () =>
 		id: 'verify-code-form'
 	});
 
-const createResendForm = () =>
-	superValidate({ intent: 'resend-code' }, valibot(resendCodeSchema), {
-		id: 'resend-code-form'
-	});
-
-const getPendingSignupContext = async (
-	pending: ReturnType<typeof getSignupLoginCookie>,
-	clearCookie: () => void
-) => {
-	if (!pending) redirect(303, resolve('/signup'));
-
-	const challenge = await getPendingSignupChallenge(pending.challengeId);
-	if (!challenge) {
-		clearCookie();
-		redirect(303, resolve('/signup'));
-	}
-
-	return challenge;
-};
-
 export const load = (async ({ locals, cookies }) => {
 	if (locals.user) redirect(302, '/');
 
-	const pending = getSignupLoginCookie(cookies);
-	const { email } = await getPendingSignupContext(pending, () => deleteSignupLoginCookie(cookies));
+	const pendingContext = await getPendingSignupChallengeContext(cookies);
+	if (pendingContext._tag === 'MissingPendingSignupChallenge') {
+		redirect(303, resolve('/signup'));
+	}
+	if (pendingContext._tag === 'InvalidPendingSignupChallenge') {
+		deleteSignupLoginCookie(cookies);
+		redirect(303, resolve('/signup'));
+	}
 
 	const verifyForm = await createVerifyForm();
-	const resendForm = await createResendForm();
 
 	return {
 		verifyForm,
-		resendForm,
-		email,
-		resendRateLimit: null
+		email: pendingContext.challenge.email
 	};
 }) satisfies PageServerLoad;
 
 export const actions = {
 	verify: async ({ request, cookies }) => {
-		const resendForm = await createResendForm();
 		const verifyForm = await superValidate(request, valibot(verifyCodeSchema), {
 			id: 'verify-code-form'
 		});
 
-		if (!verifyForm.valid) return fail(400, { verifyForm, resendForm });
+		if (!verifyForm.valid) return fail(400, { verifyForm });
 
-		const pending = getSignupLoginCookie(cookies);
-		if (!pending) redirect(303, resolve('/signup'));
+		const pendingContext = await getPendingSignupChallengeContext(cookies);
+		if (pendingContext._tag === 'MissingPendingSignupChallenge') {
+			redirect(303, resolve('/signup'));
+		}
+		if (pendingContext._tag === 'InvalidPendingSignupChallenge') {
+			deleteSignupLoginCookie(cookies);
+			redirect(303, resolve('/signup'));
+		}
 
-		const challenge = await getPendingSignupContext(pending, () =>
-			deleteSignupLoginCookie(cookies)
-		);
+		const { challenge, pending } = pendingContext;
 
 		const result = await consumeSignupChallenge({
 			challengeId: pending.challengeId,
@@ -125,60 +97,6 @@ export const actions = {
 					: 'Invalid code';
 
 		setError(verifyForm, 'code', message);
-		return fail(400, { verifyForm, resendForm, email: challenge.email });
-	},
-	resend: async ({ request, cookies }) => {
-		const resendForm = await superValidate(request, valibot(resendCodeSchema), {
-			id: 'resend-code-form'
-		});
-		const verifyForm = await createVerifyForm();
-
-		if (!resendForm.valid) {
-			return fail(400, { verifyForm, resendForm });
-		}
-
-		const pending = getSignupLoginCookie(cookies);
-		if (!pending) redirect(303, resolve('/signup'));
-
-		const challenge = await getPendingSignupContext(pending, () =>
-			deleteSignupLoginCookie(cookies)
-		);
-
-		const result = await createOrRefreshSignupChallenge({
-			email: challenge.email,
-			givenName: challenge.givenName ?? '',
-			familyName: challenge.familyName ?? ''
-		});
-		if (result._tag === '@error/DuplicateUser') {
-			deleteSignupLoginCookie(cookies);
-			const username = encodeURIComponent(result.email);
-			redirect(303, `${resolve('/login')}?username=${username}&reason=account-exists`);
-		}
-		if (result._tag === '@error/ChallengeRateLimited') {
-			return fail(429, {
-				verifyForm,
-				resendForm,
-				email: challenge.email,
-				resendRateLimit: createChallengeRateLimitView(result.retryAfterSeconds)
-			});
-		}
-
-		await sendCodeChallengeEmail({
-			email: result.challenge.email,
-			firstName: result.challenge.givenName ?? 'there',
-			code: result.code
-		});
-		setSignupLoginCookie(cookies, {
-			challengeId: result.challenge.id,
-			token: result.token
-		});
-		resendForm.message = 'A new code has been sent';
-
-		return {
-			verifyForm,
-			resendForm,
-			email: result.challenge.email,
-			resendRateLimit: null
-		};
+		return fail(400, { verifyForm, email: challenge.email });
 	}
 } satisfies Actions;

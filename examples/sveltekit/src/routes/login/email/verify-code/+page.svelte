@@ -2,39 +2,10 @@
 	import { resolve } from '$app/paths';
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
-	import ChallengeRateLimitNotice from '$lib/components/ChallengeRateLimitNotice.svelte';
 	import DevNotes from '$lib/components/DevNotes.svelte';
-	import type { ChallengeRateLimitView } from '$lib/shared/challengeRateLimit.js';
+	import ResendChallengeButton from '$lib/components/ResendChallengeButton.svelte';
 
-	let { data, form: actionData }: PageProps = $props();
-	type ResendRateLimit = ChallengeRateLimitView | null;
-
-	const getActionResendRateLimit = (value: PageProps['form']): ResendRateLimit | undefined => {
-		if (!value || typeof value !== 'object' || !('resendRateLimit' in value)) return undefined;
-		return value.resendRateLimit as ResendRateLimit;
-	};
-
-	const getInitialResendRateLimit = (): ResendRateLimit => {
-		const initialActionResendRateLimit = getActionResendRateLimit(actionData);
-		return initialActionResendRateLimit === undefined
-			? data.resendRateLimit
-			: initialActionResendRateLimit;
-	};
-
-	const isResendRateLimitActive = (value: ResendRateLimit) =>
-		Boolean(value && value.initialRemainingSeconds > 0);
-
-	const initialResendRateLimit = getInitialResendRateLimit();
-	let resendRateLimit = $state<ResendRateLimit>(initialResendRateLimit);
-	let resendRateLimitActive = $state(isResendRateLimitActive(initialResendRateLimit));
-
-	$effect(() => {
-		const nextResendRateLimit = getActionResendRateLimit(actionData);
-		if (nextResendRateLimit === undefined) return;
-
-		resendRateLimit = nextResendRateLimit;
-		resendRateLimitActive = isResendRateLimitActive(nextResendRateLimit);
-	});
+	let { data }: PageProps = $props();
 
 	// svelte-ignore state_referenced_locally
 	const {
@@ -43,17 +14,6 @@
 		enhance: verifyEnhance,
 		constraints: verifyConstraints
 	} = superForm(data.verifyForm, {
-		applyAction: true,
-		invalidateAll: 'pessimistic'
-	});
-
-	// svelte-ignore state_referenced_locally
-	const {
-		form: resendForm,
-		errors: resendErrors,
-		message: resendMessage,
-		enhance: resendEnhance
-	} = superForm(data.resendForm, {
 		applyAction: true,
 		invalidateAll: 'pessimistic'
 	});
@@ -94,31 +54,7 @@
 			</fieldset>
 		</form>
 
-		{#if resendRateLimit}
-			<ChallengeRateLimitNotice
-				onActiveChange={(active) => {
-					resendRateLimitActive = active;
-				}}
-				rateLimit={resendRateLimit}
-				className="mt-4 text-center text-sm" />
-		{/if}
-
-		{#if $resendErrors._errors}
-			{#each $resendErrors._errors as error (error)}
-				<p class="mt-4 text-center text-sm text-error">{error}</p>
-			{/each}
-		{/if}
-
-		{#if $resendMessage}
-			<p class="mt-4 text-center text-sm text-success">{$resendMessage}</p>
-		{/if}
-
-		<form method="POST" action="?/resend" use:resendEnhance class="mt-4">
-			<input type="hidden" name="intent" bind:value={$resendForm.intent} />
-			<button class="btn w-full btn-outline" disabled={resendRateLimitActive}>
-				Send a new code
-			</button>
-		</form>
+		<ResendChallengeButton url={resolve('/login/email/verify-code/resend')} />
 
 		<p class="mt-4 text-center text-sm">
 			Need to start over?

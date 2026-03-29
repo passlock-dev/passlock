@@ -1,8 +1,12 @@
-export type ChallengeRateLimitView = {
-	retryAtMs: number;
-	initialRemainingSeconds: number;
-	readyMessage: string;
-};
+import * as v from 'valibot';
+
+export const ChallengeRateLimitViewSchema = v.object({
+	retryAtMs: v.pipe(v.number(), v.integer()),
+	initialRemainingSeconds: v.pipe(v.number(), v.integer()),
+	readyMessage: v.string()
+});
+
+export type ChallengeRateLimitView = v.InferOutput<typeof ChallengeRateLimitViewSchema>;
 
 export const CHALLENGE_RATE_LIMIT_READY_MESSAGE = 'You can request a new code now.';
 
