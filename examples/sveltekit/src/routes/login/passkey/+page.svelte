@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { authenticatePasskey } from '$lib/client/passkeys';
 	import DevNotes from '$lib/components/DevNotes.svelte';
+	import { toLoginEmailLocation } from '$lib/shared/queryState.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -47,7 +48,7 @@
 			{#if data.username}
 				<a
 					class="ml-1 text-primary hover:underline"
-					href="{resolve('/login/email')}?username={encodeURIComponent(data.username)}">
+					href={toLoginEmailLocation({ username: data.username })}>
 					Use an emailed code
 				</a>
 			{:else}

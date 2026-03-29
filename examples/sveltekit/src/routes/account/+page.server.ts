@@ -5,6 +5,10 @@ import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setEmailChangeCookie } from '$lib/server/challenge.js';
 import { createChallengeRateLimitView } from '$lib/server/passlock.js';
 import { getPasslockClientConfig } from '$lib/server/passkeys.js';
+import {
+	getAccountQueryState,
+	type AccountEmailErrorReason
+} from '$lib/shared/queryState.js';
 import { EmailSchema, ProfileSchema } from '$lib/shared/schemas.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
@@ -57,7 +61,7 @@ const authenticationRequired = (
 	});
 };
 
-const getEmailStatusError = (reason: string | null) => {
+const getEmailStatusError = (reason: AccountEmailErrorReason | undefined) => {
 	if (reason === 'taken') return 'That email address is already in use.';
 	if (reason === 'expired') return 'Your email verification session expired. Start again.';
 	return null;
@@ -71,6 +75,7 @@ export const load = (async ({ locals, url }) => {
 		givenName: user.givenName,
 		familyName: user.familyName
 	});
+	const { email, emailUpdated, emailError } = getAccountQueryState(url);
 
 	// If the user tries to verify their email after the code
 	// has expired we redirect them back to the account page but
@@ -78,21 +83,19 @@ export const load = (async ({ locals, url }) => {
 	// see /verify-email/+server.ts#redirectToAccountWithError
 	const emailForm = await createEmailForm(
 		// this is the NEW email address
-		{ email: url.searchParams.get('email') ?? undefined },
+		{ email },
 		{ errors: false }
 	);
 
 	// After the user successfully enters the email verification code
 	// they are redirected back here with ?email-updated=1
 	// see /verify-email/+server.ts (~ line 140)
-	const emailUpdated = url.searchParams.get('email-updated') === '1';
 	const emailStatusMessage = emailUpdated ? 'Email address updated.' : null;
 	if (emailStatusMessage) setMessage(emailForm, emailStatusMessage);
 
 	// If we couldn't verify the new email address
 	// the user is redirected back here with a failure code
-	const emailVerificationError = url.searchParams.get('email-error');
-	const emailStatusError = getEmailStatusError(emailVerificationError);
+	const emailStatusError = getEmailStatusError(emailError);
 	if (emailStatusError) setError(emailForm, emailStatusError);
 
 	return {

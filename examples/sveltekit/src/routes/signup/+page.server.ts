@@ -3,6 +3,7 @@ import { createOrRefreshSignupChallenge } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setSignupLoginCookie } from '$lib/server/challenge.js';
 import { createChallengeRateLimitView } from '$lib/server/passlock.js';
+import { getSignupQueryState, toLoginLocation } from '$lib/shared/queryState.js';
 
 import { superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
@@ -25,8 +26,7 @@ export const load = (async ({ locals, url }) => {
 		redirect(302, '/');
 	}
 
-	const email = url.searchParams.get('email') ?? undefined;
-	const reason = url.searchParams.get('reason');
+	const { email, reason } = getSignupQueryState(url);
 
 	const form = await superValidate({ email }, valibot(schema), { errors: false });
 	const notice =
@@ -46,8 +46,10 @@ export const actions = {
 
 		const result = await createOrRefreshSignupChallenge(form.data);
 		if (result._tag === '@error/DuplicateUser') {
-			const username = encodeURIComponent(form.data.email);
-			redirect(303, `/login?username=${username}&reason=account-exists`);
+			redirect(
+				303,
+				toLoginLocation({ username: form.data.email, reason: 'account-exists' })
+			);
 		}
 		if (result._tag === '@error/ChallengeRateLimited') {
 			return fail(429, {

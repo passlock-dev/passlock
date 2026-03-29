@@ -7,6 +7,7 @@ import {
 	resendRedirectResponse,
 	resendSuccessResponse
 } from '$lib/server/resend.js';
+import { toAccountLocation } from '$lib/shared/queryState.js';
 import type { RequestHandler } from './$types';
 import {
 	getAccountEmailErrorLocation,
@@ -21,7 +22,7 @@ export const POST: RequestHandler = async ({ locals, cookies }) => {
 	const user = locals.user;
 	const pendingContext = await getPendingEmailChangeChallengeContext(cookies, user.userId);
 	if (pendingContext._tag === 'MissingPendingEmailChangeChallenge') {
-		return resendRedirectResponse(getAccountEmailErrorLocation('expired'));
+		return resendRedirectResponse(toAccountLocation({ emailError: 'expired' }));
 	}
 	if (pendingContext._tag === 'InvalidPendingEmailChangeChallenge') {
 		deleteEmailChangeCookie(cookies);

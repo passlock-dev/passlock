@@ -6,6 +6,18 @@ This is a PNPM monorepo containing the public Passlock code, mostly frontend (br
 
 The private monorepo contains the code and infrastructure for the Passlock cloud framework, including the REST APIs, RPC endpoints, the management console and other tooling. Projects in this monorepo are typically client libraries that interact with the REST APIs in the private repo. The private repo is sibling to this repository i.e. `../private`
 
+Packages in the private repo include:
+
+* `packages/core` - Most data access and business logic lives here
+
+* `packages/api` - Our REST API, depends on `packages/core`
+
+* `packages/console` - SvelteKit app, depends on `packages/core`
+
+* `packages/eventbus` - Some async/background tasks are handed off to an AWS eventbus. The code for firing and handling events lives here.
+
+* `packages/website` - Our project website
+
 ## Package names
 
 When instructing agents, we often refer to projects by their NPM package names as defined in the relevant package.json file e.g. `@passlock/client`.

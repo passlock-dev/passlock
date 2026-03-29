@@ -11,6 +11,11 @@ import {
 	createChallengeRateLimitView,
 	restoreChallengeRateLimitView
 } from '$lib/server/passlock.js';
+import {
+	getLoginQueryState,
+	toLoginPasskeyLocation,
+	toSignupLocation
+} from '$lib/shared/queryState.js';
 import { superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
@@ -30,11 +35,10 @@ export const load = (async ({ locals, url }) => {
 		redirect(302, '/');
 	}
 
-	const username = url.searchParams.get('username') ?? undefined;
-	const reason = url.searchParams.get('reason');
+	const { username, reason, retryAtMs } = getLoginQueryState(url);
 	const rateLimit =
 		reason === 'challenge-rate-limited'
-			? restoreChallengeRateLimitView(Number(url.searchParams.get('retryAtMs')))
+			? restoreChallengeRateLimitView(retryAtMs ?? Number.NaN)
 			: null;
 
 	const form = await superValidate({ username }, valibot(schema), { errors: false });
@@ -59,14 +63,12 @@ export const actions = {
 		if (account) {
 			const passkeys = await getPasskeysByUserId(account.userId);
 			if (passkeys.length > 0) {
-				const username = encodeURIComponent(form.data.username);
-				redirect(303, `/login/passkey?username=${username}`);
+				redirect(303, toLoginPasskeyLocation({ username: form.data.username }));
 			}
 
 			const result = await createOrRefreshLoginChallenge(account.email);
 			if (result._tag === '@error/AccountNotFound') {
-				const email = encodeURIComponent(form.data.username);
-				redirect(303, `/signup?email=${email}&reason=no-account`);
+				redirect(303, toSignupLocation({ email: form.data.username, reason: 'no-account' }));
 			}
 			if (result._tag === '@error/ChallengeRateLimited') {
 				return fail(429, {
@@ -88,7 +90,6 @@ export const actions = {
 			redirect(303, '/login/email/verify-code');
 		}
 
-		const email = encodeURIComponent(form.data.username);
-		redirect(303, `/signup?email=${email}&reason=no-account`);
+		redirect(303, toSignupLocation({ email: form.data.username, reason: 'no-account' }));
 	}
 } satisfies Actions;

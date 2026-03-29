@@ -5,6 +5,7 @@ import { deleteSignupLoginCookie } from '$lib/server/challenge.js';
 import { setSessionTokenCookie } from '$lib/server/session.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
+import { toLoginLocation } from '$lib/shared/queryState.js';
 import { setError, superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import * as v from 'valibot';
@@ -75,8 +76,7 @@ export const actions = {
 
 		if (result._tag === '@error/DuplicateUser') {
 			deleteSignupLoginCookie(cookies);
-			const username = encodeURIComponent(result.email);
-			redirect(303, `${resolve('/login')}?username=${username}&reason=account-exists`);
+			redirect(303, toLoginLocation({ username: result.email, reason: 'account-exists' }));
 		}
 
 		if (result.code === 'CHALLENGE_EXPIRED' || result.code === 'PURPOSE_MISMATCH') {

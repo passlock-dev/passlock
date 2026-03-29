@@ -4,6 +4,7 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { valibotClient } from 'sveltekit-superforms/adapters';
 	import ChallengeRateLimitNotice from '$lib/components/ChallengeRateLimitNotice.svelte';
+	import { clearAccountQueryState } from '$lib/shared/queryState.js';
 	import { EmailSchema, ProfileSchema } from '$lib/shared/schemas.js';
 	import { updateUserPasskeys } from '$lib/client/passkeys';
 	import { reAuthenticateIfNecessary } from './utils.js';
@@ -63,10 +64,7 @@
 	 */
 	const clearQueryState = () => {
 		const url = new URL(window.location.href);
-		url.searchParams.delete('email-updated');
-		url.searchParams.delete('email-error');
-		url.searchParams.delete('email');
-		replaceState(resolve('/account'), {});
+		replaceState(clearAccountQueryState(url), {});
 	};
 
 	/**
