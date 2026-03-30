@@ -26,7 +26,10 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 	if (result._tag === '@error/AccountNotFound') {
 		deleteSignupLoginCookie(cookies);
-		return resendRedirectResponse(toSignupLocation({ email: challenge.email, reason: 'no-account' }), 404);
+		return resendRedirectResponse(
+			toSignupLocation({ email: challenge.email, reason: 'no-account' }),
+			404
+		);
 	}
 
 	if (result._tag === '@error/ChallengeRateLimited') {
@@ -41,7 +44,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 	setSignupLoginCookie(cookies, {
 		challengeId: result.challenge.id,
-		token: result.token
+		secret: result.secret
 	});
 
 	return resendSuccessResponse();

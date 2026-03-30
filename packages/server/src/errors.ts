@@ -77,7 +77,7 @@ export const isInvalidCodeError =
 /* InvalidChallenge */
 
 /**
- * Error payload returned when a mailbox challenge token is invalid.
+ * Error payload returned when a mailbox challenge is invalid.
  *
  * @category Mailbox
  */

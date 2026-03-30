@@ -3,6 +3,43 @@ import { Schema } from "effect"
 const EmailRegex = /^[^@]+@[^@]+.[^@]+$/
 const PurposeRegex = /^[A-Za-z0-9._:-]{1,64}$/
 
+type MailboxChallengeMetadataValue =
+  | string
+  | number
+  | boolean
+  | null
+  | ReadonlyArray<MailboxChallengeMetadataValue>
+  | MailboxChallengeMetadata
+
+/**
+ * JSON-compatible metadata stored alongside a mailbox challenge.
+ *
+ * @category Mailbox
+ */
+export interface MailboxChallengeMetadata {
+  readonly [key: string]: MailboxChallengeMetadataValue
+}
+
+const isPlainObject = (input: unknown): input is Record<string, unknown> => {
+  if (typeof input !== "object" || input === null || Array.isArray(input))
+    return false
+
+  const prototype = Object.getPrototypeOf(input)
+  return prototype === Object.prototype || prototype === null
+}
+
+const isMailboxChallengeMetadataValue = (
+  input: unknown
+): input is MailboxChallengeMetadataValue => {
+  if (input === null) return true
+  if (typeof input === "string" || typeof input === "boolean") return true
+  if (typeof input === "number") return Number.isFinite(input)
+  if (Array.isArray(input)) return input.every(isMailboxChallengeMetadataValue)
+  if (!isPlainObject(input)) return false
+
+  return Object.values(input).every(isMailboxChallengeMetadataValue)
+}
+
 /**
  * Schema for a mailbox challenge purpose string.
  *
@@ -40,19 +77,54 @@ export const MailboxChallengeEmail = Schema.String.pipe(
 export type MailboxChallengeEmail = typeof MailboxChallengeEmail.Type
 
 /**
+ * Schema for mailbox challenge metadata.
+ *
+ * @category Mailbox
+ */
+export const MailboxChallengeMetadata = Schema.declare(
+  (input: unknown): input is MailboxChallengeMetadata =>
+    isPlainObject(input) &&
+    Object.values(input).every(isMailboxChallengeMetadataValue)
+).annotations({ identifier: "MailboxChallengeMetadata" })
+
+const MailboxChallengeDetailsFields = {
+  challengeId: Schema.String,
+  purpose: MailboxChallengePurpose,
+  email: MailboxChallengeEmail,
+  userId: Schema.optional(Schema.String),
+  createdAt: Schema.Number,
+  expiresAt: Schema.Number,
+  metadata: Schema.NullOr(MailboxChallengeMetadata),
+} as const
+
+/**
+ * Schema for a readable mailbox one-time-code challenge.
+ *
+ * This tagged representation excludes the secret and one-time code.
+ *
+ * @category Mailbox
+ */
+export const MailboxChallengeDetails = Schema.TaggedStruct(
+  "Challenge",
+  MailboxChallengeDetailsFields
+)
+
+/**
+ * Type produced by {@link MailboxChallengeDetails}.
+ *
+ * @category Mailbox
+ */
+export type MailboxChallengeDetails = typeof MailboxChallengeDetails.Type
+
+/**
  * Schema for a mailbox one-time-code challenge.
  *
  * @category Mailbox
  */
 export const MailboxChallenge = Schema.Struct({
-  id: Schema.String,
-  purpose: MailboxChallengePurpose,
-  email: MailboxChallengeEmail,
-  userId: Schema.optional(Schema.String),
-  token: Schema.String,
+  ...MailboxChallengeDetailsFields,
+  secret: Schema.String,
   code: Schema.String,
-  createdAt: Schema.Number,
-  expiresAt: Schema.Number,
 })
 
 /**
@@ -85,7 +157,9 @@ export type MailboxChallengeCreated = typeof MailboxChallengeCreated.Type
  */
 export const MailboxChallengeVerified = Schema.TaggedStruct(
   "ChallengeVerified",
-  {}
+  {
+    challenge: MailboxChallengeDetails,
+  }
 )
 
 /**

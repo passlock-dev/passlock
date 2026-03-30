@@ -30,7 +30,9 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 	if (result._tag === '@error/DuplicateUser') {
 		deleteSignupLoginCookie(cookies);
-		return resendRedirectResponse(toLoginLocation({ username: result.email, reason: 'account-exists' }));
+		return resendRedirectResponse(
+			toLoginLocation({ username: result.email, reason: 'account-exists' })
+		);
 	}
 
 	if (result._tag === '@error/ChallengeRateLimited') {
@@ -45,7 +47,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 	setSignupLoginCookie(cookies, {
 		challengeId: result.challenge.id,
-		token: result.token
+		secret: result.secret
 	});
 
 	return resendSuccessResponse();

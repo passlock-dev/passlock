@@ -61,7 +61,7 @@ export const actions = {
 
 		const result = await consumeSignupChallenge({
 			challengeId: pending.challengeId,
-			token: pending.token,
+			secret: pending.secret,
 			code: verifyForm.data.code
 		});
 

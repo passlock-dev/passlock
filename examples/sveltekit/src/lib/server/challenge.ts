@@ -10,7 +10,7 @@ export const CHALLENGE_FLOW_TTL_MS = 30 * 60 * 1000;
 
 export type PendingChallengeCookie = {
 	challengeId: string;
-	token: string;
+	secret: string;
 };
 
 const getCookie = (
@@ -26,7 +26,7 @@ const getCookie = (
 			typeof parsed !== 'object' ||
 			parsed === null ||
 			typeof parsed.challengeId !== 'string' ||
-			typeof parsed.token !== 'string'
+			typeof parsed.secret !== 'string'
 		) {
 			return undefined;
 		}

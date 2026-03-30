@@ -1,10 +1,18 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type {
+  createMailboxChallenge as createMailboxChallengeEffect,
+  deleteMailboxChallenge as deleteMailboxChallengeEffect,
+  GetMailboxChallengeOptions as EffectGetMailboxChallengeOptions,
+  getMailboxChallenge as getMailboxChallengeEffect,
+  verifyMailboxChallenge as verifyMailboxChallengeEffect,
+} from "./effect.js"
+import type {
   Credential as UnsafeCredential,
   DeletedPasskeys as UnsafeDeletedPasskeys,
   ExtendedPrincipal as UnsafeExtendedPrincipal,
   MailboxChallenge as UnsafeMailboxChallenge,
   MailboxChallengeCreated as UnsafeMailboxChallengeCreated,
+  MailboxChallengeDetails as UnsafeMailboxChallengeDetails,
   Passkey as UnsafePasskey,
   PasskeyCredential as UnsafePasskeyCredential,
 } from "./index.js"
@@ -15,10 +23,12 @@ import type {
   Err,
   ExtendedPrincipal,
   ForbiddenError,
+  GetMailboxChallengeOptions,
   InvalidChallengeCodeError,
   InvalidCodeError,
   MailboxChallenge,
   MailboxChallengeCreated,
+  MailboxChallengeDetails,
   NotFoundError,
   Ok,
   Passkey,
@@ -31,10 +41,12 @@ import {
   type createMailboxChallenge,
   type deleteUserPasskeys,
   type exchangeCode,
+  type getMailboxChallenge,
   isChallengeRateLimitedError,
   isExtendedPrincipal,
   isForbiddenError,
   isMailboxChallengeCreated,
+  isMailboxChallengeDetails,
   type verifyIdToken,
   type verifyMailboxChallenge,
 } from "./safe.js"
@@ -64,6 +76,7 @@ describe("public surface", () => {
     expectTypeOf(isForbiddenError).toBeFunction()
     expectTypeOf(isChallengeRateLimitedError).toBeFunction()
     expectTypeOf(isMailboxChallengeCreated).toBeFunction()
+    expectTypeOf(isMailboxChallengeDetails).toBeFunction()
   })
 
   it("keeps shared types identical", () => {
@@ -82,6 +95,9 @@ describe("public surface", () => {
     type _8 = Assert<IsEqual<MailboxChallenge, UnsafeMailboxChallenge>>
     type _9 = Assert<
       IsEqual<MailboxChallengeCreated, UnsafeMailboxChallengeCreated>
+    >
+    type _10 = Assert<
+      IsEqual<MailboxChallengeDetails, UnsafeMailboxChallengeDetails>
     >
 
     expect(true).toBe(true)
@@ -124,7 +140,10 @@ describe("public surface", () => {
       IsEqual<
         Awaited<ReturnType<typeof verifyMailboxChallenge>>,
         Result<
-          { _tag: "ChallengeVerified" },
+          {
+            _tag: "ChallengeVerified"
+            challenge: MailboxChallengeDetails
+          },
           | ForbiddenError
           | InvalidChallengeCodeError
           | import("./safe.js").InvalidChallengeError
@@ -132,6 +151,38 @@ describe("public surface", () => {
           | import("./safe.js").ChallengeAttemptsExceededError
         >
       >
+    >
+    type _6 = Assert<
+      IsEqual<
+        Awaited<ReturnType<typeof getMailboxChallenge>>,
+        Result<MailboxChallengeDetails, ForbiddenError | NotFoundError>
+      >
+    >
+
+    expect(true).toBe(true)
+  })
+
+  it("exposes mailbox Effect exports", () => {
+    expectTypeOf<
+      ReturnType<typeof createMailboxChallengeEffect>
+    >().not.toEqualTypeOf<never>()
+    expectTypeOf<
+      ReturnType<typeof getMailboxChallengeEffect>
+    >().not.toEqualTypeOf<never>()
+    expectTypeOf<
+      ReturnType<typeof verifyMailboxChallengeEffect>
+    >().not.toEqualTypeOf<never>()
+    expectTypeOf<
+      ReturnType<typeof deleteMailboxChallengeEffect>
+    >().not.toEqualTypeOf<never>()
+
+    type IsEqual<A, B> =
+      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+        ? true
+        : false
+    type Assert<T extends true> = T
+    type _1 = Assert<
+      IsEqual<EffectGetMailboxChallengeOptions, GetMailboxChallengeOptions>
     >
 
     expect(true).toBe(true)

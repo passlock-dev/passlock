@@ -23,14 +23,17 @@ import { Effect, pipe } from "effect"
 import type {
   CreateMailboxChallengeOptions,
   DeleteMailboxChallengeOptions,
+  GetMailboxChallengeOptions,
   MailboxChallengeCreated,
   MailboxChallengeDeleted,
+  MailboxChallengeDetails,
   MailboxChallengeVerified,
   VerifyMailboxChallengeOptions,
 } from "./mailbox/mailbox.js"
 import {
   createMailboxChallenge as createMailboxChallengeE,
   deleteMailboxChallenge as deleteMailboxChallengeE,
+  getMailboxChallenge as getMailboxChallengeE,
   verifyMailboxChallenge as verifyMailboxChallengeE,
 } from "./mailbox/mailbox.js"
 import type {
@@ -69,6 +72,10 @@ import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
 /**
  * Create a mailbox one-time-code challenge.
  *
+ * `metadata` is stored as opaque application state. When `invalidateOthers` is
+ * `true`, Passlock invalidates other pending challenges for the same purpose,
+ * scoped by `userId` when present, otherwise by `email`.
+ *
  * @param options
  * @returns A promise resolving to the created mailbox challenge payload.
  * @throws {@link ChallengeRateLimitedError} if mailbox challenge creation has been rate limited
@@ -82,11 +89,30 @@ export const createMailboxChallenge = (
   pipe(createMailboxChallengeE(options), Effect.runPromise)
 
 /**
+ * Fetch a mailbox one-time-code challenge.
+ *
+ * The returned readable challenge is tagged as `"Challenge"` and excludes the
+ * secret and one-time code.
+ *
+ * @param options
+ * @returns A promise resolving to the readable challenge payload.
+ * @throws {@link NotFoundError} if the challenge does not exist
+ * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
+ *
+ * @category Mailbox
+ */
+export const getMailboxChallenge = (
+  options: GetMailboxChallengeOptions
+): Promise<MailboxChallengeDetails> =>
+  pipe(getMailboxChallengeE(options), Effect.runPromise)
+
+/**
  * Verify a mailbox one-time-code challenge.
  *
  * @param options
- * @returns A promise resolving to a verification payload.
- * @throws {@link InvalidChallengeError} if the challenge token is invalid
+ * @returns A promise resolving to a verification payload containing the
+ * readable challenge.
+ * @throws {@link InvalidChallengeError} if the challenge is invalid
  * @throws {@link InvalidChallengeCodeError} if the one-time code is invalid
  * @throws {@link ChallengeExpiredError} if the challenge has expired
  * @throws {@link ChallengeAttemptsExceededError} if the maximum verification attempts have been exceeded
@@ -306,9 +332,13 @@ export {
 export type {
   CreateMailboxChallengeOptions,
   DeleteMailboxChallengeOptions,
+  GetMailboxChallengeOptions,
   MailboxChallenge,
   MailboxChallengeCreated,
   MailboxChallengeDeleted,
+  MailboxChallengeDetails,
+  MailboxChallengeMetadata,
+  MailboxChallengeMetadataValue,
   MailboxChallengeVerified,
   VerifyMailboxChallengeOptions,
 } from "./mailbox/mailbox.js"
@@ -316,6 +346,7 @@ export {
   isMailboxChallenge,
   isMailboxChallengeCreated,
   isMailboxChallengeDeleted,
+  isMailboxChallengeDetails,
   isMailboxChallengeVerified,
 } from "./mailbox/mailbox.js"
 export type {

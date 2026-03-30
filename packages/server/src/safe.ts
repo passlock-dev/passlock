@@ -56,14 +56,17 @@ import type {
 import type {
   CreateMailboxChallengeOptions,
   DeleteMailboxChallengeOptions,
+  GetMailboxChallengeOptions,
   MailboxChallengeCreated,
   MailboxChallengeDeleted,
+  MailboxChallengeDetails,
   MailboxChallengeVerified,
   VerifyMailboxChallengeOptions,
 } from "./mailbox/mailbox.js"
 import {
   createMailboxChallenge as createMailboxChallengeE,
   deleteMailboxChallenge as deleteMailboxChallengeE,
+  getMailboxChallenge as getMailboxChallengeE,
   verifyMailboxChallenge as verifyMailboxChallengeE,
 } from "./mailbox/mailbox.js"
 import type {
@@ -115,6 +118,10 @@ const runSafe = <A extends object, E extends object>(
 /**
  * Create a mailbox one-time-code challenge.
  *
+ * `metadata` is stored as opaque application state. When `invalidateOthers` is
+ * `true`, Passlock invalidates other pending challenges for the same purpose,
+ * scoped by `userId` when present, otherwise by `email`.
+ *
  * @param options
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * the created mailbox challenge payload and whose error branch contains an API error.
@@ -128,11 +135,29 @@ export const createMailboxChallenge = (
 > => runSafe(createMailboxChallengeE(options))
 
 /**
+ * Fetch a mailbox one-time-code challenge.
+ *
+ * The returned readable challenge is tagged as `"Challenge"` and excludes the
+ * secret and one-time code.
+ *
+ * @param options
+ * @returns A promise resolving to a {@link Result} whose success branch contains
+ * the readable challenge and whose error branch contains an API error.
+ *
+ * @category Mailbox
+ */
+export const getMailboxChallenge = (
+  options: GetMailboxChallengeOptions
+): Promise<Result<MailboxChallengeDetails, ForbiddenError | NotFoundError>> =>
+  runSafe(getMailboxChallengeE(options))
+
+/**
  * Verify a mailbox one-time-code challenge.
  *
  * @param options
  * @returns A promise resolving to a {@link Result} whose success branch contains
- * the verification payload and whose error branch contains an API error.
+ * the verification payload, including the readable challenge, and whose error
+ * branch contains an API error.
  *
  * @category Mailbox
  */
@@ -394,9 +419,13 @@ export {
 export type {
   CreateMailboxChallengeOptions,
   DeleteMailboxChallengeOptions,
+  GetMailboxChallengeOptions,
   MailboxChallenge,
   MailboxChallengeCreated,
   MailboxChallengeDeleted,
+  MailboxChallengeDetails,
+  MailboxChallengeMetadata,
+  MailboxChallengeMetadataValue,
   MailboxChallengeVerified,
   VerifyMailboxChallengeOptions,
 } from "./mailbox/mailbox.js"
@@ -404,6 +433,7 @@ export {
   isMailboxChallenge,
   isMailboxChallengeCreated,
   isMailboxChallengeDeleted,
+  isMailboxChallengeDetails,
   isMailboxChallengeVerified,
 } from "./mailbox/mailbox.js"
 export type {

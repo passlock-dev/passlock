@@ -25,15 +25,15 @@ const createVerifyForm = () =>
 export const load = (async ({ locals, cookies }) => {
 	if (!locals.user) redirect(302, resolve('/login'));
 
-	// the token allows us to display the email address in question
+	// the pending challenge cookie lets us display the email address in question
 	// before the user has entered the code
 	const pendingContext = await getPendingEmailChangeChallengeContext(cookies, locals.user.userId);
 	if (pendingContext._tag === 'MissingPendingEmailChangeChallenge') {
-		redirect(303, resolve('/account'));
+		redirect(303, toAccountLocation({ emailError: 'expired' }));
 	}
 	if (pendingContext._tag === 'InvalidPendingEmailChangeChallenge') {
 		deleteEmailChangeCookie(cookies);
-		redirect(303, resolve('/account'));
+		redirect(303, toAccountLocation({ emailError: 'expired' }));
 	}
 
 	const verifyForm = await createVerifyForm();
@@ -57,21 +57,21 @@ export const actions = {
 		if (!verifyForm.valid) return fail(400, { verifyForm });
 
 		// supplying the code is not enough, the user must also
-		// present the token (stored as a cookie)
+		// present the stored challenge secret from the cookie
 		const pendingContext = await getPendingEmailChangeChallengeContext(cookies, user.userId);
 		if (pendingContext._tag === 'MissingPendingEmailChangeChallenge') {
-			redirect(303, resolve('/account'));
+			redirect(303, toAccountLocation({ emailError: 'expired' }));
 		}
 		if (pendingContext._tag === 'InvalidPendingEmailChangeChallenge') {
 			deleteEmailChangeCookie(cookies);
-			redirect(303, resolve('/account'));
+			redirect(303, toAccountLocation({ emailError: 'expired' }));
 		}
 
 		const { challenge, pending } = pendingContext;
 
 		const result = await verifyChangeEmailChallenge({
 			challengeId: pending.challengeId,
-			token: pending.token,
+			secret: pending.secret,
 			code: verifyForm.data.code,
 			userId: user.userId
 		});

@@ -39,6 +39,20 @@ export const getPasslockClientConfig = () => {
 };
 
 export type MailboxChallengePurpose = 'login' | 'signup' | 'email-change';
+export type MailboxChallengeMetadataValue =
+	| string
+	| number
+	| boolean
+	| null
+	| ReadonlyArray<MailboxChallengeMetadataValue>
+	| MailboxChallengeMetadata;
+
+export interface MailboxChallengeMetadata {
+	readonly [key: string]: MailboxChallengeMetadataValue;
+}
+
+export type MailboxChallenge = PasslockServer.MailboxChallenge;
+export type MailboxChallengeDetails = PasslockServer.MailboxChallengeDetails;
 export type ChallengeRateLimitedError = {
 	_tag: '@error/ChallengeRateLimited';
 	message: string;
@@ -83,12 +97,16 @@ export const createMailboxChallenge = async (input: {
 	email: string;
 	purpose: MailboxChallengePurpose;
 	userId?: number | undefined;
+	metadata?: MailboxChallengeMetadata | undefined;
+	invalidateOthers?: boolean | undefined;
 }): Promise<PasslockServer.MailboxChallenge | ChallengeRateLimitedError> => {
 	const result = await PasslockServer.createMailboxChallenge({
 		...getPasslockConfig(),
 		email: input.email,
 		purpose: input.purpose,
-		userId: input.userId === undefined ? undefined : String(input.userId)
+		userId: input.userId === undefined ? undefined : String(input.userId),
+		metadata: input.metadata,
+		invalidateOthers: input.invalidateOthers
 	});
 
 	if (result.failure) {
@@ -103,7 +121,31 @@ export const createMailboxChallenge = async (input: {
 	return result.challenge;
 };
 
-export const verifyMailboxChallenge = async (input: { token: string; code: string }) =>
+export const getMailboxChallenge = async (input: {
+	challengeId: string;
+}): Promise<MailboxChallengeDetails | null> => {
+	const result = await PasslockServer.getMailboxChallenge({
+		...getPasslockConfig(),
+		...input
+	});
+
+	if (result.failure) {
+		if (PasslockServer.isNotFoundError(result)) {
+			return null;
+		}
+
+		console.error('Unable to read mailbox challenge', result);
+		kitError(500, 'Unable to read one-time code challenge');
+	}
+
+	return result;
+};
+
+export const verifyMailboxChallenge = async (input: {
+	challengeId: string;
+	secret: string;
+	code: string;
+}) =>
 	PasslockServer.verifyMailboxChallenge({
 		...getPasslockConfig(),
 		...input
