@@ -1,5 +1,10 @@
 /**
- * DrizzleORM based repository
+ * Repository layer for the example app's local account, session, challenge,
+ * and passkey state.
+ *
+ * Passlock remains responsible for verifying mailbox challenges and passkey
+ * proofs. This module translates those verified results into local records the
+ * SvelteKit app can use for routing, UI, and authorization decisions.
  */
 
 import { DrizzleQueryError } from 'drizzle-orm/errors';
@@ -28,17 +33,26 @@ import {
 } from './session';
 import { generateRandomString } from './utils';
 
+/**
+ * Data required to create a new local user account after signup verification.
+ */
 export type CreateUser = {
 	email: string;
 	givenName: string;
 	familyName: string;
 };
 
+/**
+ * Editable profile fields stored on the local user record.
+ */
 export type UpdateUserNames = {
 	givenName: string;
 	familyName: string;
 };
 
+/**
+ * Minimal user record returned when a new account is created locally.
+ */
 export type User = {
 	_tag: 'User';
 	userId: number;
@@ -46,16 +60,25 @@ export type User = {
 	createdAt: number;
 };
 
+/**
+ * Returned when a unique email constraint prevents account creation or update.
+ */
 export type DuplicateUser = {
 	_tag: '@error/DuplicateUser';
 	email: string;
 };
 
+/**
+ * Returned when a flow expects a local account that no longer exists.
+ */
 export type AccountNotFound = {
 	_tag: '@error/AccountNotFound';
 	email: string;
 };
 
+/**
+ * Passkey record as stored in the local SQLite database.
+ */
 export type Passkey = {
 	_tag: 'Passkey';
 	userId: number;
@@ -65,16 +88,25 @@ export type Passkey = {
 	createdAt: number;
 };
 
+/**
+ * Returned when a passkey id is already linked to a local account.
+ */
 export type DuplicatePasskey = {
 	_tag: '@error/DuplicatePasskey';
 	passkeyId: string;
 };
 
+/**
+ * Returned when a requested local passkey record no longer exists.
+ */
 export type PasskeyNotFound = {
 	_tag: '@error/PasskeyNotFound';
 	passkeyId: string;
 };
 
+/**
+ * Passkey metadata shown in account-management UI.
+ */
 export type UserPasskey = {
 	passkeyId: string;
 	username: string | null;
@@ -86,6 +118,10 @@ export type UserPasskey = {
 export type ChallengePurpose = 'login' | 'signup' | 'email-change';
 type UserChallengePurpose = Exclude<ChallengePurpose, 'signup'>;
 
+/**
+ * Normalized mailbox challenge shape used by the app after reading from
+ * Passlock.
+ */
 export type Challenge = {
 	id: string;
 	purpose: ChallengePurpose;
@@ -97,6 +133,9 @@ export type Challenge = {
 	challengeExpiresAt: number;
 };
 
+/**
+ * Challenge plus the secret and code needed to complete the current flow.
+ */
 export type CreatedChallenge = {
 	_tag: 'CreatedChallenge';
 	challenge: Challenge;
@@ -106,6 +145,12 @@ export type CreatedChallenge = {
 
 type ChallengeCreationResult = CreatedChallenge | ChallengeRateLimitedError;
 
+/**
+ * Application-level failure reasons for one-time-code verification.
+ *
+ * These collapse Passlock SDK errors plus local authorization checks into a
+ * smaller set that route handlers can map to redirects and field errors.
+ */
 export type ChallengeVerificationError = {
 	_tag: '@error/ChallengeVerificationError';
 	code:
@@ -119,17 +164,26 @@ export type ChallengeVerificationError = {
 	email?: string;
 };
 
+/**
+ * Returned when a challenge successfully identifies a local account.
+ */
 export type ConsumedChallenge = {
 	_tag: 'ChallengeConsumed';
 	user: SessionUser;
 };
 
+/**
+ * Returned when an email-change challenge has been verified and applied.
+ */
 export type EmailChangeSuccess = {
 	_tag: 'EmailChangeSuccess';
 	user: SessionUser;
 	oldEmail: string;
 };
 
+/**
+ * Server-side session record stored in SQLite.
+ */
 export type Session = {
 	id: string;
 	userId: number;
@@ -140,6 +194,9 @@ export type Session = {
 	passkeyAuthenticatedAt: number | null;
 };
 
+/**
+ * User data hydrated into `event.locals` alongside a validated session.
+ */
 export type SessionUser = {
 	userId: number;
 	email: string;
@@ -147,17 +204,26 @@ export type SessionUser = {
 	familyName: string;
 };
 
+/**
+ * Result of validating a session cookie against the local database.
+ */
 export type SessionValidationResult = {
 	session: Session;
 	user: SessionUser;
 	fresh: boolean;
 };
 
+/**
+ * Newly created session plus the opaque token sent to the browser cookie.
+ */
 export type CreatedSession = {
 	session: Session;
 	token: string;
 };
 
+/**
+ * Metadata persisted locally after Passlock confirms a passkey registration.
+ */
 export type CreatePasskey = {
 	userId: number;
 	passkeyId: string;
@@ -403,12 +469,24 @@ const getPendingChallenge = async (
 	return validated._tag === 'ValidatedChallenge' ? validated.challenge : null;
 };
 
+/**
+ * Read a pending login challenge if it still exists and still matches the
+ * expected purpose.
+ */
 export const getPendingLoginChallenge = async (challengeId: string): Promise<Challenge | null> =>
 	getPendingChallenge(challengeId, 'login');
 
+/**
+ * Read a pending email-change challenge if it still exists and still matches
+ * the expected purpose.
+ */
 export const getPendingEmailChallenge = async (challengeId: string): Promise<Challenge | null> =>
 	getPendingChallenge(challengeId, 'email-change');
 
+/**
+ * Read a pending signup challenge if it still exists and still matches the
+ * expected purpose.
+ */
 export const getPendingSignupChallenge = async (challengeId: string): Promise<Challenge | null> =>
 	getPendingChallenge(challengeId, 'signup');
 
@@ -453,6 +531,9 @@ const verifyChallenge = async (input: {
 	throw new Error('Unexpected mailbox challenge verification result');
 };
 
+/**
+ * Create or refresh the login one-time-code challenge for an existing account.
+ */
 export const createOrRefreshLoginChallenge = async (
 	email: string
 ): Promise<CreatedChallenge | AccountNotFound | ChallengeRateLimitedError> => {
@@ -468,6 +549,9 @@ export const createOrRefreshLoginChallenge = async (
 	});
 };
 
+/**
+ * Create or refresh the signup one-time-code challenge for a new account.
+ */
 export const createOrRefreshSignupChallenge = async (input: {
 	email: string;
 	givenName: string;
@@ -479,6 +563,10 @@ export const createOrRefreshSignupChallenge = async (input: {
 	return createSignupChallenge(input);
 };
 
+/**
+ * Create or refresh the challenge that verifies ownership of a replacement
+ * email address for an existing account.
+ */
 export const createOrRefreshEmailChallenge = async (input: {
 	userId: number;
 	email: string;
@@ -511,6 +599,10 @@ const consumeChallengeByEmail = async (
 	return { _tag: 'ChallengeConsumed', user };
 };
 
+/**
+ * Verify a signup code, create the local account if needed, and resolve to
+ * the new session user.
+ */
 export const consumeSignupChallenge = async (input: {
 	challengeId: string;
 	secret: string;
@@ -550,6 +642,9 @@ export const consumeSignupChallenge = async (input: {
 	return consumeChallengeByEmail(challenge);
 };
 
+/**
+ * Verify a login code and resolve it to the existing local account.
+ */
 export const consumeLoginChallenge = async (input: {
 	challengeId: string;
 	secret: string;
@@ -566,6 +661,10 @@ export const consumeLoginChallenge = async (input: {
 	return consumeChallengeByEmail(verified.challenge);
 };
 
+/**
+ * Verify an email-change code, ensure it belongs to the signed-in user, and
+ * update the local account email address.
+ */
 export const consumeEmailChallenge = async (input: {
 	challengeId: string;
 	secret: string;
@@ -608,6 +707,9 @@ export const consumeEmailChallenge = async (input: {
 	};
 };
 
+/**
+ * Create a local user record after signup has been verified by Passlock.
+ */
 export const createUser = async (newUser: CreateUser): Promise<User | DuplicateUser> => {
 	const { email, givenName, familyName } = newUser;
 
@@ -625,6 +727,9 @@ export const createUser = async (newUser: CreateUser): Promise<User | DuplicateU
 	}
 };
 
+/**
+ * Read a local account by numeric user id.
+ */
 export const getUserById = async (userId: number): Promise<SessionUser | null> => {
 	const users = await db
 		.select({
@@ -640,6 +745,9 @@ export const getUserById = async (userId: number): Promise<SessionUser | null> =
 	return users[0] ?? null;
 };
 
+/**
+ * Read a local account by email address.
+ */
 export const getUserByEmail = async (email: string): Promise<SessionUser | null> => {
 	const users = await db
 		.select({
@@ -655,6 +763,9 @@ export const getUserByEmail = async (email: string): Promise<SessionUser | null>
 	return users[0] ?? null;
 };
 
+/**
+ * Update the locally stored given/family names for an account.
+ */
 export const updateUserNames = async (
 	userId: number,
 	updateUser: UpdateUserNames
@@ -675,6 +786,10 @@ export const updateUserNames = async (
 	return users[0] ?? null;
 };
 
+/**
+ * Update the local email address for an account, returning a duplicate error
+ * when another account already owns the new email.
+ */
 export const updateUserEmail = async (
 	userId: number,
 	email: string
@@ -698,6 +813,12 @@ export const updateUserEmail = async (
 	}
 };
 
+/**
+ * Delete the local account plus all local sessions and passkey records.
+ *
+ * The surrounding route flow deletes passkeys from Passlock before calling
+ * this so the local transaction only needs to clean up app data.
+ */
 export const deleteUser = async (userId: number): Promise<boolean> => {
 	return await db.transaction(async (tx) => {
 		await tx.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
@@ -712,6 +833,9 @@ export const deleteUser = async (userId: number): Promise<boolean> => {
 	});
 };
 
+/**
+ * Persist a newly verified passkey in the local database.
+ */
 export const createPasskey = async (
 	createPasskey: CreatePasskey
 ): Promise<Passkey | DuplicatePasskey> => {
@@ -743,6 +867,9 @@ export const createPasskey = async (
 	};
 };
 
+/**
+ * Resolve a passkey id to the owning local user.
+ */
 export const getUserByPasskeyId = async (passkeyId: string): Promise<{ userId: number } | null> => {
 	const users = await db
 		.select({ userId: passkeysTable.userId })
@@ -753,6 +880,9 @@ export const getUserByPasskeyId = async (passkeyId: string): Promise<{ userId: n
 	return users[0] ?? null;
 };
 
+/**
+ * List the passkeys linked to a local user for account-management UI.
+ */
 export const getPasskeysByUserId = async (userId: number): Promise<UserPasskey[]> => {
 	return await db
 		.select({
@@ -767,6 +897,10 @@ export const getPasskeysByUserId = async (userId: number): Promise<UserPasskey[]
 		.orderBy(desc(passkeysTable.createdAt));
 };
 
+/**
+ * Find passkeys by username/email so the passkey login route can pre-select
+ * credentials for a known account.
+ */
 export const getPasskeysByUsername = async (email: string): Promise<UserPasskey[]> => {
 	return await db
 		.select({
@@ -782,6 +916,9 @@ export const getPasskeysByUsername = async (email: string): Promise<UserPasskey[
 		.orderBy(desc(passkeysTable.createdAt));
 };
 
+/**
+ * Update the locally stored username for every passkey linked to a user.
+ */
 export const updatePasskeysByUserId = async (
 	userId: number,
 	{ username }: { username: string }
@@ -794,6 +931,9 @@ export const updatePasskeysByUserId = async (
 	return results.rowsAffected;
 };
 
+/**
+ * Delete one local passkey association for a specific user.
+ */
 export const deletePasskeyByUserId = async (
 	userId: number,
 	passkeyId: string
@@ -806,6 +946,14 @@ export const deletePasskeyByUserId = async (
 	return Boolean(deleted[0]);
 };
 
+/**
+ * Create a new local session and return the opaque token that should be set in
+ * the browser cookie.
+ *
+ * `passkeyVerified` is used when login or re-authentication has just been
+ * completed with a passkey, allowing sensitive actions to proceed for a short
+ * window afterwards.
+ */
 export const createSession = async (
 	userId: number,
 	options?: { passkeyVerified?: boolean }
@@ -850,6 +998,10 @@ export const createSession = async (
 	throw new Error('Unable to create session');
 };
 
+/**
+ * Validate an opaque session token against the local session store and return
+ * the corresponding user/session for `event.locals`.
+ */
 export const validateSessionToken = async (
 	token: string
 ): Promise<SessionValidationResult | null> => {
@@ -915,6 +1067,9 @@ export const validateSessionToken = async (
 	};
 };
 
+/**
+ * Mark the current session as recently passkey-authenticated.
+ */
 export const refreshPasskeyAuthenticatedAt = async (sessionId: string): Promise<void> => {
 	await db
 		.update(sessionsTable)
@@ -922,10 +1077,16 @@ export const refreshPasskeyAuthenticatedAt = async (sessionId: string): Promise<
 		.where(eq(sessionsTable.id, sessionId));
 };
 
+/**
+ * Delete a single local session, for example during logout.
+ */
 export const invalidateSession = async (sessionId: string): Promise<void> => {
 	await db.delete(sessionsTable).where(eq(sessionsTable.id, sessionId));
 };
 
+/**
+ * Delete every local session belonging to the supplied user.
+ */
 export const invalidateSessionsByUserId = async (userId: number): Promise<void> => {
 	await db.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
 };

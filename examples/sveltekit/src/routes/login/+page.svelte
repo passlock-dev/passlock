@@ -95,7 +95,6 @@
 	</form>
 </div>
 
-<!-- TODO Delete me -->
 <DevNotes>
 	<p>We adopt a two-step login flow:</p>
 	<ol class="mt-2 list-inside list-decimal">

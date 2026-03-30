@@ -64,6 +64,13 @@ const getEmailStatusError = (reason: AccountEmailErrorReason | undefined) => {
 	return null;
 };
 
+/**
+ * Load the account-management page.
+ *
+ * The loader prepares both forms, restores any status from the email-change
+ * redirect flow, and exposes enough Passlock client config for any
+ * browser-side passkey sync that needs to happen on the page.
+ */
 export const load = (async ({ locals, url }) => {
 	const { user, hasPasskeys } = await requireAccountContext(locals);
 	const passlockConfig = getPasslockClientConfig();
@@ -126,7 +133,7 @@ export const actions = {
 		}
 
 		if (reauthenticationRequired) {
-			// user didn't authenticate with the passkey in the last 10 mins
+			// The server enforces the same re-auth rule as the client helper.
 			return authenticationRequired(profileForm, emailForm, 'profile', user, hasPasskeys);
 		}
 
@@ -179,13 +186,13 @@ export const actions = {
 		}
 
 		if (reauthenticationRequired) {
-			// user didn't authenticate with the passkey in the last 10 mins
+			// Changing the sign-in email is sensitive, so it requires a recent
+			// passkey confirmation when the account has passkeys.
 			return authenticationRequired(profileForm, emailForm, 'email', user, hasPasskeys);
 		}
 
-		// we dont actually update the email at this point
-		// instead we generate a new verification code to
-		// send to the new new email
+		// We do not change the email immediately. First we verify that the user
+		// controls the replacement address by sending a code there.
 		const result = await createOrRefreshEmailChallenge({
 			userId: user.userId,
 			email: emailForm.data.email
@@ -217,14 +224,14 @@ export const actions = {
 			});
 		}
 
-		// send the verification code to the new email
+		// The email contains the user-facing code; the cookie stores the secret.
 		await sendCodeChallengeEmail({
 			email: result.challenge.email,
 			firstName: user.givenName,
 			code: result.code
 		});
 
-		// verification requires the 6 digit code plus the challenge ID and secret
+		// Verification requires both the code and this secret-bearing cookie.
 		setEmailChangeCookie(cookies, {
 			challengeId: result.challenge.id,
 			secret: result.secret

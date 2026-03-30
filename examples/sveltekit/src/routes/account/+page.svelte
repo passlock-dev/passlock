@@ -59,17 +59,19 @@
 	};
 
 	/**
-	 * We've displayed the error or synced the passkeys
-	 * so clear the query params
+	 * Once the redirect-driven status has been rendered, clear the transient
+	 * query params so a refresh does not replay the same UI state.
 	 */
 	const clearQueryState = () => {
 		const url = new URL(window.location.href);
-		replaceState(clearAccountQueryState(url), {});
+		const search = new URL(clearAccountQueryState(url), window.location.origin).search;
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
+		replaceState(`${resolve('/account')}${search}`, {});
 	};
 
 	/**
-	 * Update the passkeys in the user's local passkey
-	 * manager to align with the new account information.
+	 * Refresh the passkeys stored on the current device so the browser's
+	 * password manager shows the same account details as the server.
 	 */
 	const syncPasskeys = async () => {
 		syncingUpdatedEmailPasskeys = true;
@@ -97,9 +99,9 @@
 	};
 
 	onMount(() => {
-		// After the user verifies their new email address
-		// they're redirected back to this route with a ?email-updated=1 flag set.
-		// Ultimately this results in the local passkeys being refreshed
+		// Email verification finishes on a different route, then redirects back
+		// here with query state that tells us whether local passkey metadata now
+		// needs to be refreshed.
 		if (data.syncPasskeysOnLoad) {
 			void syncPasskeys();
 			return;
@@ -112,9 +114,9 @@
 	 * When the user submits the profile form (first and last name) we:
 	 *
 	 * 1. Check if they authenticated within the last N mins
-	 * 2. If not kick off passkey based authentication
-	 * 3. Once re-authenticated we submit the form and update the records
-	 * 4. Update the passkey(s) display name in the user's local passkey manager
+	 * 2. If not, kick off passkey-based re-authentication
+	 * 3. Submit the form and update the server-side records
+	 * 4. Refresh the passkey display name on the user's local device
 	 *
 	 */
 	// svelte-ignore state_referenced_locally
@@ -149,8 +151,8 @@
 				return;
 			}
 
-			// refresh the passkeys with the new names
-			// (email/username will be unchanged)
+			// Once the server update succeeds, ask the browser to refresh the
+			// locally stored display name as well.
 			const result = await updateUserPasskeys({
 				username: data.currentEmail,
 				givenName: form.data.givenName,
@@ -167,13 +169,13 @@
 	 * When the user changes their email we:
 	 *
 	 * 1. Check if they authenticated within the last N mins
-	 * 2. If not kick off passkey based authentication
-	 * 3. Once re-authenticated we submit the form and update the records
+	 * 2. If not, kick off passkey-based re-authentication
+	 * 3. Submit the form so the server can start the email verification flow
 	 *
-	 * This will result in an account verification email being sent
-	 * and we redirect the user to the /verify-email route.
+	 * This sends a verification email to the replacement address and redirects
+	 * the user to `/account/verify-email`.
 	 *
-	 * Note: at this point no changes will be made to the account email
+	 * Note: the local account email does not change until the code is verified.
 	 *
 	 */
 	// svelte-ignore state_referenced_locally

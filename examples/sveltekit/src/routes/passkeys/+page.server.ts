@@ -3,6 +3,9 @@ import { getPasskeysByUserId } from '$lib/server/repository.js';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
+/**
+ * Load the passkey-management page for the signed-in user.
+ */
 export const load = (async ({ locals, depends }) => {
 	depends('passkeys');
 

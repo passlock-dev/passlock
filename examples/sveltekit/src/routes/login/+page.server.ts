@@ -30,6 +30,13 @@ const schema = v.object({
 	)
 });
 
+/**
+ * Load the first-step login form.
+ *
+ * This route identifies which authentication path to take for the supplied
+ * email address: passkey-first when the account already has passkeys, or
+ * emailed one-time code otherwise.
+ */
 export const load = (async ({ locals, url }) => {
 	if (locals.user) {
 		redirect(302, '/');
@@ -61,6 +68,8 @@ export const actions = {
 
 		const account = await getUserByEmail(form.data.username);
 		if (account) {
+			// If we already know the account has passkeys, skip directly to the
+			// passkey prompt so the user does not wait for an email code.
 			const passkeys = await getPasskeysByUserId(account.userId);
 			if (passkeys.length > 0) {
 				redirect(303, toLoginPasskeyLocation({ username: form.data.username }));
@@ -77,6 +86,8 @@ export const actions = {
 				});
 			}
 
+			// The cookie stores the challenge id + secret; the email contains the
+			// code, so both are required to finish the flow.
 			await sendCodeChallengeEmail({
 				email: result.challenge.email,
 				firstName: result.challenge.givenName ?? 'there',

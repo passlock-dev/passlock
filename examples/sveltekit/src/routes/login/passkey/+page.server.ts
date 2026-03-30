@@ -4,6 +4,10 @@ import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getPasskeysByUsername } from '$lib/server/repository';
 
+/**
+ * Load the passkey login page and optionally pre-select credentials for a
+ * known email address.
+ */
 export const load = (async ({ locals, url }) => {
 	if (locals.user) {
 		redirect(302, '/');
@@ -11,6 +15,8 @@ export const load = (async ({ locals, url }) => {
 
 	const passlockConfig = getPasslockClientConfig();
 	const { username } = getLoginPasskeyQueryState(url);
+	// When the user has already identified their account, we can narrow the
+	// prompt to passkeys linked to that account.
 	const passkeys = username ? await getPasskeysByUsername(username) : [];
 	const existingPasskeys = passkeys.map(({ passkeyId }) => passkeyId);
 

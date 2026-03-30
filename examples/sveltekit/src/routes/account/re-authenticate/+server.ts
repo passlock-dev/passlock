@@ -16,6 +16,10 @@ const payloadSchema = v.object({
 const errorResponse = (message: string, status: number) =>
 	json({ _tag: '@error/Error' as const, message }, { status });
 
+/**
+ * Verify a passkey against the current account and refresh the session's
+ * passkey re-authentication timestamp.
+ */
 export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.user || !locals.session) {
 		return errorResponse('Authentication required.', 401);
@@ -42,13 +46,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		return errorResponse(principal.message, status);
 	}
 
+	// Re-authentication is only valid when the presented passkey still belongs
+	// to the signed-in account.
 	const user = await getUserByPasskeyId(principal.authenticatorId);
 	if (!user || user.userId !== locals.user.userId) {
 		return errorResponse('That passkey does not belong to this account.', 403);
 	}
 
-	// set the passkey authenticated at timestamp
-	// this will be checked when the profile or email change forme is submitted
+	// Later account actions read this timestamp to decide whether another prompt
+	// is required.
 	await refreshPasskeyAuthenticatedAt(locals.session.id);
 
 	return json({ success: true });

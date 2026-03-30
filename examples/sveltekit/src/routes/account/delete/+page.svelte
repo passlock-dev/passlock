@@ -28,6 +28,8 @@
 		onSubmit: async ({ cancel }) => {
 			warning = '';
 
+			// Account deletion is sensitive, so reuse the same passkey re-auth
+			// helper used by the profile/email forms before allowing submission.
 			const authResult = await reAuthenticateIfNecessary({
 				errors,
 				validateForm: () => validateForm({ update: true }),
@@ -40,24 +42,23 @@
 				return;
 			}
 
-			// we don't need to perform client side passkey deletion
-			// so go ahead an submit the form to close the account
+			// Accounts without passkeys can submit immediately once the form is
+			// valid.
 			if (authResult.passkeyIds.length === 0) return;
 
-			// delete the passkeys (client and server-side)
+			// Clear trusted passkeys before the account record itself is deleted.
 			deletingPasskeys = true;
 			const result = await deleteAccountPasskeys();
 			deletingPasskeys = false;
 
-			// abort account deletion
 			if (result._tag === '@error/DeletePasskeyError') {
 				setFormError(errors, result.message);
 				cancel();
 				return;
 			}
 
-			// we closed the account but were unable to programmatically
-			// delete the passkeys from the user's device
+			// Browser/device cleanup is best-effort. Keep the user informed, but do
+			// not block account deletion once the server-side records are gone.
 			if (result._tag === '@warning/PasskeyDeletePaused') {
 				warning = result.message;
 			}

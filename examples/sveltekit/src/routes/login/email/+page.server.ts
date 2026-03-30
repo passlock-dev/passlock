@@ -28,6 +28,13 @@ const redirectToLoginRateLimited = (email: string, retryAfterSeconds: number): n
 	);
 };
 
+/**
+ * Start the email-code login path for a known account.
+ *
+ * This route exists so other routes can redirect straight to "send the email
+ * code for this username" without forcing the user to re-enter their email on
+ * `/login`.
+ */
 const sendLoginCode = async (username: string | null, cookies: import('@sveltejs/kit').Cookies) => {
 	if (!username) redirect(302, resolve('/login'));
 
@@ -40,6 +47,7 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 	if (pendingChallenge) {
 		const challenge = await getPendingLoginChallenge(pendingChallenge.challengeId);
 		if (challenge?.email === account.email) {
+			// Reuse the in-progress challenge instead of generating another email.
 			redirect(303, resolve('/login/email/verify-code'));
 		}
 	}
@@ -55,6 +63,7 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 		throw new Error('Unexpected login challenge result');
 	}
 
+	// Store the secret server-side in a cookie; send the code via email.
 	await sendCodeChallengeEmail({
 		email: result.challenge.email,
 		firstName: result.challenge.givenName ?? 'there',
@@ -68,6 +77,10 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 	redirect(303, resolve('/login/email/verify-code'));
 };
 
+/**
+ * Loader-only route that immediately kicks off email-code login and redirects
+ * to the verification page.
+ */
 export const load = (async ({ locals, url, cookies }) => {
 	if (locals.user) redirect(302, '/');
 

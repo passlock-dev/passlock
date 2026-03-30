@@ -9,10 +9,11 @@ const fallbackResponse = () => ({
 });
 
 /**
- * Trigger a resend endpoint and parse the shared typed response.
+ * Trigger a "resend code" endpoint and parse the shared typed response.
  *
  * The endpoint may intentionally use non-2xx status codes for expected
- * outcomes such as rate limiting, so we always validate the JSON body.
+ * outcomes such as rate limiting or redirects, so this helper validates the
+ * JSON body regardless of HTTP status.
  */
 export const resendChallenge = async (url: string) => {
 	try {

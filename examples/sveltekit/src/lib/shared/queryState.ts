@@ -12,6 +12,13 @@ import {
 	type SignupLocation
 } from '$lib/shared/routes.js';
 
+/**
+ * Helpers for encoding small pieces of auth flow state into the URL.
+ *
+ * The sample uses query parameters for user-facing state that should survive a
+ * redirect, such as "account exists", "challenge rate limited", or
+ * "email updated". Sensitive secrets stay in HTTP-only cookies instead.
+ */
 type QueryValue = string | number | undefined | null | false;
 
 const createLocation = <Path extends string>(path: Path, params: Record<string, QueryValue>) => {
@@ -33,7 +40,8 @@ export type AccountEmailErrorReason = 'expired' | 'taken';
 const isLoginQueryReason = (value: string | null): value is LoginQueryReason =>
 	value === 'account-exists' || value === 'challenge-rate-limited';
 
-const isSignupQueryReason = (value: string | null): value is SignupQueryReason => value === 'no-account';
+const isSignupQueryReason = (value: string | null): value is SignupQueryReason =>
+	value === 'no-account';
 
 const isAccountEmailErrorReason = (value: string | null): value is AccountEmailErrorReason =>
 	value === 'expired' || value === 'taken';
@@ -45,6 +53,9 @@ const getOptionalNumber = (value: string | null) => {
 	return Number.isFinite(parsed) ? parsed : undefined;
 };
 
+/**
+ * Parse the login page query params into a typed object the loader can trust.
+ */
 export const getLoginQueryState = (url: URL) => {
 	const reasonValue = url.searchParams.get('reason');
 
@@ -55,12 +66,21 @@ export const getLoginQueryState = (url: URL) => {
 	};
 };
 
-export const toLoginLocation = (state: {
-	username?: string;
-	reason?: LoginQueryReason;
-	retryAtMs?: number;
-} = {}): LoginLocation => createLocation(loginPath, state);
+/**
+ * Build a typed login route including any non-sensitive auth state that should
+ * survive redirects.
+ */
+export const toLoginLocation = (
+	state: {
+		username?: string;
+		reason?: LoginQueryReason;
+		retryAtMs?: number;
+	} = {}
+): LoginLocation => createLocation(loginPath, state);
 
+/**
+ * Parse the signup page query params into the subset this app understands.
+ */
 export const getSignupQueryState = (url: URL) => {
 	const reasonValue = url.searchParams.get('reason');
 
@@ -74,6 +94,9 @@ export const toSignupLocation = (
 	state: { email?: string; reason?: SignupQueryReason } = {}
 ): SignupLocation => createLocation(signupPath, state);
 
+/**
+ * Parse account-page query params used after email verification redirects.
+ */
 export const getAccountQueryState = (url: URL) => {
 	const errorValue = url.searchParams.get('email-error');
 
@@ -84,17 +107,26 @@ export const getAccountQueryState = (url: URL) => {
 	};
 };
 
-export const toAccountLocation = (state: {
-	email?: string;
-	emailUpdated?: boolean;
-	emailError?: AccountEmailErrorReason;
-} = {}): AccountLocation =>
+/**
+ * Build a typed account route with only non-sensitive UI state in the query
+ * string.
+ */
+export const toAccountLocation = (
+	state: {
+		email?: string;
+		emailUpdated?: boolean;
+		emailError?: AccountEmailErrorReason;
+	} = {}
+): AccountLocation =>
 	createLocation(accountPath, {
 		email: state.email,
 		'email-updated': state.emailUpdated ? 1 : undefined,
 		'email-error': state.emailError
 	});
 
+/**
+ * Remove transient account-page messages once the UI has rendered them.
+ */
 export const clearAccountQueryState = (url: URL): AccountLocation => {
 	url.searchParams.delete('email-updated');
 	url.searchParams.delete('email-error');
@@ -102,6 +134,10 @@ export const clearAccountQueryState = (url: URL): AccountLocation => {
 	return createLocation(accountPath, Object.fromEntries(url.searchParams.entries()));
 };
 
+/**
+ * Read the email/username that was used to pre-select passkeys on the passkey
+ * login route.
+ */
 export const getLoginPasskeyQueryState = (url: URL) => ({
 	username: url.searchParams.get('username') ?? undefined
 });
@@ -109,6 +145,10 @@ export const getLoginPasskeyQueryState = (url: URL) => ({
 export const toLoginPasskeyLocation = (state: { username?: string } = {}): LoginPasskeyLocation =>
 	createLocation(loginPasskeyPath, state);
 
+/**
+ * Read the email/username that should receive an emailed code on the login
+ * email route.
+ */
 export const getLoginEmailQueryState = (url: URL) => ({
 	username: url.searchParams.get('username') ?? undefined
 });

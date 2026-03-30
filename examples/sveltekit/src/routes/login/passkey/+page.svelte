@@ -3,7 +3,6 @@
 	import { resolve } from '$app/paths';
 	import { authenticatePasskey } from '$lib/client/passkeys';
 	import DevNotes from '$lib/components/DevNotes.svelte';
-	import { toLoginEmailLocation } from '$lib/shared/queryState.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -15,6 +14,8 @@
 		error = '';
 		loading = true;
 
+		// The browser prompt happens here; the server verifies the returned code
+		// and creates the local session.
 		const result = await authenticatePasskey(data);
 
 		if (result._tag == 'PasslockLoginSuccess') {
@@ -43,24 +44,24 @@
 			<p class="mt-4 text-sm text-error">{error}</p>
 		{/if}
 
-		<p class="mt-4 text-center text-sm">
+		<div class="mt-4 text-center text-sm">
 			Need email login instead?
 			{#if data.username}
-				<a
-					class="ml-1 text-primary hover:underline"
-					href={toLoginEmailLocation({ username: data.username })}>
-					Use an emailed code
-				</a>
+				<form method="GET" action={resolve('/login/email')} class="inline">
+					<input type="hidden" name="username" value={data.username} />
+					<button type="submit" class="ml-1 cursor-pointer text-primary hover:underline">
+						Use an emailed code
+					</button>
+				</form>
 			{:else}
 				<a class="ml-1 text-primary hover:underline" href={resolve('/login')}>
 					Use an emailed code
 				</a>
 			{/if}
-		</p>
+		</div>
 	</div>
 </div>
 
-<!-- TODO Delete me -->
 {#if data.existingPasskeys.length > 0}
 	<DevNotes>
 		<p>

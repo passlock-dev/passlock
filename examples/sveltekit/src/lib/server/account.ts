@@ -4,8 +4,12 @@ import { getPasskeysByUserId, type Session, type SessionUser } from './repositor
 import { isRecentAuthentication } from './session.js';
 
 /**
- * To determine if the user needs to authenticate
- * and if so which passkey(s) should be used
+ * Server-side account context derived from the current session plus the user's
+ * registered passkeys.
+ *
+ * Routes use this to decide whether the request is authenticated at all and
+ * whether the user must present a passkey again before performing a sensitive
+ * action such as changing profile data or deleting the account.
  */
 export type AccountContext = {
 	user: SessionUser;
@@ -15,6 +19,10 @@ export type AccountContext = {
 	reauthenticationRequired: boolean;
 };
 
+/**
+ * Return the authenticated user, session, and passkey state for the current
+ * request, or `null` if no session is present.
+ */
 export const getAccountContext = async (locals: App.Locals): Promise<AccountContext | null> => {
 	const user = locals.user;
 	const session = locals.session;
@@ -36,10 +44,8 @@ export const getAccountContext = async (locals: App.Locals): Promise<AccountCont
 };
 
 /**
- * Get the account context if logged in, otherwise redirect to /login
- *
- * @param locals
- * @returns
+ * Require an authenticated account context, redirecting anonymous requests to
+ * the login page before they reach account-management logic.
  */
 export const requireAccountContext = async (locals: App.Locals): Promise<AccountContext> => {
 	const context = await getAccountContext(locals);

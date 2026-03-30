@@ -4,7 +4,7 @@ The `@passlock/sveltekit-example` project is a SvelteKit app. It illustrates how
 
 ## Purpose
 
-This app serves as a learning resource for developers and agents who want to use Passlock in their apps. 
+This app serves as a learning resource for developers and agents who want to use Passlock in their apps.
 
 ## Comments and JSDoc
 

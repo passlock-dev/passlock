@@ -1,5 +1,12 @@
 import { index, int, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
+/**
+ * Drizzle schema for the example app.
+ *
+ * Passlock remains the source of truth for challenge verification and passkey
+ * operations. The local database stores the application-facing account,
+ * session, and passkey metadata that the sample needs for UI and routing.
+ */
 export const usersTable = sqliteTable('users', {
 	id: int().primaryKey({ autoIncrement: true }),
 	email: text().notNull().unique(),
@@ -32,9 +39,9 @@ export const sessionsTable = sqliteTable(
 			.references(() => usersTable.id, { onDelete: 'cascade' }),
 		secretHash: text().notNull(),
 		createdAt: int().notNull(),
-		// when the session token was checked
+		// Updated whenever the session token is re-validated.
 		lastVerifiedAt: int().notNull(),
-		// when the last passkey based authentication took place
+		// Used to enforce fresh passkey confirmation for sensitive actions.
 		passkeyAuthenticatedAt: int()
 	},
 	(table) => [index('sessions_user_id_idx').on(table.userId)]

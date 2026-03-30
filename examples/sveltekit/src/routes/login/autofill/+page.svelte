@@ -16,12 +16,14 @@
 	const { form, errors } = superForm(data.form);
 
 	onMount(async () => {
-		// trigger passkey login on page load
+		// Autofill-capable browsers can surface a passkey picker as soon as the
+		// page mounts, avoiding the usual explicit "continue" click.
 		const result = await authenticatePasskey({
 			...data,
-			autofill: true, // important
+			autofill: true,
 			onEvent: (event) => {
-				// disables the form once the user has presented their passkey
+				// Once the user picks a passkey, freeze the fallback form to avoid
+				// competing submissions during server verification.
 				if (event === 'verifyCredential') {
 					disabled = true;
 				}
@@ -29,7 +31,8 @@
 		});
 
 		if (result._tag === 'PasslockLoginSuccess') {
-			// force the layout to refresh
+			// Refresh the root layout so navigation and account UI pick up the new
+			// authenticated state.
 			await invalidateAll();
 			await goto(resolve('/'));
 			disabled = false;
@@ -72,7 +75,6 @@
 	</form>
 </div>
 
-<!-- TODO Delete me -->
 <DevNotes>
 	<p>
 		Uses passkey autofill. Essentially allows users with passkeys to login in a single step vs the

@@ -2,6 +2,9 @@ import { getSignupLoginCookie } from '$lib/server/challenge.js';
 import { getPendingSignupChallenge } from '$lib/server/repository.js';
 import type { Cookies } from '@sveltejs/kit';
 
+/**
+ * Route-local challenge context for the signup code verification page.
+ */
 export type PendingSignupChallengeContext =
 	| { _tag: 'MissingPendingSignupChallenge' }
 	| { _tag: 'InvalidPendingSignupChallenge' }
@@ -11,6 +14,9 @@ export type PendingSignupChallengeContext =
 			challenge: NonNullable<Awaited<ReturnType<typeof getPendingSignupChallenge>>>;
 	  };
 
+/**
+ * Recover the signup challenge referenced by the pending challenge cookie.
+ */
 export const getPendingSignupChallengeContext = async (
 	cookies: Cookies
 ): Promise<PendingSignupChallengeContext> => {

@@ -1,9 +1,15 @@
 /**
- * Typically handles client-side passkey management, making fetch
- * calls to the passkey endpoints for the server side stuff.
+ * Browser-side passkey helpers.
  *
- * We use a _tag property as a discriminator on the response instead of
- * throwing untyped errors.
+ * These functions own the part of the flow that must happen in the browser:
+ * asking WebAuthn-capable devices to create, present, update, or delete a
+ * passkey. Anything that requires server trust, such as exchanging a Passlock
+ * code for a verified principal or mutating the Passlock vault, is delegated
+ * to SvelteKit endpoints.
+ *
+ * Each helper returns a discriminated union rather than throwing untyped
+ * errors so route components can make auth decisions with simple `_tag`
+ * checks.
  */
 
 import * as PasslockClient from '@passlock/client/safe';
@@ -29,22 +35,24 @@ export type CreatePasskeyInput = {
 };
 
 /**
- * Use @passlock/client to register a passkey on the user's local device.
- * Send the `code` to the backend for verification and account linkage by
- * making a POST request to the /passkeys/+server.ts endpoint.
+ * Create a passkey on the current device and then hand the returned code to
+ * the server so it can verify the registration and link the passkey to the
+ * signed-in account.
  *
- * @param input
- * @returns
+ * Registration is split across trust boundaries:
+ * - `@passlock/client` talks to the browser's WebAuthn APIs.
+ * - `POST /passkeys` verifies the Passlock code and stores the passkey
+ *   association in server-side state.
  */
 export const registerPasskey = async (input: CreatePasskeyInput) => {
 	const ERROR_TAG = '@error/CreatePasskeyError' as const;
 
-	// excludeCredentials prevents the user registering multiple
-	// passkeys for the same account on a device/ecosystem
+	// `excludeCredentials` prevents users from re-registering the same account
+	// on a device ecosystem that already has a matching passkey.
 	// see https://passlock.dev/passkeys/exclude-credentials/
 	const { email: username, existingPasskeys: excludeCredentials } = input;
 
-	// client side registration
+	// WebAuthn registration must happen in the browser.
 	const clientResult = await PasslockClient.registerPasskey({
 		...input,
 		username,
@@ -52,23 +60,21 @@ export const registerPasskey = async (input: CreatePasskeyInput) => {
 		userVerification: 'preferred'
 	});
 
-	// existingPasskeys/excludeCredentials included one or more
-	// credentials that already exists on this device
+	// The browser matched one of the supplied credentials to a passkey that is
+	// already present on this device.
 	if (clientResult._tag === '@error/DuplicatePasskey') {
 		const message = 'Passkey already available on this device';
 		return { _tag: ERROR_TAG, message } as const;
 	} else if (clientResult.failure) {
-		// another client side error - abort
+		// Another browser-side failure, such as a cancelled prompt.
 		return { _tag: ERROR_TAG, message: clientResult.message } as const;
 	}
 
-	// clientResult.failure is false so type is narrowed to a RegistrationSuccess
-	// could also use if (clientResult.success) { ... }
 	const { code } = clientResult;
 
-	// server side passkey verification and registration
+	// The server exchanges the code with Passlock and persists the authenticated
+	// passkey metadata locally.
 	return fetchData({
-		// /passkeys/+server.ts endpoint
 		url: resolve('/passkeys'),
 		method: 'POST',
 		body: { code },
@@ -82,23 +88,22 @@ export const registerPasskey = async (input: CreatePasskeyInput) => {
 
 export type AuthenticatePasskeyInput = {
 	/**
-	 * generally we want to verify the code and log the user in
-	 * so we default to the login route. however for re-authentication
-	 * we just want to bump the passkey authenticated at timestamp so
-	 * send the code to the re-authenticate route
+	 * Most passkey auth attempts end by posting the Passlock code to the login
+	 * endpoint. Sensitive account actions reuse the same browser prompt but send
+	 * the code to `/account/re-authenticate` so the existing session can be
+	 * marked as recently passkey-verified.
 	 */
 	verificationRoute?: string | undefined;
 	userVerification?: 'preferred' | 'required';
 	autofill?: boolean;
 	/**
-	 * used alongside autofill so we can trigger stuff when the user
-	 * authenticates
-	 * @param event
-	 * @returns
+	 * Used with autofill so the page can react to browser events such as the
+	 * user selecting a credential before the server round-trip completes.
 	 */
 	onEvent?: (event: PasslockClient.AuthenticationEvent) => void;
 	/**
-	 * Pre-select suitable passkeys for the user
+	 * Restrict the prompt to passkeys already linked to the account. This maps
+	 * to WebAuthn's `allowCredentials`.
 	 */
 	existingPasskeys?: Array<string> | undefined;
 	tenancyId: string;
@@ -106,31 +111,33 @@ export type AuthenticatePasskeyInput = {
 };
 
 /**
- * Ask the browser/device to present a passkey, send the code to the
- * backend for verification and if all good log the user in and create
- * a new session
+ * Ask the browser to authenticate with a passkey and then post the resulting
+ * Passlock code to a server endpoint that can trust the outcome.
  *
- * @param input
- * @returns
+ * The browser proves possession of the credential; the server decides what
+ * that proof means for the app, such as creating a session or refreshing a
+ * re-authentication timestamp.
  */
 export const authenticatePasskey = async (input: AuthenticatePasskeyInput) => {
 	const ERROR_TAG = '@error/PasslockLoginError';
 
-	// Passlock uses the WebAuthn term 'allowCredentials'
+	// Passlock uses the WebAuthn name `allowCredentials` for this list.
 	const { existingPasskeys: allowCredentials, verificationRoute = '/login/passkey' } = input;
 
-	// kick of passkey auth locally
+	// WebAuthn prompts can only run in the browser.
 	const clientResult = await PasslockClient.authenticatePasskey({
 		...input,
 		allowCredentials
 	});
 
-	// local authentication failed - abort
+	// Authentication never left the device, so there is nothing to verify
+	// server-side.
 	if (clientResult.failure) {
 		return { _tag: ERROR_TAG, message: clientResult.message } as const;
 	}
 
-	// send the code to the backend for verification, session creation etc.
+	// The server exchanges the code with Passlock and applies the result to app
+	// state.
 	return await fetchData({
 		url: verificationRoute,
 		method: 'POST',
@@ -144,10 +151,8 @@ export const authenticatePasskey = async (input: AuthenticatePasskeyInput) => {
 };
 
 /**
- * Does the user need to re-authenticate?
- * If so, which passkey(s) should they use
- *
- * @returns
+ * Ask the server whether the current session must be re-authenticated before a
+ * sensitive action and, if so, which passkeys belong to the account.
  */
 export const getPasskeyStatus = async () => {
 	const ERROR_TAG = '@error/PasskeyStatusError' as const;
@@ -172,28 +177,23 @@ export type UpdatePasskeysInput = {
 };
 
 /**
- * Update the username/display name for every passkey associated with the user.
- * Note: This only works because during the passkey registration flow we set
- * the userId on the passkey. Otherwise Passlock would generate a random userId.
+ * Update the account name shown for every passkey linked to the current user.
  *
+ * This sample keeps passkey metadata aligned in three places:
+ * - the Passlock vault, which stores the canonical passkey records
+ * - the local SQLite database, which powers account-specific UI
+ * - the user's device or password manager, which shows the username and
+ *   display name during sign-in
  *
- * This happens in 3 places:
- * 1) The passlock vault (nice to have)
- * 2) The local (SQLite) database
- * 3) The users local device/password manager
- *
- * First we call the /passkeys endpoint (+server.ts). This handles steps 1 and 2.
- * Then we call updatePasskey from @passlock/client/safe to trigger the local updates.
- *
- * @param input
- * @returns
+ * The server updates the first two; the browser then uses the credential list
+ * returned by the server to request the local update.
  */
 export const updateUserPasskeys = async (input: UpdatePasskeysInput) => {
 	const ERROR_TAG = '@error/UpdatePasskeyError';
 	const { username, givenName, familyName } = input;
 	const displayName = `${givenName} ${familyName}`.trim();
 
-	// see the PATCH handler in /passkeys/+server.ts
+	// `PATCH /passkeys` updates the Passlock vault and the local SQLite record.
 	const serverResult = await fetchData({
 		url: resolve('/passkeys'),
 		method: 'PATCH',
@@ -210,14 +210,12 @@ export const updateUserPasskeys = async (input: UpdatePasskeysInput) => {
 		}
 	});
 
-	// if we didnt get Credentials back from the endpoint we must
-	// have an error which we send back to the caller
+	// Only the credential payload contains enough information for the browser to
+	// request a local device update.
 	if (serverResult._tag !== 'Credentials') return serverResult;
 
-	// client side update. this is important because we need to keep
-	// the passkey on the users device aligned with the the new username
-	// note: we don't need a tenancyId or endpoint as the PasslockClient
-	// doesn't need to call out to the Vault, it's a pure client-side operation
+	// This step is purely local to the browser/device, so no tenancy config is
+	// required.
 	const clientResult = await PasslockClient.updatePasskeyUsernames(serverResult.credentials);
 
 	if (clientResult.success) return { _tag: 'UpdatePasskeySuccess' } as const;
@@ -230,22 +228,21 @@ export type DeletePasskeyInput = {
 };
 
 /**
- * Delete one passkey from the Passlock vault, remove the user association in
- * the local db and remove it from the user's local device/passkey manager.
+ * Delete a single passkey from the account.
  *
- * @param input
- * @returns
+ * As with updates, deletion has both a trusted server-side part and a
+ * best-effort browser-side part. The account should stop trusting the passkey
+ * even if the browser cannot remove it from the local password manager.
  */
 export const deletePasskey = async (input: DeletePasskeyInput) => {
 	const ERROR_TAG = '@error/DeletePasskeyError';
 	const PAUSED_TAG = '@warning/PasskeyDeletePaused';
 
-	// server might respond with a 200 status but still issue a warning
-	// use valibot's support for discriminated unions to get some nice typing
+	// The endpoint can return either a successful deletion payload or a warning
+	// that the server-side record was already gone.
 	const EndpointResponse = variant('_tag', [DeletePasskeySuccess, DeletePasskeyWarning]);
 
-	// remove it from the passlock vault and local db
-	// see the DELETE handler in /passkeys/[id]/+server.ts
+	// `DELETE /passkeys/[id]` removes the server-side association first.
 	const serverResult = await fetchData({
 		url: resolve(`/passkeys/${encodeURIComponent(input.passkeyId)}`),
 		method: 'DELETE',
@@ -257,21 +254,18 @@ export const deletePasskey = async (input: DeletePasskeyInput) => {
 		}
 	});
 
-	// server side delete failed - abort
+	// If the server still trusts the credential, we must stop here.
 	if (serverResult._tag === '@error/DeletePasskeyError') return serverResult;
 
-	// even if the server side delete was ok, we might receive
-	// a warning because the passkey was already deleted
+	// The local device is already in the desired state from the server's point
+	// of view, so the caller can treat this as a warning rather than a failure.
 	if (serverResult._tag === '@warning/PasskeyNotFound') return serverResult;
 
-	// client side delete, again we don't need a tenancyId or endpoint
+	// Local device deletion is best-effort and browser-dependent.
 	const clientResult = await PasslockClient.deletePasskey(serverResult.deleted);
 
-	// passkey was deleted from the user's device
 	if (clientResult.success) return { _tag: 'DeleteSuccess' } as const;
 
-	// if success is false the type is narrowed to a DeleteError
-	// which includes a code indicating the specific error
 	if (clientResult.code === 'PASSKEY_DELETION_UNSUPPORTED') {
 		const message =
 			'This browser cannot delete passkeys programmatically. ' +
@@ -288,13 +282,10 @@ export const deletePasskey = async (input: DeletePasskeyInput) => {
 /**
  * Delete every passkey associated with the current account.
  *
- * The /passkeys/+server.ts endpoint removes the server-side records and returns the
- * deleted credentials for the current user. We then ask the browser/password manager
- * to remove the credentials from the device. Local deletion issues are treated as
- * warnings so the account deletion flow can continue.
- *
- * @param
- * @returns
+ * `DELETE /passkeys` removes the trusted server-side records and returns the
+ * deleted credentials for the current user. The browser then tries to remove
+ * those credentials from the device. Browser limitations are reported as
+ * warnings so account deletion can continue.
  */
 export const deleteAccountPasskeys = async () => {
 	const ERROR_TAG = '@error/DeletePasskeyError';
@@ -311,7 +302,7 @@ export const deleteAccountPasskeys = async () => {
 		}
 	});
 
-	// something went wrong on the backend
+	// If this fails, the account would still trust one or more passkeys.
 	if (serverResult._tag !== 'DeleteUserPasskeysSuccess') {
 		return serverResult;
 	}
@@ -320,8 +311,6 @@ export const deleteAccountPasskeys = async () => {
 
 	if (clientResult.success) return { _tag: 'DeleteSuccess' } as const;
 
-	// if success is false the type is narrowed to a DeleteError
-	// which includes a code indicating the specific error
 	if (clientResult.code === 'PASSKEY_DELETION_UNSUPPORTED') {
 		return {
 			_tag: PAUSED_TAG,
