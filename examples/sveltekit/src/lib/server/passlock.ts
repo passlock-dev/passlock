@@ -106,7 +106,8 @@ export const createMailboxChallenge = async (input: {
 		purpose: input.purpose,
 		userId: input.userId === undefined ? undefined : String(input.userId),
 		metadata: input.metadata,
-		invalidateOthers: input.invalidateOthers
+		invalidateOthers: input.invalidateOthers,
+    skipRateLimit: true
 	});
 
 	if (result.failure) {

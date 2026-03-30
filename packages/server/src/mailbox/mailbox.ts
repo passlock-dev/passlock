@@ -254,6 +254,13 @@ export interface CreateMailboxChallengeOptions extends AuthenticatedOptions {
    * scopes by email.
    */
   invalidateOthers?: boolean | undefined
+
+  /**
+   * Bypass mailbox challenge rate limiting for this request.
+   *
+   * When omitted or `false`, the default mailbox rate limit still applies.
+   */
+  skipRateLimit?: boolean | undefined
 }
 
 /**
@@ -275,14 +282,22 @@ export const createMailboxChallenge = (
   pipe(
     Effect.gen(function* () {
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
-      const { tenancyId, email, purpose, userId, metadata, invalidateOthers } =
+      const {
+        tenancyId,
+        email,
+        purpose,
+        userId,
+        metadata,
+        invalidateOthers,
+        skipRateLimit,
+      } =
         options
 
       const url = new URL(`/${tenancyId}/challenges`, baseUrl)
       const response = yield* fetchNetwork(
         url,
         "post",
-        { email, purpose, userId, metadata, invalidateOthers },
+        { email, purpose, userId, metadata, invalidateOthers, skipRateLimit },
         {
           headers: authorizationHeaders(options.apiKey),
         }

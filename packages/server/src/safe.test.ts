@@ -98,6 +98,7 @@ describe("safe result envelopes", () => {
       apiKey,
       email: "user@example.com",
       purpose: "LOGIN_CODE",
+      skipRateLimit: true,
       tenancyId,
     })
 
@@ -135,6 +136,7 @@ describe("safe result envelopes", () => {
       apiKey,
       email: "user@example.com",
       purpose: "LOGIN_CODE",
+      skipRateLimit: false,
       tenancyId,
     })
 

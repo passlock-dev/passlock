@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type {
+  CreateMailboxChallengeOptions as EffectCreateMailboxChallengeOptions,
   createMailboxChallenge as createMailboxChallengeEffect,
   deleteMailboxChallenge as deleteMailboxChallengeEffect,
   GetMailboxChallengeOptions as EffectGetMailboxChallengeOptions,
@@ -7,6 +8,7 @@ import type {
   verifyMailboxChallenge as verifyMailboxChallengeEffect,
 } from "./effect.js"
 import type {
+  CreateMailboxChallengeOptions as UnsafeCreateMailboxChallengeOptions,
   Credential as UnsafeCredential,
   DeletedPasskeys as UnsafeDeletedPasskeys,
   ExtendedPrincipal as UnsafeExtendedPrincipal,
@@ -18,6 +20,7 @@ import type {
 } from "./index.js"
 import type {
   ChallengeRateLimitedError,
+  CreateMailboxChallengeOptions,
   Credential,
   DeletedPasskeys,
   Err,
@@ -94,9 +97,12 @@ describe("public surface", () => {
     type _7 = Assert<IsEqual<PasskeyCredential, UnsafePasskeyCredential>>
     type _8 = Assert<IsEqual<MailboxChallenge, UnsafeMailboxChallenge>>
     type _9 = Assert<
-      IsEqual<MailboxChallengeCreated, UnsafeMailboxChallengeCreated>
+      IsEqual<CreateMailboxChallengeOptions, UnsafeCreateMailboxChallengeOptions>
     >
     type _10 = Assert<
+      IsEqual<MailboxChallengeCreated, UnsafeMailboxChallengeCreated>
+    >
+    type _11 = Assert<
       IsEqual<MailboxChallengeDetails, UnsafeMailboxChallengeDetails>
     >
 
@@ -182,6 +188,9 @@ describe("public surface", () => {
         : false
     type Assert<T extends true> = T
     type _1 = Assert<
+      IsEqual<EffectCreateMailboxChallengeOptions, CreateMailboxChallengeOptions>
+    >
+    type _2 = Assert<
       IsEqual<EffectGetMailboxChallengeOptions, GetMailboxChallengeOptions>
     >
 
