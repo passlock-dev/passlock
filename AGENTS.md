@@ -32,30 +32,9 @@ Useful private packages include:
 
 - You may modify files only inside this repository.
 - You may read `../private` when necessary to verify API behaviour, endpoint names, and request/response shapes.
-- Do not modify, create, delete, or stage files outside this repository.
+- Do not modify, create, delete, or stage files outside this repository without permission.
 - Do not copy private implementation details, secrets, credentials, or internal-only code into this public repository.
-- Prefer an explicit handoff note or API contract as the source of truth.
 - Use `../private` for verification, not for guessing product intent from incomplete internal implementation details.
-
-## Cross-repo workflow
-
-When a task depends on private API changes:
-
-1. Look for a handoff note first.
-2. If needed, inspect `../private` to verify:
-   - endpoint paths
-   - request fields
-   - response fields
-   - naming
-   - error cases
-3. Update only the relevant public package(s) and example(s).
-4. Report any mismatch between the handoff note and the private implementation.
-
-When reporting back, mention:
-
-- which public package(s) were changed
-- whether the change was verified against `../private`
-- any remaining uncertainty or contract mismatch
 
 ## Monorepo rules
 
