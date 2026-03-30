@@ -47,7 +47,7 @@ const readableChallenge = {
 } as const
 
 describe(createMailboxChallenge.name, () => {
-  it.effect("posts metadata and invalidateOthers with auth headers", () =>
+  it.effect("posts metadata, invalidateOthers, and skipRateLimit with auth headers", () =>
     Effect.gen(function* () {
       let invokedUrl: string | undefined
       let method: string | undefined
@@ -85,6 +85,7 @@ describe(createMailboxChallenge.name, () => {
           invalidateOthers: true,
           metadata,
           purpose: "LOGIN_CODE",
+          skipRateLimit: true,
           tenancyId,
           userId: "dummyUserId",
         },
@@ -102,6 +103,7 @@ describe(createMailboxChallenge.name, () => {
         invalidateOthers: true,
         metadata,
         purpose: "LOGIN_CODE",
+        skipRateLimit: true,
         userId: "dummyUserId",
       })
     })
@@ -156,6 +158,41 @@ describe(createMailboxChallenge.name, () => {
         expect(result.challenge.userId).toBeUndefined()
         expect(result.challenge.metadata).toBeNull()
       })
+  )
+
+  it.effect("posts an explicit skipRateLimit false value", () =>
+    Effect.gen(function* () {
+      let body: string | undefined
+
+      const testFetch = vi.fn<typeof fetch>((_, init) => {
+        body = init?.body as string | undefined
+        return Promise.resolve(
+          new Response(JSON.stringify(createdChallengeResponse), {
+            status: 201,
+          })
+        )
+      })
+
+      const result = yield* createMailboxChallenge(
+        {
+          apiKey,
+          email: "user@example.com",
+          purpose: "LOGIN_CODE",
+          skipRateLimit: false,
+          tenancyId,
+        },
+        Layer.succeed(NetworkFetch, testFetch)
+      )
+
+      expect(result).toStrictEqual(createdChallengeResponse)
+      expect(body).toEqual(
+        JSON.stringify({
+          email: "user@example.com",
+          purpose: "LOGIN_CODE",
+          skipRateLimit: false,
+        })
+      )
+    })
   )
 
   it.effect("returns ChallengeRateLimited errors", () =>
