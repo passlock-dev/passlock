@@ -1,79 +1,108 @@
 ## Overview
 
-This is a PNPM monorepo containing the public Passlock code, mostly frontend (browser) and backend (Node.js/Bun/Deno) client libraries. We also include some sample projects, illustrating how to use the client libraries. Most of the client libraries are published as (public) npmjs packages. The monorepo itself is pushed to a public GitHub remote repository.
+This is the public Passlock PNPM monorepo. It contains the public client libraries and sample projects. Most packages here are intended for public distribution, including publication to npm.
+
+The sibling private repository exists at `../private`.
+
+## Package map
+
+Key packages in this repo:
+
+- `packages/client` — browser/client SDK
+- `packages/server` — server-side SDK
+- `packages/cli` — developer CLI
+- `packages/node` — deprecated
+- `examples/sveltekit` — reference example app
+
+Root config includes files such as `biome.json`.
 
 ## Relationship to the private repo
 
-The private monorepo contains the code and infrastructure for the Passlock cloud framework, including the REST APIs, RPC endpoints, the management console and other tooling. Projects in this monorepo are typically client libraries that interact with the REST APIs in the private repo. The private repo is sibling to this repository i.e. `../private`
+The private repo at `../private` contains the Passlock cloud/backend implementation, including the REST APIs and related internal packages.
 
-Packages in the private repo include:
+Useful private packages include:
 
-* `packages/core` - Most data access and business logic lives here
+- `packages/core`
+- `packages/api`
+- `packages/console`
+- `packages/eventbus`
+- `packages/website`
 
-* `packages/api` - Our REST API, depends on `packages/core`
+## Repository boundary rules
 
-* `packages/console` - SvelteKit app, depends on `packages/core`
+- You may modify files only inside this repository.
+- You may read `../private` when necessary to verify API behaviour, endpoint names, and request/response shapes.
+- Do not modify, create, delete, or stage files outside this repository.
+- Do not copy private implementation details, secrets, credentials, or internal-only code into this public repository.
+- Prefer an explicit handoff note or API contract as the source of truth.
+- Use `../private` for verification, not for guessing product intent from incomplete internal implementation details.
 
-* `packages/eventbus` - Some async/background tasks are handed off to an AWS eventbus. The code for firing and handling events lives here.
+## Cross-repo workflow
 
-* `packages/website` - Our project website
+When a task depends on private API changes:
 
-## Package names
+1. Look for a handoff note first.
+2. If needed, inspect `../private` to verify:
+   - endpoint paths
+   - request fields
+   - response fields
+   - naming
+   - error cases
+3. Update only the relevant public package(s) and example(s).
+4. Report any mismatch between the handoff note and the private implementation.
 
-When instructing agents, we often refer to projects by their NPM package names as defined in the relevant package.json file e.g. `@passlock/client`.
+When reporting back, mention:
 
-## Monorepo structure
+- which public package(s) were changed
+- whether the change was verified against `../private`
+- any remaining uncertainty or contract mismatch
 
-The root of this monorepo contains shared config files e.g. biome.json
+## Monorepo rules
 
-The repo includes several PNPM projects/packages under the packages/ directory:
+- Treat each `packages/<name>` directory as an isolated project.
+- Do not edit workspace-level files unless the task clearly requires it:
+  - root `package.json`
+  - `pnpm-workspace.yaml`
+  - root tooling/config files such as `tsconfig`, `biome`, eslint/prettier equivalents
+- Avoid changing `pnpm-lock.yaml` unless dependency changes are required.
+- If a root-level or lockfile change would affect other packages, stop and ask first.
 
-* `packages/cli (@passlock/cli)` - A Node.js CLI that allows developers to interact with the Passlock API. Currently it only offers the ability for developers to sign up to use Passlock and obtain their cloud credentials. In the future it will be extended to allow them to perform admin tasks via the Passlock public API.
+## Project references and dependencies
 
-* `packages/client (@passlock/client)` - The primary TypeScript/JavaScript client (browser) library. This package allows developers to register and authenticate with passkeys on a device. It's intended to be bundled into a deployable app with something like webpack. The `@passlock/client` library invokes APIs exposed via the private `@passlock/api` package.
+- We use the PNPM workspace protocol to link packages within the monorepo.
+- We use TypeScript project references.
+- If a PNPM dependency is shared across multiple projects, prefer PNPM catalog entries in `pnpm-workspace.yaml` and use `"catalog:"` in `package.json`.
 
-* `packages/node (@passlock/node)` - Deprecated, see @passlock/server.
+## Running commands
 
-* `packages/server (@passlock/server)` - A server-side/backend library used for managing passkeys. Typically used to verify a passkey registration or authentication performed using the `@passlock/client` package. Code in this package also invokes APIs exposed via the private `@passlock/api` package.
+- Prefer running commands inside the target package directory:
+  - `cd packages/<target> && pnpm <script>`
+- If a task requires PNPM root execution, explain why before doing so.
 
-It also includes example projects, illustrating how Passlock can be used in the real world. The examples live under the examples/ directory:
+## Language and style
 
-* `examples/sveltekit (@passlock/sveltekit-example)` - A full featured SvelteKit project utilitising many of Passlock's features. 
+- Language of choice: TypeScript
+- Prefer a functional style where practical
+- Wherever possible, use the Effect framework
+- Prefer minimal, focused diffs
+- Preserve existing formatting and conventions
+- Do not invent filenames, directories, or package names
+- If unsure where a change belongs, ask before writing
 
-## Programming language and preferred frameworks
+## Validation
 
-Our language of choice is TypeScript.
+Common scripts include:
 
-Wherever possible we use the [Effect](https://effect.website/docs) framework. We prefer a functional style. The exception to this is the sample projects e.g. `examples/sveltekit` which will typically not use Effect.
+- `pnpm run build`
+- `pnpm run typecheck`
+- `pnpm run clean:all`
+- `pnpm run build:clean`
+- `pnpm run test:unit`
+- `pnpm run test:integration`
+- `pnpm run test:all`
+- `pnpm run format`
+- `pnpm run lint:fix`
 
-More details can be found in the AGENTS.md files within the projects.
+After making code changes, run `pnpm run build` or `pnpm run typecheck` in the affected project.
 
-## TypeScript setup
-
-We use TypeScript project references. Each project includes a base/abstract tsconfig.json file. We also have two concrete config files: tsconfig.build.json and tsconfig.test.json covering the production build and test scenarios. These files extend from the common tsconfig.json file.
-
-## Build and test commands
-
-We largely rely on pnpm scripts for build and test:
-
-* `pnpm run typecheck` - Invoke TSC to typecheck the project. This typechecks **all** code including tests, unlike `build` which excludes tests.
-
-* `pnpm run build` - Invoke TSC to compile the project. Note: this excludes tests (anything under test/ or src/**/*.test.ts).
-
-* `pnpm run clean:all` - Clean build (remove dist/ and tsconfig.tsbuildinfo).
-
-* `pnpm run build:clean` - "clean:all" followed by "build"
-
-* `pnpm run test:unit` - Runs the unit tests
-
-* `pnpm run test:integration` - Runs the integration tests
-
-* `pnpm run test:all` - Runs the unit and integration tests
-
-* `pnpm run format` - Format using Biome.js
-
-* `pnpm run lint:fix` - Lint using Biome.js and attempt to fix any issues
-
-## Important
-
-After making code changes run `pnpm run typecheck` to ensure the code typechecks. This is preferred over `build` as it will typecheck tests. Offer to run `pnpm run test:unit` and `pnpm run test:all` if these targets exist in the project's package.json scripts entry.
+[effect]: https://effect.website/docs
