@@ -8,10 +8,7 @@ export const getAccountEmailErrorLocation = (reason: AccountEmailErrorReason, em
 
 export type PendingEmailChangeChallengeContext =
 	| { _tag: 'MissingPendingEmailChangeChallenge' }
-	| {
-			_tag: 'InvalidPendingEmailChangeChallenge';
-			email?: string;
-	  }
+	| { _tag: 'InvalidPendingEmailChangeChallenge' }
 	| {
 			_tag: 'PendingEmailChangeChallenge';
 			pending: NonNullable<ReturnType<typeof getEmailChangeCookie>>;
@@ -33,10 +30,7 @@ export const getPendingEmailChangeChallengeContext = async (
 	}
 
 	if (challenge.userId !== userId) {
-		return {
-			_tag: 'InvalidPendingEmailChangeChallenge',
-			email: challenge.email
-		};
+		return { _tag: 'InvalidPendingEmailChangeChallenge' };
 	}
 
 	return {

@@ -26,7 +26,7 @@ export const POST: RequestHandler = async ({ locals, cookies }) => {
 	}
 	if (pendingContext._tag === 'InvalidPendingEmailChangeChallenge') {
 		deleteEmailChangeCookie(cookies);
-		return resendRedirectResponse(getAccountEmailErrorLocation('expired', pendingContext.email));
+		return resendRedirectResponse(toAccountLocation({ emailError: 'expired' }));
 	}
 
 	const { challenge } = pendingContext;
@@ -62,7 +62,7 @@ export const POST: RequestHandler = async ({ locals, cookies }) => {
 
 	setEmailChangeCookie(cookies, {
 		challengeId: result.challenge.id,
-		token: result.token
+		secret: result.secret
 	});
 
 	return resendSuccessResponse();

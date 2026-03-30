@@ -17,9 +17,78 @@ import {
   ForbiddenError,
   InvalidChallengeCodeError,
   InvalidChallengeError,
+  NotFoundError,
 } from "../schemas/errors.js"
 import type { satisfy } from "../schemas/satisfy.js"
 import type { AuthenticatedOptions } from "../shared.js"
+
+/**
+ * JSON-compatible metadata stored alongside a mailbox challenge.
+ *
+ * @category Mailbox
+ */
+export type MailboxChallengeMetadataValue =
+  | string
+  | number
+  | boolean
+  | null
+  | ReadonlyArray<MailboxChallengeMetadataValue>
+  | MailboxChallengeMetadata
+
+/**
+ * JSON-compatible metadata stored alongside a mailbox challenge.
+ *
+ * @category Mailbox
+ */
+export interface MailboxChallengeMetadata {
+  readonly [key: string]: MailboxChallengeMetadataValue
+}
+
+/**
+ * needed to ensure the MailboxChallengeMetadata === MailboxChallengeMetadata.Type
+ * @internal
+ */
+export type _MailboxChallengeMetadata = satisfy<
+  typeof ChallengeSchemas.MailboxChallengeMetadata.Type,
+  MailboxChallengeMetadata
+>
+
+/**
+ * Readable mailbox challenge details returned by read and verify operations.
+ *
+ * This tagged representation excludes the secret and one-time code.
+ *
+ * @category Mailbox
+ */
+export type MailboxChallengeDetails = {
+  _tag: "Challenge"
+  challengeId: string
+  purpose: string
+  email: string
+  userId?: string | undefined
+  createdAt: number
+  expiresAt: number
+  metadata: MailboxChallengeMetadata | null
+}
+
+/**
+ * Type guard for {@link MailboxChallengeDetails}.
+ *
+ * @category Mailbox
+ */
+export const isMailboxChallengeDetails = (
+  payload: unknown
+): payload is MailboxChallengeDetails =>
+  Schema.is(ChallengeSchemas.MailboxChallengeDetails)(payload)
+
+/**
+ * needed to ensure the MailboxChallengeDetails === MailboxChallengeDetails.Type
+ * @internal
+ */
+export type _MailboxChallengeDetails = satisfy<
+  typeof ChallengeSchemas.MailboxChallengeDetails.Type,
+  MailboxChallengeDetails
+>
 
 /**
  * A mailbox one-time-code challenge.
@@ -27,11 +96,12 @@ import type { AuthenticatedOptions } from "../shared.js"
  * @category Mailbox
  */
 export type MailboxChallenge = {
-  id: string
+  challengeId: string
   purpose: string
   email: string
   userId?: string | undefined
-  token: string
+  metadata: MailboxChallengeMetadata | null
+  secret: string
   code: string
   createdAt: number
   expiresAt: number
@@ -92,6 +162,7 @@ export type _MailboxChallengeCreated = satisfy<
  */
 export type MailboxChallengeVerified = {
   _tag: "ChallengeVerified"
+  challenge: MailboxChallengeDetails
 }
 
 /**
@@ -170,6 +241,19 @@ export interface CreateMailboxChallengeOptions extends AuthenticatedOptions {
    * Optional user ID associated with the challenge.
    */
   userId?: string | undefined
+
+  /**
+   * Optional opaque application metadata stored on the challenge.
+   */
+  metadata?: MailboxChallengeMetadata | undefined
+
+  /**
+   * Invalidate other pending challenges for the same purpose and subject.
+   *
+   * When a user ID is supplied, invalidation scopes by user ID. Otherwise it
+   * scopes by email.
+   */
+  invalidateOthers?: boolean | undefined
 }
 
 /**
@@ -191,13 +275,14 @@ export const createMailboxChallenge = (
   pipe(
     Effect.gen(function* () {
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
-      const { tenancyId, email, purpose, userId } = options
+      const { tenancyId, email, purpose, userId, metadata, invalidateOthers } =
+        options
 
       const url = new URL(`/${tenancyId}/challenges`, baseUrl)
       const response = yield* fetchNetwork(
         url,
         "post",
-        { email, purpose, userId },
+        { email, purpose, userId, metadata, invalidateOthers },
         {
           headers: authorizationHeaders(options.apiKey),
         }
@@ -234,15 +319,86 @@ export const createMailboxChallenge = (
   )
 
 /**
+ * Options for fetching a mailbox challenge.
+ *
+ * @category Mailbox
+ */
+export interface GetMailboxChallengeOptions extends AuthenticatedOptions {
+  /**
+   * Identifier of the challenge to fetch.
+   */
+  challengeId: string
+}
+
+/**
+ * Fetch a mailbox one-time-code challenge.
+ *
+ * The returned challenge is a readable tagged object and therefore excludes
+ * the secret and one-time code.
+ *
+ * @param options Request options including the challenge identifier.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns An Effect that succeeds with the readable challenge payload.
+ *
+ * @category Mailbox
+ */
+export const getMailboxChallenge = (
+  options: GetMailboxChallengeOptions,
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<MailboxChallengeDetails, ForbiddenError | NotFoundError> =>
+  pipe(
+    Effect.gen(function* () {
+      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId, challengeId } = options
+
+      const url = new URL(`/${tenancyId}/challenges/${challengeId}`, baseUrl)
+      const response = yield* fetchNetwork(url, "get", undefined, {
+        headers: authorizationHeaders(options.apiKey),
+      })
+
+      const encoded: MailboxChallengeDetails | ForbiddenError | NotFoundError =
+        yield* matchStatus(response, {
+          "2xx": (res) =>
+            decodeResponseJson(res, ChallengeSchemas.MailboxChallengeDetails),
+          orElse: (res) =>
+            decodeResponseJson(
+              res,
+              Schema.Union(ForbiddenError, NotFoundError)
+            ),
+        })
+
+      return yield* pipe(
+        Match.value(encoded),
+        Match.tag("Challenge", (result) => Effect.succeed(result)),
+        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
+        Match.tag("@error/NotFound", (err) => Effect.fail(err)),
+        Match.exhaustive
+      )
+    }),
+    Effect.catchTags({
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
+      ParseError: (err) => Effect.die(err),
+    }),
+    Effect.provide(fetchLayer)
+  )
+
+/**
  * Options for verifying a mailbox challenge.
  *
  * @category Mailbox
  */
 export interface VerifyMailboxChallengeOptions extends AuthenticatedOptions {
   /**
-   * Challenge token returned when the challenge was created.
+   * Identifier returned when the challenge was created.
    */
-  token: string
+  challengeId: string
+
+  /**
+   * Challenge secret returned when the challenge was created.
+   */
+  secret: string
 
   /**
    * One-time code supplied by the end user.
@@ -253,9 +409,11 @@ export interface VerifyMailboxChallengeOptions extends AuthenticatedOptions {
 /**
  * Verify a mailbox one-time-code challenge.
  *
- * @param options Request options including the challenge token and code.
+ * @param options Request options including the challenge identifier, secret,
+ * and code.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds when the challenge is verified.
+ * @returns An Effect that succeeds with the verified readable challenge
+ * payload.
  *
  * @category Mailbox
  */
@@ -273,13 +431,13 @@ export const verifyMailboxChallenge = (
   pipe(
     Effect.gen(function* () {
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
-      const { tenancyId, token, code } = options
+      const { tenancyId, challengeId, secret, code } = options
 
       const url = new URL(`/${tenancyId}/challenges/verify`, baseUrl)
       const response = yield* fetchNetwork(
         url,
         "post",
-        { token, code },
+        { challengeId, secret, code },
         {
           headers: authorizationHeaders(options.apiKey),
         }

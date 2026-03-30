@@ -5,10 +5,7 @@ import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setEmailChangeCookie } from '$lib/server/challenge.js';
 import { createChallengeRateLimitView } from '$lib/server/passlock.js';
 import { getPasslockClientConfig } from '$lib/server/passkeys.js';
-import {
-	getAccountQueryState,
-	type AccountEmailErrorReason
-} from '$lib/shared/queryState.js';
+import { getAccountQueryState, type AccountEmailErrorReason } from '$lib/shared/queryState.js';
 import { EmailSchema, ProfileSchema } from '$lib/shared/schemas.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
@@ -227,10 +224,10 @@ export const actions = {
 			code: result.code
 		});
 
-		// verification requires the 6 digit code and the token
+		// verification requires the 6 digit code plus the challenge ID and secret
 		setEmailChangeCookie(cookies, {
 			challengeId: result.challenge.id,
-			token: result.token
+			secret: result.secret
 		});
 
 		redirect(303, resolve('/account/verify-email'));

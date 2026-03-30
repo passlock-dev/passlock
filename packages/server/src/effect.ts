@@ -8,6 +8,24 @@
  */
 
 export type {
+  CreateMailboxChallengeOptions,
+  DeleteMailboxChallengeOptions,
+  GetMailboxChallengeOptions,
+  MailboxChallengeMetadataValue,
+  VerifyMailboxChallengeOptions,
+} from "./mailbox/mailbox.js"
+export {
+  createMailboxChallenge,
+  deleteMailboxChallenge,
+  getMailboxChallenge,
+  isMailboxChallenge,
+  isMailboxChallengeCreated,
+  isMailboxChallengeDeleted,
+  isMailboxChallengeDetails,
+  isMailboxChallengeVerified,
+  verifyMailboxChallenge,
+} from "./mailbox/mailbox.js"
+export type {
   AssignUserOptions,
   ListPasskeyOptions,
 } from "./passkey/passkey.js"

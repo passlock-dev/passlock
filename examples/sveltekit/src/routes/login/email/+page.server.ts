@@ -36,9 +36,9 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 		redirect(303, toSignupLocation({ email: username, reason: 'no-account' }));
 	}
 
-	const pendingToken = getSignupLoginCookie(cookies);
-	if (pendingToken) {
-		const challenge = await getPendingLoginChallenge(pendingToken.challengeId);
+	const pendingChallenge = getSignupLoginCookie(cookies);
+	if (pendingChallenge) {
+		const challenge = await getPendingLoginChallenge(pendingChallenge.challengeId);
 		if (challenge?.email === account.email) {
 			redirect(303, resolve('/login/email/verify-code'));
 		}
@@ -62,7 +62,7 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 	});
 	setSignupLoginCookie(cookies, {
 		challengeId: result.challenge.id,
-		token: result.token
+		secret: result.secret
 	});
 
 	redirect(303, resolve('/login/email/verify-code'));

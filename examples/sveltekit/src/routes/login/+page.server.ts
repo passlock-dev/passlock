@@ -84,7 +84,7 @@ export const actions = {
 			});
 			setSignupLoginCookie(cookies, {
 				challengeId: result.challenge.id,
-				token: result.token
+				secret: result.secret
 			});
 
 			redirect(303, '/login/email/verify-code');

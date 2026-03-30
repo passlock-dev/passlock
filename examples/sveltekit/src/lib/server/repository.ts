@@ -3,21 +3,19 @@
  */
 
 import { DrizzleQueryError } from 'drizzle-orm/errors';
-import { and, desc, eq, inArray, lt } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { LibsqlError } from '@libsql/client';
 import db from './db';
-import {
-	passkeysTable,
-	sessionsTable,
-	signupChallengesTable,
-	userChallengesTable,
-	usersTable
-} from './dbSchema';
+import { passkeysTable, sessionsTable, usersTable } from './dbSchema';
 import { hashText, isEqualHash } from './hashing';
 import { CHALLENGE_FLOW_TTL_MS } from './challenge';
 import {
 	createMailboxChallenge as createPasslockMailboxChallenge,
+	getMailboxChallenge as getPasslockMailboxChallenge,
 	type ChallengeRateLimitedError,
+	type MailboxChallenge,
+	type MailboxChallengeDetails,
+	type MailboxChallengeMetadata,
 	isChallengeRateLimitedError,
 	verifyMailboxChallenge as verifyPasslockMailboxChallenge
 } from './passlock';
@@ -102,7 +100,7 @@ export type Challenge = {
 export type CreatedChallenge = {
 	_tag: 'CreatedChallenge';
 	challenge: Challenge;
-	token: string;
+	secret: string;
 	code: string;
 };
 
@@ -186,189 +184,150 @@ const isSqliteConstraintError = (e: unknown): e is DrizzleQueryError & { cause: 
 	);
 };
 
-const userChallengeFromDbRow = (row: {
-	id: string;
-	purpose: string;
-	userId: number;
-	email: string;
+type ValidatedChallengeMetadata = {
+	challengeExpiresAt: number;
 	givenName: string | null;
 	familyName: string | null;
-	createdAt: number;
-	challengeExpiresAt: number;
-}): Challenge => ({
-	...row,
-	purpose: row.purpose as ChallengePurpose
+};
+
+type ValidatedChallenge = {
+	_tag: 'ValidatedChallenge';
+	challenge: Challenge;
+};
+
+const createChallengeVerificationError = (
+	code: ChallengeVerificationError['code'],
+	email?: string
+): ChallengeVerificationError => ({
+	_tag: '@error/ChallengeVerificationError',
+	code,
+	email
 });
 
-const signupChallengeFromDbRow = (row: {
-	id: string;
-	email: string;
-	givenName: string;
-	familyName: string;
-	createdAt: number;
-	challengeExpiresAt: number;
-}): Challenge => ({
-	...row,
-	purpose: 'signup',
-	userId: null
-});
+const isMailboxChallengeMetadataRecord = (
+	metadata: MailboxChallengeDetails['metadata']
+): metadata is MailboxChallengeMetadata =>
+	typeof metadata === 'object' && metadata !== null && !Array.isArray(metadata);
 
-const userChallengeSelect = {
-	id: userChallengesTable.challengeId,
-	purpose: userChallengesTable.purpose,
-	userId: userChallengesTable.userId,
-	email: userChallengesTable.email,
-	givenName: usersTable.givenName,
-	familyName: usersTable.familyName,
-	createdAt: userChallengesTable.createdAt,
-	challengeExpiresAt: userChallengesTable.challengeExpiresAt
+const parseChallengeExpiresAt = (metadata: MailboxChallengeMetadata): number | null => {
+	const value = metadata.challengeExpiresAt;
+	return typeof value === 'number' && Number.isFinite(value) ? value : null;
 };
 
-const signupChallengeSelect = {
-	id: signupChallengesTable.challengeId,
-	email: signupChallengesTable.email,
-	givenName: signupChallengesTable.givenName,
-	familyName: signupChallengesTable.familyName,
-	createdAt: signupChallengesTable.createdAt,
-	challengeExpiresAt: signupChallengesTable.challengeExpiresAt
+const parseChallengeName = (
+	metadata: MailboxChallengeMetadata,
+	key: 'givenName' | 'familyName'
+): string | null => {
+	const value = metadata[key];
+	if (typeof value !== 'string') return null;
+
+	const trimmed = value.trim();
+	return trimmed || null;
 };
 
-const uniqueChallengeIds = (challengeIds: string[]) => [...new Set(challengeIds)];
+const parseChallengeMetadata = (
+	purpose: ChallengePurpose,
+	metadata: MailboxChallengeDetails['metadata']
+): ValidatedChallengeMetadata | null => {
+	if (!isMailboxChallengeMetadataRecord(metadata)) return null;
 
-const deleteChallenges = async (challengeIds: string[]): Promise<void> => {
-	const uniqueIds = uniqueChallengeIds(challengeIds);
-	if (uniqueIds.length === 0) return;
+	const challengeExpiresAt = parseChallengeExpiresAt(metadata);
+	if (challengeExpiresAt === null) return null;
 
-	await db.transaction(async (tx) => {
-		await tx.delete(userChallengesTable).where(inArray(userChallengesTable.challengeId, uniqueIds));
-
-		await tx
-			.delete(signupChallengesTable)
-			.where(inArray(signupChallengesTable.challengeId, uniqueIds));
-	});
-};
-
-const getUnexpiredChallenge = async (challenge: Challenge | null): Promise<Challenge | null> => {
-	if (!challenge) return null;
-
-	if (Date.now() > challenge.challengeExpiresAt) {
-		await deleteChallenges([challenge.id]);
-		return null;
+	if (purpose !== 'signup') {
+		return {
+			challengeExpiresAt,
+			givenName: null,
+			familyName: null
+		};
 	}
 
-	return challenge;
+	const givenName = parseChallengeName(metadata, 'givenName');
+	const familyName = parseChallengeName(metadata, 'familyName');
+	if (!givenName || !familyName) return null;
+
+	return {
+		challengeExpiresAt,
+		givenName,
+		familyName
+	};
 };
 
-const getPendingUserChallenge = async (
-	challengeId: string,
-	purpose: UserChallengePurpose
-): Promise<Challenge | null> => {
-	const userRows = await db
-		.select(userChallengeSelect)
-		.from(userChallengesTable)
-		.leftJoin(usersTable, eq(usersTable.id, userChallengesTable.userId))
-		.where(
-			and(
-				eq(userChallengesTable.challengeId, challengeId),
-				eq(userChallengesTable.purpose, purpose)
-			)
-		)
-		.limit(1);
+const parseChallengeUserId = (userId: string | undefined): number | null => {
+	if (!userId || !/^\d+$/.test(userId)) return null;
 
-	const userRow = userRows[0];
-	return getUnexpiredChallenge(userRow ? userChallengeFromDbRow(userRow) : null);
+	const parsed = Number(userId);
+	if (!Number.isSafeInteger(parsed) || parsed <= 0) return null;
+
+	return parsed;
 };
 
-export const getPendingLoginChallenge = async (challengeId: string): Promise<Challenge | null> =>
-	getPendingUserChallenge(challengeId, 'login');
+const toChallenge = (input: {
+	challenge: MailboxChallengeDetails;
+	purpose: ChallengePurpose;
+	expectedUserId?: number | undefined;
+}): ValidatedChallenge | ChallengeVerificationError => {
+	if (input.challenge.purpose !== input.purpose) {
+		return createChallengeVerificationError('PURPOSE_MISMATCH');
+	}
 
-export const getPendingEmailChallenge = async (challengeId: string): Promise<Challenge | null> =>
-	getPendingUserChallenge(challengeId, 'email-change');
+	const metadata = parseChallengeMetadata(input.purpose, input.challenge.metadata);
+	if (!metadata) {
+		return createChallengeVerificationError('CHALLENGE_EXPIRED');
+	}
 
-export const getPendingSignupChallenge = async (challengeId: string): Promise<Challenge | null> => {
-	const signupRows = await db
-		.select(signupChallengeSelect)
-		.from(signupChallengesTable)
-		.where(eq(signupChallengesTable.challengeId, challengeId))
-		.limit(1);
+	if (Date.now() > metadata.challengeExpiresAt) {
+		return createChallengeVerificationError('CHALLENGE_EXPIRED');
+	}
 
-	const signupRow = signupRows[0];
-	return getUnexpiredChallenge(signupRow ? signupChallengeFromDbRow(signupRow) : null);
+	const userId = input.purpose === 'signup' ? null : parseChallengeUserId(input.challenge.userId);
+	if (input.purpose !== 'signup' && userId === null) {
+		return createChallengeVerificationError('CHALLENGE_EXPIRED');
+	}
+
+	if (input.expectedUserId !== undefined && userId !== null && userId !== input.expectedUserId) {
+		return createChallengeVerificationError('UNAUTHORIZED');
+	}
+
+	return {
+		_tag: 'ValidatedChallenge',
+		challenge: {
+			id: input.challenge.challengeId,
+			purpose: input.purpose,
+			userId,
+			email: input.challenge.email,
+			givenName: metadata.givenName,
+			familyName: metadata.familyName,
+			createdAt: input.challenge.createdAt,
+			challengeExpiresAt: metadata.challengeExpiresAt
+		}
+	};
 };
 
-const deleteExpiredUserChallenges = async (userId: number): Promise<void> => {
-	const rows = await db
-		.select({ id: userChallengesTable.challengeId })
-		.from(userChallengesTable)
-		.where(
-			and(
-				eq(userChallengesTable.userId, userId),
-				lt(userChallengesTable.challengeExpiresAt, Date.now())
-			)
-		);
+const toCreatedChallenge = (input: {
+	challenge: MailboxChallenge;
+	purpose: ChallengePurpose;
+	userId: number | null;
+	givenName: string | null;
+	familyName: string | null;
+	challengeExpiresAt: number;
+}): CreatedChallenge => ({
+	_tag: 'CreatedChallenge',
+	challenge: {
+		id: input.challenge.challengeId,
+		purpose: input.purpose,
+		userId: input.userId,
+		email: input.challenge.email,
+		givenName: input.givenName,
+		familyName: input.familyName,
+		createdAt: input.challenge.createdAt,
+		challengeExpiresAt: input.challengeExpiresAt
+	},
+	secret: input.challenge.secret,
+	code: input.challenge.code
+});
 
-	await deleteChallenges(rows.map((challenge) => challenge.id));
-};
-
-const deleteExpiredSignupChallenges = async (email: string): Promise<void> => {
-	const rows = await db
-		.select({ id: signupChallengesTable.challengeId })
-		.from(signupChallengesTable)
-		.where(
-			and(
-				eq(signupChallengesTable.email, email),
-				lt(signupChallengesTable.challengeExpiresAt, Date.now())
-			)
-		);
-
-	await deleteChallenges(rows.map((challenge) => challenge.id));
-};
-
-const deleteChallengesByEmail = async (
-	email: string,
-	purpose: ChallengePurpose,
-	options?: { excludeChallengeIds?: string[] }
-): Promise<void> => {
-	const rows =
-		purpose === 'signup'
-			? await db
-					.select({ id: signupChallengesTable.challengeId })
-					.from(signupChallengesTable)
-					.where(eq(signupChallengesTable.email, email))
-			: await db
-					.select({ id: userChallengesTable.challengeId })
-					.from(userChallengesTable)
-					.where(
-						and(eq(userChallengesTable.email, email), eq(userChallengesTable.purpose, purpose))
-					);
-
-	const excludeChallengeIds = new Set(options?.excludeChallengeIds ?? []);
-	await deleteChallenges(
-		rows
-			.map((challenge) => challenge.id)
-			.filter((challengeId) => !excludeChallengeIds.has(challengeId))
-	);
-};
-
-const deleteChallengesByUserId = async (
-	userId: number,
-	purpose: UserChallengePurpose,
-	options?: { excludeChallengeIds?: string[] }
-): Promise<void> => {
-	const rows = await db
-		.select({ id: userChallengesTable.challengeId })
-		.from(userChallengesTable)
-		.where(and(eq(userChallengesTable.userId, userId), eq(userChallengesTable.purpose, purpose)));
-
-	const excludeChallengeIds = new Set(options?.excludeChallengeIds ?? []);
-	await deleteChallenges(
-		rows
-			.map((challenge) => challenge.id)
-			.filter((challengeId) => !excludeChallengeIds.has(challengeId))
-	);
-};
-
-const insertSignupChallenge = async (input: {
+const createSignupChallenge = async (input: {
 	email: string;
 	givenName: string;
 	familyName: string;
@@ -380,179 +339,112 @@ const insertSignupChallenge = async (input: {
 	}
 
 	const challengeExpiresAt = Date.now() + CHALLENGE_FLOW_TTL_MS;
-	const challenge = await createPasslockMailboxChallenge({
-		email: input.email,
-		purpose: 'signup'
-	});
-	if (isChallengeRateLimitedError(challenge)) return challenge;
-
-	await db.insert(signupChallengesTable).values({
-		challengeId: challenge.id,
-		email: input.email,
-		createdAt: challenge.createdAt,
+	const metadata: MailboxChallengeMetadata = {
 		challengeExpiresAt,
 		givenName,
 		familyName
-	});
-
-	return {
-		_tag: 'CreatedChallenge',
-		challenge: {
-			id: challenge.id,
-			purpose: 'signup',
-			userId: null,
-			email: input.email,
-			givenName,
-			familyName,
-			createdAt: challenge.createdAt,
-			challengeExpiresAt
-		},
-		token: challenge.token,
-		code: challenge.code
 	};
-};
-
-const insertUserChallenge = async (input: {
-	purpose: UserChallengePurpose;
-	userId: number;
-	email: string;
-	givenName: string | null;
-	familyName: string | null;
-}): Promise<ChallengeCreationResult> => {
-	const givenName = input.givenName?.trim() ?? null;
-	const familyName = input.familyName?.trim() ?? null;
-	const challengeExpiresAt = Date.now() + CHALLENGE_FLOW_TTL_MS;
 	const challenge = await createPasslockMailboxChallenge({
 		email: input.email,
-		purpose: input.purpose,
-		userId: input.userId
+		purpose: 'signup',
+		metadata,
+		invalidateOthers: true
 	});
 	if (isChallengeRateLimitedError(challenge)) return challenge;
 
-	await db.insert(userChallengesTable).values({
-		challengeId: challenge.id,
-		purpose: input.purpose,
-		userId: input.userId,
-		email: input.email,
-		createdAt: challenge.createdAt,
+	return toCreatedChallenge({
+		challenge,
+		purpose: 'signup',
+		userId: null,
+		givenName,
+		familyName,
 		challengeExpiresAt
 	});
-
-	return {
-		_tag: 'CreatedChallenge',
-		challenge: {
-			id: challenge.id,
-			purpose: input.purpose,
-			userId: input.userId,
-			email: input.email,
-			givenName,
-			familyName,
-			createdAt: challenge.createdAt,
-			challengeExpiresAt
-		},
-		token: challenge.token,
-		code: challenge.code
-	};
 };
 
-const createChallengeByEmail = async (input: {
-	purpose: ChallengePurpose;
-	userId: number | null;
-	email: string;
-	givenName: string | null;
-	familyName: string | null;
-}): Promise<ChallengeCreationResult> => {
-	if (input.purpose === 'signup') {
-		await deleteExpiredSignupChallenges(input.email);
-
-		const challenge = await insertSignupChallenge({
-			email: input.email,
-			givenName: input.givenName ?? '',
-			familyName: input.familyName ?? ''
-		});
-		if (challenge._tag !== 'CreatedChallenge') return challenge;
-
-		await deleteChallengesByEmail(input.email, input.purpose, {
-			excludeChallengeIds: [challenge.challenge.id]
-		});
-
-		return challenge;
-	}
-
-	if (input.userId === null) {
-		throw new Error('User challenge requires a user id');
-	}
-
-	await deleteExpiredUserChallenges(input.userId);
-
-	const challenge = await insertUserChallenge({
-		purpose: input.purpose,
-		userId: input.userId,
-		email: input.email,
-		givenName: input.givenName,
-		familyName: input.familyName
-	});
-	if (challenge._tag !== 'CreatedChallenge') return challenge;
-
-	await deleteChallengesByEmail(input.email, input.purpose, {
-		excludeChallengeIds: [challenge.challenge.id]
-	});
-
-	return challenge;
-};
-
-const createChallengeByUserId = async (input: {
+const createUserChallenge = async (input: {
 	purpose: UserChallengePurpose;
 	userId: number;
 	email: string;
 	givenName: string | null;
 	familyName: string | null;
 }): Promise<ChallengeCreationResult> => {
-	await deleteExpiredUserChallenges(input.userId);
-
-	const challenge = await insertUserChallenge(input);
-	if (challenge._tag !== 'CreatedChallenge') return challenge;
-
-	await deleteChallengesByUserId(input.userId, input.purpose, {
-		excludeChallengeIds: [challenge.challenge.id]
+	const challengeExpiresAt = Date.now() + CHALLENGE_FLOW_TTL_MS;
+	const metadata: MailboxChallengeMetadata = {
+		challengeExpiresAt
+	};
+	const challenge = await createPasslockMailboxChallenge({
+		email: input.email,
+		purpose: input.purpose,
+		userId: input.userId,
+		metadata,
+		invalidateOthers: true
 	});
+	if (isChallengeRateLimitedError(challenge)) return challenge;
 
-	return challenge;
+	return toCreatedChallenge({
+		challenge,
+		purpose: input.purpose,
+		userId: input.userId,
+		givenName: input.givenName?.trim() ?? null,
+		familyName: input.familyName?.trim() ?? null,
+		challengeExpiresAt
+	});
 };
+
+const getPendingChallenge = async (
+	challengeId: string,
+	purpose: ChallengePurpose
+): Promise<Challenge | null> => {
+	const challenge = await getPasslockMailboxChallenge({ challengeId });
+	if (!challenge) return null;
+
+	const validated = toChallenge({ challenge, purpose });
+	return validated._tag === 'ValidatedChallenge' ? validated.challenge : null;
+};
+
+export const getPendingLoginChallenge = async (challengeId: string): Promise<Challenge | null> =>
+	getPendingChallenge(challengeId, 'login');
+
+export const getPendingEmailChallenge = async (challengeId: string): Promise<Challenge | null> =>
+	getPendingChallenge(challengeId, 'email-change');
+
+export const getPendingSignupChallenge = async (challengeId: string): Promise<Challenge | null> =>
+	getPendingChallenge(challengeId, 'signup');
 
 const verifyChallenge = async (input: {
 	challengeId: string;
-	token: string;
+	secret: string;
 	code: string;
 	purpose: ChallengePurpose;
+	expectedUserId?: number | undefined;
 }): Promise<VerifiedChallenge | ChallengeVerificationError> => {
-	const challenge =
-		input.purpose === 'signup'
-			? await getPendingSignupChallenge(input.challengeId)
-			: input.purpose === 'login'
-				? await getPendingLoginChallenge(input.challengeId)
-				: await getPendingEmailChallenge(input.challengeId);
-	if (!challenge) return { _tag: '@error/ChallengeVerificationError', code: 'CHALLENGE_EXPIRED' };
-
 	const result = await verifyPasslockMailboxChallenge({
-		token: input.token,
-		code: input.code
+		challengeId: input.challengeId,
+		code: input.code,
+		secret: input.secret
 	});
 
 	if (result.success) {
-		return { _tag: 'VerifiedChallenge', challenge };
+		const validated = toChallenge({
+			challenge: result.challenge,
+			purpose: input.purpose,
+			expectedUserId: input.expectedUserId
+		});
+		if (validated._tag !== 'ValidatedChallenge') return validated;
+
+		return { _tag: 'VerifiedChallenge', challenge: validated.challenge };
 	}
 
 	switch (result._tag) {
 		case '@error/InvalidChallenge':
-			await deleteChallenges([challenge.id]);
-			return { _tag: '@error/ChallengeVerificationError', code: 'CHALLENGE_EXPIRED' };
+			return createChallengeVerificationError('CHALLENGE_EXPIRED');
 		case '@error/InvalidChallengeCode':
-			return { _tag: '@error/ChallengeVerificationError', code: 'INVALID_CODE' };
+			return createChallengeVerificationError('INVALID_CODE');
 		case '@error/ChallengeAttemptsExceeded':
-			return { _tag: '@error/ChallengeVerificationError', code: 'TOO_MANY_ATTEMPTS' };
+			return createChallengeVerificationError('TOO_MANY_ATTEMPTS');
 		case '@error/ChallengeExpired':
-			return { _tag: '@error/ChallengeVerificationError', code: 'CODE_EXPIRED' };
+			return createChallengeVerificationError('CODE_EXPIRED');
 		case '@error/Forbidden':
 			console.error('Unable to verify mailbox challenge', result);
 			throw new Error('Unable to verify one-time code challenge');
@@ -567,7 +459,7 @@ export const createOrRefreshLoginChallenge = async (
 	const account = await getUserByEmail(email);
 	if (!account) return { _tag: '@error/AccountNotFound', email };
 
-	return createChallengeByEmail({
+	return createUserChallenge({
 		purpose: 'login',
 		userId: account.userId,
 		email: account.email,
@@ -584,13 +476,7 @@ export const createOrRefreshSignupChallenge = async (input: {
 	const existingAccount = await getUserByEmail(input.email);
 	if (existingAccount) return { _tag: '@error/DuplicateUser', email: input.email };
 
-	return createChallengeByEmail({
-		purpose: 'signup',
-		userId: null,
-		email: input.email,
-		givenName: input.givenName,
-		familyName: input.familyName
-	});
+	return createSignupChallenge(input);
 };
 
 export const createOrRefreshEmailChallenge = async (input: {
@@ -605,7 +491,7 @@ export const createOrRefreshEmailChallenge = async (input: {
 		return { _tag: '@error/DuplicateUser', email: input.email };
 	}
 
-	return createChallengeByUserId({
+	return createUserChallenge({
 		purpose: 'email-change',
 		userId: account.userId,
 		email: input.email,
@@ -619,27 +505,20 @@ const consumeChallengeByEmail = async (
 ): Promise<ConsumedChallenge | ChallengeVerificationError> => {
 	const user = await getUserByEmail(challenge.email);
 	if (!user) {
-		await deleteChallenges([challenge.id]);
-		return {
-			_tag: '@error/ChallengeVerificationError',
-			code: 'ACCOUNT_NOT_FOUND',
-			email: challenge.email
-		};
+		return createChallengeVerificationError('ACCOUNT_NOT_FOUND', challenge.email);
 	}
-
-	await deleteChallenges([challenge.id]);
 
 	return { _tag: 'ChallengeConsumed', user };
 };
 
 export const consumeSignupChallenge = async (input: {
 	challengeId: string;
-	token: string;
+	secret: string;
 	code: string;
 }): Promise<ConsumedChallenge | DuplicateUser | ChallengeVerificationError> => {
 	const verified = await verifyChallenge({
 		challengeId: input.challengeId,
-		token: input.token,
+		secret: input.secret,
 		code: input.code,
 		purpose: 'signup'
 	});
@@ -649,15 +528,13 @@ export const consumeSignupChallenge = async (input: {
 
 	const existingAccount = await getUserByEmail(challenge.email);
 	if (existingAccount) {
-		await deleteChallenges([challenge.id]);
 		return { _tag: '@error/DuplicateUser', email: challenge.email };
 	}
 
-	const givenName = challenge.givenName?.trim();
-	const familyName = challenge.familyName?.trim();
+	const givenName = challenge.givenName;
+	const familyName = challenge.familyName;
 	if (!givenName || !familyName) {
-		await deleteChallenges([challenge.id]);
-		return { _tag: '@error/ChallengeVerificationError', code: 'ACCOUNT_NOT_FOUND' };
+		return createChallengeVerificationError('CHALLENGE_EXPIRED');
 	}
 
 	const createdUser = await createUser({
@@ -667,7 +544,6 @@ export const consumeSignupChallenge = async (input: {
 	});
 
 	if (createdUser._tag === '@error/DuplicateUser') {
-		await deleteChallenges([challenge.id]);
 		return createdUser;
 	}
 
@@ -676,12 +552,12 @@ export const consumeSignupChallenge = async (input: {
 
 export const consumeLoginChallenge = async (input: {
 	challengeId: string;
-	token: string;
+	secret: string;
 	code: string;
 }): Promise<ConsumedChallenge | ChallengeVerificationError> => {
 	const verified = await verifyChallenge({
 		challengeId: input.challengeId,
-		token: input.token,
+		secret: input.secret,
 		code: input.code,
 		purpose: 'login'
 	});
@@ -692,47 +568,38 @@ export const consumeLoginChallenge = async (input: {
 
 export const consumeEmailChallenge = async (input: {
 	challengeId: string;
-	token: string;
+	secret: string;
 	code: string;
 	userId: number;
 }): Promise<EmailChangeSuccess | DuplicateUser | ChallengeVerificationError> => {
 	const verified = await verifyChallenge({
 		challengeId: input.challengeId,
-		token: input.token,
+		secret: input.secret,
 		code: input.code,
-		purpose: 'email-change'
+		purpose: 'email-change',
+		expectedUserId: input.userId
 	});
 	if (verified._tag !== 'VerifiedChallenge') return verified;
 
 	const { challenge } = verified;
-	if (challenge.userId !== input.userId) {
-		await deleteChallenges([challenge.id]);
-		return { _tag: '@error/ChallengeVerificationError', code: 'UNAUTHORIZED' };
-	}
 
 	const currentAccount = await getUserById(input.userId);
 	if (!currentAccount) {
-		await deleteChallenges([challenge.id]);
-		return { _tag: '@error/ChallengeVerificationError', code: 'ACCOUNT_NOT_FOUND' };
+		return createChallengeVerificationError('ACCOUNT_NOT_FOUND');
 	}
 
 	const existingAccount = await getUserByEmail(challenge.email);
 	if (existingAccount && existingAccount.userId !== input.userId) {
-		await deleteChallenges([challenge.id]);
 		return { _tag: '@error/DuplicateUser', email: challenge.email };
 	}
 
 	const updatedUser = await updateUserEmail(input.userId, challenge.email);
 	if (!updatedUser) {
-		await deleteChallenges([challenge.id]);
-		return { _tag: '@error/ChallengeVerificationError', code: 'ACCOUNT_NOT_FOUND' };
+		return createChallengeVerificationError('ACCOUNT_NOT_FOUND');
 	}
 	if (isDuplicateUser(updatedUser)) {
-		await deleteChallenges([challenge.id]);
 		return updatedUser;
 	}
-
-	await deleteChallenges([challenge.id]);
 
 	return {
 		_tag: 'EmailChangeSuccess',
@@ -833,12 +700,6 @@ export const updateUserEmail = async (
 
 export const deleteUser = async (userId: number): Promise<boolean> => {
 	return await db.transaction(async (tx) => {
-		await tx
-			.select({ id: userChallengesTable.challengeId })
-			.from(userChallengesTable)
-			.where(eq(userChallengesTable.userId, userId));
-
-		await tx.delete(userChallengesTable).where(eq(userChallengesTable.userId, userId));
 		await tx.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
 		await tx.delete(passkeysTable).where(eq(passkeysTable.userId, userId));
 

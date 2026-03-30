@@ -46,10 +46,7 @@ export const actions = {
 
 		const result = await createOrRefreshSignupChallenge(form.data);
 		if (result._tag === '@error/DuplicateUser') {
-			redirect(
-				303,
-				toLoginLocation({ username: form.data.email, reason: 'account-exists' })
-			);
+			redirect(303, toLoginLocation({ username: form.data.email, reason: 'account-exists' }));
 		}
 		if (result._tag === '@error/ChallengeRateLimited') {
 			return fail(429, {
@@ -65,7 +62,7 @@ export const actions = {
 		});
 		setSignupLoginCookie(cookies, {
 			challengeId: result.challenge.id,
-			token: result.token
+			secret: result.secret
 		});
 
 		redirect(303, '/signup/verify-code');
