@@ -4,4 +4,6 @@ description: Proofread the @passlock/server TypeDoc/JSDoc. Use whenever you are 
 metadata:
   short-description: Proofread the server JSDocs
 ---
-I want you to proofread proofread the TypeDoc/JSDoc documentation for all code under packages/server/src/ (the source code for the @passlock/server project). Ensure it accurately reflects the source code. The documentation should accurately reflect the public view of the libraries. 
+Proofread the TypeDoc/JSDoc documentation for all code under packages/server/src/ (the source code for the @passlock/server project). Ensure it accurately reflects the public view of the source code.
+
+When you are happy with the JSDoc run `pnpm run typedoc` and verify there are no warnings or errors.
