@@ -91,7 +91,10 @@ export type _MailboxChallengeDetails = satisfy<
 >
 
 /**
- * A mailbox one-time-code challenge.
+ * Full mailbox challenge payload returned by challenge creation.
+ *
+ * In addition to the readable challenge fields, this includes the generated
+ * `secret` and one-time `code` required for follow-up verification.
  *
  * @category Mailbox
  */
@@ -129,6 +132,9 @@ export type _MailboxChallenge = satisfy<
 /**
  * Result payload returned when a mailbox challenge is created.
  *
+ * The nested `challenge` includes both the readable fields and the generated
+ * `secret` and one-time `code`.
+ *
  * @category Mailbox
  */
 export type MailboxChallengeCreated = {
@@ -158,6 +164,9 @@ export type _MailboxChallengeCreated = satisfy<
 /**
  * Result payload returned when a mailbox challenge is verified.
  *
+ * The nested `challenge` is readable and therefore excludes the secret and
+ * one-time code.
+ *
  * @category Mailbox
  */
 export type MailboxChallengeVerified = {
@@ -186,6 +195,8 @@ export type _MailboxChallengeVerified = satisfy<
 
 /**
  * Result payload returned when a mailbox challenge is deleted.
+ *
+ * This payload is just the `ChallengeDeleted` tag.
  *
  * @category Mailbox
  */
@@ -234,6 +245,9 @@ export interface CreateMailboxChallengeOptions extends AuthenticatedOptions {
 
   /**
    * Application-defined purpose for the challenge.
+   *
+   * Passlock validates this as a 1-64 character string containing only
+   * `A-Z`, `a-z`, `0-9`, `.`, `_`, `:`, and `-`.
    */
   purpose: string
 
@@ -265,6 +279,10 @@ export interface CreateMailboxChallengeOptions extends AuthenticatedOptions {
 
 /**
  * Create a mailbox one-time-code challenge.
+ *
+ * The resulting payload includes the generated `challengeId`, `secret`, and
+ * one-time `code`. Persist `challengeId` and `secret` so you can later call
+ * {@link verifyMailboxChallenge}.
  *
  * @param options Request options including challenge details.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
@@ -412,6 +430,9 @@ export interface VerifyMailboxChallengeOptions extends AuthenticatedOptions {
 
   /**
    * Challenge secret returned when the challenge was created.
+   *
+   * Store this alongside `challengeId`; Passlock no longer uses a combined
+   * mailbox challenge token.
    */
   secret: string
 
@@ -424,11 +445,15 @@ export interface VerifyMailboxChallengeOptions extends AuthenticatedOptions {
 /**
  * Verify a mailbox one-time-code challenge.
  *
+ * Pass the `challengeId` and `secret` returned by
+ * {@link createMailboxChallenge}, together with the one-time code supplied by
+ * the end user.
+ *
  * @param options Request options including the challenge identifier, secret,
  * and code.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with the verified readable challenge
- * payload.
+ * payload. The returned challenge excludes the secret and code.
  *
  * @category Mailbox
  */
@@ -519,7 +544,8 @@ export interface DeleteMailboxChallengeOptions extends AuthenticatedOptions {
  *
  * @param options Request options including the challenge identifier.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds when the challenge has been deleted.
+ * @returns An Effect that succeeds with the tagged delete payload
+ * `{ _tag: "ChallengeDeleted" }`.
  *
  * @category Mailbox
  */

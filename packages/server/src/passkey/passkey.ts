@@ -324,7 +324,9 @@ export type UpdatedCredentials = {
 }
 
 /**
- * Narrow an unknown value to an `UpdatedCredentials`-tagged payload.
+ * Check whether an unknown value carries the `UpdatedCredentials` tag.
+ *
+ * This lightweight guard only checks the top-level `_tag`.
  *
  * @category Passkeys
  */

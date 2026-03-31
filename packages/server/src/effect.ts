@@ -4,6 +4,10 @@
  * This entrypoint exposes selected original `Effect`-returning functions
  * together with the public schemas used by the package.
  *
+ * Use this entrypoint when you want to stay inside Effect and work with the
+ * original success/error channels directly. For Promise-based APIs, use the
+ * root entrypoint or `@passlock/server/safe`.
+ *
  * @module effect
  */
 

@@ -1,8 +1,10 @@
 /**
- * Safe functions that return result envelopes over the original
- * tagged success and error payloads. The returned value keeps
- * its original `_tag` shape, and is also augmented with a
- * result envelope for `success`- or `failure`-style branching.
+ * Promise-based safe entrypoint for `@passlock/server`.
+ *
+ * These functions return result envelopes over the original tagged success and
+ * error payloads. The returned value keeps its original `_tag` shape and is
+ * also augmented with a result envelope for `success`- or `failure`-style
+ * branching.
  *
  * Note: unexpected runtime failures may still throw.
  *
@@ -26,6 +28,15 @@
  * }
  * ```
  *
+ * @categoryDescription Authentication
+ * Error payloads related to API keys, tenancy access, and token validation.
+ *
+ * @categoryDescription Common
+ * Cross-cutting payloads shared across multiple feature areas.
+ *
+ * @categoryDescription Configuration
+ * Shared request options for tenancy scope and API endpoints.
+ *
  * @categoryDescription Passkeys
  * Functions and related types for managing passkeys.
  *
@@ -35,6 +46,9 @@
  * @categoryDescription Principal
  * Functions and related types for exchanging client codes and verifying
  * Passlock tokens.
+ *
+ * @categoryDescription Validation
+ * Error payloads describing invalid request input.
  *
  * @showCategories
  *
@@ -122,6 +136,10 @@ const runSafe = <A extends object, E extends object>(
  * `true`, Passlock invalidates other pending challenges for the same purpose,
  * scoped by `userId` when present, otherwise by `email`.
  *
+ * The success payload includes the generated `challengeId`, `secret`, and
+ * one-time `code`. Persist `challengeId` and `secret` so you can verify the
+ * challenge later.
+ *
  * @param options
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * the created mailbox challenge payload and whose error branch contains an API error.
@@ -154,10 +172,15 @@ export const getMailboxChallenge = (
 /**
  * Verify a mailbox one-time-code challenge.
  *
+ * Pass the `challengeId` and `secret` returned by
+ * {@link createMailboxChallenge}, together with the one-time code supplied by
+ * the end user.
+ *
  * @param options
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * the verification payload, including the readable challenge, and whose error
- * branch contains an API error.
+ * branch contains an API error. The verified challenge excludes the secret and
+ * code.
  *
  * @category Mailbox
  */
@@ -179,7 +202,8 @@ export const verifyMailboxChallenge = (
  *
  * @param options
  * @returns A promise resolving to a {@link Result} whose success branch contains
- * the delete payload and whose error branch contains an API error.
+ * the tagged delete payload `{ _tag: "ChallengeDeleted" }` and whose error
+ * branch contains an API error.
  *
  * @category Mailbox
  */

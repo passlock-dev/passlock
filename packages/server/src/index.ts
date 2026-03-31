@@ -1,14 +1,16 @@
 /**
- * Promise-based functions that reject with tagged error payloads for expected
- * API failures.
+ * Default Promise-based entrypoint for `@passlock/server`.
+ *
+ * Each function resolves with its tagged success payload and rejects with a
+ * tagged error payload for expected API failures.
  *
  * Unexpected runtime defects may still throw.
  *
- * @categoryDescription Passkeys
- * Functions and related types for managing passkeys.
- *
  * @categoryDescription Mailbox
  * Functions and related types for managing mailbox one-time-code challenges.
+ *
+ * @categoryDescription Passkeys
+ * Functions and related types for managing passkeys.
  *
  * @categoryDescription Principal
  * Functions and related types for exchanging client codes and verifying
@@ -16,7 +18,7 @@
  *
  * @showCategories
  *
- * @module unsafe (default)
+ * @module server
  */
 
 import { Effect, pipe } from "effect"
@@ -76,6 +78,10 @@ import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
  * `true`, Passlock invalidates other pending challenges for the same purpose,
  * scoped by `userId` when present, otherwise by `email`.
  *
+ * The returned `challenge` includes the generated `challengeId`, `secret`, and
+ * one-time `code`. Persist `challengeId` and `secret` so you can call
+ * {@link verifyMailboxChallenge} later.
+ *
  * @param options
  * @returns A promise resolving to the created mailbox challenge payload.
  * @throws {@link ChallengeRateLimitedError} if mailbox challenge creation has been rate limited
@@ -109,10 +115,14 @@ export const getMailboxChallenge = (
 /**
  * Verify a mailbox one-time-code challenge.
  *
+ * Pass the `challengeId` and `secret` returned by
+ * {@link createMailboxChallenge}, together with the one-time code supplied by
+ * the end user.
+ *
  * @param options
  * @returns A promise resolving to a verification payload containing the
- * readable challenge.
- * @throws {@link InvalidChallengeError} if the challenge is invalid
+ * readable challenge. The verified challenge excludes the secret and code.
+ * @throws {@link InvalidChallengeError} if the challenge ID and secret do not identify a valid challenge
  * @throws {@link InvalidChallengeCodeError} if the one-time code is invalid
  * @throws {@link ChallengeExpiredError} if the challenge has expired
  * @throws {@link ChallengeAttemptsExceededError} if the maximum verification attempts have been exceeded
@@ -129,7 +139,8 @@ export const verifyMailboxChallenge = (
  * Delete a mailbox one-time-code challenge.
  *
  * @param options
- * @returns A promise resolving to a delete payload.
+ * @returns A promise resolving to the tagged delete payload
+ * `{ _tag: "ChallengeDeleted" }`.
  * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
  *
  * @category Mailbox
