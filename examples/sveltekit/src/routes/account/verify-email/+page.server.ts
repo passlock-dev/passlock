@@ -22,11 +22,14 @@ const createVerifyForm = () =>
 		id: 'verify-code-form'
 	});
 
+/**
+ * Load the email-change verification page using the pending challenge cookie.
+ */
 export const load = (async ({ locals, cookies }) => {
 	if (!locals.user) redirect(302, resolve('/login'));
 
-	// the pending challenge cookie lets us display the email address in question
-	// before the user has entered the code
+	// The pending challenge cookie lets the page show which address is being
+	// verified before the user has entered the code.
 	const pendingContext = await getPendingEmailChangeChallengeContext(cookies, locals.user.userId);
 	if (pendingContext._tag === 'MissingPendingEmailChangeChallenge') {
 		redirect(303, toAccountLocation({ emailError: 'expired' }));
@@ -56,8 +59,8 @@ export const actions = {
 
 		if (!verifyForm.valid) return fail(400, { verifyForm });
 
-		// supplying the code is not enough, the user must also
-		// present the stored challenge secret from the cookie
+		// Supplying the code is not enough; the browser must also present the
+		// stored challenge secret from the cookie.
 		const pendingContext = await getPendingEmailChangeChallengeContext(cookies, user.userId);
 		if (pendingContext._tag === 'MissingPendingEmailChangeChallenge') {
 			redirect(303, toAccountLocation({ emailError: 'expired' }));
@@ -79,18 +82,14 @@ export const actions = {
 		if (result._tag === 'EmailChangeSuccess') {
 			deleteEmailChangeCookie(cookies);
 
-			// send an email to the old address telling
-			// them that the email was changed.
+			// Notify the old address in case the change was unexpected.
 			await sendEmailUpdated({
 				email: result.oldEmail,
 				firstName: result.user.givenName
 			});
 
-			// ?email-updated=1 will do two things:
-			// 1) display a confirmation message
-			// 2) trigger a client side passkey update/refresh to align
-			//    the passkeys in the user's passkey manager with the
-			//    updated email/username
+			// The account page uses this query state to show a success message and
+			// trigger a browser-side passkey metadata sync.
 			redirect(303, toAccountLocation({ emailUpdated: true }));
 		}
 

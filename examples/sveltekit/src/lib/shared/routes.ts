@@ -1,5 +1,8 @@
 import { resolve } from '$app/paths';
 
+/**
+ * String literal route type that optionally includes a query string.
+ */
 export type QueryLocation<Path extends string> = Path | `${Path}?${string}`;
 
 export const root = resolve('/') as '/';
@@ -19,6 +22,7 @@ export type ResendRedirectLocation = LoginLocation | SignupLocation | AccountLoc
 
 /**
  * Resend responses are parsed from JSON, so the client still needs a
- * shared narrow cast when turning the untyped payload back into a route.
+ * shared narrow cast when turning an untyped payload back into an expected
+ * route shape.
  */
 export const asResendRedirectLocation = (location: string) => location as ResendRedirectLocation;

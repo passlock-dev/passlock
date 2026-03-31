@@ -3,11 +3,11 @@ import { getPasslockConfig } from './passlock.js';
 import * as PasslockServer from '@passlock/server/safe';
 
 /**
- * Update the passkey usernames and display names
- * for a given user in the Passlock vault and local database
+ * Update the passkey username/display name in both trusted server-side stores:
+ * the Passlock vault and this sample's local SQLite database.
  *
- * @param input
- * @returns
+ * The browser still needs to perform a separate local-device update
+ * afterwards.
  */
 export const updatePasskeyUsernames = async (input: {
 	userId: number;

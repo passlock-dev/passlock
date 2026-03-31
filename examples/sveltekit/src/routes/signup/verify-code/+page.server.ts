@@ -20,6 +20,10 @@ const createVerifyForm = () =>
 		id: 'verify-code-form'
 	});
 
+/**
+ * Load the signup code verification page using the pending challenge
+ * referenced by the cookie.
+ */
 export const load = (async ({ locals, cookies }) => {
 	if (locals.user) redirect(302, '/');
 
@@ -59,6 +63,8 @@ export const actions = {
 
 		const { challenge, pending } = pendingContext;
 
+		// The emailed code must be paired with the secret stored in the pending
+		// challenge cookie.
 		const result = await consumeSignupChallenge({
 			challengeId: pending.challengeId,
 			secret: pending.secret,
@@ -71,6 +77,8 @@ export const actions = {
 			const { token: sessionToken } = await createSession(result.user.userId);
 			setSessionTokenCookie(cookies, sessionToken);
 
+			// New accounts land on passkey registration so the sample demonstrates
+			// upgrading from email-only to passkey login.
 			redirect(303, resolve('/passkeys'));
 		}
 

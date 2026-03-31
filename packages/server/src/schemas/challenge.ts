@@ -43,6 +43,9 @@ const isMailboxChallengeMetadataValue = (
 /**
  * Schema for a mailbox challenge purpose string.
  *
+ * Valid values are 1-64 characters using only `A-Z`, `a-z`, `0-9`, `.`, `_`,
+ * `:`, and `-`.
+ *
  * @category Mailbox
  */
 export const MailboxChallengePurpose = Schema.String.pipe(
@@ -117,7 +120,11 @@ export const MailboxChallengeDetails = Schema.TaggedStruct(
 export type MailboxChallengeDetails = typeof MailboxChallengeDetails.Type
 
 /**
- * Schema for a mailbox one-time-code challenge.
+ * Schema for the full mailbox challenge payload returned by challenge
+ * creation.
+ *
+ * In addition to the readable challenge fields, this includes the generated
+ * `secret` and one-time `code`.
  *
  * @category Mailbox
  */
@@ -137,6 +144,9 @@ export type MailboxChallenge = typeof MailboxChallenge.Type
 /**
  * Schema returned when a mailbox challenge is created.
  *
+ * The nested `challenge` includes both the readable fields and the generated
+ * `secret` and one-time `code`.
+ *
  * @category Mailbox
  */
 export const MailboxChallengeCreated = Schema.TaggedStruct("ChallengeCreated", {
@@ -152,6 +162,9 @@ export type MailboxChallengeCreated = typeof MailboxChallengeCreated.Type
 
 /**
  * Schema returned when a mailbox challenge is verified.
+ *
+ * The nested `challenge` is readable and therefore excludes the secret and
+ * one-time code.
  *
  * @category Mailbox
  */
@@ -171,6 +184,8 @@ export type MailboxChallengeVerified = typeof MailboxChallengeVerified.Type
 
 /**
  * Schema returned when a mailbox challenge is deleted.
+ *
+ * This payload is just the `ChallengeDeleted` tag.
  *
  * @category Mailbox
  */

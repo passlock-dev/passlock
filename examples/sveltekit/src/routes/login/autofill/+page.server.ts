@@ -21,6 +21,12 @@ const schema = v.object({
 	)
 });
 
+/**
+ * Load the autofill login page.
+ *
+ * This route demonstrates the browser-first variant of passkey login where the
+ * passkey prompt can appear from an autofill-capable username field.
+ */
 export const load = (async ({ locals }) => {
 	if (locals.user) {
 		redirect(302, '/');
@@ -38,7 +44,6 @@ export const actions = {
 		const form = await superValidate(request, valibot(schema));
 
 		if (!form.valid) {
-			// Return { form } and things will just work.
 			return fail(400, { form });
 		}
 
@@ -46,6 +51,8 @@ export const actions = {
 		if (account) {
 			const passkeys = await getPasskeysByUserId(account.userId);
 			if (passkeys.length > 0) {
+				// Passkey-capable accounts stay on the passkey path; others fall
+				// back to the standard emailed-code route.
 				redirect(303, toLoginPasskeyLocation({ username: form.data.username }));
 			}
 

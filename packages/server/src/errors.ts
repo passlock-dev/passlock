@@ -77,7 +77,8 @@ export const isInvalidCodeError =
 /* InvalidChallenge */
 
 /**
- * Error payload returned when a mailbox challenge is invalid.
+ * Error payload returned when a mailbox challenge ID and secret do not identify
+ * a valid challenge.
  *
  * @category Mailbox
  */
@@ -96,7 +97,7 @@ export const isInvalidChallengeError = isTagged<InvalidChallengeError>(
 /* InvalidChallengeCode */
 
 /**
- * Error payload returned when a mailbox challenge code is invalid.
+ * Error payload returned when a mailbox challenge code does not match.
  *
  * @category Mailbox
  */
@@ -235,7 +236,7 @@ export const isPasskeyNotFoundError = isTagged<PasskeyNotFoundError>(
 /**
  * Error payload returned when a requested resource cannot be found.
  *
- * @category Passkeys
+ * @category Common
  */
 export type NotFoundError = {
   _tag: "@error/NotFound"
@@ -251,6 +252,8 @@ export const isNotFoundError = isTagged<NotFoundError>("@error/NotFound")
 
 /**
  * Error payload returned when an email address is invalid.
+ *
+ * @category Validation
  */
 export type InvalidEmailError = {
   _tag: "@error/InvalidEmail"
@@ -268,6 +271,8 @@ export const isInvalidEmailError = isTagged<InvalidEmailError>(
 
 /**
  * Error payload returned when an email address already exists.
+ *
+ * @category Validation
  */
 export type DuplicateEmailError = {
   _tag: "@error/DuplicateEmail"
@@ -285,6 +290,8 @@ export const isDuplicateEmailError = isTagged<DuplicateEmailError>(
 
 /**
  * Error payload returned when the request body is invalid.
+ *
+ * @category Validation
  */
 export type BadRequestError = {
   _tag: "@error/BadRequest"

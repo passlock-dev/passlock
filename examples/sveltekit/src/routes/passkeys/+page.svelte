@@ -21,6 +21,8 @@
 		error = '';
 		loading = true;
 
+		// Browser-side registration creates the passkey locally, then the server
+		// verifies and links it to the signed-in account.
 		const result = await registerPasskey({
 			tenancyId: data.tenancyId,
 			endpoint: data.endpoint,
@@ -46,7 +48,8 @@
 		error = '';
 		deletingPasskeyId = passkeyId;
 
-		deletingPasskeyId = passkeyId;
+		// Deletion is split across server-side trust removal and best-effort
+		// browser/device cleanup.
 		const result = await deletePasskey({ passkeyId });
 
 		if (result._tag === '@error/DeletePasskeyError') {
@@ -145,7 +148,6 @@
 	</div>
 </div>
 
-<!-- TODO Delete me -->
 <DevNotes>
 	<p>
 		As passkeys are typically synced across platforms/ecosystems, it's useful to show users which

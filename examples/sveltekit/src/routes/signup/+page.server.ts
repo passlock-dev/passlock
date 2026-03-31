@@ -21,6 +21,10 @@ const schema = v.object({
 	familyName: v.pipe(v.string(), v.trim(), v.nonEmpty('Last name is required'))
 });
 
+/**
+ * Load the signup form that starts the emailed one-time-code flow for new
+ * accounts.
+ */
 export const load = (async ({ locals, url }) => {
 	if (locals.user) {
 		redirect(302, '/');
@@ -40,7 +44,6 @@ export const actions = {
 		const form = await superValidate(request, valibot(schema));
 
 		if (!form.valid) {
-			// Return { form } and things will just work.
 			return fail(400, { form });
 		}
 
@@ -55,6 +58,8 @@ export const actions = {
 			});
 		}
 
+		// The cookie carries the challenge id + secret; the emailed code provides
+		// the second factor needed to finish signup.
 		await sendCodeChallengeEmail({
 			email: result.challenge.email,
 			firstName: result.challenge.givenName ?? 'there',

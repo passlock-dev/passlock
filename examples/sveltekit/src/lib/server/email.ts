@@ -4,10 +4,10 @@ import OneTimeCode from '$lib/emails/OneTimeCode.svelte';
 import { render } from 'svelte/server';
 
 /**
- * Simple implementation to render an HTML email using a Svelte component
+ * Render the one-time-code email body from a Svelte component.
  *
- * @param param0
- * @returns
+ * The sample keeps email rendering intentionally simple so the auth flow stays
+ * easy to follow.
  */
 export const renderCodeChallengeEmail = ({
 	firstName,
@@ -27,9 +27,11 @@ export type SendCodeChallengeEmail = {
 };
 
 /**
- * Stubbed implementation
+ * Development-only stand-in for a real email provider.
  *
- * @param input
+ * Production apps would send `renderCodeChallengeEmail(...)` through a mail
+ * service. This sample just logs the code locally so the signup/login flows
+ * can be exercised without external infrastructure.
  */
 export const sendCodeChallengeEmail = async (input: SendCodeChallengeEmail) => {
 	if (dev) {
@@ -39,10 +41,7 @@ export const sendCodeChallengeEmail = async (input: SendCodeChallengeEmail) => {
 };
 
 /**
- * Simple implementation to render an HTML email using a Svelte component
- *
- * @param param0
- * @returns
+ * Render the "your email address changed" notification email.
  */
 export const renderEmailChanged = ({ firstName }: { firstName: string }) => {
 	const emailOutput = render(EmailChanged, { props: { firstName } });
@@ -55,9 +54,8 @@ export type SendEmailUpdated = {
 };
 
 /**
- * Stubbed implementation
- *
- * @param input
+ * Development-only stand-in for the security notification email sent after an
+ * address change succeeds.
  */
 export const sendEmailUpdated = async (input: SendEmailUpdated) => {
 	if (dev) {

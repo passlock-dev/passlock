@@ -22,6 +22,10 @@ const errorResponse = (message: string, status: number) =>
 
 type PasskeyStatusResponse = v.InferOutput<typeof PasskeyStatusSchema>;
 
+/**
+ * Return the current account's passkey ids plus whether sensitive actions need
+ * a fresh passkey confirmation.
+ */
 export const GET: RequestHandler = async (event) => {
 	const context = await getAccountContext(event.locals);
 	if (!context) {
@@ -44,46 +48,42 @@ const CreatePasskeyPayload = v.object({
 type RegisterPasskeySuccess = v.InferOutput<typeof RegisterPasskeySuccess>;
 
 /**
- * 1. Verify the passkey is authentic
- * 2. Link it to a local user account
- *
- * @param event
- * @returns
+ * Verify a browser-created passkey registration and link it to the current
+ * local account.
  */
 export const POST: RequestHandler = async (event) => {
 	if (!event.locals.user) {
 		return errorResponse('Authentication required.', 401);
 	}
 
-	// use safeParse to avoid untyped thrown errors
+	// Validate the browser-produced Passlock code before calling the SDK.
 	const rawPayload = await event.request.json();
 	const payload = v.safeParse(CreatePasskeyPayload, rawPayload);
 	if (payload.issues) {
 		return errorResponse('Invalid request. Expected code.', 400);
 	}
 
-	// verify the passkey is authentic
+	// Exchange the code with Passlock so the server can trust the registration.
 	const principal = await exchangeCode({ ...getPasslockConfig(), ...payload.output });
-	// could also use the _tag property as a discriminator
 	if (principal.failure) {
 		return errorResponse('Unable to verify passkey', 500);
 	}
 
-	// not stricly necessary but makes passkey management easier
-	// if the user registers more than one passkey
+	// Assigning the local user id to the Passlock credential makes later bulk
+	// updates and deletes much easier.
 	const passlockPasskey = await assignUser({
 		...getPasslockConfig(),
 		passkeyId: principal.authenticatorId,
 		userId: String(event.locals.user.userId)
 	});
 
-	// could also use if (!passlockPasskey.success) { ... }
 	if (passlockPasskey.failure) {
 		const status = isNotFoundError(passlockPasskey) ? 401 : 500;
 		return errorResponse(passlockPasskey.message, status);
 	}
 
-	// assign the passkey to a local user account in the db
+	// Persist the credential locally so account pages can reason about linked
+	// passkeys without querying Passlock on every request.
 	const localPasskey = await createPasskey({
 		userId: event.locals.user.userId,
 		passkeyId: passlockPasskey.id,
@@ -111,27 +111,23 @@ const UpdatePasskeyPayload = v.object({
 type UpdatePasskeysSuccess = v.InferOutput<typeof UpdatePasskeysSuccess>;
 
 /**
- * Update the username/displayname for one or more passkeys associated with
- * a specific user account
+ * Update the account name shown for all passkeys linked to the current user.
  *
- * @param event
- * @returns
+ * This handler updates the trusted server-side sources of truth. The browser
+ * then uses the returned credential payload to request a local device update.
  */
 export const PATCH: RequestHandler = async (event) => {
 	if (!event.locals.user) {
 		return errorResponse('Authentication required.', 401);
 	}
 
-	// use safeParse to avoid untyped thrown errors
 	const rawPayload = await event.request.json();
 	const payload = v.safeParse(UpdatePasskeyPayload, rawPayload);
 	if (payload.issues) {
 		return errorResponse('Invalid request. Expected username.', 400);
 	}
 
-	// update the passkeys in the Passlock vault.
-	// not strictly necessary but good to keep your local db and vault
-	// in sync to aid debugging, logging etc.
+	// Keep the Passlock vault and the local SQLite view of passkeys aligned.
 	const vaultResult = await updatePasskeyUsernames({
 		userId: event.locals.user.userId,
 		...payload.output
@@ -141,9 +137,8 @@ export const PATCH: RequestHandler = async (event) => {
 		return errorResponse('Unable to update passkeys', 500);
 	}
 
-	// updatePasskeyUsernames returns a data structure that we can pass
-	// to a function on the @passlock/client library to update the passkeys
-	// on the users local device/passkey manager
+	// The client uses this payload to update passkey metadata on the user's
+	// device or password manager.
 	const response: UpdatePasskeysSuccess = {
 		_tag: 'UpdatePasskeySuccess',
 		credentials: vaultResult.credentials
@@ -159,10 +154,10 @@ const DeleteUserPasskeysPayload = v.object({
 type DeleteUserPasskeysSuccess = v.InferOutput<typeof DeleteUserPasskeysSuccess>;
 
 /**
- * Remove every passkey associated with the current user
+ * Remove every passkey associated with the current user from trusted
+ * server-side state.
  *
- * @param event
- * @returns
+ * The browser performs the follow-up device cleanup separately.
  */
 export const DELETE: RequestHandler = async (event) => {
 	const context = await getAccountContext(event.locals);
@@ -170,7 +165,6 @@ export const DELETE: RequestHandler = async (event) => {
 		return errorResponse('Authentication required.', 401);
 	}
 
-	// use safeParse to avoid untyped thrown errors
 	const rawPayload = await event.request.json();
 	const payload = v.safeParse(DeleteUserPasskeysPayload, rawPayload);
 	if (payload.issues) {
@@ -181,7 +175,7 @@ export const DELETE: RequestHandler = async (event) => {
 		return errorResponse('Confirm your passkey before deleting passkeys.', 403);
 	}
 
-	// delete all user passkeys (called from the /account/delete route)
+	// Account deletion reuses this endpoint to clear server-side passkeys first.
 	const vaultResult = await deletePasskeysByUserId({
 		...getPasslockConfig(),
 		userId: String(context.user.userId)

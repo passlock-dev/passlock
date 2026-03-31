@@ -23,6 +23,10 @@ const createVerifyForm = () =>
 		id: 'verify-code-form'
 	});
 
+/**
+ * Load the login code verification page using the pending challenge referenced
+ * by the cookie.
+ */
 export const load = (async ({ locals, cookies }) => {
 	if (locals.user) redirect(302, '/');
 
@@ -62,6 +66,8 @@ export const actions = {
 
 		const { challenge, pending } = pendingContext;
 
+		// The user-supplied code is not enough on its own. The browser must also
+		// present the stored challenge secret from the HTTP-only cookie.
 		const result = await consumeLoginChallenge({
 			challengeId: pending.challengeId,
 			secret: pending.secret,
@@ -74,6 +80,8 @@ export const actions = {
 			const { token: sessionToken } = await createSession(result.user.userId);
 			setSessionTokenCookie(cookies, sessionToken);
 
+			// First-time email-only users are nudged to register a passkey after
+			// login; existing passkey users go straight to the app.
 			const passkeys = await getPasskeysByUserId(result.user.userId);
 			const redirectTo = passkeys.length === 0 ? resolve('/passkeys') : resolve('/');
 			redirect(303, redirectTo);

@@ -15,10 +15,11 @@ type DeletePasskeySuccess = v.InferOutput<typeof DeletePasskeySuccess>;
 type DeletePasskeyWarning = v.InferOutput<typeof DeletePasskeyWarning>;
 
 /**
- * Remove a single passkey associated with the current user.
+ * Remove a single passkey associated with the current user from the trusted
+ * server-side stores.
  *
- * @param event
- * @returns
+ * The browser deletes the local device copy separately after this endpoint
+ * succeeds.
  */
 export const DELETE: RequestHandler = async (event) => {
 	if (!event.locals.user) {
@@ -30,25 +31,27 @@ export const DELETE: RequestHandler = async (event) => {
 		return errorResponse('Invalid request. Expected passkey id.', 400);
 	}
 
-	// ensure we're not deleting another user's passkey
+	// Guard against deleting a passkey that belongs to another account.
 	const associatedUser = await getUserByPasskeyId(passkeyId.output);
 	if (!associatedUser || associatedUser.userId !== event.locals.user.userId) {
 		return errorResponse('Passkey not found for this account.', 404);
 	}
 
-	// delete it from the Passlock vault
+	// Remove the credential from the Passlock vault first so the account stops
+	// trusting it.
 	const vaultResult = await deletePasskey({
 		...getPasslockConfig(),
 		passkeyId: passkeyId.output
 	});
 
-	// we don't want to fail fast because it's possible the passkey was already deleted
-	// in which case it's not an error (see the warning below)
+	// Do not fail hard when Passlock says the credential is already gone. The
+	// local record may still need cleanup.
 	if (vaultResult._tag === '@error/Forbidden') {
 		return errorResponse('Unable to delete passkey', 500);
 	}
 
-	// remove the association in the local db
+	// Remove the local account-to-passkey association as the app's final source
+	// of truth.
 	const dbResult = await deletePasskeyByUserId(event.locals.user.userId, passkeyId.output);
 	if (!dbResult) {
 		return errorResponse('Unable to delete passkey from local account.', 404);

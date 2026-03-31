@@ -8,6 +8,10 @@ import { superValidate, setError } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { deleteAccountSchema } from './schema.js';
 
+/**
+ * Load the account deletion form and the Passlock config needed for any
+ * browser-side passkey cleanup.
+ */
 export const load = (async ({ locals }) => {
 	const { user, passkeyIds } = await requireAccountContext(locals);
 
@@ -34,6 +38,8 @@ export const actions = {
 			return setError(form, '', 'Confirm your passkey before deleting your account.');
 		}
 
+		// Passlock and local passkey cleanup happen before or alongside this form
+		// submission; the action itself just removes the local account.
 		const deleted = await deleteUser(user.userId);
 		if (!deleted) return setError(form, 'intent', 'Unable to delete this account');
 

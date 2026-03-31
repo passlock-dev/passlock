@@ -1,10 +1,19 @@
 import * as v from 'valibot';
 import { ChallengeRateLimitViewSchema } from './challengeRateLimit.js';
 
+/**
+ * Shared JSON response schemas used by both route handlers and client-side
+ * helpers. Keeping these in one place makes the server/client contract
+ * explicit.
+ */
 export const RegisterPasskeySuccess = v.object({
 	_tag: v.literal('RegisterPasskeySuccess')
 });
 
+/**
+ * Credential payload returned by the server when the browser should update the
+ * username/display name shown for a passkey.
+ */
 export const UpdatedCredential = v.object({
 	rpId: v.string(),
 	userId: v.string(),
@@ -44,6 +53,9 @@ export const PasskeyStatusSuccess = v.object({
 	reauthenticationRequired: v.boolean()
 });
 
+/**
+ * Shared validation schemas for account profile and email forms.
+ */
 export const ProfileSchema = v.object({
 	givenName: v.pipe(v.string(), v.trim(), v.nonEmpty('First name is required')),
 	familyName: v.pipe(v.string(), v.trim(), v.nonEmpty('Last name is required'))

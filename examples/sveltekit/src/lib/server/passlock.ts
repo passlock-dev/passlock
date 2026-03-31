@@ -9,9 +9,12 @@ import {
 import { error as kitError } from '@sveltejs/kit';
 
 /**
- * @returns apiKey, tenancyId and endpoint
+ * Read the server-side Passlock configuration.
  *
- * @throws 500 error if env variables are not set
+ * Server handlers use this when they need the private API key to exchange
+ * codes, create mailbox challenges, or mutate passkeys in the Passlock vault.
+ * It intentionally throws a 500 if the sample has not been configured yet,
+ * because none of the auth flows can work without these values.
  */
 export const getPasslockConfig = () => {
 	const apiKey = PASSLOCK_API_KEY;
@@ -31,7 +34,10 @@ export const getPasslockConfig = () => {
 };
 
 /**
- * @returns tenancyId, endpoint
+ * Read the subset of Passlock config that is safe to expose to the browser.
+ *
+ * Client code needs the tenancy and optional endpoint so it can talk to
+ * Passlock via `@passlock/client`, but it must never receive the API key.
  */
 export const getPasslockClientConfig = () => {
 	const { apiKey, ...rest } = getPasslockConfig();
@@ -93,6 +99,13 @@ export const restoreChallengeRateLimitView = (retryAtMs: number): ChallengeRateL
 	};
 };
 
+/**
+ * Create a Passlock mailbox challenge for one-time-code flows.
+ *
+ * The returned challenge includes the code and secret needed by the rest of
+ * the sample. Route handlers persist only the challenge id and secret in a
+ * short-lived cookie; the user receives the code separately by email.
+ */
 export const createMailboxChallenge = async (input: {
 	email: string;
 	purpose: MailboxChallengePurpose;
@@ -107,7 +120,7 @@ export const createMailboxChallenge = async (input: {
 		userId: input.userId === undefined ? undefined : String(input.userId),
 		metadata: input.metadata,
 		invalidateOthers: input.invalidateOthers,
-    skipRateLimit: true
+		skipRateLimit: true
 	});
 
 	if (result.failure) {
@@ -122,6 +135,10 @@ export const createMailboxChallenge = async (input: {
 	return result.challenge;
 };
 
+/**
+ * Read challenge details from Passlock so loaders can recover or validate
+ * in-progress login, signup, or email-change flows.
+ */
 export const getMailboxChallenge = async (input: {
 	challengeId: string;
 }): Promise<MailboxChallengeDetails | null> => {
@@ -142,6 +159,13 @@ export const getMailboxChallenge = async (input: {
 	return result;
 };
 
+/**
+ * Ask Passlock to verify a submitted challenge code against the stored secret.
+ *
+ * Callers still apply app-specific checks afterwards, such as making sure the
+ * challenge purpose matches the current route and that the challenge belongs
+ * to the expected local user.
+ */
 export const verifyMailboxChallenge = async (input: {
 	challengeId: string;
 	secret: string;
