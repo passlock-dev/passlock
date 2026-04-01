@@ -4,7 +4,7 @@ import {
 	deleteSessionTokenCookie,
 	SESSION_COOKIE_NAME,
 	setSessionTokenCookie
-} from '$lib/server/session.js';
+} from '$lib/server/cookies.js';
 
 /**
  * Validate the session cookie on every request and hydrate `event.locals` with

@@ -1,5 +1,6 @@
 import { dev } from '$app/environment';
 import type { Cookies } from '@sveltejs/kit';
+import { SESSION_MAX_INACTIVE_MS } from './session';
 
 /**
  * Helpers for the short-lived cookies that keep one-time-code flows tied to a
@@ -12,9 +13,12 @@ import type { Cookies } from '@sveltejs/kit';
 
 // Signup and login share the same cookie because they are mutually exclusive
 // unauthenticated flows.
-export const SIGNUP_LOGIN_PENDING_COOKIE_NAME = 'signup-login-pending';
+export const SIGNUP_LOGIN_CHALLENGE_COOKIE_NAME = dev ? 'demo.signup-login-challenge' : '__Host-signup-login-challenge';
+
 // Email changes use a separate cookie because they happen while signed in.
-export const EMAIL_CHANGE_PENDING_COOKIE_NAME = 'email-change-pending';
+export const EMAIL_CHANGE_CHALLENGE_COOKIE_NAME = dev ? 'demo.email-change-pending' : '__Host-email-change-pending';
+
+export const SESSION_COOKIE_NAME = dev ? 'demo.session' : '__Host-session';
 
 export const CHALLENGE_FLOW_TTL_MS = 30 * 60 * 1000;
 
@@ -23,9 +27,9 @@ export type PendingChallengeCookie = {
 	secret: string;
 };
 
-const getCookie = (
+const getChallengeCookie = (
 	cookies: Cookies,
-	cookieName: typeof SIGNUP_LOGIN_PENDING_COOKIE_NAME | typeof EMAIL_CHANGE_PENDING_COOKIE_NAME
+	cookieName: typeof SIGNUP_LOGIN_CHALLENGE_COOKIE_NAME | typeof EMAIL_CHANGE_CHALLENGE_COOKIE_NAME
 ) => {
 	const cookie = cookies.get(cookieName);
 	if (!cookie) return undefined;
@@ -47,9 +51,9 @@ const getCookie = (
 	}
 };
 
-const setCookie = (
+const setChallengeCookie = (
 	cookies: Cookies,
-	cookieName: typeof SIGNUP_LOGIN_PENDING_COOKIE_NAME | typeof EMAIL_CHANGE_PENDING_COOKIE_NAME,
+	cookieName: typeof SIGNUP_LOGIN_CHALLENGE_COOKIE_NAME | typeof EMAIL_CHANGE_CHALLENGE_COOKIE_NAME,
 	pending: PendingChallengeCookie
 ): void => {
 	cookies.set(cookieName, JSON.stringify(pending), {
@@ -61,9 +65,9 @@ const setCookie = (
 	});
 };
 
-const deleteCookie = (
+const deleteChallengeCookie = (
 	cookies: Cookies,
-	cookieName: typeof SIGNUP_LOGIN_PENDING_COOKIE_NAME | typeof EMAIL_CHANGE_PENDING_COOKIE_NAME
+	cookieName: typeof SIGNUP_LOGIN_CHALLENGE_COOKIE_NAME | typeof EMAIL_CHANGE_CHALLENGE_COOKIE_NAME
 ): void => {
 	cookies.set(cookieName, '', {
 		path: '/',
@@ -75,29 +79,57 @@ const deleteCookie = (
 };
 
 export const getSignupLoginCookie = (cookies: Cookies) =>
-	getCookie(cookies, SIGNUP_LOGIN_PENDING_COOKIE_NAME);
+	getChallengeCookie(cookies, SIGNUP_LOGIN_CHALLENGE_COOKIE_NAME);
 
 /**
  * Store the challenge id and secret for an in-progress signup or login flow.
  */
 export const setSignupLoginCookie = (cookies: Cookies, pending: PendingChallengeCookie): void => {
-	setCookie(cookies, SIGNUP_LOGIN_PENDING_COOKIE_NAME, pending);
+	setChallengeCookie(cookies, SIGNUP_LOGIN_CHALLENGE_COOKIE_NAME, pending);
 };
 
 export const deleteSignupLoginCookie = (cookies: Cookies): void => {
-	deleteCookie(cookies, SIGNUP_LOGIN_PENDING_COOKIE_NAME);
+	deleteChallengeCookie(cookies, SIGNUP_LOGIN_CHALLENGE_COOKIE_NAME);
 };
 
 export const getEmailChangeCookie = (cookies: Cookies) =>
-	getCookie(cookies, EMAIL_CHANGE_PENDING_COOKIE_NAME);
+	getChallengeCookie(cookies, EMAIL_CHANGE_CHALLENGE_COOKIE_NAME);
 
 /**
  * Store the challenge id and secret for an in-progress email change flow.
  */
 export const setEmailChangeCookie = (cookies: Cookies, pending: PendingChallengeCookie): void => {
-	setCookie(cookies, EMAIL_CHANGE_PENDING_COOKIE_NAME, pending);
+	setChallengeCookie(cookies, EMAIL_CHANGE_CHALLENGE_COOKIE_NAME, pending);
 };
 
 export const deleteEmailChangeCookie = (cookies: Cookies): void => {
-	deleteCookie(cookies, EMAIL_CHANGE_PENDING_COOKIE_NAME);
+	deleteChallengeCookie(cookies, EMAIL_CHANGE_CHALLENGE_COOKIE_NAME);
+};
+
+/* Sessions */
+
+/**
+ * Persist the opaque session token in an HTTP-only cookie.
+ */
+export const setSessionTokenCookie = (cookies: Cookies, token: string): void => {
+	cookies.set(SESSION_COOKIE_NAME, token, {
+		path: '/',
+		sameSite: 'lax',
+		httpOnly: true,
+		secure: !dev,
+		expires: new Date(Date.now() + SESSION_MAX_INACTIVE_MS)
+	});
+};
+
+/**
+ * Clear the session cookie during logout or when server-side validation fails.
+ */
+export const deleteSessionTokenCookie = (cookies: Cookies): void => {
+	cookies.set(SESSION_COOKIE_NAME, '', {
+		path: '/',
+		sameSite: 'lax',
+		httpOnly: true,
+		secure: !dev,
+		maxAge: 0
+	});
 };

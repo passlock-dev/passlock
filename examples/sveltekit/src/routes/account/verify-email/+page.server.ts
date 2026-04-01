@@ -1,7 +1,7 @@
 import type { Actions, PageServerLoad } from './$types';
 import { consumeEmailChallenge as verifyChangeEmailChallenge } from '$lib/server/repository.js';
 import { sendEmailUpdated } from '$lib/server/email.js';
-import { deleteEmailChangeCookie } from '$lib/server/challenge.js';
+import { deleteEmailChangeCookie } from '$lib/server/cookies.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
 import { setError, superValidate } from 'sveltekit-superforms';

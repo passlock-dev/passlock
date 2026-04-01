@@ -6,7 +6,7 @@ import {
 	getUserByEmail
 } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
-import { getSignupLoginCookie, setSignupLoginCookie } from '$lib/server/challenge.js';
+import { getSignupLoginCookie, setSignupLoginCookie } from '$lib/server/cookies.js';
 import { createChallengeRateLimitView } from '$lib/server/passlock.js';
 import {
 	getLoginEmailQueryState,

@@ -2,7 +2,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { requireAccountContext } from '$lib/server/account.js';
 import { deleteUser } from '$lib/server/repository.js';
 import { getPasslockClientConfig } from '$lib/server/passkeys.js';
-import { deleteSessionTokenCookie } from '$lib/server/session.js';
+import { deleteSessionTokenCookie } from '$lib/server/cookies.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate, setError } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';

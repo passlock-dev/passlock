@@ -1,4 +1,4 @@
-import { deleteSignupLoginCookie, setSignupLoginCookie } from '$lib/server/challenge.js';
+import { deleteSignupLoginCookie, setSignupLoginCookie } from '$lib/server/cookies.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import {
 	resendRateLimitResponse,

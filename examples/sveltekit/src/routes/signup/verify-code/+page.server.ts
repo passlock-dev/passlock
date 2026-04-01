@@ -1,8 +1,7 @@
 import type { Actions, PageServerLoad } from './$types';
 
 import { consumeSignupChallenge, createSession } from '$lib/server/repository.js';
-import { deleteSignupLoginCookie } from '$lib/server/challenge.js';
-import { setSessionTokenCookie } from '$lib/server/session.js';
+import { deleteSignupLoginCookie, setSessionTokenCookie } from '$lib/server/cookies.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
 import { toLoginLocation } from '$lib/shared/queryState.js';

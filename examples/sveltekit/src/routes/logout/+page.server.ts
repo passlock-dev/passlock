@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { invalidateSession } from '$lib/server/repository.js';
-import { deleteSessionTokenCookie } from '$lib/server/session.js';
+import { deleteSessionTokenCookie } from '$lib/server/cookies.js';
 
 export const load = (async ({ locals }) => {
 	if (!locals.user) {
