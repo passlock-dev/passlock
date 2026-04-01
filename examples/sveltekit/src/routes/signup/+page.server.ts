@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { createOrRefreshSignupChallenge } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
-import { setSignupLoginCookie } from '$lib/server/challenge.js';
+import { setSignupLoginCookie } from '$lib/server/cookies.js';
 import { createChallengeRateLimitView } from '$lib/server/passlock.js';
 import { getSignupQueryState, toLoginLocation } from '$lib/shared/queryState.js';
 

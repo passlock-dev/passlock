@@ -1,6 +1,6 @@
 import { getPasslockConfig } from '$lib/server/passkeys.js';
 import { createSession, getUserByPasskeyId } from '$lib/server/repository.js';
-import { setSessionTokenCookie } from '$lib/server/session.js';
+import { setSessionTokenCookie } from '$lib/server/cookies.js';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import * as v from 'valibot';

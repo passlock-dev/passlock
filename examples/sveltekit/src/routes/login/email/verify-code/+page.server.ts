@@ -5,8 +5,7 @@ import {
 	createSession,
 	getPasskeysByUserId
 } from '$lib/server/repository.js';
-import { deleteSignupLoginCookie } from '$lib/server/challenge.js';
-import { setSessionTokenCookie } from '$lib/server/session.js';
+import { deleteSignupLoginCookie, setSessionTokenCookie } from '$lib/server/cookies.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
 import { setError, superValidate } from 'sveltekit-superforms';

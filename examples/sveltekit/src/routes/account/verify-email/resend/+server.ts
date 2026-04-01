@@ -1,4 +1,4 @@
-import { deleteEmailChangeCookie, setEmailChangeCookie } from '$lib/server/challenge.js';
+import { deleteEmailChangeCookie, setEmailChangeCookie } from '$lib/server/cookies.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { createOrRefreshEmailChallenge } from '$lib/server/repository.js';
 import {

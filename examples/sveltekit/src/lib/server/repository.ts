@@ -13,7 +13,7 @@ import { LibsqlError } from '@libsql/client';
 import db from './db';
 import { passkeysTable, sessionsTable, usersTable } from './dbSchema';
 import { hashText, isEqualHash } from './hashing';
-import { CHALLENGE_FLOW_TTL_MS } from './challenge';
+import { CHALLENGE_FLOW_TTL_MS } from './cookies';
 import {
 	createMailboxChallenge as createPasslockMailboxChallenge,
 	getMailboxChallenge as getPasslockMailboxChallenge,
