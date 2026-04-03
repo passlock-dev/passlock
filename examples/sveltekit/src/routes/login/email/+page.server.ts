@@ -1,10 +1,7 @@
 import type { PageServerLoad } from './$types';
 
-import {
-	createOrRefreshLoginChallenge,
-	getPendingLoginChallenge,
-	getUserByEmail
-} from '$lib/server/repository.js';
+import { createOrRefreshLoginChallenge, getPendingLoginChallenge } from '$lib/server/challenges.js';
+import { getUserByEmail } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { getSignupLoginCookie, setSignupLoginCookie } from '$lib/server/cookies.js';
 import { createChallengeRateLimitView } from '$lib/server/passlock.js';
@@ -68,7 +65,7 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 		email: result.challenge.email,
 		firstName: result.challenge.givenName ?? 'there',
 		code: result.code,
-    html: result.html
+		html: result.html
 	});
 	setSignupLoginCookie(cookies, {
 		challengeId: result.challenge.id,

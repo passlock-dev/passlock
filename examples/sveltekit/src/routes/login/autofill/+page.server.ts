@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import { getUserByEmail, getPasskeysByUserId } from '$lib/server/repository.js';
+import { getUserByEmail, countPasskeysByUserId } from '$lib/server/repository.js';
 import { superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
@@ -49,8 +49,8 @@ export const actions = {
 
 		const account = await getUserByEmail(form.data.username);
 		if (account) {
-			const passkeys = await getPasskeysByUserId(account.userId);
-			if (passkeys.length > 0) {
+			const passkeysCount = await countPasskeysByUserId(account.userId);
+			if (passkeysCount > 0) {
 				// Passkey-capable accounts stay on the passkey path; others fall
 				// back to the standard emailed-code route.
 				redirect(303, toLoginPasskeyLocation({ username: form.data.username }));

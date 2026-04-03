@@ -1,5 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
-import { createOrRefreshEmailChallenge, updateUserNames } from '$lib/server/repository.js';
+import { createOrRefreshEmailChallenge } from '$lib/server/challenges.js';
+import { updateUserNames } from '$lib/server/repository.js';
 import { requireAccountContext } from '$lib/server/account.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setEmailChangeCookie } from '$lib/server/cookies.js';
@@ -229,7 +230,7 @@ export const actions = {
 			email: result.challenge.email,
 			firstName: user.givenName,
 			code: result.code,
-      html: result.html
+			html: result.html
 		});
 
 		// Verification requires both the code and this secret-bearing cookie.

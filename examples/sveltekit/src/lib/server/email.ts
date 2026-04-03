@@ -24,7 +24,7 @@ export type SendCodeChallengeEmail = {
 	email: string;
 	firstName: string;
 	code: string;
-  html: string;
+	html: string;
 };
 
 /**
@@ -38,7 +38,6 @@ export const sendCodeChallengeEmail = async (input: SendCodeChallengeEmail) => {
 	if (dev) {
 		console.log(`*** Sending One Time Code to ${input.email} [STUBBED] ***`);
 		console.log(`*** One Time Code: ${input.code} [DEV ONLY] ***`);
-    console.log(input.html)
 	}
 };
 

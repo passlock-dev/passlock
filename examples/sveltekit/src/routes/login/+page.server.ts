@@ -1,10 +1,7 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import {
-	createOrRefreshLoginChallenge,
-	getUserByEmail,
-	getPasskeysByUserId
-} from '$lib/server/repository.js';
+import { createOrRefreshLoginChallenge } from '$lib/server/challenges.js';
+import { getUserByEmail, countPasskeysByUserId } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setSignupLoginCookie } from '$lib/server/cookies.js';
 import {
@@ -13,7 +10,7 @@ import {
 } from '$lib/server/passlock.js';
 import {
 	getLoginQueryState,
-	toLoginPasskeyLocation,
+	toLoginPasskeyLocation as toPasskeyLogin,
 	toSignupLocation
 } from '$lib/shared/queryState.js';
 import { superValidate } from 'sveltekit-superforms';
@@ -70,9 +67,9 @@ export const actions = {
 		if (account) {
 			// If we already know the account has passkeys, skip directly to the
 			// passkey prompt so the user does not wait for an email code.
-			const passkeys = await getPasskeysByUserId(account.userId);
-			if (passkeys.length > 0) {
-				redirect(303, toLoginPasskeyLocation({ username: form.data.username }));
+			const passkeyCount = await countPasskeysByUserId(account.userId);
+			if (passkeyCount > 0) {
+				redirect(303, toPasskeyLogin({ username: form.data.username }));
 			}
 
 			const result = await createOrRefreshLoginChallenge(account.email);
@@ -92,7 +89,7 @@ export const actions = {
 				email: result.challenge.email,
 				firstName: result.challenge.givenName ?? 'there',
 				code: result.code,
-        html: result.html
+				html: result.html
 			});
 			setSignupLoginCookie(cookies, {
 				challengeId: result.challenge.id,

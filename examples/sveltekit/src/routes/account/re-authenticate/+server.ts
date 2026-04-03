@@ -1,6 +1,6 @@
 import { getPasslockConfig } from '$lib/server/passkeys.js';
 import {
-	getPasskeysByUserId,
+  countPasskeysByUserId,
 	getUserByPasskeyId,
 	refreshPasskeyAuthenticatedAt
 } from '$lib/server/repository.js';
@@ -25,8 +25,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		return errorResponse('Authentication required.', 401);
 	}
 
-	const existingPasskeys = await getPasskeysByUserId(locals.user.userId);
-	if (existingPasskeys.length === 0) {
+	const passkeysCount = await countPasskeysByUserId(locals.user.userId);
+	if (passkeysCount === 0) {
 		return errorResponse('No passkeys are linked to this account.', 400);
 	}
 

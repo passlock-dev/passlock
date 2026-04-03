@@ -1,5 +1,5 @@
 import { getSignupLoginCookie } from '$lib/server/cookies.js';
-import { getPendingLoginChallenge } from '$lib/server/repository.js';
+import { getPendingLoginChallenge } from '$lib/server/challenges.js';
 import type { Cookies } from '@sveltejs/kit';
 
 /**

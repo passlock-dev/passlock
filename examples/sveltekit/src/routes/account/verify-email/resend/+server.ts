@@ -1,6 +1,6 @@
 import { deleteEmailChangeCookie, setEmailChangeCookie } from '$lib/server/cookies.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
-import { createOrRefreshEmailChallenge } from '$lib/server/repository.js';
+import { createOrRefreshEmailChallenge } from '$lib/server/challenges.js';
 import {
 	resendErrorResponse,
 	resendRateLimitResponse,
@@ -58,7 +58,7 @@ export const POST: RequestHandler = async ({ locals, cookies }) => {
 		email: result.challenge.email,
 		firstName: user.givenName,
 		code: result.code,
-    html: result.html
+		html: result.html
 	});
 
 	setEmailChangeCookie(cookies, {

@@ -1,10 +1,7 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import {
-	consumeLoginChallenge,
-	createSession,
-	getPasskeysByUserId
-} from '$lib/server/repository.js';
+import { consumeLoginChallenge } from '$lib/server/challenges.js';
+import { countPasskeysByUserId, createSession } from '$lib/server/repository.js';
 import { deleteSignupLoginCookie, setSessionTokenCookie } from '$lib/server/cookies.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
@@ -81,8 +78,8 @@ export const actions = {
 
 			// First-time email-only users are nudged to register a passkey after
 			// login; existing passkey users go straight to the app.
-			const passkeys = await getPasskeysByUserId(result.user.userId);
-			const redirectTo = passkeys.length === 0 ? resolve('/passkeys') : resolve('/');
+			const passkeysCount = await countPasskeysByUserId(result.user.userId);
+			const redirectTo = passkeysCount === 0 ? resolve('/passkeys') : resolve('/');
 			redirect(303, redirectTo);
 		}
 

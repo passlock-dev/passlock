@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { createOrRefreshSignupChallenge } from '$lib/server/repository.js';
+import { createOrRefreshSignupChallenge } from '$lib/server/challenges.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setSignupLoginCookie } from '$lib/server/cookies.js';
 import { createChallengeRateLimitView } from '$lib/server/passlock.js';
@@ -9,6 +9,7 @@ import { superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
+import { resolve } from '$app/paths';
 
 const schema = v.object({
 	email: v.pipe(
@@ -47,30 +48,30 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		const result = await createOrRefreshSignupChallenge(form.data);
-		if (result._tag === '@error/DuplicateUser') {
+		const challengeOrError = await createOrRefreshSignupChallenge(form.data);
+		if (challengeOrError._tag === '@error/DuplicateUser') {
 			redirect(303, toLoginLocation({ username: form.data.email, reason: 'account-exists' }));
 		}
-		if (result._tag === '@error/ChallengeRateLimited') {
+		if (challengeOrError._tag === '@error/ChallengeRateLimited') {
 			return fail(429, {
 				form,
-				rateLimit: createChallengeRateLimitView(result.retryAfterSeconds)
+				rateLimit: createChallengeRateLimitView(challengeOrError.retryAfterSeconds)
 			});
 		}
 
 		// The cookie carries the challenge id + secret; the emailed code provides
 		// the second factor needed to finish signup.
 		await sendCodeChallengeEmail({
-			email: result.challenge.email,
-			firstName: result.challenge.givenName ?? 'there',
-			code: result.code,
-      html: result.html
+			email: challengeOrError.challenge.email,
+			firstName: challengeOrError.challenge.givenName ?? 'there',
+			code: challengeOrError.code,
+			html: challengeOrError.html
 		});
 		setSignupLoginCookie(cookies, {
-			challengeId: result.challenge.id,
-			secret: result.secret
+			challengeId: challengeOrError.challenge.id,
+			secret: challengeOrError.secret
 		});
 
-		redirect(303, '/signup/verify-code');
+		redirect(303, resolve('/signup/verify-code'));
 	}
 };

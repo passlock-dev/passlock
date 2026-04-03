@@ -13,10 +13,14 @@ import { SESSION_MAX_INACTIVE_MS } from './session';
 
 // Signup and login share the same cookie because they are mutually exclusive
 // unauthenticated flows.
-export const SIGNUP_LOGIN_CHALLENGE_COOKIE_NAME = dev ? 'demo.signup-login-challenge' : '__Host-signup-login-challenge';
+export const SIGNUP_LOGIN_CHALLENGE_COOKIE_NAME = dev
+	? 'demo.signup-login-challenge'
+	: '__Host-signup-login-challenge';
 
 // Email changes use a separate cookie because they happen while signed in.
-export const EMAIL_CHANGE_CHALLENGE_COOKIE_NAME = dev ? 'demo.email-change-pending' : '__Host-email-change-pending';
+export const EMAIL_CHANGE_CHALLENGE_COOKIE_NAME = dev
+	? 'demo.email-change-pending'
+	: '__Host-email-change-pending';
 
 export const SESSION_COOKIE_NAME = dev ? 'demo.session' : '__Host-session';
 

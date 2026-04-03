@@ -5,7 +5,7 @@ import {
 	resendRedirectResponse,
 	resendSuccessResponse
 } from '$lib/server/resend.js';
-import { createOrRefreshLoginChallenge } from '$lib/server/repository.js';
+import { createOrRefreshLoginChallenge } from '$lib/server/challenges.js';
 import { toSignupLocation } from '$lib/shared/queryState.js';
 import type { RequestHandler } from './$types';
 import { getPendingLoginChallengeContext } from '../challenge.js';
@@ -40,7 +40,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
 		email: result.challenge.email,
 		firstName: result.challenge.givenName ?? 'there',
 		code: result.code,
-    html: result.html
+		html: result.html
 	});
 
 	setSignupLoginCookie(cookies, {
