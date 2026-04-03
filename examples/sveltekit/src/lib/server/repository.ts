@@ -141,6 +141,7 @@ export type CreatedChallenge = {
 	challenge: Challenge;
 	secret: string;
 	code: string;
+  html: string;
 };
 
 type ChallengeCreationResult = CreatedChallenge | ChallengeRateLimitedError;
@@ -390,7 +391,8 @@ const toCreatedChallenge = (input: {
 		challengeExpiresAt: input.challengeExpiresAt
 	},
 	secret: input.challenge.secret,
-	code: input.challenge.code
+	code: input.challenge.code,
+  html: input.challenge.html
 });
 
 const createSignupChallenge = async (input: {
@@ -527,8 +529,6 @@ const verifyChallenge = async (input: {
 			console.error('Unable to verify mailbox challenge', result);
 			throw new Error('Unable to verify one-time code challenge');
 	}
-
-	throw new Error('Unexpected mailbox challenge verification result');
 };
 
 /**

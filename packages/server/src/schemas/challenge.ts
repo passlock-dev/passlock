@@ -132,6 +132,7 @@ export const MailboxChallenge = Schema.Struct({
   ...MailboxChallengeDetailsFields,
   secret: Schema.String,
   code: Schema.String,
+  html: Schema.String
 })
 
 /**

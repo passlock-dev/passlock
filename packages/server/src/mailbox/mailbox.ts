@@ -106,6 +106,7 @@ export type MailboxChallenge = {
   metadata: MailboxChallengeMetadata | null
   secret: string
   code: string
+  html: string
   createdAt: number
   expiresAt: number
 }

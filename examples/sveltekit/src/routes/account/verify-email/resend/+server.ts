@@ -57,7 +57,8 @@ export const POST: RequestHandler = async ({ locals, cookies }) => {
 	await sendCodeChallengeEmail({
 		email: result.challenge.email,
 		firstName: user.givenName,
-		code: result.code
+		code: result.code,
+    html: result.html
 	});
 
 	setEmailChangeCookie(cookies, {

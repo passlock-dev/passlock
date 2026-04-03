@@ -228,7 +228,8 @@ export const actions = {
 		await sendCodeChallengeEmail({
 			email: result.challenge.email,
 			firstName: user.givenName,
-			code: result.code
+			code: result.code,
+      html: result.html
 		});
 
 		// Verification requires both the code and this secret-bearing cookie.

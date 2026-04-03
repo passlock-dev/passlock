@@ -42,7 +42,8 @@ export const POST: RequestHandler = async ({ cookies }) => {
 	await sendCodeChallengeEmail({
 		email: result.challenge.email,
 		firstName: result.challenge.givenName ?? 'there',
-		code: result.code
+		code: result.code,
+    html: result.html
 	});
 
 	setSignupLoginCookie(cookies, {
