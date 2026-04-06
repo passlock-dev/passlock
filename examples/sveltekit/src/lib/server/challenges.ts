@@ -48,10 +48,10 @@ export type CreatedChallenge = {
 	challenge: Challenge;
 	secret: string;
 	code: string;
-  message: {
-    html: string
-    text: string
-  }
+	message: {
+		html: string;
+		text: string;
+	};
 };
 
 type ChallengeCreationResult = CreatedChallenge | ChallengeRateLimitedError;
@@ -249,7 +249,7 @@ const createSignupChallenge = async (input: {
 	givenName: string;
 	familyName: string;
 }): Promise<ChallengeCreationResult> => {
-	const { givenName, familyName } = input
+	const { givenName, familyName } = input;
 	if (!givenName || !familyName) {
 		throw new Error('Signup challenge requires given and family names');
 	}

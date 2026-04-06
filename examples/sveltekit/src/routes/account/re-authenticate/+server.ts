@@ -1,6 +1,6 @@
 import { getPasslockConfig } from '$lib/server/passkeys.js';
 import {
-  countPasskeysByUserId,
+	countPasskeysByUserId,
 	getUserByPasskeyId,
 	refreshPasskeyAuthenticatedAt
 } from '$lib/server/repository.js';

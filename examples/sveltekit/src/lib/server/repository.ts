@@ -346,9 +346,9 @@ export const countPasskeysByUserId = async (userId: number): Promise<number> => 
 		.select({ count: count() })
 		.from(passkeysTable)
 		.where(eq(passkeysTable.userId, userId));
-  
-  const row = rows[0];
-  return row ? row.count : 0
+
+	const row = rows[0];
+	return row ? row.count : 0;
 };
 
 /**
