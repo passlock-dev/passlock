@@ -48,7 +48,10 @@ export type CreatedChallenge = {
 	challenge: Challenge;
 	secret: string;
 	code: string;
-	html: string;
+  message: {
+    html: string
+    text: string
+  }
 };
 
 type ChallengeCreationResult = CreatedChallenge | ChallengeRateLimitedError;
@@ -238,7 +241,7 @@ const toCreatedChallenge = (input: {
 	},
 	secret: input.challenge.secret,
 	code: input.challenge.code,
-	html: input.challenge.html
+	message: input.challenge.message
 });
 
 const createSignupChallenge = async (input: {

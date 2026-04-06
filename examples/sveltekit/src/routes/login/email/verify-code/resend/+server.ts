@@ -40,7 +40,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
 		email: result.challenge.email,
 		firstName: result.challenge.givenName ?? 'there',
 		code: result.code,
-		html: result.html
+		message: result.message
 	});
 
 	setSignupLoginCookie(cookies, {

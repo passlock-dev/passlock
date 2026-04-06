@@ -96,6 +96,11 @@ export type _MailboxChallengeDetails = satisfy<
  * In addition to the readable challenge fields, this includes the generated
  * `secret` and one-time `code` required for follow-up verification.
  *
+ * The payload also includes `message.html` and `message.text`, which contain
+ * Passlock's rendered email content for the recipient. You can send those
+ * directly through your own email provider or use the raw `code` to render
+ * your own message.
+ *
  * @category Mailbox
  */
 export type MailboxChallenge = {
@@ -106,7 +111,22 @@ export type MailboxChallenge = {
   metadata: MailboxChallengeMetadata | null
   secret: string
   code: string
-  html: string
+  /**
+   * Rendered email content for the one-time-code challenge.
+   *
+   * Send this through your own email provider as-is, or ignore it and render
+   * your own email body from the raw `code`.
+   */
+  message: {
+    /**
+     * Rendered HTML email body.
+     */
+    html: string
+    /**
+     * Rendered plain-text email body.
+     */
+    text: string
+  }
   createdAt: number
   expiresAt: number
 }
@@ -134,7 +154,8 @@ export type _MailboxChallenge = satisfy<
  * Result payload returned when a mailbox challenge is created.
  *
  * The nested `challenge` includes both the readable fields and the generated
- * `secret` and one-time `code`.
+ * `secret` and one-time `code`, plus rendered email content in
+ * `message.html` and `message.text`.
  *
  * @category Mailbox
  */
@@ -240,7 +261,7 @@ const decodeResponseJson = <A, I, R>(
  */
 export interface CreateMailboxChallengeOptions extends AuthenticatedOptions {
   /**
-   * Email address to send the challenge to.
+   * Recipient email address for the challenge.
    */
   email: string
 
@@ -282,8 +303,12 @@ export interface CreateMailboxChallengeOptions extends AuthenticatedOptions {
  * Create a mailbox one-time-code challenge.
  *
  * The resulting payload includes the generated `challengeId`, `secret`, and
- * one-time `code`. Persist `challengeId` and `secret` so you can later call
- * {@link verifyMailboxChallenge}.
+ * one-time `code`. It also includes rendered email content in `message.html`
+ * and `message.text` that you can send through your own email provider.
+ *
+ * Persist `challengeId` and `secret` so you can later call
+ * {@link verifyMailboxChallenge}. Use the raw `code` if you want to render
+ * your own email content instead of sending the provided message body.
  *
  * @param options Request options including challenge details.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
@@ -309,8 +334,7 @@ export const createMailboxChallenge = (
         metadata,
         invalidateOthers,
         skipRateLimit,
-      } =
-        options
+      } = options
 
       const url = new URL(`/${tenancyId}/challenges`, baseUrl)
       const response = yield* fetchNetwork(

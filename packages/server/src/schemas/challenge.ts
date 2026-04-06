@@ -126,13 +126,21 @@ export type MailboxChallengeDetails = typeof MailboxChallengeDetails.Type
  * In addition to the readable challenge fields, this includes the generated
  * `secret` and one-time `code`.
  *
+ * The payload also includes `message.html` and `message.text`, which contain
+ * Passlock's rendered email content for the recipient. You can send those
+ * directly through your own email provider or use the raw `code` to render
+ * your own message.
+ *
  * @category Mailbox
  */
 export const MailboxChallenge = Schema.Struct({
   ...MailboxChallengeDetailsFields,
   secret: Schema.String,
   code: Schema.String,
-  html: Schema.String
+  message: Schema.Struct({
+    html: Schema.String,
+    text: Schema.String,
+  }),
 })
 
 /**
@@ -146,7 +154,8 @@ export type MailboxChallenge = typeof MailboxChallenge.Type
  * Schema returned when a mailbox challenge is created.
  *
  * The nested `challenge` includes both the readable fields and the generated
- * `secret` and one-time `code`.
+ * `secret` and one-time `code`, plus rendered email content in
+ * `message.html` and `message.text`.
  *
  * @category Mailbox
  */

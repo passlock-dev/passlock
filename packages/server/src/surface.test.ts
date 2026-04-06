@@ -1,8 +1,8 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type {
-  CreateMailboxChallengeOptions as EffectCreateMailboxChallengeOptions,
   createMailboxChallenge as createMailboxChallengeEffect,
   deleteMailboxChallenge as deleteMailboxChallengeEffect,
+  CreateMailboxChallengeOptions as EffectCreateMailboxChallengeOptions,
   GetMailboxChallengeOptions as EffectGetMailboxChallengeOptions,
   getMailboxChallenge as getMailboxChallengeEffect,
   verifyMailboxChallenge as verifyMailboxChallengeEffect,
@@ -97,7 +97,10 @@ describe("public surface", () => {
     type _7 = Assert<IsEqual<PasskeyCredential, UnsafePasskeyCredential>>
     type _8 = Assert<IsEqual<MailboxChallenge, UnsafeMailboxChallenge>>
     type _9 = Assert<
-      IsEqual<CreateMailboxChallengeOptions, UnsafeCreateMailboxChallengeOptions>
+      IsEqual<
+        CreateMailboxChallengeOptions,
+        UnsafeCreateMailboxChallengeOptions
+      >
     >
     type _10 = Assert<
       IsEqual<MailboxChallengeCreated, UnsafeMailboxChallengeCreated>
@@ -188,7 +191,10 @@ describe("public surface", () => {
         : false
     type Assert<T extends true> = T
     type _1 = Assert<
-      IsEqual<EffectCreateMailboxChallengeOptions, CreateMailboxChallengeOptions>
+      IsEqual<
+        EffectCreateMailboxChallengeOptions,
+        CreateMailboxChallengeOptions
+      >
     >
     type _2 = Assert<
       IsEqual<EffectGetMailboxChallengeOptions, GetMailboxChallengeOptions>

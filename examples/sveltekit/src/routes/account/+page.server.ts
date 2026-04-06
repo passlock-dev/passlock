@@ -230,7 +230,7 @@ export const actions = {
 			email: result.challenge.email,
 			firstName: user.givenName,
 			code: result.code,
-			html: result.html
+			message: result.message
 		});
 
 		// Verification requires both the code and this secret-bearing cookie.

@@ -82,6 +82,10 @@ describe("safe result envelopes", () => {
               metadata: null,
               secret: "secret",
               code: "123456",
+              message: {
+                html: "<p>Your code is 123456</p>",
+                text: "Your code is 123456",
+              },
               createdAt: 1,
               expiresAt: 2,
             },

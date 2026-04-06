@@ -24,7 +24,10 @@ export type SendCodeChallengeEmail = {
 	email: string;
 	firstName: string;
 	code: string;
-	html: string;
+  message: {
+    html: string
+    text: string
+  }
 };
 
 /**

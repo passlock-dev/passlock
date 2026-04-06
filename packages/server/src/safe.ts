@@ -137,8 +137,12 @@ const runSafe = <A extends object, E extends object>(
  * scoped by `userId` when present, otherwise by `email`.
  *
  * The success payload includes the generated `challengeId`, `secret`, and
- * one-time `code`. Persist `challengeId` and `secret` so you can verify the
- * challenge later.
+ * one-time `code`, plus rendered email content in `message.html` and
+ * `message.text`.
+ *
+ * Persist `challengeId` and `secret` so you can verify the challenge later.
+ * Send the provided message content through your own email provider or use the
+ * raw `code` to render your own email body.
  *
  * @param options
  * @returns A promise resolving to a {@link Result} whose success branch contains

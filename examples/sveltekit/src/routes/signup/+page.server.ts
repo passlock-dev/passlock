@@ -48,28 +48,28 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		const challengeOrError = await createOrRefreshSignupChallenge(form.data);
-		if (challengeOrError._tag === '@error/DuplicateUser') {
+		const result = await createOrRefreshSignupChallenge(form.data);
+		if (result._tag === '@error/DuplicateUser') {
 			redirect(303, toLoginLocation({ username: form.data.email, reason: 'account-exists' }));
 		}
-		if (challengeOrError._tag === '@error/ChallengeRateLimited') {
+		if (result._tag === '@error/ChallengeRateLimited') {
 			return fail(429, {
 				form,
-				rateLimit: createChallengeRateLimitView(challengeOrError.retryAfterSeconds)
+				rateLimit: createChallengeRateLimitView(result.retryAfterSeconds)
 			});
 		}
 
 		// The cookie carries the challenge id + secret; the emailed code provides
 		// the second factor needed to finish signup.
 		await sendCodeChallengeEmail({
-			email: challengeOrError.challenge.email,
-			firstName: challengeOrError.challenge.givenName ?? 'there',
-			code: challengeOrError.code,
-			html: challengeOrError.html
+			email: result.challenge.email,
+			firstName: result.challenge.givenName ?? 'there',
+			code: result.code,
+			message: result.message
 		});
 		setSignupLoginCookie(cookies, {
-			challengeId: challengeOrError.challenge.id,
-			secret: challengeOrError.secret
+			challengeId: result.challenge.id,
+			secret: result.secret
 		});
 
 		redirect(303, resolve('/signup/verify-code'));

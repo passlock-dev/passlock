@@ -30,6 +30,10 @@ const createdChallengeResponse = {
     metadata: null,
     secret: "secret",
     code: "123456",
+    message: {
+      html: "<p>Your code is 123456</p>",
+      text: "Your code is 123456",
+    },
     createdAt: 1,
     expiresAt: 2,
   },
@@ -47,66 +51,68 @@ const readableChallenge = {
 } as const
 
 describe(createMailboxChallenge.name, () => {
-  it.effect("posts metadata, invalidateOthers, and skipRateLimit with auth headers", () =>
-    Effect.gen(function* () {
-      let invokedUrl: string | undefined
-      let method: string | undefined
-      let authorizationHeader: string | null = null
-      let body: string | undefined
+  it.effect(
+    "posts metadata, invalidateOthers, and skipRateLimit with auth headers",
+    () =>
+      Effect.gen(function* () {
+        let invokedUrl: string | undefined
+        let method: string | undefined
+        let authorizationHeader: string | null = null
+        let body: string | undefined
 
-      const responseWithMetadata = {
-        _tag: "ChallengeCreated",
-        challenge: {
-          ...createdChallengeResponse.challenge,
-          metadata,
-        },
-      } as const
+        const responseWithMetadata = {
+          _tag: "ChallengeCreated",
+          challenge: {
+            ...createdChallengeResponse.challenge,
+            metadata,
+          },
+        } as const
 
-      const testFetch = vi.fn<typeof fetch>((url, init) => {
-        invokedUrl = String(url)
-        method = init?.method
-        body = init?.body as string | undefined
+        const testFetch = vi.fn<typeof fetch>((url, init) => {
+          invokedUrl = String(url)
+          method = init?.method
+          body = init?.body as string | undefined
 
-        if (init?.headers) {
-          authorizationHeader = getHeaderValue(init.headers, "authorization")
-        }
+          if (init?.headers) {
+            authorizationHeader = getHeaderValue(init.headers, "authorization")
+          }
 
-        return Promise.resolve(
-          new Response(JSON.stringify(responseWithMetadata), {
-            status: 201,
-          })
+          return Promise.resolve(
+            new Response(JSON.stringify(responseWithMetadata), {
+              status: 201,
+            })
+          )
+        })
+
+        const result = yield* createMailboxChallenge(
+          {
+            apiKey,
+            email: "user@example.com",
+            invalidateOthers: true,
+            metadata,
+            purpose: "LOGIN_CODE",
+            skipRateLimit: true,
+            tenancyId,
+            userId: "dummyUserId",
+          },
+          Layer.succeed(NetworkFetch, testFetch)
         )
-      })
 
-      const result = yield* createMailboxChallenge(
-        {
-          apiKey,
+        expect(result).toStrictEqual(responseWithMetadata)
+        expect(invokedUrl).toEqual(
+          `https://api.passlock.dev/${tenancyId}/challenges`
+        )
+        expect(method).toEqual("POST")
+        expect(authorizationHeader).toEqual("Bearer dummyApiKey")
+        expect(JSON.parse(body ?? "{}")).toStrictEqual({
           email: "user@example.com",
           invalidateOthers: true,
           metadata,
           purpose: "LOGIN_CODE",
           skipRateLimit: true,
-          tenancyId,
           userId: "dummyUserId",
-        },
-        Layer.succeed(NetworkFetch, testFetch)
-      )
-
-      expect(result).toStrictEqual(responseWithMetadata)
-      expect(invokedUrl).toEqual(
-        `https://api.passlock.dev/${tenancyId}/challenges`
-      )
-      expect(method).toEqual("POST")
-      expect(authorizationHeader).toEqual("Bearer dummyApiKey")
-      expect(JSON.parse(body ?? "{}")).toStrictEqual({
-        email: "user@example.com",
-        invalidateOthers: true,
-        metadata,
-        purpose: "LOGIN_CODE",
-        skipRateLimit: true,
-        userId: "dummyUserId",
+        })
       })
-    })
   )
 
   it.effect(
@@ -122,6 +128,10 @@ describe(createMailboxChallenge.name, () => {
             metadata: null,
             secret: "secret",
             code: "123456",
+            message: {
+              html: "<p>Your code is 123456</p>",
+              text: "Your code is 123456",
+            },
             createdAt: 1,
             expiresAt: 2,
           },

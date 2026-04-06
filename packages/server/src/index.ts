@@ -79,8 +79,13 @@ import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
  * scoped by `userId` when present, otherwise by `email`.
  *
  * The returned `challenge` includes the generated `challengeId`, `secret`, and
- * one-time `code`. Persist `challengeId` and `secret` so you can call
- * {@link verifyMailboxChallenge} later.
+ * one-time `code`, plus rendered email content in `message.html` and
+ * `message.text`.
+ *
+ * Persist `challengeId` and `secret` so you can call
+ * {@link verifyMailboxChallenge} later. Send the provided message content
+ * through your own email provider or use the raw `code` to render your own
+ * email body.
  *
  * @param options
  * @returns A promise resolving to the created mailbox challenge payload.

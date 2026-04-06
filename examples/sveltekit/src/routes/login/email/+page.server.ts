@@ -65,7 +65,7 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 		email: result.challenge.email,
 		firstName: result.challenge.givenName ?? 'there',
 		code: result.code,
-		html: result.html
+		message: result.message
 	});
 	setSignupLoginCookie(cookies, {
 		challengeId: result.challenge.id,
