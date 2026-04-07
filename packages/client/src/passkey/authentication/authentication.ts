@@ -5,25 +5,16 @@ import {
   WebAuthnError,
 } from "@simplewebauthn/browser"
 import { Context, Micro, pipe } from "effect"
-import {
-  Endpoint,
-  makeEndpoint,
-  makeRequest,
-  TenancyId,
-} from "../../internal/index.js"
+import { Endpoint, makeEndpoint, makeRequest, TenancyId } from "../../internal/index.js"
 import type { NetworkError } from "../../internal/network.js"
 import { Logger } from "../../logger.js"
 import type { PasslockOptions } from "../../options.js"
 import type { Principal } from "../../principal"
-import {
-  OrphanedPasskeyError,
-  OtherPasskeyError,
-  PasskeyUnsupportedError,
-} from "../errors.js"
+import { OrphanedPasskeyError, OtherPasskeyError, PasskeyUnsupportedError } from "../errors.js"
 import type { Millis, UserVerification } from "../shared.js"
 
 /**
- * Passkey authentication options
+ * Passkey authentication options.
  *
  * @see {@link authenticatePasskey}
  *
@@ -31,7 +22,7 @@ import type { Millis, UserVerification } from "../shared.js"
  */
 export interface AuthenticationOptions extends PasslockOptions {
   /**
-   * Restrict the passkey(s) the device presents to the user to a given set
+   * Restrict the passkeys the device can present to the user to this set.
    *
    * @see {@link https://passlock.dev/passkeys/allow-credentials/ allowCredentials (main docs)}
    */
@@ -63,6 +54,14 @@ export interface AuthenticationOptions extends PasslockOptions {
    * Abort the operation after N milliseconds
    */
   timeout?: Millis | undefined
+
+  /**
+   * Override the rpId. Use this when you want to accept passkeys from
+   * a different domain/rpId.
+   *
+   * @see {@link https://passlock.dev/passkeys/related-origin-requests/ related origin requests (main docs)}
+   */
+  rpId?: string
 }
 
 /**
@@ -92,7 +91,7 @@ export type AuthenticationSuccessTag = typeof AuthenticationSuccessTag
  * Represents the outcome of a successful passkey authentication.
  * Submit the `code` and/or `id_token` to your backend, then either
  * exchange the code with the Passlock REST API or decode and
- * verify the id_token (JWT). **note:** The @passlock/server library
+ * verify the id_token (JWT). Note: the `@passlock/server` library
  * includes utilities for this.
  *
  * @see {@link isAuthenticationSuccess}
@@ -131,14 +130,12 @@ export type AuthenticationSuccess = {
 /**
  * Type guard to narrow something down to an {@link AuthenticationSuccess}
  *
- * @param payload
+ * @param payload Unknown value to test.
  * @returns `true` if the payload is an {@link AuthenticationSuccess}.
  *
  * @category Passkeys (other)
  */
-export const isAuthenticationSuccess = (
-  payload: unknown
-): payload is AuthenticationSuccess => {
+export const isAuthenticationSuccess = (payload: unknown): payload is AuthenticationSuccess => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
 
@@ -147,25 +144,22 @@ export const isAuthenticationSuccess = (
   return payload._tag === AuthenticationSuccessTag
 }
 
-export const fetchOptions = (
-  options: Omit<AuthenticationOptions, keyof PasslockOptions>
-) =>
+export const fetchOptions = (options: Omit<AuthenticationOptions, keyof PasslockOptions>) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
     const { endpoint } = yield* Micro.service(Endpoint)
     const { tenancyId } = yield* Micro.service(TenancyId)
 
-    const { userVerification, allowCredentials, timeout, onEvent } = options
+    const { userVerification, allowCredentials, timeout, rpId, onEvent } = options
     const url = new URL(`${tenancyId}/passkey/authentication/options`, endpoint)
 
     onEvent?.("optionsRequest")
-    yield* logger.logInfo(
-      "Fetching passkey authentication options from Passlock"
-    )
+    yield* logger.logInfo("Fetching passkey authentication options from Passlock")
 
     const payload = {
       allowCredentials,
       userVerification,
+      rpId,
       timeout,
     }
 
@@ -182,9 +176,7 @@ export type OptionsResponse = {
   optionsJSON: PublicKeyCredentialRequestOptionsJSON
 }
 
-export const isOptionsResponse = (
-  payload: unknown
-): payload is OptionsResponse => {
+export const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
 
@@ -236,8 +228,7 @@ export const startAuthentication = (
           return new OtherPasskeyError({ error, message: "Unexpected error" })
         }
       },
-      try: () =>
-        helper.startAuthentication({ optionsJSON, useBrowserAutofill }),
+      try: () => helper.startAuthentication({ optionsJSON, useBrowserAutofill }),
     })
   })
 
@@ -278,10 +269,7 @@ export const verifyCredential = (
     const { endpoint } = yield* Micro.service(Endpoint)
     const { tenancyId } = yield* Micro.service(TenancyId)
 
-    const url = new URL(
-      `${tenancyId}/passkey/authentication/verification`,
-      endpoint
-    )
+    const url = new URL(`${tenancyId}/passkey/authentication/verification`, endpoint)
 
     onEvent?.("verifyCredential")
     yield* logger.logInfo("Verifying passkey in Passlock vault")
@@ -299,9 +287,7 @@ export const verifyCredential = (
         responsePredicate: isAuthenticationSuccess,
         url,
       }),
-      Micro.catchTag("@error/PasskeyNotFound", (err) =>
-        Micro.fail(new OrphanedPasskeyError(err))
-      )
+      Micro.catchTag("@error/PasskeyNotFound", (err) => Micro.fail(new OrphanedPasskeyError(err)))
     )
 
     yield* logger.logInfo(
@@ -312,7 +298,7 @@ export const verifyCredential = (
   })
 
 /**
- * Potential errors associated with Passkey authentication
+ * Potential errors associated with passkey authentication.
  *
  * @category Passkeys (errors)
  */
@@ -326,17 +312,13 @@ export type AuthenticationError =
  * Trigger local passkey authentication then verify the passkey in your Passlock vault.
  * Returns a code and id_token that can be exchanged/decoded in your backend.
  *
- * @param options
+ * @param options Authentication ceremony options and Passlock tenancy details.
  * @returns A Micro effect that resolves with {@link AuthenticationSuccess} or
  * fails with {@link AuthenticationError}.
  */
 export const authenticatePasskey = (
   options: AuthenticationOptions
-): Micro.Micro<
-  AuthenticationSuccess,
-  AuthenticationError,
-  Logger | AuthenticationHelper
-> => {
+): Micro.Micro<AuthenticationSuccess, AuthenticationError, Logger | AuthenticationHelper> => {
   const endpoint = makeEndpoint(options)
 
   const micro = Micro.gen(function* () {
@@ -376,21 +358,14 @@ export const authenticatePasskey = (
  *
  * @category Passkeys (other)
  */
-export const AuthenticationEvents = [
-  "optionsRequest",
-  "getCredential",
-  "verifyCredential",
-] as const
+export const AuthenticationEvents = ["optionsRequest", "getCredential", "verifyCredential"] as const
 
 /**
  * Authentication lifecycle event name.
  *
  * @category Passkeys (other)
  */
-export type AuthenticationEvent =
-  | "optionsRequest"
-  | "getCredential"
-  | "verifyCredential"
+export type AuthenticationEvent = "optionsRequest" | "getCredential" | "verifyCredential"
 
 /**
  * Allows you to hook into key lifecycle events.

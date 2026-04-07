@@ -1,6 +1,6 @@
 {
   "name": "@passlock/cli",
-  "version": "2.1.2",
+  "version": "2.1.4",
   "description": "CLI tooling support for the Passlock authentication framework",
   "keywords": [
     "passkey",
@@ -43,12 +43,12 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "build:clean": "$npm_execpath run clean:full && $npm_execpath run build",
+    "build:clean": "$npm_execpath run clean:all && $npm_execpath run build",
     "build:production": "$npm_execpath run build:clean && $npm_execpath run build:readme && $npm_execpath run replaceTokens && echo '' && publint",
     "build:readme": "VERSION=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/cli",
     "typedoc": "typedoc",
     "clean": "tsc -p tsconfig.build.json --clean",
-    "clean:full": "rimraf dist tsconfig.build.tsbuildinfo",
+    "clean:all": "rimraf dist tsconfig.build.tsbuildinfo",
     "prepublishOnly": "$npm_execpath run build:production",
     "replaceTokens": "VERSION=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/cli",
     "test:unit": "vitest --project unit run",
@@ -77,7 +77,6 @@
     "rimraf": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@10.33.0",

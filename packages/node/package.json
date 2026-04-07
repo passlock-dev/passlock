@@ -1,6 +1,6 @@
 {
   "name": "@passlock/node",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Passkey authentication for NodeJS backends",
   "keywords": [
     "passkey",
@@ -44,12 +44,12 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "build:clean": "$npm_execpath run clean:full && $npm_execpath run build",
+    "build:clean": "$npm_execpath run clean:all && $npm_execpath run build",
     "build:production": "$npm_execpath run build:clean && $npm_execpath run build:readme && $npm_execpath run replaceTokens && echo '' && publint",
     "build:readme": "VERSION=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/node",
     "typedoc": "typedoc",
     "clean": "tsc -p tsconfig.build.json --clean",
-    "clean:full": "rimraf dist tsconfig.build.tsbuildinfo",
+    "clean:all": "rimraf dist tsconfig.build.tsbuildinfo",
     "replaceTokens": "VERSION=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/node",
     "test:unit": "vitest --project unit run",
     "test:unit:watch": "vitest --project unit",
@@ -76,9 +76,8 @@
     "publint": "catalog:",
     "rimraf": "catalog:",
     "tsx": "catalog:",
-    "typedoc": "^0.28.18",
+    "typedoc": "^0.28.19",
     "typescript": "catalog:",
-    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@10.33.0",

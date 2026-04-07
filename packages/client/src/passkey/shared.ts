@@ -14,10 +14,7 @@ export type UserVerification = "discouraged" | "preferred" | "required"
  *
  * @see {@link https://w3c.github.io/webauthn/#enumdef-publickeycredentialhint WebAuthn specification}
  */
-export type PublicKeyCredentialHint =
-  | "hybrid"
-  | "security-key"
-  | "client-device"
+export type PublicKeyCredentialHint = "hybrid" | "security-key" | "client-device"
 
 /**
  * IANA-registered WebAuthn attestation statement format identifier.

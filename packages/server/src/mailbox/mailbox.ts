@@ -49,7 +49,7 @@ export interface MailboxChallengeMetadata {
  * @internal
  */
 export type _MailboxChallengeMetadata = satisfy<
-  typeof ChallengeSchemas.MailboxChallengeMetadata.Type,
+  typeof ChallengeSchemas.ChallengeMetadata.Type,
   MailboxChallengeMetadata
 >
 
@@ -76,17 +76,15 @@ export type MailboxChallengeDetails = {
  *
  * @category Mailbox
  */
-export const isMailboxChallengeDetails = (
-  payload: unknown
-): payload is MailboxChallengeDetails =>
-  Schema.is(ChallengeSchemas.MailboxChallengeDetails)(payload)
+export const isMailboxChallengeDetails = (payload: unknown): payload is MailboxChallengeDetails =>
+  Schema.is(ChallengeSchemas.ReadableChallenge)(payload)
 
 /**
  * needed to ensure the MailboxChallengeDetails === MailboxChallengeDetails.Type
  * @internal
  */
 export type _MailboxChallengeDetails = satisfy<
-  typeof ChallengeSchemas.MailboxChallengeDetails.Type,
+  typeof ChallengeSchemas.ReadableChallenge.Type,
   MailboxChallengeDetails
 >
 
@@ -136,17 +134,15 @@ export type MailboxChallenge = {
  *
  * @category Mailbox
  */
-export const isMailboxChallenge = (
-  payload: unknown
-): payload is MailboxChallenge =>
-  Schema.is(ChallengeSchemas.MailboxChallenge)(payload)
+export const isMailboxChallenge = (payload: unknown): payload is MailboxChallenge =>
+  Schema.is(ChallengeSchemas.CreatedChallenge)(payload)
 
 /**
  * needed to ensure the MailboxChallenge === MailboxChallenge.Type
  * @internal
  */
 export type _MailboxChallenge = satisfy<
-  typeof ChallengeSchemas.MailboxChallenge.Type,
+  typeof ChallengeSchemas.CreatedChallenge.Type,
   MailboxChallenge
 >
 
@@ -169,17 +165,15 @@ export type MailboxChallengeCreated = {
  *
  * @category Mailbox
  */
-export const isMailboxChallengeCreated = (
-  payload: unknown
-): payload is MailboxChallengeCreated =>
-  Schema.is(ChallengeSchemas.MailboxChallengeCreated)(payload)
+export const isMailboxChallengeCreated = (payload: unknown): payload is MailboxChallengeCreated =>
+  Schema.is(ChallengeSchemas.ChallengeCreated)(payload)
 
 /**
  * needed to ensure the MailboxChallengeCreated === MailboxChallengeCreated.Type
  * @internal
  */
 export type _MailboxChallengeCreated = satisfy<
-  typeof ChallengeSchemas.MailboxChallengeCreated.Type,
+  typeof ChallengeSchemas.ChallengeCreated.Type,
   MailboxChallengeCreated
 >
 
@@ -201,17 +195,15 @@ export type MailboxChallengeVerified = {
  *
  * @category Mailbox
  */
-export const isMailboxChallengeVerified = (
-  payload: unknown
-): payload is MailboxChallengeVerified =>
-  Schema.is(ChallengeSchemas.MailboxChallengeVerified)(payload)
+export const isMailboxChallengeVerified = (payload: unknown): payload is MailboxChallengeVerified =>
+  Schema.is(ChallengeSchemas.ChallengeVerified)(payload)
 
 /**
  * needed to ensure the MailboxChallengeVerified === MailboxChallengeVerified.Type
  * @internal
  */
 export type _MailboxChallengeVerified = satisfy<
-  typeof ChallengeSchemas.MailboxChallengeVerified.Type,
+  typeof ChallengeSchemas.ChallengeVerified.Type,
   MailboxChallengeVerified
 >
 
@@ -231,17 +223,15 @@ export type MailboxChallengeDeleted = {
  *
  * @category Mailbox
  */
-export const isMailboxChallengeDeleted = (
-  payload: unknown
-): payload is MailboxChallengeDeleted =>
-  Schema.is(ChallengeSchemas.MailboxChallengeDeleted)(payload)
+export const isMailboxChallengeDeleted = (payload: unknown): payload is MailboxChallengeDeleted =>
+  Schema.is(ChallengeSchemas.ChallengeDeleted)(payload)
 
 /**
  * needed to ensure the MailboxChallengeDeleted === MailboxChallengeDeleted.Type
  * @internal
  */
 export type _MailboxChallengeDeleted = satisfy<
-  typeof ChallengeSchemas.MailboxChallengeDeleted.Type,
+  typeof ChallengeSchemas.ChallengeDeleted.Type,
   MailboxChallengeDeleted
 >
 
@@ -249,10 +239,8 @@ const authorizationHeaders = (apiKey: string) => ({
   authorization: `Bearer ${apiKey}`,
 })
 
-const decodeResponseJson = <A, I, R>(
-  response: NetworkResponse,
-  schema: Schema.Schema<A, I, R>
-) => pipe(response.json, Effect.flatMap(Schema.decodeUnknown(schema)))
+const decodeResponseJson = <A, I, R>(response: NetworkResponse, schema: Schema.Schema<A, I, R>) =>
+  pipe(response.json, Effect.flatMap(Schema.decodeUnknown(schema)))
 
 /**
  * Options for creating a mailbox challenge.
@@ -319,22 +307,12 @@ export interface CreateMailboxChallengeOptions extends AuthenticatedOptions {
 export const createMailboxChallenge = (
   options: CreateMailboxChallengeOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<
-  MailboxChallengeCreated,
-  ForbiddenError | ChallengeRateLimitedError
-> =>
+): Effect.Effect<MailboxChallengeCreated, ForbiddenError | ChallengeRateLimitedError> =>
   pipe(
     Effect.gen(function* () {
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
-      const {
-        tenancyId,
-        email,
-        purpose,
-        userId,
-        metadata,
-        invalidateOthers,
-        skipRateLimit,
-      } = options
+      const { tenancyId, email, purpose, userId, metadata, invalidateOthers, skipRateLimit } =
+        options
 
       const url = new URL(`/${tenancyId}/challenges`, baseUrl)
       const response = yield* fetchNetwork(
@@ -346,18 +324,12 @@ export const createMailboxChallenge = (
         }
       )
 
-      const encoded:
-        | MailboxChallengeCreated
-        | ForbiddenError
-        | ChallengeRateLimitedError = yield* matchStatus(response, {
-        "2xx": (res) =>
-          decodeResponseJson(res, ChallengeSchemas.MailboxChallengeCreated),
-        orElse: (res) =>
-          decodeResponseJson(
-            res,
-            Schema.Union(ForbiddenError, ChallengeRateLimitedError)
-          ),
-      })
+      const encoded: MailboxChallengeCreated | ForbiddenError | ChallengeRateLimitedError =
+        yield* matchStatus(response, {
+          "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.ChallengeCreated),
+          orElse: (res) =>
+            decodeResponseJson(res, Schema.Union(ForbiddenError, ChallengeRateLimitedError)),
+        })
 
       return yield* pipe(
         Match.value(encoded),
@@ -414,16 +386,13 @@ export const getMailboxChallenge = (
         headers: authorizationHeaders(options.apiKey),
       })
 
-      const encoded: MailboxChallengeDetails | ForbiddenError | NotFoundError =
-        yield* matchStatus(response, {
-          "2xx": (res) =>
-            decodeResponseJson(res, ChallengeSchemas.MailboxChallengeDetails),
-          orElse: (res) =>
-            decodeResponseJson(
-              res,
-              Schema.Union(ForbiddenError, NotFoundError)
-            ),
-        })
+      const encoded: MailboxChallengeDetails | ForbiddenError | NotFoundError = yield* matchStatus(
+        response,
+        {
+          "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.ReadableChallenge),
+          orElse: (res) => decodeResponseJson(res, Schema.Union(ForbiddenError, NotFoundError)),
+        }
+      )
 
       return yield* pipe(
         Match.value(encoded),
@@ -515,8 +484,7 @@ export const verifyMailboxChallenge = (
         | InvalidChallengeCodeError
         | ChallengeExpiredError
         | ChallengeAttemptsExceededError = yield* matchStatus(response, {
-        "2xx": (res) =>
-          decodeResponseJson(res, ChallengeSchemas.MailboxChallengeVerified),
+        "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.ChallengeVerified),
         orElse: (res) =>
           decodeResponseJson(
             res,
@@ -537,9 +505,7 @@ export const verifyMailboxChallenge = (
         Match.tag("@error/InvalidChallenge", (err) => Effect.fail(err)),
         Match.tag("@error/InvalidChallengeCode", (err) => Effect.fail(err)),
         Match.tag("@error/ChallengeExpired", (err) => Effect.fail(err)),
-        Match.tag("@error/ChallengeAttemptsExceeded", (err) =>
-          Effect.fail(err)
-        ),
+        Match.tag("@error/ChallengeAttemptsExceeded", (err) => Effect.fail(err)),
         Match.exhaustive
       )
     }),
@@ -588,12 +554,10 @@ export const deleteMailboxChallenge = (
         headers: authorizationHeaders(options.apiKey),
       })
 
-      const encoded: MailboxChallengeDeleted | ForbiddenError =
-        yield* matchStatus(response, {
-          "2xx": (res) =>
-            decodeResponseJson(res, ChallengeSchemas.MailboxChallengeDeleted),
-          orElse: (res) => decodeResponseJson(res, ForbiddenError),
-        })
+      const encoded: MailboxChallengeDeleted | ForbiddenError = yield* matchStatus(response, {
+        "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.ChallengeDeleted),
+        orElse: (res) => decodeResponseJson(res, ForbiddenError),
+      })
 
       return yield* pipe(
         Match.value(encoded),

@@ -5,25 +5,16 @@ import {
   WebAuthnError,
 } from "@simplewebauthn/browser"
 import { Context, Micro, pipe } from "effect"
-import {
-  Endpoint,
-  makeEndpoint,
-  makeRequest,
-  TenancyId,
-} from "../../internal/index.js"
+import { Endpoint, makeEndpoint, makeRequest, TenancyId } from "../../internal/index.js"
 import type { NetworkError } from "../../internal/network.js"
 import { Logger } from "../../logger.js"
 import type { PasslockOptions } from "../../options.js"
 import type { Principal } from "../../principal"
-import {
-  DuplicatePasskeyError,
-  OtherPasskeyError,
-  PasskeyUnsupportedError,
-} from "../errors.js"
+import { DuplicatePasskeyError, OtherPasskeyError, PasskeyUnsupportedError } from "../errors.js"
 import type { Millis, UserVerification } from "../shared.js"
 
 /**
- * Passkey registration options
+ * Passkey registration options.
  *
  * @see {@link registerPasskey}
  *
@@ -33,7 +24,8 @@ export interface RegistrationOptions extends PasslockOptions {
   /**
    * Username associated with passkey. Will be shown by the device during
    * registration and subsequent authentication. The value used should be
-   * meaningful to the user e.g. jdoe or jdoe@gmail.com vs 5487546.
+   * meaningful to the user, for example `jdoe` or `jdoe@gmail.com` rather
+   * than `5487546`.
    *
    * You won't directly associate the username with an account in your
    * backend. Instead, you'll associate the passkey ID with an account.
@@ -45,7 +37,7 @@ export interface RegistrationOptions extends PasslockOptions {
   /**
    * May be shown by devices in place of the username e.g. given a username
    * of jdoe or jdoe@gmail.com a suitable display name might be "John Doe"
-   * or "John Doe (personal)". **note:** There's no guarantee browsers/devices
+   * or "John Doe (personal)". Note: there is no guarantee browsers/devices
    * will choose to display this property.
    */
   displayName?: string | undefined
@@ -73,7 +65,7 @@ export interface RegistrationOptions extends PasslockOptions {
   onEvent?: OnRegistrationEvent
 
   /**
-   * Abort the operation after N milliseconds
+   * Abort the ceremony after N milliseconds.
    */
   timeout?: Millis | undefined
 }
@@ -99,7 +91,7 @@ export class RegistrationHelper extends Context.Tag("RegistrationHelper")<
  * Represents the outcome of a successful passkey registration.
  * Submit the `code` and/or `id_token` to your backend, then either
  * exchange the code with the Passlock REST API or decode and
- * verify the id_token (JWT). **note:** The @passlock/server library
+ * verify the id_token (JWT). Note: the `@passlock/server` library
  * includes utilities for this.
  *
  * @see {@link isRegistrationSuccess}
@@ -138,14 +130,12 @@ export type RegistrationSuccess = {
  * Type guard to test for a {@link RegistrationSuccess}. Typically used to test the
  * object returned from {@link registerPasskey}
  *
- * @param payload
+ * @param payload Unknown value to test.
  * @returns `true` if the payload is a {@link RegistrationSuccess}.
  *
  * @category Passkeys (other)
  */
-export const isRegistrationSuccess = (
-  payload: unknown
-): payload is RegistrationSuccess => {
+export const isRegistrationSuccess = (payload: unknown): payload is RegistrationSuccess => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
 
@@ -159,9 +149,7 @@ export type OptionsResponse = {
   optionsJSON: PublicKeyCredentialCreationOptionsJSON
 }
 
-export const isOptionsResponse = (
-  payload: unknown
-): payload is OptionsResponse => {
+export const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
 
@@ -175,22 +163,14 @@ export const isOptionsResponse = (
   return true
 }
 
-export const fetchOptions = (
-  options: Omit<RegistrationOptions, keyof PasslockOptions>
-) =>
+export const fetchOptions = (options: Omit<RegistrationOptions, keyof PasslockOptions>) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
     const { endpoint } = yield* Micro.service(Endpoint)
     const { tenancyId } = yield* Micro.service(TenancyId)
 
-    const {
-      username,
-      displayName,
-      excludeCredentials,
-      userVerification,
-      timeout,
-      onEvent,
-    } = options
+    const { username, displayName, excludeCredentials, userVerification, timeout, onEvent } =
+      options
 
     const url = new URL(`${tenancyId}/passkey/registration/options`, endpoint)
 
@@ -263,10 +243,7 @@ export const verifyCredential = (
     const { endpoint } = yield* Micro.service(Endpoint)
     const { tenancyId } = yield* Micro.service(TenancyId)
 
-    const url = new URL(
-      `${tenancyId}/passkey/registration/verification`,
-      endpoint
-    )
+    const url = new URL(`${tenancyId}/passkey/registration/verification`, endpoint)
 
     onEvent?.("saveCredential")
     yield* logger.logInfo("Registering passkey in Passlock vault")
@@ -291,7 +268,7 @@ export const verifyCredential = (
   })
 
 /**
- * Potential errors associated with Passkey registration
+ * Potential errors associated with passkey registration.
  *
  * @category Passkeys (errors)
  */
@@ -305,17 +282,13 @@ export type RegistrationError =
  * Trigger local passkey registration then save the passkey in your Passlock vault.
  * Returns a code and id_token that can be exchanged/decoded in your backend.
  *
- * @param options
+ * @param options Registration ceremony options and Passlock tenancy details.
  * @returns A Micro effect that resolves with {@link RegistrationSuccess} or
  * fails with {@link RegistrationError}.
  */
 export const registerPasskey = (
   options: RegistrationOptions
-): Micro.Micro<
-  RegistrationSuccess,
-  RegistrationError,
-  Logger | RegistrationHelper
-> => {
+): Micro.Micro<RegistrationSuccess, RegistrationError, Logger | RegistrationHelper> => {
   const endpoint = makeEndpoint(options)
 
   const effect = Micro.gen(function* () {
@@ -340,21 +313,14 @@ export const registerPasskey = (
  *
  * @category Passkeys (other)
  */
-export const RegistrationEvents = [
-  "optionsRequest",
-  "createCredential",
-  "saveCredential",
-] as const
+export const RegistrationEvents = ["optionsRequest", "createCredential", "saveCredential"] as const
 
 /**
  * Registration lifecycle event name.
  *
  * @category Passkeys (other)
  */
-export type RegistrationEvent =
-  | "optionsRequest"
-  | "createCredential"
-  | "saveCredential"
+export type RegistrationEvent = "optionsRequest" | "createCredential" | "saveCredential"
 
 /**
  * Callback invoked when registration reaches a lifecycle event.

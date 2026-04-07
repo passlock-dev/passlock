@@ -1,5 +1,5 @@
 /**
- * _safe_ functions i.e. functions that return result envelopes over the original
+ * _safe_ functions, i.e. functions that return result envelopes over the original
  * tagged success and error payloads. Use `result.success` or `result.failure`
  * to branch between success and error outcomes. Existing type guards and `_tag`
  * checks remain supported.
@@ -94,7 +94,7 @@ import {
  * Send either value to your backend for verification. See
  * [register a passkey](https://passlock.dev/passkeys/registration/) in the documentation.
  *
- * @param options
+ * @param options Registration ceremony options and Passlock tenancy details.
  *
  * @returns A {@link PasslockClient} whose success branch contains a {@link RegistrationSuccess}
  * and whose error branch contains a {@link RegistrationError}. Existing
@@ -121,8 +121,8 @@ import {
  * } else if (result.failure && result.error._tag === "@error/OtherPasskey") {
  *   // ^^ narrowing the result using the _tag
  *   console.log(result.error.message);
- * } else {
- *  ...
+ * } else if (result.failure) {
+ *   console.log(result.error.message);
  * }
  *
  * @category Passkeys (core)
@@ -147,7 +147,7 @@ export const registerPasskey = async (
  * Send either value to your backend for verification. See
  * [authenticate a passkey](https://passlock.dev/passkeys/authentication/) in the documentation.
  *
- * @param options
+ * @param options Authentication ceremony options and Passlock tenancy details.
  *
  * @returns A {@link PasslockClient} whose success branch contains an
  * {@link AuthenticationSuccess} and whose error branch contains an
@@ -230,11 +230,8 @@ export const authenticatePasskey = (
  *
  * if (result.success) {
  *   console.log("passkey update requested");
- * } else if (result.failure && isUpdateError(result.error)) {
- *   // narrowed to an UpdateError type
- *   console.log(result.error.code);
  * } else {
- *   console.log("unable to update passkey");
+ *   console.log(result.error.code);
  * }
  *
  * @category Passkeys (core)
@@ -386,20 +383,14 @@ export const deleteUserPasskeys = (
  *
  * if (result.success) {
  *   console.log("passkey removal requested");
- * } else if (result.failure && isDeleteError(result.error)) {
- *   // narrowed to a DeleteError type
- *   console.log(result.error.code);
  * } else {
- *   console.log("unable to delete passkey");
+ *   console.log(result.error.code);
  * }
  *
  * @category Passkeys (core)
  */
 export const deletePasskey = (
-  options:
-    | DeletePasskeyOptions
-    | DeleteCredentialOptions
-    | OrphanedPasskeyError,
+  options: DeletePasskeyOptions | DeleteCredentialOptions | OrphanedPasskeyError,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<PasslockClient<DeleteSuccess, DeleteError>> => {
@@ -435,11 +426,8 @@ export const deletePasskey = (
  *
  * if (result.success) {
  *   console.log("accepted credentials sync requested");
- * } else if (result.failure && isPruningError(result.error)) {
- *   // narrowed to a PruningError type
- *   console.log(result.error.code);
  * } else {
- *   console.log("unable to prune passkeys");
+ *   console.log(result.error.code);
  * }
  *
  * @category Passkeys (core)
@@ -462,8 +450,7 @@ export const prunePasskeys = (
  *
  * @category Passkeys (other)
  */
-export const isPasskeyDeleteSupport = () =>
-  pipe(isPasskeyDeleteSupportM, Micro.runSync)
+export const isPasskeyDeleteSupport = () => pipe(isPasskeyDeleteSupportM, Micro.runSync)
 
 /**
  * Does the local device support programmatic passkey pruning?
@@ -472,8 +459,7 @@ export const isPasskeyDeleteSupport = () =>
  *
  * @category Passkeys (other)
  */
-export const isPasskeyPruningSupport = () =>
-  pipe(isPasskeyPruningSupportM, Micro.runSync)
+export const isPasskeyPruningSupport = () => pipe(isPasskeyPruningSupportM, Micro.runSync)
 
 /**
  * Does the local device support programmatic passkey updates?
@@ -482,8 +468,7 @@ export const isPasskeyPruningSupport = () =>
  *
  * @category Passkeys (other)
  */
-export const isPasskeyUpdateSupport = () =>
-  pipe(isPasskeyUpdateSupportM, Micro.runSync)
+export const isPasskeyUpdateSupport = () => pipe(isPasskeyUpdateSupportM, Micro.runSync)
 
 /* Re-exports */
 

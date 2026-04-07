@@ -1,10 +1,12 @@
 import type { PageServerLoad } from './$types';
 
-import { createOrRefreshLoginChallenge, getPendingLoginChallenge } from '$lib/server/challenges.js';
+import {
+	createOrRefreshLoginChallenge,
+	getPendingLoginChallenge
+} from '$lib/server/mailbox/loginChallenge.js';
 import { getUserByEmail } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { getSignupLoginCookie, setSignupLoginCookie } from '$lib/server/cookies.js';
-import { createChallengeRateLimitView } from '$lib/server/passlock.js';
 import {
 	getLoginEmailQueryState,
 	toLoginLocation,
@@ -14,13 +16,12 @@ import { redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
 
 const redirectToLoginRateLimited = (email: string, retryAfterSeconds: number): never => {
-	const rateLimit = createChallengeRateLimitView(retryAfterSeconds);
 	redirect(
 		303,
 		toLoginLocation({
 			username: email,
 			reason: 'challenge-rate-limited',
-			retryAtMs: rateLimit.retryAtMs
+			retryAfterSeconds
 		})
 	);
 };
@@ -62,8 +63,7 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 
 	// Store the secret server-side in a cookie; send the code via email.
 	await sendCodeChallengeEmail({
-		email: result.challenge.email,
-		firstName: result.challenge.givenName ?? 'there',
+		recipientEmail: result.challenge.email,
 		code: result.code,
 		message: result.message
 	});

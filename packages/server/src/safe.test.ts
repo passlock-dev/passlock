@@ -95,9 +95,7 @@ describe("safe result envelopes", () => {
       )
     )
 
-    const { createMailboxChallenge, isMailboxChallengeCreated } = await import(
-      "./safe.js"
-    )
+    const { createMailboxChallenge, isMailboxChallengeCreated } = await import("./safe.js")
     const result = await createMailboxChallenge({
       apiKey,
       email: "user@example.com",
@@ -134,8 +132,7 @@ describe("safe result envelopes", () => {
       )
     )
 
-    const { createMailboxChallenge, isChallengeRateLimitedError } =
-      await import("./safe.js")
+    const { createMailboxChallenge, isChallengeRateLimitedError } = await import("./safe.js")
     const result = await createMailboxChallenge({
       apiKey,
       email: "user@example.com",
@@ -208,8 +205,7 @@ describe("safe result envelopes", () => {
       )
     )
 
-    const { isInvalidChallengeCodeError, verifyMailboxChallenge } =
-      await import("./safe.js")
+    const { isInvalidChallengeCodeError, verifyMailboxChallenge } = await import("./safe.js")
     const result = await verifyMailboxChallenge({
       apiKey,
       challengeId,
@@ -277,9 +273,7 @@ describe("safe result envelopes", () => {
       )
     )
 
-    const { getMailboxChallenge, isMailboxChallengeDetails } = await import(
-      "./safe.js"
-    )
+    const { getMailboxChallenge, isMailboxChallengeDetails } = await import("./safe.js")
     const result = await getMailboxChallenge({
       apiKey,
       challengeId,

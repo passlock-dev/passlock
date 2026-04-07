@@ -62,7 +62,7 @@ export const getLoginQueryState = (url: URL) => {
 	return {
 		username: url.searchParams.get('username') ?? undefined,
 		reason: isLoginQueryReason(reasonValue) ? reasonValue : undefined,
-		retryAtMs: getOptionalNumber(url.searchParams.get('retryAtMs'))
+		retryAfterSeconds: getOptionalNumber(url.searchParams.get('retryAfterSeconds'))
 	};
 };
 
@@ -74,7 +74,7 @@ export const toLoginLocation = (
 	state: {
 		username?: string;
 		reason?: LoginQueryReason;
-		retryAtMs?: number;
+		retryAfterSeconds?: number;
 	} = {}
 ): LoginLocation => createLocation(loginPath, state);
 

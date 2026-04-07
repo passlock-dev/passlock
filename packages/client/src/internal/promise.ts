@@ -6,9 +6,9 @@ import { type Result, toErrResult, toOkResult } from "./result.js"
  * Run a Micro and return a result envelope containing either
  * the successful value or the expected error value.
  *
- * Note: function could still throw for an unexpected error.
+ * Note: this function can still throw for an unexpected runtime error.
  *
- * @param micro
+ * @param micro Micro effect to execute.
  * @returns Promise resolving to a result envelope.
  */
 export const runToPromise = async <A extends object, E extends object>(
@@ -23,13 +23,12 @@ export const runToPromise = async <A extends object, E extends object>(
 }
 
 /**
- * Run a Micro and return a success or throw an error
- * @param micro
+ * Run a Micro and return the success value or throw the failure.
+ *
+ * @param micro Micro effect to execute.
  * @returns Promise resolving to the success value.
  */
-export const runToPromiseUnsafe = async <A, E>(
-  micro: Micro.Micro<A, E>
-): Promise<A> => {
+export const runToPromiseUnsafe = async <A, E>(micro: Micro.Micro<A, E>): Promise<A> => {
   const exit = await Micro.runPromiseExit(micro)
 
   if (Micro.exitIsSuccess(exit)) return exit.value

@@ -52,23 +52,38 @@ export enum LogLevel {
 
 /**
  * DOM event emitted for a single log entry.
+ *
+ * Listen for `PasslockLogEvent` on `window` when using the event-based logger.
  */
 export class LogEvent extends Event {
   readonly #message: string
   readonly #level: LogLevel
 
+  /**
+   * DOM event name used for Passlock log events.
+   */
   static name = "PasslockLogEvent"
 
+  /**
+   * @param message Human-readable log message.
+   * @param level Severity level for the log entry.
+   */
   constructor(message: string, level: LogLevel) {
     super(LogEvent.name)
     this.#message = message
     this.#level = level
   }
 
+  /**
+   * Log message carried by the event.
+   */
   get message(): string {
     return this.#message
   }
 
+  /**
+   * Severity level carried by the event.
+   */
   get level(): LogLevel {
     return this.#level
   }

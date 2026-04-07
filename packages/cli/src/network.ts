@@ -24,10 +24,7 @@ export interface NetworkResponse {
 /**
  * Accepted request header input formats.
  */
-export type NetworkHeaders =
-  | Headers
-  | Readonly<Record<string, string>>
-  | Array<[string, string]>
+export type NetworkHeaders = Headers | Readonly<Record<string, string>> | Array<[string, string]>
 
 /**
  * Optional request options for {@link fetchNetwork}.
@@ -42,10 +39,7 @@ export interface FetchNetworkOptions {
  * Supply this service with `Effect.provide` / layers to swap fetch behavior
  * in tests or alternate runtimes.
  */
-export class NetworkFetch extends Context.Tag("NetworkFetch")<
-  NetworkFetch,
-  typeof fetch
->() {}
+export class NetworkFetch extends Context.Tag("NetworkFetch")<NetworkFetch, typeof fetch>() {}
 
 /**
  * Default live fetch layer backed by `globalThis.fetch`.
@@ -76,10 +70,7 @@ type HandlerEffect<
     : never
   : never
 
-type MatchStatusEffectUnion<
-  Cases extends MatchStatusCases<Resp>,
-  Resp extends NetworkResponse,
-> =
+type MatchStatusEffectUnion<Cases extends MatchStatusCases<Resp>, Resp extends NetworkResponse> =
   | HandlerEffect<Cases, Resp, "2xx">
   | HandlerEffect<Cases, Resp, "3xx">
   | HandlerEffect<Cases, Resp, "4xx">
@@ -89,18 +80,13 @@ type MatchStatusEffectUnion<
 type MatchStatusResolvedHandler<
   Cases extends MatchStatusCases<Resp>,
   Resp extends NetworkResponse,
-> = NonNullable<
-  Cases["2xx"] | Cases["3xx"] | Cases["4xx"] | Cases["5xx"] | Cases["orElse"]
->
+> = NonNullable<Cases["2xx"] | Cases["3xx"] | Cases["4xx"] | Cases["5xx"] | Cases["orElse"]>
 
-type EffectSuccess<T> =
-  T extends Effect.Effect<infer A, unknown, unknown> ? A : never
+type EffectSuccess<T> = T extends Effect.Effect<infer A, unknown, unknown> ? A : never
 
-type EffectError<T> =
-  T extends Effect.Effect<unknown, infer E, unknown> ? E : never
+type EffectError<T> = T extends Effect.Effect<unknown, infer E, unknown> ? E : never
 
-type EffectContext<T> =
-  T extends Effect.Effect<unknown, unknown, infer R> ? R : never
+type EffectContext<T> = T extends Effect.Effect<unknown, unknown, infer R> ? R : never
 
 /**
  * Handlers used by {@link matchStatus}.
@@ -110,9 +96,7 @@ type EffectContext<T> =
  * - Specific status family handlers are optional and fall back to `orElse`
  *   when missing.
  */
-export interface MatchStatusCases<
-  Resp extends NetworkResponse = NetworkResponse,
-> {
+export interface MatchStatusCases<Resp extends NetworkResponse = NetworkResponse> {
   readonly "2xx"?: MatchStatusHandler<Resp>
   readonly "3xx"?: MatchStatusHandler<Resp>
   readonly "4xx"?: MatchStatusHandler<Resp>
@@ -128,9 +112,7 @@ type RequestContext = {
 /**
  * Raised when the underlying fetch call fails before a response is received.
  */
-export class NetworkRequestError extends Data.TaggedError(
-  "@error/NetworkRequest"
-)<{
+export class NetworkRequestError extends Data.TaggedError("@error/NetworkRequest")<{
   readonly method: NetworkMethod
   readonly url: string
   readonly message: string
@@ -139,9 +121,7 @@ export class NetworkRequestError extends Data.TaggedError(
 /**
  * Raised when request payload serialization fails.
  */
-export class NetworkPayloadError extends Data.TaggedError(
-  "@error/NetworkPayload"
-)<{
+export class NetworkPayloadError extends Data.TaggedError("@error/NetworkPayload")<{
   readonly method: NetworkMethod
   readonly message: string
 }> {}
@@ -149,9 +129,7 @@ export class NetworkPayloadError extends Data.TaggedError(
 /**
  * Raised when response body parsing fails.
  */
-export class NetworkResponseError extends Data.TaggedError(
-  "@error/NetworkResponse"
-)<{
+export class NetworkResponseError extends Data.TaggedError("@error/NetworkResponse")<{
   readonly method: NetworkMethod
   readonly url: string
   readonly message: string
@@ -165,9 +143,7 @@ const formatMessage = (cause: unknown, fallback: string): string =>
  *
  * Returns `undefined` for codes outside the 2xx-5xx families.
  */
-export const statusToCase = (
-  status: number
-): NetworkResponseStatusCase | undefined => {
+export const statusToCase = (status: number): NetworkResponseStatusCase | undefined => {
   if (status >= 200 && status <= 299) return "2xx"
   if (status >= 300 && status <= 399) return "3xx"
   if (status >= 400 && status <= 499) return "4xx"
@@ -176,16 +152,12 @@ export const statusToCase = (
   return undefined
 }
 
-const resolveStatusHandler = <
-  Resp extends NetworkResponse,
-  Cases extends MatchStatusCases<Resp>,
->(
+const resolveStatusHandler = <Resp extends NetworkResponse, Cases extends MatchStatusCases<Resp>>(
   response: Resp,
   cases: Cases
 ): MatchStatusResolvedHandler<Cases, Resp> => {
   const statusCase = statusToCase(response.status)
-  if (!statusCase)
-    return cases.orElse as MatchStatusResolvedHandler<Cases, Resp>
+  if (!statusCase) return cases.orElse as MatchStatusResolvedHandler<Cases, Resp>
 
   const handler = cases[statusCase]
   return (handler ?? cases.orElse) as MatchStatusResolvedHandler<Cases, Resp>
@@ -199,10 +171,7 @@ const resolveStatusHandler = <
  * - `orElse` is always used as a fallback when no specific family handler exists.
  * - The returned effect type is inferred as the union of all handler effects.
  */
-export const matchStatus = <
-  Resp extends NetworkResponse,
-  Cases extends MatchStatusCases<Resp>,
->(
+export const matchStatus = <Resp extends NetworkResponse, Cases extends MatchStatusCases<Resp>>(
   response: Resp,
   cases: Cases
 ): Effect.Effect<
@@ -266,9 +235,8 @@ const serializePayload = (
 /**
  * Convert `Headers` into a readonly plain record.
  */
-export const headersToRecord = (
-  headers: Headers
-): Readonly<Record<string, string>> => Object.fromEntries(headers.entries())
+export const headersToRecord = (headers: Headers): Readonly<Record<string, string>> =>
+  Object.fromEntries(headers.entries())
 
 const normalizeHeaders = (headers: NetworkHeaders): Headers => {
   if (headers instanceof Headers) {
@@ -313,10 +281,7 @@ const makeJsonEffect = (
   })
 }
 
-const toNetworkResponse = (
-  response: Response,
-  context: RequestContext
-): NetworkResponse => ({
+const toNetworkResponse = (response: Response, context: RequestContext): NetworkResponse => ({
   status: response.status,
   statusText: response.statusText,
   statusMessage: response.statusText,
@@ -338,11 +303,7 @@ export const fetchNetwork = (
   method: NetworkMethod,
   payload?: unknown,
   options?: FetchNetworkOptions
-): Effect.Effect<
-  NetworkResponse,
-  NetworkRequestError | NetworkPayloadError,
-  NetworkFetch
-> =>
+): Effect.Effect<NetworkResponse, NetworkRequestError | NetworkPayloadError, NetworkFetch> =>
   Effect.gen(function* () {
     const requestUrl = String(url)
     const context: RequestContext = { method, url: requestUrl }
@@ -353,10 +314,7 @@ export const fetchNetwork = (
       ? headersToRecord(normalizeHeaders(options.headers))
       : {}
 
-    const requestHeaders = mergeHeaders(
-      serialized?.headers ?? {},
-      providedHeaders
-    )
+    const requestHeaders = mergeHeaders(serialized?.headers ?? {}, providedHeaders)
     const hasHeaders = Object.keys(requestHeaders).length > 0
 
     const response = yield* Effect.tryPromise({

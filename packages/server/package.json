@@ -1,6 +1,6 @@
 {
   "name": "@passlock/server",
-  "version": "2.4.0",
+  "version": "2.4.2",
   "description": "Passkey authentication library for Fetch capable backends (Node, Bun, Vercel, Cloudflare workers etc.)",
   "keywords": [
     "passkey",
@@ -36,11 +36,6 @@
       "types": "./dist/safe.d.ts",
       "import": "./dist/safe.js",
       "default": "./dist/safe.js"
-    },
-    "./effect": {
-      "types": "./dist/effect.d.ts",
-      "import": "./dist/effect.js",
-      "default": "./dist/effect.js"
     }
   },
   "module": "./dist/index.js",
@@ -52,12 +47,12 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "build:clean": "$npm_execpath run clean:full && $npm_execpath run build",
+    "build:clean": "$npm_execpath run clean:all && $npm_execpath run build",
     "build:production": "$npm_execpath run build:clean && $npm_execpath run build:readme && $npm_execpath run replaceTokens && echo '' && publint",
     "build:readme": "VERSION=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/server",
     "typedoc": "typedoc",
     "clean": "tsc -p tsconfig.build.json --clean",
-    "clean:full": "rimraf dist tsconfig.build.tsbuildinfo",
+    "clean:all": "rimraf dist tsconfig.build.tsbuildinfo",
     "replaceTokens": "VERSION=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/server",
     "test:unit": "vitest --project unit run",
     "test:unit:watch": "vitest --project unit",
@@ -83,9 +78,8 @@
     "publint": "catalog:",
     "rimraf": "catalog:",
     "tsx": "catalog:",
-    "typedoc": "^0.28.18",
+    "typedoc": "^0.28.19",
     "typescript": "catalog:",
-    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@10.33.0",

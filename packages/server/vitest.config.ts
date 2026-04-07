@@ -1,7 +1,15 @@
 // vitest.config.ts
 
-import tsconfigPaths from "vite-tsconfig-paths"
+import { fileURLToPath, URL } from "node:url"
 import { defineConfig } from "vitest/config"
+
+const resolveAliases = {
+  resolve: {
+    alias: {
+      "@test": fileURLToPath(new URL("./test", import.meta.url)),
+    },
+  },
+} as const
 
 export default defineConfig({
   test: {
@@ -13,14 +21,14 @@ export default defineConfig({
           include: ["src/**/*.test.ts"],
           name: "unit",
         },
-        plugins: [tsconfigPaths()],
+        ...resolveAliases,
       },
       {
         test: {
           include: ["src/**/*.it.test.ts"],
           name: "integration",
         },
-        plugins: [tsconfigPaths()],
+        ...resolveAliases,
       },
     ],
   },

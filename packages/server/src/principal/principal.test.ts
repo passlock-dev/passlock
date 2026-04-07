@@ -54,9 +54,7 @@ describe(exchangeCode.name, () => {
         expect(principal.metadata.ipAddress).toEqual("127.0.0.1")
         expect(principal.metadata.userAgent).toEqual("Safari")
 
-        expect(invokedUrl).toEqual(
-          `https://api.passlock.dev/${tenancyId}/principal/${code}`
-        )
+        expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/principal/${code}`)
 
         expect(method).toEqual("GET")
       })
@@ -72,16 +70,11 @@ describe(exchangeCode.name, () => {
         }
 
         const testFetch = vi.fn<typeof fetch>(() =>
-          Promise.resolve(
-            new Response(JSON.stringify(errorResponse), { status: 404 })
-          )
+          Promise.resolve(new Response(JSON.stringify(errorResponse), { status: 404 }))
         )
 
         const error = yield* pipe(
-          exchangeCode(
-            { code, apiKey, tenancyId },
-            Layer.succeed(NetworkFetch, testFetch)
-          ),
+          exchangeCode({ code, apiKey, tenancyId }, Layer.succeed(NetworkFetch, testFetch)),
           Effect.flip
         )
 
@@ -103,14 +96,9 @@ describe(exchangeCode.name, () => {
         )
       })
 
-      yield* exchangeCode(
-        { code, apiKey, tenancyId },
-        Layer.succeed(NetworkFetch, testFetch)
-      )
+      yield* exchangeCode({ code, apiKey, tenancyId }, Layer.succeed(NetworkFetch, testFetch))
 
-      expect(invokedUrl).toEqual(
-        `https://api.passlock.dev/${tenancyId}/principal/${code}`
-      )
+      expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/principal/${code}`)
     })
   )
 
@@ -130,10 +118,7 @@ describe(exchangeCode.name, () => {
         )
       })
 
-      yield* exchangeCode(
-        { code, apiKey, tenancyId },
-        Layer.succeed(NetworkFetch, testFetch)
-      )
+      yield* exchangeCode({ code, apiKey, tenancyId }, Layer.succeed(NetworkFetch, testFetch))
 
       expect(authorizationHeader).toEqual("Bearer dummyApiKey")
     })
@@ -147,16 +132,11 @@ describe(exchangeCode.name, () => {
       }
 
       const testFetch = vi.fn<typeof fetch>(() =>
-        Promise.resolve(
-          new Response(JSON.stringify(forbiddenResponse), { status: 403 })
-        )
+        Promise.resolve(new Response(JSON.stringify(forbiddenResponse), { status: 403 }))
       )
 
       const error = yield* pipe(
-        exchangeCode(
-          { code, apiKey, tenancyId },
-          Layer.succeed(NetworkFetch, testFetch)
-        ),
+        exchangeCode({ code, apiKey, tenancyId }, Layer.succeed(NetworkFetch, testFetch)),
         Effect.flip
       )
 
@@ -172,9 +152,7 @@ describe(verifyIdToken.name, () => {
         jose.generateKeyPair("RS256")
       )
 
-      const publicJwk = yield* Effect.tryPromise(() =>
-        jose.exportJWK(publicKey)
-      )
+      const publicJwk = yield* Effect.tryPromise(() => jose.exportJWK(publicKey))
       publicJwk.kid = "test-kid"
       publicJwk.alg = "RS256"
       const jwks = { keys: [publicJwk] }

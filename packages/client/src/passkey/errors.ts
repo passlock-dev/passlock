@@ -4,9 +4,7 @@
  *
  * @category Passkeys (errors)
  */
-export const isPasskeyUnsupportedError = (
-  payload: unknown
-): payload is PasskeyUnsupportedError => {
+export const isPasskeyUnsupportedError = (payload: unknown): payload is PasskeyUnsupportedError => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
   return payload instanceof PasskeyUnsupportedError
@@ -37,9 +35,7 @@ export class PasskeyUnsupportedError extends Error {
  *
  * @category Passkeys (errors)
  */
-export const isOrphanedPasskeyError = (
-  payload: unknown
-): payload is OrphanedPasskeyError => {
+export const isOrphanedPasskeyError = (payload: unknown): payload is OrphanedPasskeyError => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
   return payload instanceof OrphanedPasskeyError
@@ -98,9 +94,7 @@ export type ErrorCode =
  *
  * @category Passkeys (errors)
  */
-export const isOtherPasskeyError = (
-  payload: unknown
-): payload is OtherPasskeyError => {
+export const isOtherPasskeyError = (payload: unknown): payload is OtherPasskeyError => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
   return payload instanceof OtherPasskeyError
@@ -139,9 +133,7 @@ export class OtherPasskeyError extends Error {
  *
  * @category Passkeys (errors)
  */
-export const isDuplicatePasskeyError = (
-  payload: unknown
-): payload is DuplicatePasskeyError => {
+export const isDuplicatePasskeyError = (payload: unknown): payload is DuplicatePasskeyError => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
   return payload instanceof DuplicatePasskeyError
@@ -182,10 +174,7 @@ export const isDeleteError = (payload: unknown): payload is DeleteError => {
 export class DeleteError extends Error {
   readonly _tag = "@error/Delete" as const
   readonly message: string
-  readonly code:
-    | "PASSKEY_DELETION_UNSUPPORTED"
-    | "PASSKEY_NOT_FOUND"
-    | "OTHER_ERROR"
+  readonly code: "PASSKEY_DELETION_UNSUPPORTED" | "PASSKEY_NOT_FOUND" | "OTHER_ERROR"
 
   constructor({
     message,

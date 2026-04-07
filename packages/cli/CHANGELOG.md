@@ -1,5 +1,15 @@
 # @passlock/cli
 
+## 2.1.4
+### Patch Changes
+
+- 503bf6d: Upgrade dependencies
+
+## 2.1.3
+### Patch Changes
+
+- Upgrade dependencies
+
 ## 2.1.2
 ### Patch Changes
 

@@ -61,11 +61,7 @@ describe(fetchOptions.name, () => {
     it("should send it to the backend", async () => {
       fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
 
-      await pipe(
-        fetchOptions({ username }),
-        Micro.provideContext(ctx),
-        Micro.runPromise
-      )
+      await pipe(fetchOptions({ username }), Micro.provideContext(ctx), Micro.runPromise)
 
       expect(fetchMock).toHavePosted(expectedRoute, { body: { username } })
     })
@@ -128,11 +124,7 @@ describe(fetchOptions.name, () => {
 
     const onEvent = vi.fn()
 
-    await pipe(
-      fetchOptions({ onEvent, username }),
-      Micro.provideContext(ctx),
-      Micro.runPromise
-    )
+    await pipe(fetchOptions({ onEvent, username }), Micro.provideContext(ctx), Micro.runPromise)
 
     expect(onEvent).toHaveBeenCalledWith("optionsRequest")
   })
@@ -201,11 +193,7 @@ describe(verifyCredential.name, () => {
       fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
 
       const result = await pipe(
-        verifyCredential(
-          "dummySessionToken",
-          {} as RegistrationResponseJSON,
-          {}
-        ),
+        verifyCredential("dummySessionToken", {} as RegistrationResponseJSON, {}),
         Micro.provideContext(ctx),
         Micro.runPromise
       )
@@ -254,11 +242,7 @@ describe(registerPasskey.name, () => {
     fetchMock.mockGlobal().postOnce(optionsRoute, optionsResponse)
     fetchMock.mockGlobal().postOnce(verificationRoute, verificationResponse)
 
-    pipe(
-      registerPasskey({ tenancyId, username }),
-      Micro.provideContext(ctx),
-      Micro.runPromise
-    )
+    pipe(registerPasskey({ tenancyId, username }), Micro.provideContext(ctx), Micro.runPromise)
   })
 })
 

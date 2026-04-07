@@ -2,15 +2,13 @@
   "compilerOptions": {
     // Platform & modules
     "target": "ES2022", // Node 20+ supports this natively
-    "lib": ["ES2024"], // built-ins/Promise APIs, etc.
+    "lib": ["ES2022"], // built-ins/Promise APIs, etc.
     "module": "NodeNext", // ESM for Node
     "moduleResolution": "NodeNext",
     "moduleDetection": "force",
 
     // ESM/CJS interop
     "verbatimModuleSyntax": true, // preserves import/export as written
-    "allowSyntheticDefaultImports": true,
-    // leave "esModuleInterop" false when using verbatimModuleSyntax
 
     // Strictness & safety
     "strict": true,
@@ -22,7 +20,6 @@
 
     // QoL
     "resolveJsonModule": true,
-    "preserveSymlinks": false,
 
     "types": ["node"],
 

@@ -106,10 +106,7 @@ import {
   updatePasskey as updatePasskeyE,
   updatePasskeyUsernames as updatePasskeyUsernamesE,
 } from "./passkey/passkey.js"
-import type {
-  ExchangeCodeOptions,
-  VerifyIdTokenOptions,
-} from "./principal/principal.js"
+import type { ExchangeCodeOptions, VerifyIdTokenOptions } from "./principal/principal.js"
 import {
   exchangeCode as exchangeCodeE,
   verifyIdToken as verifyIdTokenE,
@@ -152,9 +149,8 @@ const runSafe = <A extends object, E extends object>(
  */
 export const createMailboxChallenge = (
   options: CreateMailboxChallengeOptions
-): Promise<
-  Result<MailboxChallengeCreated, ForbiddenError | ChallengeRateLimitedError>
-> => runSafe(createMailboxChallengeE(options))
+): Promise<Result<MailboxChallengeCreated, ForbiddenError | ChallengeRateLimitedError>> =>
+  runSafe(createMailboxChallengeE(options))
 
 /**
  * Fetch a mailbox one-time-code challenge.
@@ -235,8 +231,7 @@ export const deleteMailboxChallenge = (
  */
 export const assignUser = (
   request: AssignUserOptions
-): Promise<Result<Passkey, NotFoundError | ForbiddenError>> =>
-  runSafe(assignUserE(request))
+): Promise<Result<Passkey, NotFoundError | ForbiddenError>> => runSafe(assignUserE(request))
 
 /**
  * Update a passkey's custom user ID and/or username metadata.
@@ -256,8 +251,7 @@ export const assignUser = (
  */
 export const updatePasskey = (
   request: UpdatePasskeyOptions
-): Promise<Result<Passkey, NotFoundError | ForbiddenError>> =>
-  runSafe(updatePasskeyE(request))
+): Promise<Result<Passkey, NotFoundError | ForbiddenError>> => runSafe(updatePasskeyE(request))
 
 /**
  * Update the stored username metadata for all passkeys belonging to a given
@@ -276,10 +270,9 @@ export const updatePasskey = (
  *
  * @param request
  * @returns A promise resolving to a {@link Result}.
- * The success branch contains an {@link UpdatedCredentials} payload, whose
- * `credentials` array can be passed into the client's `updatePasskeyUsernames` function.
- * The error branch contains
- * an API error.
+ * The success branch contains a user-details update payload whose
+ * `credentials` array can be passed into the client's
+ * `updatePasskeyUsernames` function. The error branch contains an API error.
  *
  * @category Passkeys
  */
@@ -309,7 +302,8 @@ export const updatePasskeyUsernames = (
  *
  * @param options
  * @returns A promise resolving to a {@link Result} whose success branch contains
- * the deleted credential and whose error branch contains an API error.
+ * the deleted credential identifiers and whose error branch contains an API
+ * error.
  *
  * @category Passkeys
  */
@@ -349,8 +343,7 @@ export const deleteUserPasskeys = (
  */
 export const getPasskey = (
   options: GetPasskeyOptions
-): Promise<Result<Passkey, ForbiddenError | NotFoundError>> =>
-  runSafe(getPasskeyE(options))
+): Promise<Result<Passkey, ForbiddenError | NotFoundError>> => runSafe(getPasskeyE(options))
 
 /**
  * List passkeys for the given tenancy. Note: This could return a cursor.
@@ -364,14 +357,21 @@ export const getPasskey = (
  */
 export const listPasskeys = (
   options: ListPasskeyOptions
-): Promise<Result<FindAllPasskeys, ForbiddenError>> =>
-  runSafe(listPasskeysE(options))
+): Promise<Result<FindAllPasskeys, ForbiddenError>> => runSafe(listPasskeysE(options))
 
 /**
- * The @passlock/client library generates codes, which you should send to
- * your backend. Use this function to exchange the code for details about
- * the registration or authentication operation. **Note:** a code is valid
- * for 5 minutes.
+ * The `@passlock/client` library generates codes, which you will send to
+ * your backend for verification.
+ *
+ * Use this function to exchange the code for details about
+ * the registration or authentication operation.
+ *
+ * During code verification you can also assign a `userId`. This is useful
+ * during passkey verification as you can register a passkey on the user's
+ * device, verify the passkey is authentic and if so, assign your own `userId`
+ * to it.
+ *
+ * **Note:** a code is valid for 5 minutes.
  *
  * @see {@link ExtendedPrincipal}
  *
@@ -405,8 +405,7 @@ export const exchangeCode = (
  */
 export const verifyIdToken = (
   options: VerifyIdTokenOptions
-): Promise<Result<Principal, VerificationError>> =>
-  runSafe(verifyIdTokenE(options))
+): Promise<Result<Principal, VerificationError>> => runSafe(verifyIdTokenE(options))
 
 /* Re-exports */
 

@@ -32,7 +32,7 @@
 	};
 
 	const isEmailRateLimitActive = (value: EmailRateLimit) =>
-		Boolean(value && value.initialRemainingSeconds > 0);
+		Boolean(value && value.retryAfterSeconds > 0);
 
 	const initialEmailRateLimit = getInitialEmailRateLimit();
 	let emailRateLimit = $state<EmailRateLimit>(initialEmailRateLimit);

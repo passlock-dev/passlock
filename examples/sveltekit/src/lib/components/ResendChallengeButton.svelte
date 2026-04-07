@@ -19,7 +19,7 @@
 	} = $props();
 
 	const isRateLimitActive = (value: ChallengeRateLimitView | null) =>
-		Boolean(value && value.initialRemainingSeconds > 0);
+		Boolean(value && value.retryAfterSeconds > 0);
 
 	// svelte-ignore state_referenced_locally
 	const initialRateLimit = providedInitialRateLimit;

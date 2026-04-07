@@ -1,3 +1,7 @@
+/**
+ * Account management
+ */
+
 import { resolve } from '$app/paths';
 import { redirect } from '@sveltejs/kit';
 import { getPasskeysByUserId, type Session, type SessionUser } from './repository.js';
@@ -12,6 +16,7 @@ import { isRecentAuthentication } from './session.js';
  * action such as changing profile data or deleting the account.
  */
 export type AccountContext = {
+	_tag: 'AccountContext';
 	user: SessionUser;
 	session: Session;
 	passkeyIds: string[];
@@ -35,6 +40,7 @@ export const getAccountContext = async (locals: App.Locals): Promise<AccountCont
 		hasPasskeys && !isRecentAuthentication(session.passkeyAuthenticatedAt);
 
 	return {
+		_tag: 'AccountContext' as const,
 		user,
 		session,
 		passkeyIds,

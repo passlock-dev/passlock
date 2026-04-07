@@ -3,42 +3,49 @@ import { Schema } from "effect"
 const EmailRegex = /^[^@]+@[^@]+.[^@]+$/
 const PurposeRegex = /^[A-Za-z0-9._:-]{1,64}$/
 
-type MailboxChallengeMetadataValue =
+type ChallengeMetadataValue =
   | string
   | number
   | boolean
   | null
-  | ReadonlyArray<MailboxChallengeMetadataValue>
-  | MailboxChallengeMetadata
+  | ReadonlyArray<ChallengeMetadataValue>
+  | ChallengeMetadata
 
 /**
  * JSON-compatible metadata stored alongside a mailbox challenge.
  *
  * @category Mailbox
  */
-export interface MailboxChallengeMetadata {
-  readonly [key: string]: MailboxChallengeMetadataValue
+export interface ChallengeMetadata {
+  readonly [key: string]: ChallengeMetadataValue
 }
 
 const isPlainObject = (input: unknown): input is Record<string, unknown> => {
-  if (typeof input !== "object" || input === null || Array.isArray(input))
-    return false
+  if (typeof input !== "object" || input === null || Array.isArray(input)) return false
 
   const prototype = Object.getPrototypeOf(input)
   return prototype === Object.prototype || prototype === null
 }
 
-const isMailboxChallengeMetadataValue = (
-  input: unknown
-): input is MailboxChallengeMetadataValue => {
+const isChallengeMetadataValue = (input: unknown): input is ChallengeMetadataValue => {
   if (input === null) return true
   if (typeof input === "string" || typeof input === "boolean") return true
   if (typeof input === "number") return Number.isFinite(input)
-  if (Array.isArray(input)) return input.every(isMailboxChallengeMetadataValue)
+  if (Array.isArray(input)) return input.every(isChallengeMetadataValue)
   if (!isPlainObject(input)) return false
 
-  return Object.values(input).every(isMailboxChallengeMetadataValue)
+  return Object.values(input).every(isChallengeMetadataValue)
 }
+
+/**
+ * Schema for mailbox challenge metadata.
+ *
+ * @category Mailbox
+ */
+export const ChallengeMetadata = Schema.declare(
+  (input: unknown): input is ChallengeMetadata =>
+    isPlainObject(input) && Object.values(input).every(isChallengeMetadataValue)
+).annotations({ identifier: "ChallengeMetadata" })
 
 /**
  * Schema for a mailbox challenge purpose string.
@@ -48,7 +55,7 @@ const isMailboxChallengeMetadataValue = (
  *
  * @category Mailbox
  */
-export const MailboxChallengePurpose = Schema.String.pipe(
+export const ChallengePurpose = Schema.String.pipe(
   Schema.filter(
     (purpose) =>
       PurposeRegex.test(purpose) ||
@@ -57,47 +64,36 @@ export const MailboxChallengePurpose = Schema.String.pipe(
 )
 
 /**
- * Type produced by {@link MailboxChallengePurpose}.
+ * Type produced by {@link ChallengePurpose}.
  *
  * @category Mailbox
  */
-export type MailboxChallengePurpose = typeof MailboxChallengePurpose.Type
+export type ChallengePurpose = typeof ChallengePurpose.Type
 
 /**
  * Schema for mailbox challenge email addresses.
  *
  * @category Mailbox
  */
-export const MailboxChallengeEmail = Schema.String.pipe(
+export const ChallengeEmail = Schema.String.pipe(
   Schema.filter((email) => EmailRegex.test(email) || "Invalid email")
 )
 
 /**
- * Type produced by {@link MailboxChallengeEmail}.
+ * Type produced by {@link ChallengeEmail}.
  *
  * @category Mailbox
  */
-export type MailboxChallengeEmail = typeof MailboxChallengeEmail.Type
+export type ChallengeEmail = typeof ChallengeEmail.Type
 
-/**
- * Schema for mailbox challenge metadata.
- *
- * @category Mailbox
- */
-export const MailboxChallengeMetadata = Schema.declare(
-  (input: unknown): input is MailboxChallengeMetadata =>
-    isPlainObject(input) &&
-    Object.values(input).every(isMailboxChallengeMetadataValue)
-).annotations({ identifier: "MailboxChallengeMetadata" })
-
-const MailboxChallengeDetailsFields = {
+const ReadableChallengeFields = {
   challengeId: Schema.String,
-  purpose: MailboxChallengePurpose,
-  email: MailboxChallengeEmail,
+  purpose: ChallengePurpose,
+  email: ChallengeEmail,
   userId: Schema.optional(Schema.String),
   createdAt: Schema.Number,
   expiresAt: Schema.Number,
-  metadata: Schema.NullOr(MailboxChallengeMetadata),
+  metadata: Schema.NullOr(ChallengeMetadata),
 } as const
 
 /**
@@ -107,17 +103,14 @@ const MailboxChallengeDetailsFields = {
  *
  * @category Mailbox
  */
-export const MailboxChallengeDetails = Schema.TaggedStruct(
-  "Challenge",
-  MailboxChallengeDetailsFields
-)
+export const ReadableChallenge = Schema.TaggedStruct("Challenge", ReadableChallengeFields)
 
 /**
- * Type produced by {@link MailboxChallengeDetails}.
+ * Type produced by {@link ReadableChallenge}.
  *
  * @category Mailbox
  */
-export type MailboxChallengeDetails = typeof MailboxChallengeDetails.Type
+export type ReadableChallenge = typeof ReadableChallenge.Type
 
 /**
  * Schema for the full mailbox challenge payload returned by challenge
@@ -133,8 +126,8 @@ export type MailboxChallengeDetails = typeof MailboxChallengeDetails.Type
  *
  * @category Mailbox
  */
-export const MailboxChallenge = Schema.Struct({
-  ...MailboxChallengeDetailsFields,
+export const CreatedChallenge = Schema.Struct({
+  ...ReadableChallengeFields,
   secret: Schema.String,
   code: Schema.String,
   message: Schema.Struct({
@@ -144,11 +137,11 @@ export const MailboxChallenge = Schema.Struct({
 })
 
 /**
- * Type produced by {@link MailboxChallenge}.
+ * Type produced by {@link CreatedChallenge}.
  *
  * @category Mailbox
  */
-export type MailboxChallenge = typeof MailboxChallenge.Type
+export type CreatedChallenge = typeof CreatedChallenge.Type
 
 /**
  * Schema returned when a mailbox challenge is created.
@@ -159,16 +152,16 @@ export type MailboxChallenge = typeof MailboxChallenge.Type
  *
  * @category Mailbox
  */
-export const MailboxChallengeCreated = Schema.TaggedStruct("ChallengeCreated", {
-  challenge: MailboxChallenge,
+export const ChallengeCreated = Schema.TaggedStruct("ChallengeCreated", {
+  challenge: CreatedChallenge,
 })
 
 /**
- * Type produced by {@link MailboxChallengeCreated}.
+ * Type produced by {@link ChallengeCreated}.
  *
  * @category Mailbox
  */
-export type MailboxChallengeCreated = typeof MailboxChallengeCreated.Type
+export type ChallengeCreated = typeof ChallengeCreated.Type
 
 /**
  * Schema returned when a mailbox challenge is verified.
@@ -178,19 +171,16 @@ export type MailboxChallengeCreated = typeof MailboxChallengeCreated.Type
  *
  * @category Mailbox
  */
-export const MailboxChallengeVerified = Schema.TaggedStruct(
-  "ChallengeVerified",
-  {
-    challenge: MailboxChallengeDetails,
-  }
-)
+export const ChallengeVerified = Schema.TaggedStruct("ChallengeVerified", {
+  challenge: ReadableChallenge,
+})
 
 /**
- * Type produced by {@link MailboxChallengeVerified}.
+ * Type produced by {@link ChallengeVerified}.
  *
  * @category Mailbox
  */
-export type MailboxChallengeVerified = typeof MailboxChallengeVerified.Type
+export type ChallengeVerified = typeof ChallengeVerified.Type
 
 /**
  * Schema returned when a mailbox challenge is deleted.
@@ -199,14 +189,11 @@ export type MailboxChallengeVerified = typeof MailboxChallengeVerified.Type
  *
  * @category Mailbox
  */
-export const MailboxChallengeDeleted = Schema.TaggedStruct(
-  "ChallengeDeleted",
-  {}
-)
+export const ChallengeDeleted = Schema.TaggedStruct("ChallengeDeleted", {})
 
 /**
- * Type produced by {@link MailboxChallengeDeleted}.
+ * Type produced by {@link ChallengeDeleted}.
  *
  * @category Mailbox
  */
-export type MailboxChallengeDeleted = typeof MailboxChallengeDeleted.Type
+export type ChallengeDeleted = typeof ChallengeDeleted.Type

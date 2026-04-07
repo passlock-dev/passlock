@@ -1,6 +1,6 @@
 {
   "name": "@passlock/client",
-  "version": "2.4.0",
+  "version": "2.4.2",
   "description": "Flexible passkey authentication for Astro, SvelteKit, NextJS and other frameworks",
   "keywords": [
     "passkey",
@@ -47,20 +47,20 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "build:clean": "$npm_execpath run clean:full && $npm_execpath run build",
+    "build": "tsc -p tsconfig.json",
+    "build:clean": "$npm_execpath run clean:all && $npm_execpath run build",
     "build:production": "$npm_execpath run build:clean && $npm_execpath run build:readme && $npm_execpath run replaceTokens && echo '' && publint",
     "build:readme": "VERSION=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/client",
     "typedoc": "typedoc",
-    "clean": "tsc -p tsconfig.build.json --clean",
-    "clean:full": "rimraf dist tsconfig.build.tsbuildinfo",
+    "clean": "tsc -p tsconfig.json --clean",
+    "clean:all": "rimraf dist tsconfig.tsbuildinfo",
     "prepublishOnly": "$npm_execpath run build:production",
     "replaceTokens": "VERSION=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/client",
     "test:unit": "vitest --project unit run",
     "test:unit:watch": "vitest --project unit",
     "test:integration": "vitest --project integration run",
     "test:all": "vitest --project unit --project integration run",
-    "typecheck": "tsc -p tsconfig.test.json --noEmit",
+    "typecheck": "tsc -p tsconfig.test.json",
     "lint": "biome check .",
     "lint:fix": "biome check --fix .",
     "lint:ci": "biome ci .",
@@ -73,7 +73,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/language-service": "^0.84.3",
+    "@effect/language-service": "^0.85.1",
     "@fetch-mock/vitest": "^0.2.18",
     "@typescript/lib-dom": "npm:@types/web@^0.0.345",
     "globals": "catalog:",
@@ -81,7 +81,7 @@
     "publint": "catalog:",
     "rimraf": "catalog:",
     "tsx": "catalog:",
-    "typedoc": "^0.28.18",
+    "typedoc": "^0.28.19",
     "typescript": "catalog:",
     "vitest": "^4.0.16"
   },

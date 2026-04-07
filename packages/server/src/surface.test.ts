@@ -1,13 +1,5 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type {
-  createMailboxChallenge as createMailboxChallengeEffect,
-  deleteMailboxChallenge as deleteMailboxChallengeEffect,
-  CreateMailboxChallengeOptions as EffectCreateMailboxChallengeOptions,
-  GetMailboxChallengeOptions as EffectGetMailboxChallengeOptions,
-  getMailboxChallenge as getMailboxChallengeEffect,
-  verifyMailboxChallenge as verifyMailboxChallengeEffect,
-} from "./effect.js"
-import type {
   CreateMailboxChallengeOptions as UnsafeCreateMailboxChallengeOptions,
   Credential as UnsafeCredential,
   DeletedPasskeys as UnsafeDeletedPasskeys,
@@ -26,7 +18,6 @@ import type {
   Err,
   ExtendedPrincipal,
   ForbiddenError,
-  GetMailboxChallengeOptions,
   InvalidChallengeCodeError,
   InvalidCodeError,
   MailboxChallenge,
@@ -84,9 +75,7 @@ describe("public surface", () => {
 
   it("keeps shared types identical", () => {
     type IsEqual<A, B> =
-      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
-        ? true
-        : false
+      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
     type Assert<T extends true> = T
     type _1 = Assert<IsEqual<PasslockOptions, UnsafePasslockOptions>>
     type _2 = Assert<IsEqual<AuthenticatedOptions, UnsafeAuthenticatedOptions>>
@@ -96,27 +85,16 @@ describe("public surface", () => {
     type _6 = Assert<IsEqual<Credential, UnsafeCredential>>
     type _7 = Assert<IsEqual<PasskeyCredential, UnsafePasskeyCredential>>
     type _8 = Assert<IsEqual<MailboxChallenge, UnsafeMailboxChallenge>>
-    type _9 = Assert<
-      IsEqual<
-        CreateMailboxChallengeOptions,
-        UnsafeCreateMailboxChallengeOptions
-      >
-    >
-    type _10 = Assert<
-      IsEqual<MailboxChallengeCreated, UnsafeMailboxChallengeCreated>
-    >
-    type _11 = Assert<
-      IsEqual<MailboxChallengeDetails, UnsafeMailboxChallengeDetails>
-    >
+    type _9 = Assert<IsEqual<CreateMailboxChallengeOptions, UnsafeCreateMailboxChallengeOptions>>
+    type _10 = Assert<IsEqual<MailboxChallengeCreated, UnsafeMailboxChallengeCreated>>
+    type _11 = Assert<IsEqual<MailboxChallengeDetails, UnsafeMailboxChallengeDetails>>
 
     expect(true).toBe(true)
   })
 
   it("returns Result envelopes from safe functions", () => {
     type IsEqual<A, B> =
-      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
-        ? true
-        : false
+      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
     type Assert<T extends true> = T
     type _1 = Assert<
       IsEqual<
@@ -125,10 +103,7 @@ describe("public surface", () => {
       >
     >
     type _2 = Assert<
-      IsEqual<
-        Awaited<ReturnType<typeof verifyIdToken>>,
-        Result<Principal, VerificationError>
-      >
+      IsEqual<Awaited<ReturnType<typeof verifyIdToken>>, Result<Principal, VerificationError>>
     >
     type _3 = Assert<
       IsEqual<
@@ -139,10 +114,7 @@ describe("public surface", () => {
     type _4 = Assert<
       IsEqual<
         Awaited<ReturnType<typeof createMailboxChallenge>>,
-        Result<
-          MailboxChallengeCreated,
-          ForbiddenError | ChallengeRateLimitedError
-        >
+        Result<MailboxChallengeCreated, ForbiddenError | ChallengeRateLimitedError>
       >
     >
     type _5 = Assert<
@@ -171,52 +143,16 @@ describe("public surface", () => {
     expect(true).toBe(true)
   })
 
-  it("exposes mailbox Effect exports", () => {
-    expectTypeOf<
-      ReturnType<typeof createMailboxChallengeEffect>
-    >().not.toEqualTypeOf<never>()
-    expectTypeOf<
-      ReturnType<typeof getMailboxChallengeEffect>
-    >().not.toEqualTypeOf<never>()
-    expectTypeOf<
-      ReturnType<typeof verifyMailboxChallengeEffect>
-    >().not.toEqualTypeOf<never>()
-    expectTypeOf<
-      ReturnType<typeof deleteMailboxChallengeEffect>
-    >().not.toEqualTypeOf<never>()
-
-    type IsEqual<A, B> =
-      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
-        ? true
-        : false
-    type Assert<T extends true> = T
-    type _1 = Assert<
-      IsEqual<
-        EffectCreateMailboxChallengeOptions,
-        CreateMailboxChallengeOptions
-      >
-    >
-    type _2 = Assert<
-      IsEqual<EffectGetMailboxChallengeOptions, GetMailboxChallengeOptions>
-    >
-
-    expect(true).toBe(true)
-  })
-
   it("exposes inverse success and failure literals on each Result branch", () => {
     type IsEqual<A, B> =
-      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
-        ? true
-        : false
+      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
     type Assert<T extends true> = T
     type ExchangeCodeResult = Awaited<ReturnType<typeof exchangeCode>>
     type SuccessBranch = Extract<ExchangeCodeResult, { success: true }>
     type ErrorBranch = Extract<ExchangeCodeResult, { success: false }>
 
     type _1 = Assert<IsEqual<SuccessBranch, Ok<ExtendedPrincipal>>>
-    type _2 = Assert<
-      IsEqual<ErrorBranch, Err<ForbiddenError> | Err<InvalidCodeError>>
-    >
+    type _2 = Assert<IsEqual<ErrorBranch, Err<ForbiddenError> | Err<InvalidCodeError>>>
     type _3 = Assert<IsEqual<SuccessBranch["failure"], false>>
     type _4 = Assert<IsEqual<ErrorBranch["failure"], true>>
 

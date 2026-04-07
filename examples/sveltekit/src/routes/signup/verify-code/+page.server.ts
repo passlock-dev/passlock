@@ -1,23 +1,29 @@
 import type { Actions, PageServerLoad } from './$types';
+import type { Cookies } from '@sveltejs/kit';
 
-import { consumeSignupChallenge } from '$lib/server/challenges.js';
+import {
+	deleteSignupLoginCookie,
+	getSignupLoginCookie,
+	setSessionTokenCookie
+} from '$lib/server/cookies.js';
+import { getChallengeCodeErrorMessage } from '$lib/server/mailbox/mailboxChallenge.js';
+import { getPendingChallengeContext } from '$lib/server/mailbox/pendingChallenge.js';
+import {
+	consumeSignupChallenge,
+	getPendingSignupChallenge
+} from '$lib/server/mailbox/signupChallenge.js';
+import { createVerifyCodeForm, validateVerifyCodeForm } from '$lib/server/mailbox/verifyCode.js';
 import { createSession } from '$lib/server/repository.js';
-import { deleteSignupLoginCookie, setSessionTokenCookie } from '$lib/server/cookies.js';
-import { fail, redirect } from '@sveltejs/kit';
-import { resolve } from '$app/paths';
 import { toLoginLocation } from '$lib/shared/queryState.js';
-import { setError, superValidate } from 'sveltekit-superforms';
-import { valibot } from 'sveltekit-superforms/adapters';
-import * as v from 'valibot';
-import { getPendingSignupChallengeContext } from './challenge.js';
+import { resolve } from '$app/paths';
+import { fail, redirect } from '@sveltejs/kit';
+import { setError } from 'sveltekit-superforms';
 
-const verifyCodeSchema = v.object({
-	code: v.pipe(v.string(), v.trim(), v.regex(/^\d{6}$/, 'Enter the 6-digit code'))
-});
-
-const createVerifyForm = () =>
-	superValidate(valibot(verifyCodeSchema), {
-		id: 'verify-code-form'
+const getPendingSignupContext = (cookies: Cookies) =>
+	getPendingChallengeContext({
+		cookies,
+		getPendingCookie: getSignupLoginCookie,
+		getChallenge: getPendingSignupChallenge
 	});
 
 /**
@@ -27,16 +33,16 @@ const createVerifyForm = () =>
 export const load = (async ({ locals, cookies }) => {
 	if (locals.user) redirect(302, '/');
 
-	const pendingContext = await getPendingSignupChallengeContext(cookies);
-	if (pendingContext._tag === 'MissingPendingSignupChallenge') {
+	const pendingContext = await getPendingSignupContext(cookies);
+	if (pendingContext._tag === 'MissingPendingChallenge') {
 		redirect(303, resolve('/signup'));
 	}
-	if (pendingContext._tag === 'InvalidPendingSignupChallenge') {
+	if (pendingContext._tag === 'InvalidPendingChallenge') {
 		deleteSignupLoginCookie(cookies);
 		redirect(303, resolve('/signup'));
 	}
 
-	const verifyForm = await createVerifyForm();
+	const verifyForm = await createVerifyCodeForm();
 
 	return {
 		verifyForm,
@@ -46,17 +52,15 @@ export const load = (async ({ locals, cookies }) => {
 
 export const actions = {
 	verify: async ({ request, cookies }) => {
-		const verifyForm = await superValidate(request, valibot(verifyCodeSchema), {
-			id: 'verify-code-form'
-		});
+		const verifyForm = await validateVerifyCodeForm(request);
 
 		if (!verifyForm.valid) return fail(400, { verifyForm });
 
-		const pendingContext = await getPendingSignupChallengeContext(cookies);
-		if (pendingContext._tag === 'MissingPendingSignupChallenge') {
+		const pendingContext = await getPendingSignupContext(cookies);
+		if (pendingContext._tag === 'MissingPendingChallenge') {
 			redirect(303, resolve('/signup'));
 		}
-		if (pendingContext._tag === 'InvalidPendingSignupChallenge') {
+		if (pendingContext._tag === 'InvalidPendingChallenge') {
 			deleteSignupLoginCookie(cookies);
 			redirect(303, resolve('/signup'));
 		}
@@ -87,24 +91,12 @@ export const actions = {
 			redirect(303, toLoginLocation({ username: result.email, reason: 'account-exists' }));
 		}
 
-		if (result.code === 'CHALLENGE_EXPIRED' || result.code === 'PURPOSE_MISMATCH') {
+		if (result._tag === '@error/InvalidChallenge') {
 			deleteSignupLoginCookie(cookies);
 			redirect(303, resolve('/signup'));
 		}
 
-		if (result.code === 'ACCOUNT_NOT_FOUND') {
-			deleteSignupLoginCookie(cookies);
-			redirect(303, resolve('/signup'));
-		}
-
-		const message =
-			result.code === 'CODE_EXPIRED'
-				? 'This code has expired. Request a new one.'
-				: result.code === 'TOO_MANY_ATTEMPTS'
-					? 'Too many incorrect attempts. Request a new code.'
-					: 'Invalid code';
-
-		setError(verifyForm, 'code', message);
+		setError(verifyForm, 'code', getChallengeCodeErrorMessage(result));
 		return fail(400, { verifyForm, email: challenge.email });
 	}
 } satisfies Actions;

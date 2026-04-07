@@ -2,12 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
-
-    // crucial: don't force rootDir here; let TS include both folders happily
-    // "rootDir": ".",   // not needed if noEmit, and avoids caring about dist layout
-
-    // add test runner globals/types as needed
-    "types": ["vitest/globals", "node"]
+    "types": ["node"]
   },
-  "include": ["src/**/*", "test/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["dist", "node_modules"]
 }

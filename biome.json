@@ -10,18 +10,18 @@
   "files": {
     "includes": [
       "**",
-      "!**/docs/api",
       "!**/node_modules",
       "!**/dist",
       "!**/coverage",
-      "!**/*.gen.ts"
+      "!**/*.gen.ts",
+      "!**/docs/api"
     ]
   },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineWidth": 80
+    "lineWidth": 100
   },
   "javascript": {
     "formatter": {

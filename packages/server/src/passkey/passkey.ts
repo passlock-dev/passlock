@@ -1,14 +1,4 @@
-import {
-  Array,
-  Chunk,
-  Effect,
-  type Layer,
-  Match,
-  Option,
-  pipe,
-  Schema,
-  Stream,
-} from "effect"
+import { Array, Chunk, Effect, type Layer, Match, Option, pipe, Schema, Stream } from "effect"
 import {
   fetchNetwork,
   matchStatus,
@@ -150,10 +140,7 @@ export const isPasskeySummary = (payload: unknown): payload is PasskeySummary =>
  * needed to ensure the PasskeySummary === PasskeySummary.Type
  * @internal
  */
-export type _PasskeySummary = satisfy<
-  typeof PasskeySchemas.PasskeySummary.Type,
-  PasskeySummary
->
+export type _PasskeySummary = satisfy<typeof PasskeySchemas.PasskeySummary.Type, PasskeySummary>
 
 /* UpdatedPasskeys */
 
@@ -172,19 +159,14 @@ export type UpdatedPasskeys = {
  *
  * @category Passkeys
  */
-export const isUpdatedPasskeys = (
-  payload: unknown
-): payload is UpdatedPasskeys =>
+export const isUpdatedPasskeys = (payload: unknown): payload is UpdatedPasskeys =>
   Schema.is(PasskeySchemas.UpdatedPasskeys)(payload)
 
 /**
  * needed to ensure the UpdatedPasskeys === UpdatedPasskeys.Type
  * @internal
  * */
-export type _UpdatedPasskeys = satisfy<
-  typeof PasskeySchemas.UpdatedPasskeys.Type,
-  UpdatedPasskeys
->
+export type _UpdatedPasskeys = satisfy<typeof PasskeySchemas.UpdatedPasskeys.Type, UpdatedPasskeys>
 
 /* Credential */
 
@@ -203,15 +185,15 @@ export type Credential = {
  * needed to ensure the Credential === Credential.Type
  * @internal
  */
-export type _Credential = satisfy<
-  typeof PasskeySchemas.Credential.Type,
-  Credential
->
+export type _Credential = satisfy<typeof PasskeySchemas.Credential.Type, Credential>
 
 /* DeletedPasskey */
 
 /**
  * Result payload returned when a single passkey has been deleted.
+ *
+ * The nested `deleted` object contains the credential identifiers needed for
+ * optional client-side cleanup.
  *
  * @category Passkeys
  */
@@ -232,10 +214,7 @@ export const isDeletedPasskey = (payload: unknown): payload is DeletedPasskey =>
  * needed to ensure the DeletedPasskey === DeletedPasskey.Type
  * @internal
  * */
-export type _DeletedPasskey = satisfy<
-  typeof PasskeySchemas.DeletedPasskey.Type,
-  DeletedPasskey
->
+export type _DeletedPasskey = satisfy<typeof PasskeySchemas.DeletedPasskey.Type, DeletedPasskey>
 
 /* DeletedPasskeys */
 
@@ -254,19 +233,14 @@ export type DeletedPasskeys = {
  *
  * @category Passkeys
  */
-export const isDeletedPasskeys = (
-  payload: unknown
-): payload is DeletedPasskeys =>
+export const isDeletedPasskeys = (payload: unknown): payload is DeletedPasskeys =>
   Schema.is(PasskeySchemas.DeletedPasskeys)(payload)
 
 /**
  * needed to ensure the DeletedPasskeys === DeletedPasskeys.Type
  * @internal
  * */
-export type _DeletedPasskeys = satisfy<
-  typeof PasskeySchemas.DeletedPasskeys.Type,
-  DeletedPasskeys
->
+export type _DeletedPasskeys = satisfy<typeof PasskeySchemas.DeletedPasskeys.Type, DeletedPasskeys>
 
 /* FindAllPasskeys */
 
@@ -286,25 +260,24 @@ export type FindAllPasskeys = {
  *
  * @category Passkeys
  */
-export const isFindAllPasskeys = (
-  payload: unknown
-): payload is FindAllPasskeys =>
+export const isFindAllPasskeys = (payload: unknown): payload is FindAllPasskeys =>
   Schema.is(PasskeySchemas.FindAllPasskeys)(payload)
 
 /**
  * needed to ensure the FindAllPasskeys === FindAllPasskeys.Type
  * @internal
  */
-export type _FindAllPasskeys = satisfy<
-  typeof FindAllPasskeysSchema.Type,
-  FindAllPasskeys
->
+export type _FindAllPasskeys = satisfy<typeof FindAllPasskeysSchema.Type, FindAllPasskeys>
 
-/* UpdatedCredentials (update names by userId) */
+/* UpdatedCredentials (publicly re-exported as UpdatedUserDetails) */
 
 /**
- * Client-facing credential update payload returned by
+ * Client-facing user-details update payload returned by
  * {@link updatePasskeyUsernames}.
+ *
+ * The promise-based entrypoints re-export this shape as `UpdatedUserDetails`.
+ * Its runtime `_tag` remains `"UpdatedCredentials"` for backwards
+ * compatibility.
  *
  * Each entry describes one credential to update on the user's device. The
  * returned `displayName` is derived from
@@ -324,15 +297,16 @@ export type UpdatedCredentials = {
 }
 
 /**
- * Check whether an unknown value carries the `UpdatedCredentials` tag.
+ * Check whether an unknown value carries the runtime tag used by the public
+ * `UpdatedUserDetails` payload.
  *
- * This lightweight guard only checks the top-level `_tag`.
+ * The exported type name is `UpdatedUserDetails`, but the runtime `_tag`
+ * remains `"UpdatedCredentials"`. This lightweight guard only checks that
+ * top-level tag.
  *
  * @category Passkeys
  */
-export const isUpdatedUserDetails = (
-  payload: unknown
-): payload is UpdatedCredentials => {
+export const isUpdatedUserDetails = (payload: unknown): payload is UpdatedCredentials => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
   if (!("_tag" in payload)) return false
@@ -348,10 +322,8 @@ const authorizationHeaders = (apiKey: string) => ({
   authorization: `Bearer ${apiKey}`,
 })
 
-const decodeResponseJson = <A, I, R>(
-  response: NetworkResponse,
-  schema: Schema.Schema<A, I, R>
-) => pipe(response.json, Effect.flatMap(Schema.decodeUnknown(schema)))
+const decodeResponseJson = <A, I, R>(response: NetworkResponse, schema: Schema.Schema<A, I, R>) =>
+  pipe(response.json, Effect.flatMap(Schema.decodeUnknown(schema)))
 
 /* Get Passkey */
 
@@ -391,15 +363,10 @@ export const getPasskey = (
         headers: authorizationHeaders(options.apiKey),
       })
 
-      const encoded: Passkey | ForbiddenError | NotFoundError =
-        yield* matchStatus(response, {
-          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
-          orElse: (res) =>
-            decodeResponseJson(
-              res,
-              Schema.Union(ForbiddenError, NotFoundError)
-            ),
-        })
+      const encoded: Passkey | ForbiddenError | NotFoundError = yield* matchStatus(response, {
+        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
+        orElse: (res) => decodeResponseJson(res, Schema.Union(ForbiddenError, NotFoundError)),
+      })
 
       return yield* pipe(
         Match.value(encoded),
@@ -440,7 +407,7 @@ export interface DeletePasskeyOptions extends AuthenticatedOptions {
  *
  * @param options Request options including the passkey identifier.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds with the deleted credential.
+ * @returns An Effect that succeeds with the deleted credential identifiers.
  *
  * @category Passkeys
  */
@@ -459,15 +426,10 @@ export const deletePasskey = (
         headers: authorizationHeaders(options.apiKey),
       })
 
-      const encoded: Passkey | ForbiddenError | NotFoundError =
-        yield* matchStatus(response, {
-          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
-          orElse: (res) =>
-            decodeResponseJson(
-              res,
-              Schema.Union(ForbiddenError, NotFoundError)
-            ),
-        })
+      const encoded: Passkey | ForbiddenError | NotFoundError = yield* matchStatus(response, {
+        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
+        orElse: (res) => decodeResponseJson(res, Schema.Union(ForbiddenError, NotFoundError)),
+      })
 
       return yield* pipe(
         Match.value(encoded),
@@ -548,15 +510,10 @@ export const assignUser = (
         }
       )
 
-      const encoded: Passkey | NotFoundError | ForbiddenError =
-        yield* matchStatus(response, {
-          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
-          orElse: (res) =>
-            decodeResponseJson(
-              res,
-              Schema.Union(NotFoundError, ForbiddenError)
-            ),
-        })
+      const encoded: Passkey | NotFoundError | ForbiddenError = yield* matchStatus(response, {
+        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
+        orElse: (res) => decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
+      })
 
       return yield* pipe(
         Match.value(encoded),
@@ -628,15 +585,10 @@ export const updatePasskey = (
         }
       )
 
-      const encoded: Passkey | NotFoundError | ForbiddenError =
-        yield* matchStatus(response, {
-          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
-          orElse: (res) =>
-            decodeResponseJson(
-              res,
-              Schema.Union(NotFoundError, ForbiddenError)
-            ),
-        })
+      const encoded: Passkey | NotFoundError | ForbiddenError = yield* matchStatus(response, {
+        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
+        orElse: (res) => decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
+      })
 
       return yield* pipe(
         Match.value(encoded),
@@ -684,16 +636,13 @@ const updateUserPasskeys = (
         }
       )
 
-      const encoded: UpdatedPasskeys | NotFoundError | ForbiddenError =
-        yield* matchStatus(response, {
-          "2xx": (res) =>
-            decodeResponseJson(res, PasskeySchemas.UpdatedPasskeys),
-          orElse: (res) =>
-            decodeResponseJson(
-              res,
-              Schema.Union(NotFoundError, ForbiddenError)
-            ),
-        })
+      const encoded: UpdatedPasskeys | NotFoundError | ForbiddenError = yield* matchStatus(
+        response,
+        {
+          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.UpdatedPasskeys),
+          orElse: (res) => decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
+        }
+      )
 
       return yield* pipe(
         Match.value(encoded),
@@ -764,10 +713,8 @@ export const deleteUserPasskeys = (
         | typeof PasskeySchemas.DeletedPasskeysResponse.Type
         | NotFoundError
         | ForbiddenError = yield* matchStatus(response, {
-        "2xx": (res) =>
-          decodeResponseJson(res, PasskeySchemas.DeletedPasskeysResponse),
-        orElse: (res) =>
-          decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
+        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.DeletedPasskeysResponse),
+        orElse: (res) => decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
       })
 
       return yield* pipe(
@@ -802,6 +749,9 @@ export const deleteUserPasskeys = (
  * Options for updating username metadata for all passkeys that share a custom
  * user ID, plus optional display-name data to return for client-side updates.
  *
+ * The promise-based entrypoints re-export this interface as
+ * `UpdateUserDetailsOptions`.
+ *
  * @category Passkeys
  */
 export interface UpdateUsernamesOptions extends AuthenticatedOptions {
@@ -831,7 +781,8 @@ export interface UpdateUsernamesOptions extends AuthenticatedOptions {
  *
  * @param options Request options including the custom user ID and username metadata.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds with one credential update per updated passkey.
+ * @returns An Effect that succeeds with a user-details update payload
+ * containing one credential update per updated passkey.
  *
  * @category Passkeys
  */
@@ -924,13 +875,10 @@ export const listPasskeys = (
         headers: authorizationHeaders(options.apiKey),
       })
 
-      const encoded: FindAllPasskeys | ForbiddenError = yield* matchStatus(
-        response,
-        {
-          "2xx": (res) => decodeResponseJson(res, FindAllPasskeysSchema),
-          orElse: (res) => decodeResponseJson(res, ForbiddenError),
-        }
-      )
+      const encoded: FindAllPasskeys | ForbiddenError = yield* matchStatus(response, {
+        "2xx": (res) => decodeResponseJson(res, FindAllPasskeysSchema),
+        orElse: (res) => decodeResponseJson(res, ForbiddenError),
+      })
 
       return yield* pipe(
         Match.value(encoded),
