@@ -9,7 +9,6 @@ import {
   Schema,
   Stream,
 } from "effect"
-import type { satisfy } from "../schemas/satisfy.js"
 import {
   fetchNetwork,
   matchStatus,
@@ -26,6 +25,7 @@ import {
   NotFoundError,
 } from "../schemas/index.js"
 import * as PasskeySchemas from "../schemas/passkey.js"
+import type { satisfy } from "../schemas/satisfy.js"
 import type { AuthenticatedOptions } from "../shared.js"
 
 /* Passkey */

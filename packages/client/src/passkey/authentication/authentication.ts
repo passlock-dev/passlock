@@ -5,7 +5,6 @@ import {
   WebAuthnError,
 } from "@simplewebauthn/browser"
 import { Context, Micro, pipe } from "effect"
-import type { Principal } from "../../principal"
 import {
   Endpoint,
   makeEndpoint,
@@ -15,6 +14,7 @@ import {
 import type { NetworkError } from "../../internal/network.js"
 import { Logger } from "../../logger.js"
 import type { PasslockOptions } from "../../options.js"
+import type { Principal } from "../../principal"
 import {
   OrphanedPasskeyError,
   OtherPasskeyError,
