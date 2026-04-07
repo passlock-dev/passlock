@@ -1,6 +1,6 @@
 {
   "name": "@passlock/node",
-  "version": "2.0.9",
+  "version": "2.1.0",
   "description": "Passkey authentication for NodeJS backends",
   "keywords": [
     "passkey",
@@ -33,11 +33,6 @@
       "types": "./dist/safe.d.ts",
       "import": "./dist/safe.js",
       "default": "./dist/safe.js"
-    },
-    "./effect": {
-      "types": "./dist/effect.d.ts",
-      "import": "./dist/effect.js",
-      "default": "./dist/effect.js"
     }
   },
   "module": "./dist/index.js",
