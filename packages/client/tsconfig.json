@@ -10,24 +10,15 @@
 
     /* Strictness */
     "strict": true,
-    "noImplicitAny": true,
     "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
 
     /* Module interop / ergonomics */
-    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
     "moduleDetection": "force",
 
     /* Performance */
-    "skipLibCheck": true,
-
-    "types": ["node"],
-
-    "paths": {
-      "@test/*": ["./test/*"]
-    }
+    "skipLibCheck": true
   },
   "exclude": ["node_modules", "dist"],
   "plugins": [

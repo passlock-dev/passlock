@@ -112,15 +112,11 @@ export const makeRequest = <A extends object, E = never>({
   label,
 }: RequestOptions<A, E>): Micro.Micro<A, E | NetworkError> =>
   Micro.gen(function* () {
-    const isUnderTest =
-      typeof process !== "undefined" && process.env.VITEST === "true"
-
     // when running the test in nodejs there is no browser therefore no
     // origin header is set so we need to fake it
     const headers = {
       Accept: "application/json",
       "Content-Type": "application/json",
-      ...(isUnderTest ? { Origin: "http://localhost:3000" } : {}),
     } as const
 
     const body = JSON.stringify(payload)
