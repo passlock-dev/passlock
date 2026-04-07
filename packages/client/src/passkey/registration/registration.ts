@@ -5,7 +5,7 @@ import {
   WebAuthnError,
 } from "@simplewebauthn/browser"
 import { Context, Micro, pipe } from "effect"
-import type { Principal } from "src/principal"
+import type { Principal } from "../../principal"
 import {
   Endpoint,
   makeEndpoint,

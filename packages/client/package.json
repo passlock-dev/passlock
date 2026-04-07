@@ -73,9 +73,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/language-service": "^0.84.0",
+    "@effect/language-service": "^0.84.3",
     "@fetch-mock/vitest": "^0.2.18",
-    "@typescript/lib-dom": "npm:@types/web@^0.0.344",
+    "@typescript/lib-dom": "npm:@types/web@^0.0.345",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
     "publint": "catalog:",

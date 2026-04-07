@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-
     /* Language & environment */
     "target": "ES2022",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
@@ -25,8 +23,10 @@
     /* Performance */
     "skipLibCheck": true,
 
+    "types": ["node"],
+
     "paths": {
-      "@test/*": ["test/*"]
+      "@test/*": ["./test/*"]
     }
   },
   "exclude": ["node_modules", "dist"],

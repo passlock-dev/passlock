@@ -9,7 +9,7 @@ import {
   Schema,
   Stream,
 } from "effect"
-import type { satisfy } from "src/schemas/satisfy.js"
+import type { satisfy } from "../schemas/satisfy.js"
 import {
   fetchNetwork,
   matchStatus,

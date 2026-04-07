@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-
     // Platform & modules
     "target": "ES2022", // Node 20+ supports this natively
     "lib": ["ES2024"], // built-ins/Promise APIs, etc.
@@ -26,8 +24,10 @@
     "resolveJsonModule": true,
     "preserveSymlinks": false,
 
+    "types": ["node"],
+
     "paths": {
-      "@test/*": ["test/*"]
+      "@test/*": ["./test/*"]
     }
   },
   "exclude": ["node_modules", "dist"],
