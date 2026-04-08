@@ -4,8 +4,8 @@
     "target": "ES2022",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "moduleResolution": "Bundler", // matches how Vite/Rollup/Webpack resolve
-    "verbatimModuleSyntax": true, // preserves import/export for tree-shaking
+    "moduleResolution": "Bundler",
+    "verbatimModuleSyntax": true,
     "useDefineForClassFields": true,
 
     /* Strictness */
@@ -13,14 +13,30 @@
     "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
 
-    /* Module interop / ergonomics */
+    /* Module interop */
     "resolveJsonModule": true,
     "moduleDetection": "force",
+
+    /* Build output */
+    "composite": true,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "stripInternal": true,
+    "noEmitOnError": true,
 
     /* Performance */
     "skipLibCheck": true
   },
-  "exclude": ["node_modules", "dist"],
+  "include": ["src/**/*"],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "dist",
+    "node_modules"
+  ],
   "plugins": [
     {
       "name": "@effect/language-service"

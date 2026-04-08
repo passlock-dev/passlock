@@ -7,13 +7,13 @@ export default defineConfig({
       {
         test: {
           exclude: ["src/**/*.it.test.ts"],
-          include: ["src/**/*.test.ts", "test/**/*.test.ts"],
+          include: ["src/**/*.test.ts"],
           name: "unit",
         },
       },
       {
         test: {
-          include: ["src/**/*.it.test.ts", "test/**/*.it.test.ts"],
+          include: ["src/**/*.it.test.ts"],
           name: "integration",
         },
       },
