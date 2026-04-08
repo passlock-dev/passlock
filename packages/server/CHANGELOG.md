@@ -1,5 +1,10 @@
 # @passlock/server
 
+## 2.4.1
+### Patch Changes
+
+- Upgrade dependencies
+
 ## 2.4.0
 ### Minor Changes
 

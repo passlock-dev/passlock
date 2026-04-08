@@ -18,7 +18,11 @@ const findAllPasskeys = async () => {
 
 const deletePasskeys = async (passkeyIds: Array<string>) => {
 	for (const passkeyId of passkeyIds) {
-		await deletePasskey({ tenancyId, apiKey, endpoint, passkeyId });
+		try {
+			await deletePasskey({ tenancyId, apiKey, endpoint, passkeyId });
+		} catch {
+			log.warn('Warning: passkey no longer exists in Passlock vault');
+		}
 		await db.delete(passkeysTable).where(eq(passkeysTable.passkeyId, passkeyId));
 		console.log(`Deleted passkey ${passkeyId}`);
 	}

@@ -31,12 +31,7 @@
     "skipLibCheck": true
   },
   "include": ["src/**/*"],
-  "exclude": [
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "dist",
-    "node_modules"
-  ],
+  "exclude": ["**/*.test.ts", "**/*.spec.ts", "dist", "node_modules"],
   "plugins": [
     {
       "name": "@effect/language-service"
