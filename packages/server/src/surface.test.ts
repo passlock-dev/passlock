@@ -1,13 +1,5 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type {
-  createMailboxChallenge as createMailboxChallengeEffect,
-  deleteMailboxChallenge as deleteMailboxChallengeEffect,
-  CreateMailboxChallengeOptions as EffectCreateMailboxChallengeOptions,
-  GetMailboxChallengeOptions as EffectGetMailboxChallengeOptions,
-  getMailboxChallenge as getMailboxChallengeEffect,
-  verifyMailboxChallenge as verifyMailboxChallengeEffect,
-} from "./effect.js"
-import type {
   CreateMailboxChallengeOptions as UnsafeCreateMailboxChallengeOptions,
   Credential as UnsafeCredential,
   DeletedPasskeys as UnsafeDeletedPasskeys,
@@ -26,7 +18,6 @@ import type {
   Err,
   ExtendedPrincipal,
   ForbiddenError,
-  GetMailboxChallengeOptions,
   InvalidChallengeCodeError,
   InvalidCodeError,
   MailboxChallenge,
@@ -166,38 +157,6 @@ describe("public surface", () => {
         Awaited<ReturnType<typeof getMailboxChallenge>>,
         Result<MailboxChallengeDetails, ForbiddenError | NotFoundError>
       >
-    >
-
-    expect(true).toBe(true)
-  })
-
-  it("exposes mailbox Effect exports", () => {
-    expectTypeOf<
-      ReturnType<typeof createMailboxChallengeEffect>
-    >().not.toEqualTypeOf<never>()
-    expectTypeOf<
-      ReturnType<typeof getMailboxChallengeEffect>
-    >().not.toEqualTypeOf<never>()
-    expectTypeOf<
-      ReturnType<typeof verifyMailboxChallengeEffect>
-    >().not.toEqualTypeOf<never>()
-    expectTypeOf<
-      ReturnType<typeof deleteMailboxChallengeEffect>
-    >().not.toEqualTypeOf<never>()
-
-    type IsEqual<A, B> =
-      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
-        ? true
-        : false
-    type Assert<T extends true> = T
-    type _1 = Assert<
-      IsEqual<
-        EffectCreateMailboxChallengeOptions,
-        CreateMailboxChallengeOptions
-      >
-    >
-    type _2 = Assert<
-      IsEqual<EffectGetMailboxChallengeOptions, GetMailboxChallengeOptions>
     >
 
     expect(true).toBe(true)

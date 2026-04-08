@@ -36,11 +36,6 @@
       "types": "./dist/safe.d.ts",
       "import": "./dist/safe.js",
       "default": "./dist/safe.js"
-    },
-    "./effect": {
-      "types": "./dist/effect.d.ts",
-      "import": "./dist/effect.js",
-      "default": "./dist/effect.js"
     }
   },
   "module": "./dist/index.js",
