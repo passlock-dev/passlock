@@ -133,9 +133,7 @@ describe("safe result envelopes", () => {
     expect(result.value).toBe(result)
     expect(result._tag).toEqual("DeleteSuccess")
     expect(isDeleteSuccess(result)).toBe(true)
-    await vi.waitFor(() =>
-      expect(signalUnknownCredential).toHaveBeenCalledTimes(2)
-    )
+    await vi.waitFor(() => expect(signalUnknownCredential).toHaveBeenCalledTimes(2))
     expect(signalUnknownCredential).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining(deleteCredentials[0])

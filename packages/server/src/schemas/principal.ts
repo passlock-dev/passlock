@@ -60,28 +60,25 @@ type _Principal = satisfy<typeof PrincipalSchema.Type, Principal>
  *
  * @category Principal
  */
-export const ExtendedPrincipalSchema = Schema.TaggedStruct(
-  "ExtendedPrincipal",
-  {
-    id: Schema.String,
-    authenticatorId: Schema.String,
-    authenticatorType: Schema.Literal("passkey"),
-    createdAt: Schema.Number,
-    expiresAt: Schema.Number,
-    passkey: Schema.optional(
-      Schema.Struct({
-        platformName: Schema.optional(Schema.String),
-        userVerified: Schema.Boolean,
-        verified: Schema.Boolean,
-      })
-    ),
-    userId: Schema.String,
-    metadata: Schema.Struct({
-      ipAddress: Schema.optional(Schema.String),
-      userAgent: Schema.optional(Schema.String),
-    }),
-  }
-)
+export const ExtendedPrincipalSchema = Schema.TaggedStruct("ExtendedPrincipal", {
+  id: Schema.String,
+  authenticatorId: Schema.String,
+  authenticatorType: Schema.Literal("passkey"),
+  createdAt: Schema.Number,
+  expiresAt: Schema.Number,
+  passkey: Schema.optional(
+    Schema.Struct({
+      platformName: Schema.optional(Schema.String),
+      userVerified: Schema.Boolean,
+      verified: Schema.Boolean,
+    })
+  ),
+  userId: Schema.String,
+  metadata: Schema.Struct({
+    ipAddress: Schema.optional(Schema.String),
+    userAgent: Schema.optional(Schema.String),
+  }),
+})
 
 /**
  * Extended principal payload returned by `exchangeCode`.
@@ -117,14 +114,10 @@ export type ExtendedPrincipal = {
  *
  * @category Principal
  */
-export const isExtendedPrincipal = (
-  payload: unknown
-): payload is ExtendedPrincipal => Schema.is(ExtendedPrincipalSchema)(payload)
+export const isExtendedPrincipal = (payload: unknown): payload is ExtendedPrincipal =>
+  Schema.is(ExtendedPrincipalSchema)(payload)
 
-type _ExtendedPrincipal = satisfy<
-  typeof ExtendedPrincipalSchema.Type,
-  ExtendedPrincipal
->
+type _ExtendedPrincipal = satisfy<typeof ExtendedPrincipalSchema.Type, ExtendedPrincipal>
 
 /**
  * Schema for the Passlock JWT claims used by {@link PrincipalSchema}.
@@ -167,7 +160,6 @@ export type IdToken = {
  *
  * @category Principal
  */
-export const isIdToken = (payload: unknown): payload is IdToken =>
-  Schema.is(IdTokenSchema)(payload)
+export const isIdToken = (payload: unknown): payload is IdToken => Schema.is(IdTokenSchema)(payload)
 
 type _IdToken = satisfy<typeof IdTokenSchema.Type, IdToken>

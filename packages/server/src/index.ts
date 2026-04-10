@@ -61,10 +61,7 @@ import {
   updatePasskey as updatePasskeyE,
   updatePasskeyUsernames as updatePasskeyUsernamesE,
 } from "./passkey/passkey.js"
-import type {
-  ExchangeCodeOptions,
-  VerifyIdTokenOptions,
-} from "./principal/principal.js"
+import type { ExchangeCodeOptions, VerifyIdTokenOptions } from "./principal/principal.js"
 import {
   exchangeCode as exchangeCodeE,
   verifyIdToken as verifyIdTokenE,
@@ -96,8 +93,7 @@ import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
  */
 export const createMailboxChallenge = (
   options: CreateMailboxChallengeOptions
-): Promise<MailboxChallengeCreated> =>
-  pipe(createMailboxChallengeE(options), Effect.runPromise)
+): Promise<MailboxChallengeCreated> => pipe(createMailboxChallengeE(options), Effect.runPromise)
 
 /**
  * Fetch a mailbox one-time-code challenge.
@@ -114,8 +110,7 @@ export const createMailboxChallenge = (
  */
 export const getMailboxChallenge = (
   options: GetMailboxChallengeOptions
-): Promise<MailboxChallengeDetails> =>
-  pipe(getMailboxChallengeE(options), Effect.runPromise)
+): Promise<MailboxChallengeDetails> => pipe(getMailboxChallengeE(options), Effect.runPromise)
 
 /**
  * Verify a mailbox one-time-code challenge.
@@ -137,8 +132,7 @@ export const getMailboxChallenge = (
  */
 export const verifyMailboxChallenge = (
   options: VerifyMailboxChallengeOptions
-): Promise<MailboxChallengeVerified> =>
-  pipe(verifyMailboxChallengeE(options), Effect.runPromise)
+): Promise<MailboxChallengeVerified> => pipe(verifyMailboxChallengeE(options), Effect.runPromise)
 
 /**
  * Delete a mailbox one-time-code challenge.
@@ -152,8 +146,7 @@ export const verifyMailboxChallenge = (
  */
 export const deleteMailboxChallenge = (
   options: DeleteMailboxChallengeOptions
-): Promise<MailboxChallengeDeleted> =>
-  pipe(deleteMailboxChallengeE(options), Effect.runPromise)
+): Promise<MailboxChallengeDeleted> => pipe(deleteMailboxChallengeE(options), Effect.runPromise)
 
 /**
  * Assign a custom user ID to a passkey in the Passlock vault.
@@ -184,9 +177,8 @@ export const assignUser = (request: AssignUserOptions): Promise<Passkey> =>
  *
  * @category Passkeys
  */
-export const updatePasskey = (
-  request: UpdatePasskeyOptions
-): Promise<Passkey> => pipe(updatePasskeyE(request), Effect.runPromise)
+export const updatePasskey = (request: UpdatePasskeyOptions): Promise<Passkey> =>
+  pipe(updatePasskeyE(request), Effect.runPromise)
 
 /**
  * Update the stored username metadata for all passkeys belonging to a given
@@ -211,8 +203,7 @@ export const updatePasskey = (
  */
 export const updatePasskeyUsernames = (
   request: UpdateUsernamesOptions
-): Promise<UpdatedCredentials> =>
-  pipe(updatePasskeyUsernamesE(request), Effect.runPromise)
+): Promise<UpdatedCredentials> => pipe(updatePasskeyUsernamesE(request), Effect.runPromise)
 
 /**
  * Delete a passkey from the Passlock vault.
@@ -227,9 +218,8 @@ export const updatePasskeyUsernames = (
  *
  * @category Passkeys
  */
-export const deletePasskey = (
-  options: DeletePasskeyOptions
-): Promise<DeletedPasskey> => pipe(deletePasskeyE(options), Effect.runPromise)
+export const deletePasskey = (options: DeletePasskeyOptions): Promise<DeletedPasskey> =>
+  pipe(deletePasskeyE(options), Effect.runPromise)
 
 /**
  * Call the Passlock backend API to delete all passkeys associated with a user.
@@ -243,9 +233,7 @@ export const deletePasskey = (
  *
  * @category Passkeys
  */
-export const deleteUserPasskeys = (
-  request: DeleteUserPasskeysOptions
-): Promise<DeletedPasskeys> =>
+export const deleteUserPasskeys = (request: DeleteUserPasskeysOptions): Promise<DeletedPasskeys> =>
   pipe(deleteUserPasskeysE(request), Effect.runPromise)
 
 /**
@@ -271,9 +259,8 @@ export const getPasskey = (options: GetPasskeyOptions): Promise<Passkey> =>
  *
  * @category Passkeys
  */
-export const listPasskeys = (
-  options: ListPasskeyOptions
-): Promise<FindAllPasskeys> => pipe(listPasskeysE(options), Effect.runPromise)
+export const listPasskeys = (options: ListPasskeyOptions): Promise<FindAllPasskeys> =>
+  pipe(listPasskeysE(options), Effect.runPromise)
 
 /**
  * Exchange a short-lived code from `@passlock/client` for an
@@ -286,9 +273,8 @@ export const listPasskeys = (
  *
  * @category Principal
  */
-export const exchangeCode = (
-  options: ExchangeCodeOptions
-): Promise<ExtendedPrincipal> => pipe(exchangeCodeE(options), Effect.runPromise)
+export const exchangeCode = (options: ExchangeCodeOptions): Promise<ExtendedPrincipal> =>
+  pipe(exchangeCodeE(options), Effect.runPromise)
 
 /**
  * Decode and verify a Passlock `id_token` (JWT).
@@ -305,9 +291,8 @@ export const exchangeCode = (
  *
  * @category Principal
  */
-export const verifyIdToken = (
-  options: VerifyIdTokenOptions
-): Promise<Principal> => pipe(verifyIdTokenE(options), Effect.runPromise)
+export const verifyIdToken = (options: VerifyIdTokenOptions): Promise<Principal> =>
+  pipe(verifyIdTokenE(options), Effect.runPromise)
 
 /* Re-exports */
 

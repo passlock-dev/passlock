@@ -106,10 +106,7 @@ import {
   updatePasskey as updatePasskeyE,
   updatePasskeyUsernames as updatePasskeyUsernamesE,
 } from "./passkey/passkey.js"
-import type {
-  ExchangeCodeOptions,
-  VerifyIdTokenOptions,
-} from "./principal/principal.js"
+import type { ExchangeCodeOptions, VerifyIdTokenOptions } from "./principal/principal.js"
 import {
   exchangeCode as exchangeCodeE,
   verifyIdToken as verifyIdTokenE,
@@ -152,9 +149,8 @@ const runSafe = <A extends object, E extends object>(
  */
 export const createMailboxChallenge = (
   options: CreateMailboxChallengeOptions
-): Promise<
-  Result<MailboxChallengeCreated, ForbiddenError | ChallengeRateLimitedError>
-> => runSafe(createMailboxChallengeE(options))
+): Promise<Result<MailboxChallengeCreated, ForbiddenError | ChallengeRateLimitedError>> =>
+  runSafe(createMailboxChallengeE(options))
 
 /**
  * Fetch a mailbox one-time-code challenge.
@@ -235,8 +231,7 @@ export const deleteMailboxChallenge = (
  */
 export const assignUser = (
   request: AssignUserOptions
-): Promise<Result<Passkey, NotFoundError | ForbiddenError>> =>
-  runSafe(assignUserE(request))
+): Promise<Result<Passkey, NotFoundError | ForbiddenError>> => runSafe(assignUserE(request))
 
 /**
  * Update a passkey's custom user ID and/or username metadata.
@@ -256,8 +251,7 @@ export const assignUser = (
  */
 export const updatePasskey = (
   request: UpdatePasskeyOptions
-): Promise<Result<Passkey, NotFoundError | ForbiddenError>> =>
-  runSafe(updatePasskeyE(request))
+): Promise<Result<Passkey, NotFoundError | ForbiddenError>> => runSafe(updatePasskeyE(request))
 
 /**
  * Update the stored username metadata for all passkeys belonging to a given
@@ -349,8 +343,7 @@ export const deleteUserPasskeys = (
  */
 export const getPasskey = (
   options: GetPasskeyOptions
-): Promise<Result<Passkey, ForbiddenError | NotFoundError>> =>
-  runSafe(getPasskeyE(options))
+): Promise<Result<Passkey, ForbiddenError | NotFoundError>> => runSafe(getPasskeyE(options))
 
 /**
  * List passkeys for the given tenancy. Note: This could return a cursor.
@@ -364,8 +357,7 @@ export const getPasskey = (
  */
 export const listPasskeys = (
   options: ListPasskeyOptions
-): Promise<Result<FindAllPasskeys, ForbiddenError>> =>
-  runSafe(listPasskeysE(options))
+): Promise<Result<FindAllPasskeys, ForbiddenError>> => runSafe(listPasskeysE(options))
 
 /**
  * The @passlock/client library generates codes, which you should send to
@@ -405,8 +397,7 @@ export const exchangeCode = (
  */
 export const verifyIdToken = (
   options: VerifyIdTokenOptions
-): Promise<Result<Principal, VerificationError>> =>
-  runSafe(verifyIdTokenE(options))
+): Promise<Result<Principal, VerificationError>> => runSafe(verifyIdTokenE(options))
 
 /* Re-exports */
 

@@ -1,7 +1,4 @@
-import {
-  browserSupportsWebAuthn,
-  browserSupportsWebAuthnAutofill,
-} from "@simplewebauthn/browser"
+import { browserSupportsWebAuthn, browserSupportsWebAuthnAutofill } from "@simplewebauthn/browser"
 
 /**
  * Test for passkey support on the device
@@ -19,8 +16,7 @@ export const isPasskeySupport = (): boolean => browserSupportsWebAuthn()
  *
  * @category Passkeys (other)
  */
-export const isAutofillSupport = (): Promise<boolean> =>
-  browserSupportsWebAuthnAutofill()
+export const isAutofillSupport = (): Promise<boolean> => browserSupportsWebAuthnAutofill()
 
 export {
   isPasskeyDeleteSupport,

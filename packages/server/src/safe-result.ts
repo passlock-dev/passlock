@@ -42,11 +42,7 @@ const toSelfAccessor = <T extends object>(payload: T) => ({
   get: (): T => payload,
 })
 
-const decorate = <
-  T extends object,
-  Success extends boolean,
-  Key extends "value" | "error",
->(
+const decorate = <T extends object, Success extends boolean, Key extends "value" | "error">(
   payload: T,
   success: Success,
   key: Key

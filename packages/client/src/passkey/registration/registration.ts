@@ -5,21 +5,12 @@ import {
   WebAuthnError,
 } from "@simplewebauthn/browser"
 import { Context, Micro, pipe } from "effect"
-import {
-  Endpoint,
-  makeEndpoint,
-  makeRequest,
-  TenancyId,
-} from "../../internal/index.js"
+import { Endpoint, makeEndpoint, makeRequest, TenancyId } from "../../internal/index.js"
 import type { NetworkError } from "../../internal/network.js"
 import { Logger } from "../../logger.js"
 import type { PasslockOptions } from "../../options.js"
 import type { Principal } from "../../principal"
-import {
-  DuplicatePasskeyError,
-  OtherPasskeyError,
-  PasskeyUnsupportedError,
-} from "../errors.js"
+import { DuplicatePasskeyError, OtherPasskeyError, PasskeyUnsupportedError } from "../errors.js"
 import type { Millis, UserVerification } from "../shared.js"
 
 /**
@@ -143,9 +134,7 @@ export type RegistrationSuccess = {
  *
  * @category Passkeys (other)
  */
-export const isRegistrationSuccess = (
-  payload: unknown
-): payload is RegistrationSuccess => {
+export const isRegistrationSuccess = (payload: unknown): payload is RegistrationSuccess => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
 
@@ -159,9 +148,7 @@ export type OptionsResponse = {
   optionsJSON: PublicKeyCredentialCreationOptionsJSON
 }
 
-export const isOptionsResponse = (
-  payload: unknown
-): payload is OptionsResponse => {
+export const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
 
@@ -175,22 +162,14 @@ export const isOptionsResponse = (
   return true
 }
 
-export const fetchOptions = (
-  options: Omit<RegistrationOptions, keyof PasslockOptions>
-) =>
+export const fetchOptions = (options: Omit<RegistrationOptions, keyof PasslockOptions>) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
     const { endpoint } = yield* Micro.service(Endpoint)
     const { tenancyId } = yield* Micro.service(TenancyId)
 
-    const {
-      username,
-      displayName,
-      excludeCredentials,
-      userVerification,
-      timeout,
-      onEvent,
-    } = options
+    const { username, displayName, excludeCredentials, userVerification, timeout, onEvent } =
+      options
 
     const url = new URL(`${tenancyId}/passkey/registration/options`, endpoint)
 
@@ -263,10 +242,7 @@ export const verifyCredential = (
     const { endpoint } = yield* Micro.service(Endpoint)
     const { tenancyId } = yield* Micro.service(TenancyId)
 
-    const url = new URL(
-      `${tenancyId}/passkey/registration/verification`,
-      endpoint
-    )
+    const url = new URL(`${tenancyId}/passkey/registration/verification`, endpoint)
 
     onEvent?.("saveCredential")
     yield* logger.logInfo("Registering passkey in Passlock vault")
@@ -311,11 +287,7 @@ export type RegistrationError =
  */
 export const registerPasskey = (
   options: RegistrationOptions
-): Micro.Micro<
-  RegistrationSuccess,
-  RegistrationError,
-  Logger | RegistrationHelper
-> => {
+): Micro.Micro<RegistrationSuccess, RegistrationError, Logger | RegistrationHelper> => {
   const endpoint = makeEndpoint(options)
 
   const effect = Micro.gen(function* () {
@@ -340,21 +312,14 @@ export const registerPasskey = (
  *
  * @category Passkeys (other)
  */
-export const RegistrationEvents = [
-  "optionsRequest",
-  "createCredential",
-  "saveCredential",
-] as const
+export const RegistrationEvents = ["optionsRequest", "createCredential", "saveCredential"] as const
 
 /**
  * Registration lifecycle event name.
  *
  * @category Passkeys (other)
  */
-export type RegistrationEvent =
-  | "optionsRequest"
-  | "createCredential"
-  | "saveCredential"
+export type RegistrationEvent = "optionsRequest" | "createCredential" | "saveCredential"
 
 /**
  * Callback invoked when registration reaches a lifecycle event.

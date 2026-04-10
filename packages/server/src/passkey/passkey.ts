@@ -1,14 +1,4 @@
-import {
-  Array,
-  Chunk,
-  Effect,
-  type Layer,
-  Match,
-  Option,
-  pipe,
-  Schema,
-  Stream,
-} from "effect"
+import { Array, Chunk, Effect, type Layer, Match, Option, pipe, Schema, Stream } from "effect"
 import {
   fetchNetwork,
   matchStatus,
@@ -150,10 +140,7 @@ export const isPasskeySummary = (payload: unknown): payload is PasskeySummary =>
  * needed to ensure the PasskeySummary === PasskeySummary.Type
  * @internal
  */
-export type _PasskeySummary = satisfy<
-  typeof PasskeySchemas.PasskeySummary.Type,
-  PasskeySummary
->
+export type _PasskeySummary = satisfy<typeof PasskeySchemas.PasskeySummary.Type, PasskeySummary>
 
 /* UpdatedPasskeys */
 
@@ -172,19 +159,14 @@ export type UpdatedPasskeys = {
  *
  * @category Passkeys
  */
-export const isUpdatedPasskeys = (
-  payload: unknown
-): payload is UpdatedPasskeys =>
+export const isUpdatedPasskeys = (payload: unknown): payload is UpdatedPasskeys =>
   Schema.is(PasskeySchemas.UpdatedPasskeys)(payload)
 
 /**
  * needed to ensure the UpdatedPasskeys === UpdatedPasskeys.Type
  * @internal
  * */
-export type _UpdatedPasskeys = satisfy<
-  typeof PasskeySchemas.UpdatedPasskeys.Type,
-  UpdatedPasskeys
->
+export type _UpdatedPasskeys = satisfy<typeof PasskeySchemas.UpdatedPasskeys.Type, UpdatedPasskeys>
 
 /* Credential */
 
@@ -203,10 +185,7 @@ export type Credential = {
  * needed to ensure the Credential === Credential.Type
  * @internal
  */
-export type _Credential = satisfy<
-  typeof PasskeySchemas.Credential.Type,
-  Credential
->
+export type _Credential = satisfy<typeof PasskeySchemas.Credential.Type, Credential>
 
 /* DeletedPasskey */
 
@@ -232,10 +211,7 @@ export const isDeletedPasskey = (payload: unknown): payload is DeletedPasskey =>
  * needed to ensure the DeletedPasskey === DeletedPasskey.Type
  * @internal
  * */
-export type _DeletedPasskey = satisfy<
-  typeof PasskeySchemas.DeletedPasskey.Type,
-  DeletedPasskey
->
+export type _DeletedPasskey = satisfy<typeof PasskeySchemas.DeletedPasskey.Type, DeletedPasskey>
 
 /* DeletedPasskeys */
 
@@ -254,19 +230,14 @@ export type DeletedPasskeys = {
  *
  * @category Passkeys
  */
-export const isDeletedPasskeys = (
-  payload: unknown
-): payload is DeletedPasskeys =>
+export const isDeletedPasskeys = (payload: unknown): payload is DeletedPasskeys =>
   Schema.is(PasskeySchemas.DeletedPasskeys)(payload)
 
 /**
  * needed to ensure the DeletedPasskeys === DeletedPasskeys.Type
  * @internal
  * */
-export type _DeletedPasskeys = satisfy<
-  typeof PasskeySchemas.DeletedPasskeys.Type,
-  DeletedPasskeys
->
+export type _DeletedPasskeys = satisfy<typeof PasskeySchemas.DeletedPasskeys.Type, DeletedPasskeys>
 
 /* FindAllPasskeys */
 
@@ -286,19 +257,14 @@ export type FindAllPasskeys = {
  *
  * @category Passkeys
  */
-export const isFindAllPasskeys = (
-  payload: unknown
-): payload is FindAllPasskeys =>
+export const isFindAllPasskeys = (payload: unknown): payload is FindAllPasskeys =>
   Schema.is(PasskeySchemas.FindAllPasskeys)(payload)
 
 /**
  * needed to ensure the FindAllPasskeys === FindAllPasskeys.Type
  * @internal
  */
-export type _FindAllPasskeys = satisfy<
-  typeof FindAllPasskeysSchema.Type,
-  FindAllPasskeys
->
+export type _FindAllPasskeys = satisfy<typeof FindAllPasskeysSchema.Type, FindAllPasskeys>
 
 /* UpdatedCredentials (update names by userId) */
 
@@ -330,9 +296,7 @@ export type UpdatedCredentials = {
  *
  * @category Passkeys
  */
-export const isUpdatedUserDetails = (
-  payload: unknown
-): payload is UpdatedCredentials => {
+export const isUpdatedUserDetails = (payload: unknown): payload is UpdatedCredentials => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
   if (!("_tag" in payload)) return false
@@ -348,10 +312,8 @@ const authorizationHeaders = (apiKey: string) => ({
   authorization: `Bearer ${apiKey}`,
 })
 
-const decodeResponseJson = <A, I, R>(
-  response: NetworkResponse,
-  schema: Schema.Schema<A, I, R>
-) => pipe(response.json, Effect.flatMap(Schema.decodeUnknown(schema)))
+const decodeResponseJson = <A, I, R>(response: NetworkResponse, schema: Schema.Schema<A, I, R>) =>
+  pipe(response.json, Effect.flatMap(Schema.decodeUnknown(schema)))
 
 /* Get Passkey */
 
@@ -391,15 +353,10 @@ export const getPasskey = (
         headers: authorizationHeaders(options.apiKey),
       })
 
-      const encoded: Passkey | ForbiddenError | NotFoundError =
-        yield* matchStatus(response, {
-          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
-          orElse: (res) =>
-            decodeResponseJson(
-              res,
-              Schema.Union(ForbiddenError, NotFoundError)
-            ),
-        })
+      const encoded: Passkey | ForbiddenError | NotFoundError = yield* matchStatus(response, {
+        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
+        orElse: (res) => decodeResponseJson(res, Schema.Union(ForbiddenError, NotFoundError)),
+      })
 
       return yield* pipe(
         Match.value(encoded),
@@ -459,15 +416,10 @@ export const deletePasskey = (
         headers: authorizationHeaders(options.apiKey),
       })
 
-      const encoded: Passkey | ForbiddenError | NotFoundError =
-        yield* matchStatus(response, {
-          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
-          orElse: (res) =>
-            decodeResponseJson(
-              res,
-              Schema.Union(ForbiddenError, NotFoundError)
-            ),
-        })
+      const encoded: Passkey | ForbiddenError | NotFoundError = yield* matchStatus(response, {
+        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
+        orElse: (res) => decodeResponseJson(res, Schema.Union(ForbiddenError, NotFoundError)),
+      })
 
       return yield* pipe(
         Match.value(encoded),
@@ -548,15 +500,10 @@ export const assignUser = (
         }
       )
 
-      const encoded: Passkey | NotFoundError | ForbiddenError =
-        yield* matchStatus(response, {
-          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
-          orElse: (res) =>
-            decodeResponseJson(
-              res,
-              Schema.Union(NotFoundError, ForbiddenError)
-            ),
-        })
+      const encoded: Passkey | NotFoundError | ForbiddenError = yield* matchStatus(response, {
+        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
+        orElse: (res) => decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
+      })
 
       return yield* pipe(
         Match.value(encoded),
@@ -628,15 +575,10 @@ export const updatePasskey = (
         }
       )
 
-      const encoded: Passkey | NotFoundError | ForbiddenError =
-        yield* matchStatus(response, {
-          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
-          orElse: (res) =>
-            decodeResponseJson(
-              res,
-              Schema.Union(NotFoundError, ForbiddenError)
-            ),
-        })
+      const encoded: Passkey | NotFoundError | ForbiddenError = yield* matchStatus(response, {
+        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
+        orElse: (res) => decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
+      })
 
       return yield* pipe(
         Match.value(encoded),
@@ -684,16 +626,13 @@ const updateUserPasskeys = (
         }
       )
 
-      const encoded: UpdatedPasskeys | NotFoundError | ForbiddenError =
-        yield* matchStatus(response, {
-          "2xx": (res) =>
-            decodeResponseJson(res, PasskeySchemas.UpdatedPasskeys),
-          orElse: (res) =>
-            decodeResponseJson(
-              res,
-              Schema.Union(NotFoundError, ForbiddenError)
-            ),
-        })
+      const encoded: UpdatedPasskeys | NotFoundError | ForbiddenError = yield* matchStatus(
+        response,
+        {
+          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.UpdatedPasskeys),
+          orElse: (res) => decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
+        }
+      )
 
       return yield* pipe(
         Match.value(encoded),
@@ -764,10 +703,8 @@ export const deleteUserPasskeys = (
         | typeof PasskeySchemas.DeletedPasskeysResponse.Type
         | NotFoundError
         | ForbiddenError = yield* matchStatus(response, {
-        "2xx": (res) =>
-          decodeResponseJson(res, PasskeySchemas.DeletedPasskeysResponse),
-        orElse: (res) =>
-          decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
+        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.DeletedPasskeysResponse),
+        orElse: (res) => decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
       })
 
       return yield* pipe(
@@ -924,13 +861,10 @@ export const listPasskeys = (
         headers: authorizationHeaders(options.apiKey),
       })
 
-      const encoded: FindAllPasskeys | ForbiddenError = yield* matchStatus(
-        response,
-        {
-          "2xx": (res) => decodeResponseJson(res, FindAllPasskeysSchema),
-          orElse: (res) => decodeResponseJson(res, ForbiddenError),
-        }
-      )
+      const encoded: FindAllPasskeys | ForbiddenError = yield* matchStatus(response, {
+        "2xx": (res) => decodeResponseJson(res, FindAllPasskeysSchema),
+        orElse: (res) => decodeResponseJson(res, ForbiddenError),
+      })
 
       return yield* pipe(
         Match.value(encoded),

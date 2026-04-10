@@ -53,8 +53,7 @@ class CliParseError extends Data.TaggedError("@error/CliParse")<{
 
 const isHelpFlag = (arg: string): boolean => arg === "--help" || arg === "-h"
 
-const isVersionFlag = (arg: string): boolean =>
-  arg === "--version" || arg === "-v"
+const isVersionFlag = (arg: string): boolean => arg === "--version" || arg === "-v"
 
 export const parseInitArgs = (
   args: ReadonlyArray<string>
@@ -140,15 +139,11 @@ export const parseArgs = (
     })
   })
 
-const runCommand = (
-  command: ParsedCommand
-): Effect.Effect<void, never, NetworkFetch> =>
+const runCommand = (command: ParsedCommand): Effect.Effect<void, never, NetworkFetch> =>
   pipe(command, (parsed) => {
     switch (parsed._tag) {
       case "show-main":
-        return Console.log(
-          "Passlock CLI tools\nRun with --help for commands and options"
-        )
+        return Console.log("Passlock CLI tools\nRun with --help for commands and options")
       case "show-main-help":
         return Console.log(MAIN_HELP_TEXT)
       case "show-init-help":
@@ -176,5 +171,4 @@ const program = pipe(
   )
 )
 
-;(async () =>
-  pipe(program, Effect.provide(NetworkFetchLive), Effect.runPromise))()
+;(async () => pipe(program, Effect.provide(NetworkFetchLive), Effect.runPromise))()

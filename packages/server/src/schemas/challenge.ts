@@ -21,8 +21,7 @@ export interface MailboxChallengeMetadata {
 }
 
 const isPlainObject = (input: unknown): input is Record<string, unknown> => {
-  if (typeof input !== "object" || input === null || Array.isArray(input))
-    return false
+  if (typeof input !== "object" || input === null || Array.isArray(input)) return false
 
   const prototype = Object.getPrototypeOf(input)
   return prototype === Object.prototype || prototype === null
@@ -86,8 +85,7 @@ export type MailboxChallengeEmail = typeof MailboxChallengeEmail.Type
  */
 export const MailboxChallengeMetadata = Schema.declare(
   (input: unknown): input is MailboxChallengeMetadata =>
-    isPlainObject(input) &&
-    Object.values(input).every(isMailboxChallengeMetadataValue)
+    isPlainObject(input) && Object.values(input).every(isMailboxChallengeMetadataValue)
 ).annotations({ identifier: "MailboxChallengeMetadata" })
 
 const MailboxChallengeDetailsFields = {
@@ -178,12 +176,9 @@ export type MailboxChallengeCreated = typeof MailboxChallengeCreated.Type
  *
  * @category Mailbox
  */
-export const MailboxChallengeVerified = Schema.TaggedStruct(
-  "ChallengeVerified",
-  {
-    challenge: MailboxChallengeDetails,
-  }
-)
+export const MailboxChallengeVerified = Schema.TaggedStruct("ChallengeVerified", {
+  challenge: MailboxChallengeDetails,
+})
 
 /**
  * Type produced by {@link MailboxChallengeVerified}.
@@ -199,10 +194,7 @@ export type MailboxChallengeVerified = typeof MailboxChallengeVerified.Type
  *
  * @category Mailbox
  */
-export const MailboxChallengeDeleted = Schema.TaggedStruct(
-  "ChallengeDeleted",
-  {}
-)
+export const MailboxChallengeDeleted = Schema.TaggedStruct("ChallengeDeleted", {})
 
 /**
  * Type produced by {@link MailboxChallengeDeleted}.

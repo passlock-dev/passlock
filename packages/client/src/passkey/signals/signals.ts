@@ -3,12 +3,7 @@ import { encodeUriComponent } from "effect/Encoding"
 import { makeEndpoint } from "../../internal/index.js"
 import { Logger } from "../../logger.js"
 import type { PasslockOptions } from "../../options.js"
-import {
-  DeleteError,
-  type OrphanedPasskeyError,
-  PruningError,
-  UpdateError,
-} from "../errors.js"
+import { DeleteError, type OrphanedPasskeyError, PruningError, UpdateError } from "../errors.js"
 
 /**
  * Detect support for browser-driven local passkey removal via
@@ -118,8 +113,7 @@ export const deletePasskey = (
         })
       )
 
-    const credential =
-      "rpId" in options ? options : yield* getCredential(options)
+    const credential = "rpId" in options ? options : yield* getCredential(options)
 
     return yield* signalCredentialRemoval(credential)
   })
@@ -131,10 +125,7 @@ const getCredential = (options: DeletePasskeyOptions) =>
     const { endpoint } = makeEndpoint(options)
 
     yield* logger.logInfo("Fetching passkey credential and rp id")
-    const url = new URL(
-      `${tenancyId}/credential/${options.passkeyId}`,
-      endpoint
-    )
+    const url = new URL(`${tenancyId}/credential/${options.passkeyId}`, endpoint)
     const response = yield* Micro.promise(() => fetch(url))
     if (response.status === 404)
       return yield* Micro.fail(
@@ -187,9 +178,7 @@ export type PruningSuccess = {
  *
  * @category Passkeys (other)
  */
-export const isPruningSuccess = (
-  payload: unknown
-): payload is PruningSuccess => {
+export const isPruningSuccess = (payload: unknown): payload is PruningSuccess => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
   if (!("_tag" in payload)) return false
@@ -238,13 +227,8 @@ export const prunePasskeys = (options: PrunePasskeyOptions) =>
       )
 
     yield* logger.logInfo("Fetching passkey credentials and rp id")
-    const encodedPasskeyIds = encodeUriComponent(
-      options.allowablePasskeyIds.join(",")
-    )
-    const url = new URL(
-      `${tenancyId}/credentials/${encodedPasskeyIds}`,
-      endpoint
-    )
+    const encodedPasskeyIds = encodeUriComponent(options.allowablePasskeyIds.join(","))
+    const url = new URL(`${tenancyId}/credentials/${encodedPasskeyIds}`, endpoint)
     const response = yield* Micro.promise(() => fetch(url))
     if (response.status === 404)
       return yield* Micro.fail(
@@ -367,9 +351,7 @@ export const isUpdateSuccess = (payload: unknown): payload is UpdateSuccess => {
  * @returns A Micro effect that resolves with a {@link UpdateSuccess} once the
  * local update workflows have been started.
  */
-export const updatePasskeyUsernames = (
-  options: ReadonlyArray<UpdateCredentialOptions>
-) =>
+export const updatePasskeyUsernames = (options: ReadonlyArray<UpdateCredentialOptions>) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
 
@@ -383,9 +365,7 @@ export const updatePasskeyUsernames = (
         })
       )
 
-    yield* Micro.forEach(options, (credential) =>
-      signalCurrentUserDetails(credential, credential)
-    )
+    yield* Micro.forEach(options, (credential) => signalCurrentUserDetails(credential, credential))
 
     return {
       _tag: "UpdateSuccess",
@@ -444,9 +424,7 @@ export const deleteUserPasskeys = (options: ReadonlyArray<Credential>) =>
  * @returns A Micro effect that resolves with a {@link UpdateSuccess} once the
  * local update workflow has been started.
  */
-export const updatePasskey = (
-  options: UpdatePasskeyOptions | UpdateCredentialOptions
-) =>
+export const updatePasskey = (options: UpdatePasskeyOptions | UpdateCredentialOptions) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
 
@@ -460,8 +438,7 @@ export const updatePasskey = (
         })
       )
 
-    const credential =
-      "rpId" in options ? options : yield* getUserCredential(options)
+    const credential = "rpId" in options ? options : yield* getUserCredential(options)
 
     return yield* signalCurrentUserDetails(credential, options)
   })
@@ -473,10 +450,7 @@ const getUserCredential = (options: UpdatePasskeyOptions) =>
     const { endpoint } = makeEndpoint(options)
 
     yield* logger.logInfo("Fetching passkey credential and rp id")
-    const url = new URL(
-      `${tenancyId}/credential/${options.passkeyId}`,
-      endpoint
-    )
+    const url = new URL(`${tenancyId}/credential/${options.passkeyId}`, endpoint)
     const response = yield* Micro.promise(() => fetch(url))
     if (response.status === 404)
       return yield* Micro.fail(
@@ -623,9 +597,7 @@ export const signalCredentialRemoval = (
       Micro.tryPromise({
         try: () => PublicKeyCredential.signalUnknownCredential(credential),
         catch: (err) =>
-          err instanceof Error
-            ? err
-            : new Error("Unable to signal credential removal"),
+          err instanceof Error ? err : new Error("Unable to signal credential removal"),
       }),
       Micro.catchAllDefect((err) =>
         err instanceof Error
@@ -671,12 +643,9 @@ export const signalAcceptedCredentials = (
 
     yield* pipe(
       Micro.tryPromise({
-        try: () =>
-          PublicKeyCredential.signalAllAcceptedCredentials(credentials),
+        try: () => PublicKeyCredential.signalAllAcceptedCredentials(credentials),
         catch: (err) =>
-          err instanceof Error
-            ? err
-            : new Error("Unable to signal accepted credentials"),
+          err instanceof Error ? err : new Error("Unable to signal accepted credentials"),
       }),
       Micro.timeout(1000),
       Micro.catchAllDefect((err) =>
@@ -737,12 +706,9 @@ export const signalCurrentUserDetails = (
 
     yield* pipe(
       Micro.tryPromise({
-        try: () =>
-          PublicKeyCredential.signalCurrentUserDetails(credentialUpdates),
+        try: () => PublicKeyCredential.signalCurrentUserDetails(credentialUpdates),
         catch: (err) =>
-          err instanceof Error
-            ? err
-            : new Error("Unable to signal credential update"),
+          err instanceof Error ? err : new Error("Unable to signal credential update"),
       }),
       Micro.catchAllDefect((err) =>
         err instanceof Error

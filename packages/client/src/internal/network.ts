@@ -42,10 +42,7 @@ const DEFAULT_ENDPOINT = "https://api.passlock.dev"
 /**
  * Effect service that provides the Passlock API base URL.
  */
-export class Endpoint extends Context.Tag("Endpoint")<
-  Endpoint,
-  { readonly endpoint: string }
->() {}
+export class Endpoint extends Context.Tag("Endpoint")<Endpoint, { readonly endpoint: string }>() {}
 
 /**
  * Create an {@link Endpoint} service from an optional base URL override.
@@ -177,7 +174,5 @@ export const makeRequest = <A extends object, E = never>({
       catch: () => parseError,
     })
 
-    return responsePredicate(json)
-      ? json
-      : yield* Micro.fail(invalidResponsePayload)
+    return responsePredicate(json) ? json : yield* Micro.fail(invalidResponsePayload)
   })

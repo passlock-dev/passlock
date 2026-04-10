@@ -60,29 +60,22 @@ export const exchangeCode = (
         },
       })
 
-      const encoded: ExtendedPrincipal | InvalidCodeError | ForbiddenError =
-        yield* matchStatus(response, {
+      const encoded: ExtendedPrincipal | InvalidCodeError | ForbiddenError = yield* matchStatus(
+        response,
+        {
           "2xx": ({ json }) =>
-            pipe(
-              json,
-              Effect.flatMap(Schema.decodeUnknown(ExtendedPrincipalSchema))
-            ),
+            pipe(json, Effect.flatMap(Schema.decodeUnknown(ExtendedPrincipalSchema))),
           orElse: ({ json }) =>
             pipe(
               json,
-              Effect.flatMap(
-                Schema.decodeUnknown(
-                  Schema.Union(InvalidCodeError, ForbiddenError)
-                )
-              )
+              Effect.flatMap(Schema.decodeUnknown(Schema.Union(InvalidCodeError, ForbiddenError)))
             ),
-        })
+        }
+      )
 
       return yield* pipe(
         Match.value(encoded),
-        Match.tag("ExtendedPrincipal", (principal) =>
-          Effect.succeed(principal)
-        ),
+        Match.tag("ExtendedPrincipal", (principal) => Effect.succeed(principal)),
         Match.tag("@error/InvalidCode", (err) => Effect.fail(err)),
         Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
         Match.exhaustive
@@ -181,7 +174,4 @@ const createJwks = (endpoint?: string) =>
     return jose.createRemoteJWKSet(new URL("/.well-known/jwks.json", baseUrl))
   })
 
-const createCachedRemoteJwks = pipe(
-  Effect.cachedFunction(createJwks),
-  Effect.runSync
-)
+const createCachedRemoteJwks = pipe(Effect.cachedFunction(createJwks), Effect.runSync)
