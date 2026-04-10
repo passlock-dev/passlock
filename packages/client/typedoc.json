@@ -22,12 +22,7 @@
   "categorizeByGroup": false,
   "readme": "none",
   "cleanOutputDir": true,
-  "categoryOrder": [
-    "Passkeys (core)",
-    "Passkeys (other)",
-    "Passkeys (errors)",
-    "*"
-  ],
+  "categoryOrder": ["Passkeys (core)", "Passkeys (other)", "Passkeys (errors)", "*"],
   "groupOrder": ["Functions", "Interfaces", "Classes", "*"],
   "sort": ["kind", "instance-first", "source-order"],
   "navigationLinks": {

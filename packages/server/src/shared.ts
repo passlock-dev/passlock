@@ -37,6 +37,5 @@ export class UnexpectedError extends Error {
     this._tag = data._tag
   }
 
-  override readonly toString = (): string =>
-    `${this.message} (_tag: ${this._tag})`
+  override readonly toString = (): string => `${this.message} (_tag: ${this._tag})`
 }

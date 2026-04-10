@@ -9,17 +9,13 @@ export class UnauthorizedError extends Schema.TaggedError<UnauthorizedError>()(
 ) {}
 
 /** @internal */
-export const isUnauthorizedError = (
-  payload: unknown
-): payload is UnauthorizedError => Schema.is(UnauthorizedError)(payload)
+export const isUnauthorizedError = (payload: unknown): payload is UnauthorizedError =>
+  Schema.is(UnauthorizedError)(payload)
 
 /* Forbidden */
 
 /** @internal */
-export class ForbiddenError extends Schema.TaggedError<ForbiddenError>()(
-  "@error/Forbidden",
-  {}
-) {}
+export class ForbiddenError extends Schema.TaggedError<ForbiddenError>()("@error/Forbidden", {}) {}
 
 /** @internal */
 export const isForbiddenError = (payload: unknown): payload is ForbiddenError =>
@@ -28,17 +24,13 @@ export const isForbiddenError = (payload: unknown): payload is ForbiddenError =>
 /* InvalidCode */
 
 /** @internal */
-export class InvalidCodeError extends Schema.TaggedError<InvalidCodeError>()(
-  "@error/InvalidCode",
-  {
-    message: Schema.String,
-  }
-) {}
+export class InvalidCodeError extends Schema.TaggedError<InvalidCodeError>()("@error/InvalidCode", {
+  message: Schema.String,
+}) {}
 
 /** @internal */
-export const isInvalidCodeError = (
-  payload: unknown
-): payload is InvalidCodeError => Schema.is(InvalidCodeError)(payload)
+export const isInvalidCodeError = (payload: unknown): payload is InvalidCodeError =>
+  Schema.is(InvalidCodeError)(payload)
 
 /* InvalidChallenge */
 
@@ -51,9 +43,8 @@ export class InvalidChallengeError extends Schema.TaggedError<InvalidChallengeEr
 ) {}
 
 /** @internal */
-export const isInvalidChallengeError = (
-  payload: unknown
-): payload is InvalidChallengeError => Schema.is(InvalidChallengeError)(payload)
+export const isInvalidChallengeError = (payload: unknown): payload is InvalidChallengeError =>
+  Schema.is(InvalidChallengeError)(payload)
 
 /* InvalidChallengeCode */
 
@@ -68,8 +59,7 @@ export class InvalidChallengeCodeError extends Schema.TaggedError<InvalidChallen
 /** @internal */
 export const isInvalidChallengeCodeError = (
   payload: unknown
-): payload is InvalidChallengeCodeError =>
-  Schema.is(InvalidChallengeCodeError)(payload)
+): payload is InvalidChallengeCodeError => Schema.is(InvalidChallengeCodeError)(payload)
 
 /* ChallengeExpired */
 
@@ -82,9 +72,8 @@ export class ChallengeExpiredError extends Schema.TaggedError<ChallengeExpiredEr
 ) {}
 
 /** @internal */
-export const isChallengeExpiredError = (
-  payload: unknown
-): payload is ChallengeExpiredError => Schema.is(ChallengeExpiredError)(payload)
+export const isChallengeExpiredError = (payload: unknown): payload is ChallengeExpiredError =>
+  Schema.is(ChallengeExpiredError)(payload)
 
 /* ChallengeAttemptsExceeded */
 
@@ -99,8 +88,7 @@ export class ChallengeAttemptsExceededError extends Schema.TaggedError<Challenge
 /** @internal */
 export const isChallengeAttemptsExceededError = (
   payload: unknown
-): payload is ChallengeAttemptsExceededError =>
-  Schema.is(ChallengeAttemptsExceededError)(payload)
+): payload is ChallengeAttemptsExceededError => Schema.is(ChallengeAttemptsExceededError)(payload)
 
 /* ChallengeRateLimited */
 
@@ -116,8 +104,7 @@ export class ChallengeRateLimitedError extends Schema.TaggedError<ChallengeRateL
 /** @internal */
 export const isChallengeRateLimitedError = (
   payload: unknown
-): payload is ChallengeRateLimitedError =>
-  Schema.is(ChallengeRateLimitedError)(payload)
+): payload is ChallengeRateLimitedError => Schema.is(ChallengeRateLimitedError)(payload)
 
 /* InvalidTenancy */
 
@@ -130,9 +117,8 @@ export class InvalidTenancyError extends Schema.TaggedError<InvalidTenancyError>
 ) {}
 
 /** @internal */
-export const isInvalidTenancyError = (
-  payload: unknown
-): payload is InvalidTenancyError => Schema.is(InvalidTenancyError)(payload)
+export const isInvalidTenancyError = (payload: unknown): payload is InvalidTenancyError =>
+  Schema.is(InvalidTenancyError)(payload)
 
 /* PasskeyNotFound */
 
@@ -147,19 +133,15 @@ export class PasskeyNotFoundError extends Schema.TaggedError<PasskeyNotFoundErro
 ) {}
 
 /** @internal */
-export const isPasskeyNotFoundError = (
-  payload: unknown
-): payload is PasskeyNotFoundError => Schema.is(PasskeyNotFoundError)(payload)
+export const isPasskeyNotFoundError = (payload: unknown): payload is PasskeyNotFoundError =>
+  Schema.is(PasskeyNotFoundError)(payload)
 
 /* NotFound */
 
 /** @internal */
-export class NotFoundError extends Schema.TaggedError<NotFoundError>()(
-  "@error/NotFound",
-  {
-    message: Schema.String,
-  }
-) {}
+export class NotFoundError extends Schema.TaggedError<NotFoundError>()("@error/NotFound", {
+  message: Schema.String,
+}) {}
 
 /** @internal */
 export const isNotFoundError = (payload: unknown): payload is NotFoundError =>
@@ -176,9 +158,8 @@ export class InvalidEmailError extends Schema.TaggedError<InvalidEmailError>()(
 ) {}
 
 /** @internal */
-export const isInvalidEmailError = (
-  payload: unknown
-): payload is InvalidEmailError => Schema.is(InvalidEmailError)(payload)
+export const isInvalidEmailError = (payload: unknown): payload is InvalidEmailError =>
+  Schema.is(InvalidEmailError)(payload)
 
 /* DuplicateEmail */
 
@@ -191,21 +172,16 @@ export class DuplicateEmailError extends Schema.TaggedError<DuplicateEmailError>
 ) {}
 
 /** @internal */
-export const isDuplicateEmailError = (
-  payload: unknown
-): payload is DuplicateEmailError => Schema.is(DuplicateEmailError)(payload)
+export const isDuplicateEmailError = (payload: unknown): payload is DuplicateEmailError =>
+  Schema.is(DuplicateEmailError)(payload)
 
 /* BadRequest */
 
 /** @internal */
-export class BadRequestError extends Schema.TaggedError<BadRequestError>()(
-  "@error/BadRequest",
-  {
-    message: Schema.String,
-  }
-) {}
+export class BadRequestError extends Schema.TaggedError<BadRequestError>()("@error/BadRequest", {
+  message: Schema.String,
+}) {}
 
 /** @internal */
-export const isBadRequestError = (
-  payload: unknown
-): payload is BadRequestError => Schema.is(BadRequestError)(payload)
+export const isBadRequestError = (payload: unknown): payload is BadRequestError =>
+  Schema.is(BadRequestError)(payload)

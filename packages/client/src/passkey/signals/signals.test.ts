@@ -59,17 +59,9 @@ describe(deleteUserPasskeys.name, () => {
     )
 
     expect(result).toEqual({ _tag: "DeleteSuccess" })
-    await vi.waitFor(() =>
-      expect(signalUnknownCredential).toHaveBeenCalledTimes(2)
-    )
-    expect(signalUnknownCredential).toHaveBeenNthCalledWith(
-      1,
-      deleteCredentials[0]
-    )
-    expect(signalUnknownCredential).toHaveBeenNthCalledWith(
-      2,
-      deleteCredentials[1]
-    )
+    await vi.waitFor(() => expect(signalUnknownCredential).toHaveBeenCalledTimes(2))
+    expect(signalUnknownCredential).toHaveBeenNthCalledWith(1, deleteCredentials[0])
+    expect(signalUnknownCredential).toHaveBeenNthCalledWith(2, deleteCredentials[1])
   })
 
   it("returns a deletion unsupported error when the device does not support passkey deletion", async () => {

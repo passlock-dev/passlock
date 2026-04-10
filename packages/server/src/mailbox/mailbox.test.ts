@@ -51,123 +51,117 @@ const readableChallenge = {
 } as const
 
 describe(createMailboxChallenge.name, () => {
-  it.effect(
-    "posts metadata, invalidateOthers, and skipRateLimit with auth headers",
-    () =>
-      Effect.gen(function* () {
-        let invokedUrl: string | undefined
-        let method: string | undefined
-        let authorizationHeader: string | null = null
-        let body: string | undefined
+  it.effect("posts metadata, invalidateOthers, and skipRateLimit with auth headers", () =>
+    Effect.gen(function* () {
+      let invokedUrl: string | undefined
+      let method: string | undefined
+      let authorizationHeader: string | null = null
+      let body: string | undefined
 
-        const responseWithMetadata = {
-          _tag: "ChallengeCreated",
-          challenge: {
-            ...createdChallengeResponse.challenge,
-            metadata,
-          },
-        } as const
+      const responseWithMetadata = {
+        _tag: "ChallengeCreated",
+        challenge: {
+          ...createdChallengeResponse.challenge,
+          metadata,
+        },
+      } as const
 
-        const testFetch = vi.fn<typeof fetch>((url, init) => {
-          invokedUrl = String(url)
-          method = init?.method
-          body = init?.body as string | undefined
+      const testFetch = vi.fn<typeof fetch>((url, init) => {
+        invokedUrl = String(url)
+        method = init?.method
+        body = init?.body as string | undefined
 
-          if (init?.headers) {
-            authorizationHeader = getHeaderValue(init.headers, "authorization")
-          }
+        if (init?.headers) {
+          authorizationHeader = getHeaderValue(init.headers, "authorization")
+        }
 
-          return Promise.resolve(
-            new Response(JSON.stringify(responseWithMetadata), {
-              status: 201,
-            })
-          )
-        })
-
-        const result = yield* createMailboxChallenge(
-          {
-            apiKey,
-            email: "user@example.com",
-            invalidateOthers: true,
-            metadata,
-            purpose: "LOGIN_CODE",
-            skipRateLimit: true,
-            tenancyId,
-            userId: "dummyUserId",
-          },
-          Layer.succeed(NetworkFetch, testFetch)
+        return Promise.resolve(
+          new Response(JSON.stringify(responseWithMetadata), {
+            status: 201,
+          })
         )
+      })
 
-        expect(result).toStrictEqual(responseWithMetadata)
-        expect(invokedUrl).toEqual(
-          `https://api.passlock.dev/${tenancyId}/challenges`
-        )
-        expect(method).toEqual("POST")
-        expect(authorizationHeader).toEqual("Bearer dummyApiKey")
-        expect(JSON.parse(body ?? "{}")).toStrictEqual({
+      const result = yield* createMailboxChallenge(
+        {
+          apiKey,
           email: "user@example.com",
           invalidateOthers: true,
           metadata,
           purpose: "LOGIN_CODE",
           skipRateLimit: true,
+          tenancyId,
           userId: "dummyUserId",
-        })
+        },
+        Layer.succeed(NetworkFetch, testFetch)
+      )
+
+      expect(result).toStrictEqual(responseWithMetadata)
+      expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/challenges`)
+      expect(method).toEqual("POST")
+      expect(authorizationHeader).toEqual("Bearer dummyApiKey")
+      expect(JSON.parse(body ?? "{}")).toStrictEqual({
+        email: "user@example.com",
+        invalidateOthers: true,
+        metadata,
+        purpose: "LOGIN_CODE",
+        skipRateLimit: true,
+        userId: "dummyUserId",
       })
+    })
   )
 
-  it.effect(
-    "decodes responses when userId is omitted and metadata is null",
-    () =>
-      Effect.gen(function* () {
-        const responseWithoutUserId = {
-          _tag: "ChallengeCreated",
-          challenge: {
-            challengeId,
-            purpose: "LOGIN_CODE",
-            email: "user@example.com",
-            metadata: null,
-            secret: "secret",
-            code: "123456",
-            message: {
-              html: "<p>Your code is 123456</p>",
-              text: "Your code is 123456",
-            },
-            createdAt: 1,
-            expiresAt: 2,
+  it.effect("decodes responses when userId is omitted and metadata is null", () =>
+    Effect.gen(function* () {
+      const responseWithoutUserId = {
+        _tag: "ChallengeCreated",
+        challenge: {
+          challengeId,
+          purpose: "LOGIN_CODE",
+          email: "user@example.com",
+          metadata: null,
+          secret: "secret",
+          code: "123456",
+          message: {
+            html: "<p>Your code is 123456</p>",
+            text: "Your code is 123456",
           },
-        } as const
+          createdAt: 1,
+          expiresAt: 2,
+        },
+      } as const
 
-        let body: string | undefined
+      let body: string | undefined
 
-        const testFetch = vi.fn<typeof fetch>((_, init) => {
-          body = init?.body as string | undefined
-          return Promise.resolve(
-            new Response(JSON.stringify(responseWithoutUserId), {
-              status: 201,
-            })
-          )
-        })
-
-        const result = yield* createMailboxChallenge(
-          {
-            apiKey,
-            email: "user@example.com",
-            purpose: "LOGIN_CODE",
-            tenancyId,
-          },
-          Layer.succeed(NetworkFetch, testFetch)
-        )
-
-        expect(result).toStrictEqual(responseWithoutUserId)
-        expect(body).toEqual(
-          JSON.stringify({
-            email: "user@example.com",
-            purpose: "LOGIN_CODE",
+      const testFetch = vi.fn<typeof fetch>((_, init) => {
+        body = init?.body as string | undefined
+        return Promise.resolve(
+          new Response(JSON.stringify(responseWithoutUserId), {
+            status: 201,
           })
         )
-        expect(result.challenge.userId).toBeUndefined()
-        expect(result.challenge.metadata).toBeNull()
       })
+
+      const result = yield* createMailboxChallenge(
+        {
+          apiKey,
+          email: "user@example.com",
+          purpose: "LOGIN_CODE",
+          tenancyId,
+        },
+        Layer.succeed(NetworkFetch, testFetch)
+      )
+
+      expect(result).toStrictEqual(responseWithoutUserId)
+      expect(body).toEqual(
+        JSON.stringify({
+          email: "user@example.com",
+          purpose: "LOGIN_CODE",
+        })
+      )
+      expect(result.challenge.userId).toBeUndefined()
+      expect(result.challenge.metadata).toBeNull()
+    })
   )
 
   it.effect("posts an explicit skipRateLimit false value", () =>
@@ -269,9 +263,7 @@ describe(getMailboxChallenge.name, () => {
       )
 
       expect(result).toStrictEqual(readableChallenge)
-      expect(invokedUrl).toEqual(
-        `https://api.passlock.dev/${tenancyId}/challenges/${challengeId}`
-      )
+      expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/challenges/${challengeId}`)
       expect(method).toEqual("GET")
       expect(authorizationHeader).toEqual("Bearer dummyApiKey")
     })
@@ -304,61 +296,57 @@ describe(getMailboxChallenge.name, () => {
 })
 
 describe(verifyMailboxChallenge.name, () => {
-  it.effect(
-    "posts the challenge identifier, secret, and code to the verify endpoint",
-    () =>
-      Effect.gen(function* () {
-        let invokedUrl: string | undefined
-        let method: string | undefined
-        let body: string | undefined
-        let authorizationHeader: string | null = null
+  it.effect("posts the challenge identifier, secret, and code to the verify endpoint", () =>
+    Effect.gen(function* () {
+      let invokedUrl: string | undefined
+      let method: string | undefined
+      let body: string | undefined
+      let authorizationHeader: string | null = null
 
-        const verifiedChallengeResponse = {
-          _tag: "ChallengeVerified",
-          challenge: readableChallenge,
-        } as const
+      const verifiedChallengeResponse = {
+        _tag: "ChallengeVerified",
+        challenge: readableChallenge,
+      } as const
 
-        const testFetch = vi.fn<typeof fetch>((url, init) => {
-          invokedUrl = String(url)
-          method = init?.method
-          body = init?.body as string | undefined
+      const testFetch = vi.fn<typeof fetch>((url, init) => {
+        invokedUrl = String(url)
+        method = init?.method
+        body = init?.body as string | undefined
 
-          if (init?.headers) {
-            authorizationHeader = getHeaderValue(init.headers, "authorization")
-          }
+        if (init?.headers) {
+          authorizationHeader = getHeaderValue(init.headers, "authorization")
+        }
 
-          return Promise.resolve(
-            new Response(JSON.stringify(verifiedChallengeResponse), {
-              status: 200,
-            })
-          )
-        })
-
-        const result = yield* verifyMailboxChallenge(
-          {
-            apiKey,
-            challengeId,
-            code: "123456",
-            secret: "secret",
-            tenancyId,
-          },
-          Layer.succeed(NetworkFetch, testFetch)
-        )
-
-        expect(result).toStrictEqual(verifiedChallengeResponse)
-        expect(invokedUrl).toEqual(
-          `https://api.passlock.dev/${tenancyId}/challenges/verify`
-        )
-        expect(method).toEqual("POST")
-        expect(authorizationHeader).toEqual("Bearer dummyApiKey")
-        expect(body).toEqual(
-          JSON.stringify({
-            challengeId,
-            secret: "secret",
-            code: "123456",
+        return Promise.resolve(
+          new Response(JSON.stringify(verifiedChallengeResponse), {
+            status: 200,
           })
         )
       })
+
+      const result = yield* verifyMailboxChallenge(
+        {
+          apiKey,
+          challengeId,
+          code: "123456",
+          secret: "secret",
+          tenancyId,
+        },
+        Layer.succeed(NetworkFetch, testFetch)
+      )
+
+      expect(result).toStrictEqual(verifiedChallengeResponse)
+      expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/challenges/verify`)
+      expect(method).toEqual("POST")
+      expect(authorizationHeader).toEqual("Bearer dummyApiKey")
+      expect(body).toEqual(
+        JSON.stringify({
+          challengeId,
+          secret: "secret",
+          code: "123456",
+        })
+      )
+    })
   )
 
   it.effect("returns InvalidChallengeCode errors", () =>
@@ -452,9 +440,7 @@ describe(deleteMailboxChallenge.name, () => {
       )
 
       expect(result).toStrictEqual({ _tag: "ChallengeDeleted" })
-      expect(invokedUrl).toEqual(
-        `https://api.passlock.dev/${tenancyId}/challenges/${challengeId}`
-      )
+      expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/challenges/${challengeId}`)
       expect(method).toEqual("DELETE")
       expect(authorizationHeader).toEqual("Bearer dummyApiKey")
     })

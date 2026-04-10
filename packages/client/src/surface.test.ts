@@ -77,20 +77,14 @@ describe("public surface", () => {
 
   it("keeps shared types identical", () => {
     type IsEqual<A, B> =
-      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
-        ? true
-        : false
+      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
     type Assert<T extends true> = T
     type _1 = Assert<IsEqual<PasslockOptions, UnsafePasslockOptions>>
     type _2 = Assert<IsEqual<RegistrationOptions, UnsafeRegistrationOptions>>
     type _3 = Assert<IsEqual<RegistrationSuccess, UnsafeRegistrationSuccess>>
     type _4 = Assert<IsEqual<RegistrationError, UnsafeRegistrationError>>
-    type _5 = Assert<
-      IsEqual<AuthenticationOptions, UnsafeAuthenticationOptions>
-    >
-    type _6 = Assert<
-      IsEqual<AuthenticationSuccess, UnsafeAuthenticationSuccess>
-    >
+    type _5 = Assert<IsEqual<AuthenticationOptions, UnsafeAuthenticationOptions>>
+    type _6 = Assert<IsEqual<AuthenticationSuccess, UnsafeAuthenticationSuccess>>
     type _7 = Assert<IsEqual<AuthenticationError, UnsafeAuthenticationError>>
     type _8 = Assert<IsEqual<UpdatePasskeyOptions, UpdatePasskeyOptionsUnsafe>>
     type _9 = Assert<IsEqual<Credential, UnsafeCredential>>
@@ -100,9 +94,7 @@ describe("public surface", () => {
 
   it("returns Result envelopes from safe functions", () => {
     type IsEqual<A, B> =
-      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
-        ? true
-        : false
+      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
     type Assert<T extends true> = T
     type _1 = Assert<
       IsEqual<
@@ -117,22 +109,13 @@ describe("public surface", () => {
       >
     >
     type _3 = Assert<
-      IsEqual<
-        Awaited<ReturnType<typeof root.updatePasskey>>,
-        Result<UpdateSuccess, UpdateError>
-      >
+      IsEqual<Awaited<ReturnType<typeof root.updatePasskey>>, Result<UpdateSuccess, UpdateError>>
     >
     type _4 = Assert<
-      IsEqual<
-        Awaited<ReturnType<typeof root.deletePasskey>>,
-        Result<DeleteSuccess, DeleteError>
-      >
+      IsEqual<Awaited<ReturnType<typeof root.deletePasskey>>, Result<DeleteSuccess, DeleteError>>
     >
     type _5 = Assert<
-      IsEqual<
-        Awaited<ReturnType<typeof root.prunePasskeys>>,
-        Result<PruningSuccess, PruningError>
-      >
+      IsEqual<Awaited<ReturnType<typeof root.prunePasskeys>>, Result<PruningSuccess, PruningError>>
     >
     type _6 = Assert<
       IsEqual<
@@ -146,9 +129,7 @@ describe("public surface", () => {
 
   it("exposes inverse success and failure literals on each Result branch", () => {
     type IsEqual<A, B> =
-      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
-        ? true
-        : false
+      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
     type Assert<T extends true> = T
     type DeleteResult = Awaited<ReturnType<typeof root.deletePasskey>>
     type SuccessBranch = Extract<DeleteResult, { success: true }>

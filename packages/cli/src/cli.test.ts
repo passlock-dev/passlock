@@ -73,9 +73,7 @@ describe("parseArgs", () => {
       Effect.gen(function* () {
         const error = yield* parseArgs(["init", "-e"]).pipe(Effect.flip)
         expect(error._tag).toEqual("@error/CliParse")
-        expect(error.message).toEqual(
-          "Missing value for --endpoint. Use --endpoint <url>."
-        )
+        expect(error.message).toEqual("Missing value for --endpoint. Use --endpoint <url>.")
       })
     )
   })

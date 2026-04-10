@@ -27,9 +27,7 @@ export const runToPromise = async <A extends object, E extends object>(
  * @param micro
  * @returns Promise resolving to the success value.
  */
-export const runToPromiseUnsafe = async <A, E>(
-  micro: Micro.Micro<A, E>
-): Promise<A> => {
+export const runToPromiseUnsafe = async <A, E>(micro: Micro.Micro<A, E>): Promise<A> => {
   const exit = await Micro.runPromiseExit(micro)
 
   if (Micro.exitIsSuccess(exit)) return exit.value

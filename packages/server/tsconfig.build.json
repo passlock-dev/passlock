@@ -16,11 +16,5 @@
     "newLine": "lf"
   },
   "include": ["src/**/*"],
-  "exclude": [
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "test/**/*",
-    "dist",
-    "node_modules"
-  ]
+  "exclude": ["**/*.test.ts", "**/*.spec.ts", "test/**/*", "dist", "node_modules"]
 }

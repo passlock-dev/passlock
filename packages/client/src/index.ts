@@ -341,10 +341,7 @@ export const deleteUserPasskeys = (
  * @category Passkeys (core)
  */
 export const deletePasskey = (
-  options:
-    | DeletePasskeyOptions
-    | DeleteCredentialOptions
-    | OrphanedPasskeyError,
+  options: DeletePasskeyOptions | DeleteCredentialOptions | OrphanedPasskeyError,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<DeleteSuccess> => {
@@ -404,8 +401,7 @@ export const prunePasskeys = (
  *
  * @category Passkeys (other)
  */
-export const isPasskeyDeleteSupport = () =>
-  pipe(isPasskeyDeleteSupportM, Micro.runSync)
+export const isPasskeyDeleteSupport = () => pipe(isPasskeyDeleteSupportM, Micro.runSync)
 
 /**
  * Does the local device support programmatic passkey pruning?
@@ -414,8 +410,7 @@ export const isPasskeyDeleteSupport = () =>
  *
  * @category Passkeys (other)
  */
-export const isPasskeyPruningSupport = () =>
-  pipe(isPasskeyPruningSupportM, Micro.runSync)
+export const isPasskeyPruningSupport = () => pipe(isPasskeyPruningSupportM, Micro.runSync)
 
 /**
  * Does the local device support programmatic passkey updates?
@@ -424,8 +419,7 @@ export const isPasskeyPruningSupport = () =>
  *
  * @category Passkeys (other)
  */
-export const isPasskeyUpdateSupport = () =>
-  pipe(isPasskeyUpdateSupportM, Micro.runSync)
+export const isPasskeyUpdateSupport = () => pipe(isPasskeyUpdateSupportM, Micro.runSync)
 
 /* Re-exports */
 

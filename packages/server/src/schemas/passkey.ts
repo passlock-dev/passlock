@@ -14,11 +14,7 @@ import { Schema } from "effect"
  *
  * @category Passkeys
  */
-export const UserVerification = Schema.Literal(
-  "required",
-  "preferred",
-  "discouraged"
-)
+export const UserVerification = Schema.Literal("required", "preferred", "discouraged")
 
 /* Passkey */
 

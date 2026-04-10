@@ -131,15 +131,11 @@ describe(listPasskeys.name, () => {
           )
         })
 
-        const result = yield* pipe(
-          listPasskeys({ apiKey, tenancyId }, TestLayer)
-        )
+        const result = yield* pipe(listPasskeys({ apiKey, tenancyId }, TestLayer))
 
         expect(result).toStrictEqual(findAllPasskeysResponse)
 
-        expect(invokedUrl).toEqual(
-          "https://api.passlock.dev/dummyTenancyId/passkeys/"
-        )
+        expect(invokedUrl).toEqual("https://api.passlock.dev/dummyTenancyId/passkeys/")
 
         expect(method).toEqual("GET")
       })
@@ -188,9 +184,7 @@ describe(listPasskeys.name, () => {
           )
         })
 
-        const result = yield* pipe(
-          listPasskeys({ apiKey, tenancyId }, TestLayer)
-        )
+        const result = yield* pipe(listPasskeys({ apiKey, tenancyId }, TestLayer))
 
         expect(result.cursor).toEqual("dummyCursor")
       })
@@ -240,9 +234,7 @@ describe(listPasskeysStream.name, () => {
         )
 
         expect(fetchCount).toEqual(1)
-        expect(invokedUrls).toEqual([
-          "https://api.passlock.dev/dummyTenancyId/passkeys/",
-        ])
+        expect(invokedUrls).toEqual(["https://api.passlock.dev/dummyTenancyId/passkeys/"])
         expect(summaries).toEqual(singlePageResponse.records)
       })
     )
@@ -313,10 +305,7 @@ describe(listPasskeysStream.name, () => {
           "https://api.passlock.dev/dummyTenancyId/passkeys/",
           "https://api.passlock.dev/dummyTenancyId/passkeys/?cursor=page-two-cursor",
         ])
-        expect(summaries).toEqual([
-          ...firstPageResponse.records,
-          ...secondPageResponse.records,
-        ])
+        expect(summaries).toEqual([...firstPageResponse.records, ...secondPageResponse.records])
       })
     )
   })
@@ -332,14 +321,10 @@ describe(getPasskey.name, () => {
         const TestLayer = Layer.succeed(NetworkFetch, (url, init) => {
           invokedUrl = String(url)
           method = init?.method
-          return Promise.resolve(
-            new Response(JSON.stringify(passkeyResponse), { status: 200 })
-          )
+          return Promise.resolve(new Response(JSON.stringify(passkeyResponse), { status: 200 }))
         })
 
-        const passkey = yield* pipe(
-          getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer)
-        )
+        const passkey = yield* pipe(getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer))
 
         expect(passkey).toStrictEqual(expectedPasskey)
 
@@ -361,9 +346,7 @@ describe(getPasskey.name, () => {
         }
 
         const TestLayer = Layer.succeed(NetworkFetch, () =>
-          Promise.resolve(
-            new Response(JSON.stringify(errorResponse), { status: 404 })
-          )
+          Promise.resolve(new Response(JSON.stringify(errorResponse), { status: 404 }))
         )
 
         const error = yield* pipe(
@@ -382,16 +365,12 @@ describe(getPasskey.name, () => {
 
       const TestLayer = Layer.succeed(NetworkFetch, (url) => {
         invokedUrl = String(url)
-        return Promise.resolve(
-          new Response(JSON.stringify(passkeyResponse), { status: 200 })
-        )
+        return Promise.resolve(new Response(JSON.stringify(passkeyResponse), { status: 200 }))
       })
 
       yield* pipe(getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer))
 
-      expect(invokedUrl).toEqual(
-        "https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId"
-      )
+      expect(invokedUrl).toEqual("https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId")
     })
   )
 
@@ -404,9 +383,7 @@ describe(getPasskey.name, () => {
           authorizationHeader = getHeaderValue(init.headers, "authorization")
         }
 
-        return Promise.resolve(
-          new Response(JSON.stringify(passkeyResponse), { status: 200 })
-        )
+        return Promise.resolve(new Response(JSON.stringify(passkeyResponse), { status: 200 }))
       })
 
       yield* pipe(getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer))
@@ -423,9 +400,7 @@ describe(getPasskey.name, () => {
       }
 
       const TestLayer = Layer.succeed(NetworkFetch, () =>
-        Promise.resolve(
-          new Response(JSON.stringify(forbiddenResponse), { status: 403 })
-        )
+        Promise.resolve(new Response(JSON.stringify(forbiddenResponse), { status: 403 }))
       )
 
       const error = yield* pipe(
@@ -455,9 +430,7 @@ describe(deletePasskey.name, () => {
           )
         })
 
-        const result = yield* pipe(
-          deletePasskey({ passkeyId, apiKey, tenancyId }, TestLayer)
-        )
+        const result = yield* pipe(deletePasskey({ passkeyId, apiKey, tenancyId }, TestLayer))
 
         expect(result).toStrictEqual(expectedDeletedPasskey)
 
@@ -479,9 +452,7 @@ describe(deletePasskey.name, () => {
         }
 
         const TestLayer = Layer.succeed(NetworkFetch, () =>
-          Promise.resolve(
-            new Response(JSON.stringify(errorResponse), { status: 404 })
-          )
+          Promise.resolve(new Response(JSON.stringify(errorResponse), { status: 404 }))
         )
 
         const error = yield* pipe(
@@ -522,10 +493,7 @@ describe(deleteUserPasskeys.name, () => {
         })
 
         const result = yield* pipe(
-          deleteUserPasskeys(
-            { apiKey, tenancyId, userId: "dummyUserId" },
-            TestLayer
-          )
+          deleteUserPasskeys({ apiKey, tenancyId, userId: "dummyUserId" }, TestLayer)
         )
 
         expect(result).toStrictEqual(expectedDeletedPasskeys)
@@ -548,16 +516,11 @@ describe(deleteUserPasskeys.name, () => {
         }
 
         const TestLayer = Layer.succeed(NetworkFetch, () =>
-          Promise.resolve(
-            new Response(JSON.stringify(errorResponse), { status: 404 })
-          )
+          Promise.resolve(new Response(JSON.stringify(errorResponse), { status: 404 }))
         )
 
         const error = yield* pipe(
-          deleteUserPasskeys(
-            { apiKey, tenancyId, userId: "dummyUserId" },
-            TestLayer
-          ),
+          deleteUserPasskeys({ apiKey, tenancyId, userId: "dummyUserId" }, TestLayer),
           Effect.flip
         )
 
@@ -575,16 +538,11 @@ describe(deleteUserPasskeys.name, () => {
         }
 
         const TestLayer = Layer.succeed(NetworkFetch, () =>
-          Promise.resolve(
-            new Response(JSON.stringify(forbiddenResponse), { status: 403 })
-          )
+          Promise.resolve(new Response(JSON.stringify(forbiddenResponse), { status: 403 }))
         )
 
         const error = yield* pipe(
-          deleteUserPasskeys(
-            { apiKey, tenancyId, userId: "dummyUserId" },
-            TestLayer
-          ),
+          deleteUserPasskeys({ apiKey, tenancyId, userId: "dummyUserId" }, TestLayer),
           Effect.flip
         )
 
@@ -605,12 +563,9 @@ describe(assignUser.name, () => {
           invokedUrl = String(url)
           method = init?.method
           return Promise.resolve(
-            new Response(
-              JSON.stringify({ ...passkeyResponse, userId: "newUserId" }),
-              {
-                status: 202,
-              }
-            )
+            new Response(JSON.stringify({ ...passkeyResponse, userId: "newUserId" }), {
+              status: 202,
+            })
           )
         })
 
@@ -639,16 +594,11 @@ describe(assignUser.name, () => {
         }
 
         const TestLayer = Layer.succeed(NetworkFetch, () =>
-          Promise.resolve(
-            new Response(JSON.stringify(errorResponse), { status: 404 })
-          )
+          Promise.resolve(new Response(JSON.stringify(errorResponse), { status: 404 }))
         )
 
         const error = yield* pipe(
-          assignUser(
-            { apiKey, passkeyId, tenancyId, userId: "newUserId" },
-            TestLayer
-          ),
+          assignUser({ apiKey, passkeyId, tenancyId, userId: "newUserId" }, TestLayer),
           Effect.flip
         )
 
@@ -717,16 +667,11 @@ describe(updatePasskey.name, () => {
         }
 
         const TestLayer = Layer.succeed(NetworkFetch, () =>
-          Promise.resolve(
-            new Response(JSON.stringify(errorResponse), { status: 404 })
-          )
+          Promise.resolve(new Response(JSON.stringify(errorResponse), { status: 404 }))
         )
 
         const error = yield* pipe(
-          assignUser(
-            { apiKey, passkeyId, tenancyId, userId: "newUserId" },
-            TestLayer
-          ),
+          assignUser({ apiKey, passkeyId, tenancyId, userId: "newUserId" }, TestLayer),
           Effect.flip
         )
 
