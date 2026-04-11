@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import { createOrRefreshLoginChallenge } from '$lib/server/challenges.js';
+import { createOrRefreshLoginChallenge } from '$lib/server/mailboxChallenge.js';
 import { getUserByEmail, countPasskeysByUserId } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setSignupLoginCookie } from '$lib/server/cookies.js';

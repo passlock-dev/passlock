@@ -16,7 +16,11 @@
 
 		// The browser prompt happens here; the server verifies the returned code
 		// and creates the local session.
-		const result = await authenticatePasskey(data);
+		const result = await authenticatePasskey({
+      tenancyId: data.tenancyId,
+		  endpoint: data.endpoint,
+		  allowCredentials: data.allowCredentials,
+    });
 
 		if (result._tag == 'PasslockLoginSuccess') {
 			loading = false;
@@ -62,7 +66,7 @@
 	</div>
 </div>
 
-{#if data.existingPasskeys.length > 0}
+{#if data.allowCredentials.length > 0}
 	<DevNotes>
 		<p>
 			We know which account the user wants to authenticate against, so we tell the browser to use

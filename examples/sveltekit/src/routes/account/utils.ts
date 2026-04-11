@@ -54,7 +54,7 @@ export const reAuthenticateIfNecessary = async (input: {
 	const result = await authenticatePasskey({
 		tenancyId: input.tenancyId,
 		endpoint: input.endpoint,
-		existingPasskeys: [...passkeyStatus.passkeyIds],
+		allowCredentials: [...passkeyStatus.passkeyIds],
 		userVerification: 'required',
 		verificationRoute: '/account/re-authenticate'
 	});

@@ -1,5 +1,5 @@
 import { getEmailChangeCookie } from '$lib/server/cookies.js';
-import { getPendingEmailChallenge } from '$lib/server/challenges.js';
+import { getPendingEmailChallenge } from '$lib/server/mailboxChallenge.js';
 import { toAccountLocation, type AccountEmailErrorReason } from '$lib/shared/queryState.js';
 import type { Cookies } from '@sveltejs/kit';
 

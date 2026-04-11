@@ -1,5 +1,3 @@
-import { index, int, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-
 /**
  * Drizzle schema for the example app.
  *
@@ -7,6 +5,9 @@ import { index, int, sqliteTable, text } from 'drizzle-orm/sqlite-core';
  * operations. The local database stores the application-facing account,
  * session, and passkey metadata that the sample needs for UI and routing.
  */
+
+import { index, int, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+
 export const usersTable = sqliteTable('users', {
 	id: int().primaryKey({ autoIncrement: true }),
 	email: text().notNull().unique(),
@@ -22,8 +23,11 @@ export const passkeysTable = sqliteTable(
 			.notNull()
 			.references(() => usersTable.id, { onDelete: 'cascade' }),
 		passkeyId: text({ length: 100 }).primaryKey(),
+    // inferred from the account email but could be different
 		username: text(),
+    // Platform the passkey belongs to e.g. "Apple Passwords"
 		platformName: text(),
+    // Quick visual reference for the user 
 		platformIcon: text(),
 		createdAt: int().notNull()
 	},
@@ -37,12 +41,13 @@ export const sessionsTable = sqliteTable(
 		userId: int()
 			.notNull()
 			.references(() => usersTable.id, { onDelete: 'cascade' }),
-		secretHash: text().notNull(),
-		createdAt: int().notNull(),
+		// we dont want to store plaintext session secrets
+    secretHash: text().notNull(),
 		// Updated whenever the session token is re-validated.
 		lastVerifiedAt: int().notNull(),
 		// Used to enforce fresh passkey confirmation for sensitive actions.
-		passkeyAuthenticatedAt: int()
+		passkeyAuthenticatedAt: int(),
+		createdAt: int().notNull(),
 	},
 	(table) => [index('sessions_user_id_idx').on(table.userId)]
 );

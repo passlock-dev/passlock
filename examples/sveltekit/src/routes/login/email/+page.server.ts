@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 
-import { createOrRefreshLoginChallenge, getPendingLoginChallenge } from '$lib/server/challenges.js';
+import { createOrRefreshLoginChallenge, getPendingLoginChallenge } from '$lib/server/mailboxChallenge.js';
 import { getUserByEmail } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { getSignupLoginCookie, setSignupLoginCookie } from '$lib/server/cookies.js';

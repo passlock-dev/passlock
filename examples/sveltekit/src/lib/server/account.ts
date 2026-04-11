@@ -1,3 +1,7 @@
+/**
+ * Account management
+ */
+
 import { resolve } from '$app/paths';
 import { redirect } from '@sveltejs/kit';
 import { getPasskeysByUserId, type Session, type SessionUser } from './repository.js';

@@ -1,6 +1,6 @@
 import { deleteEmailChangeCookie, setEmailChangeCookie } from '$lib/server/cookies.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
-import { createOrRefreshEmailChallenge } from '$lib/server/challenges.js';
+import { createOrRefreshEmailChallenge } from '$lib/server/mailboxChallenge.js';
 import {
 	resendErrorResponse,
 	resendRateLimitResponse,

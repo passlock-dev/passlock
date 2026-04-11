@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import { consumeLoginChallenge } from '$lib/server/challenges.js';
+import { consumeLoginChallenge } from '$lib/server/mailboxChallenge.js';
 import { countPasskeysByUserId, createSession } from '$lib/server/repository.js';
 import { deleteSignupLoginCookie, setSessionTokenCookie } from '$lib/server/cookies.js';
 import { fail, redirect } from '@sveltejs/kit';

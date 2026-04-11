@@ -1,5 +1,5 @@
 import type { Actions, PageServerLoad } from './$types';
-import { consumeEmailChallenge as verifyChangeEmailChallenge } from '$lib/server/challenges.js';
+import { consumeEmailChallenge as verifyChangeEmailChallenge } from '$lib/server/mailboxChallenge.js';
 import { sendEmailUpdated } from '$lib/server/email.js';
 import { deleteEmailChangeCookie } from '$lib/server/cookies.js';
 import { resolve } from '$app/paths';

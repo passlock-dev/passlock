@@ -5,7 +5,7 @@ import {
 	resendRedirectResponse,
 	resendSuccessResponse
 } from '$lib/server/resend.js';
-import { createOrRefreshLoginChallenge } from '$lib/server/challenges.js';
+import { createOrRefreshLoginChallenge } from '$lib/server/mailboxChallenge.js';
 import { toSignupLocation } from '$lib/shared/queryState.js';
 import type { RequestHandler } from './$types';
 import { getPendingLoginChallengeContext } from '../challenge.js';

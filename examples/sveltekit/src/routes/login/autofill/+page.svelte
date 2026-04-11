@@ -19,7 +19,8 @@
 		// Autofill-capable browsers can surface a passkey picker as soon as the
 		// page mounts, avoiding the usual explicit "continue" click.
 		const result = await authenticatePasskey({
-			...data,
+      tenancyId: data.tenancyId,
+      endpoint: data.endpoint,
 			autofill: true,
 			onEvent: (event) => {
 				// Once the user picks a passkey, freeze the fallback form to avoid

@@ -72,8 +72,8 @@ export const registerPasskey = async (input: CreatePasskeyInput) => {
 
 	const { code } = clientResult;
 
-	// The server exchanges the code with Passlock and persists the authenticated
-	// passkey metadata locally.
+	// Post to the /passkeys/+server.ts endpoint, which verifies
+  // the passkey and links it to the user account
 	return fetchData({
 		url: resolve('/passkeys'),
 		method: 'POST',
@@ -105,7 +105,7 @@ export type AuthenticatePasskeyInput = {
 	 * Restrict the prompt to passkeys already linked to the account. This maps
 	 * to WebAuthn's `allowCredentials`.
 	 */
-	existingPasskeys?: Array<string> | undefined;
+	allowCredentials?: Array<string> | undefined;
 	tenancyId: string;
 	endpoint?: string | undefined;
 };
@@ -119,10 +119,10 @@ export type AuthenticatePasskeyInput = {
  * re-authentication timestamp.
  */
 export const authenticatePasskey = async (input: AuthenticatePasskeyInput) => {
-	const ERROR_TAG = '@error/PasslockLoginError';
+	const ERROR_TAG = '@error/PasskeyLoginError';
 
-	// Passlock uses the WebAuthn name `allowCredentials` for this list.
-	const { existingPasskeys: allowCredentials, verificationRoute = '/login/passkey' } = input;
+	// allowCredentials == known user passkey ids
+	const { allowCredentials, verificationRoute = '/login/passkey' } = input;
 
 	// WebAuthn prompts can only run in the browser.
 	const clientResult = await PasslockClient.authenticatePasskey({
@@ -136,8 +136,10 @@ export const authenticatePasskey = async (input: AuthenticatePasskeyInput) => {
 		return { _tag: ERROR_TAG, message: clientResult.message } as const;
 	}
 
-	// The server exchanges the code with Passlock and applies the result to app
-	// state.
+	// Post to the /login/passkeys/+server.ts endpoint, which verifies
+  // the passkey and creates a new session. Alternatively post to the
+  // /account/re-authenticate/+server.ts route which refreshes the session
+  // bumping the passkeyAuthenticatedAt timestamp.
 	return await fetchData({
 		url: verificationRoute,
 		method: 'POST',

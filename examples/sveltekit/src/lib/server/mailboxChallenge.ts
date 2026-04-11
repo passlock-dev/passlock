@@ -1,4 +1,4 @@
-import { CHALLENGE_FLOW_TTL_MS } from './cookies';
+import { CHALLENGE_FLOW_TTL_MS } from './cookies.js';
 import {
 	createMailboxChallenge as createPasslockMailboxChallenge,
 	getMailboxChallenge as getPasslockMailboxChallenge,
@@ -8,7 +8,7 @@ import {
 	type MailboxChallengeMetadata,
 	isChallengeRateLimitedError,
 	verifyMailboxChallenge as verifyPasslockMailboxChallenge
-} from './passlock';
+} from './passlock.js';
 import {
 	createUser,
 	getUserByEmail,
@@ -92,19 +92,32 @@ export type EmailChangeSuccess = {
 	oldEmail: string;
 };
 
-type VerifiedChallenge = {
-	_tag: 'VerifiedChallenge';
-	challenge: Challenge;
-};
-
+/**
+ * Typed representation of the metadata
+ * we attach to the passlock challenge
+ */
 type ValidatedChallengeMetadata = {
 	challengeExpiresAt: number;
 	givenName: string | null;
 	familyName: string | null;
 };
 
+/**
+ * A challenge can be used for different purposes
+ * a ValidatedChallenge means the challenge is in
+ * the correct shape for the given purpose e.g.
+ * givenName is not null for a signup challenge
+ */
 type ValidatedChallenge = {
 	_tag: 'ValidatedChallenge';
+	challenge: Challenge;
+};
+
+/**
+ * User has proven mailbox ownership
+ */
+type VerifiedChallenge = {
+	_tag: 'VerifiedChallenge';
 	challenge: Challenge;
 };
 

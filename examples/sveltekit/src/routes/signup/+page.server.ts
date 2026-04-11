@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { createOrRefreshSignupChallenge } from '$lib/server/challenges.js';
+import { createOrRefreshSignupChallenge } from '$lib/server/mailboxChallenge.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setSignupLoginCookie } from '$lib/server/cookies.js';
 import { createChallengeRateLimitView } from '$lib/server/passlock.js';
