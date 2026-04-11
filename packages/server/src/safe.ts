@@ -360,10 +360,18 @@ export const listPasskeys = (
 ): Promise<Result<FindAllPasskeys, ForbiddenError>> => runSafe(listPasskeysE(options))
 
 /**
- * The @passlock/client library generates codes, which you should send to
- * your backend. Use this function to exchange the code for details about
- * the registration or authentication operation. **Note:** a code is valid
- * for 5 minutes.
+ * The `@passlock/client` library generates codes, which you will send to
+ * your backend for verification.
+ * 
+ * Use this function to exchange the code for details about
+ * the registration or authentication operation. 
+ * 
+ * During code verification you can also assign a `userId`. This is useful
+ * during passkey verification as you can register a passkey on the user's
+ * device, verify the passkey is authentic and if so, assign your own `userId`
+ * to it.
+ * 
+ * **Note:** a code is valid for 5 minutes.
  *
  * @see {@link ExtendedPrincipal}
  *

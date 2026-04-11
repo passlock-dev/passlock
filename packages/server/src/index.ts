@@ -263,8 +263,18 @@ export const listPasskeys = (options: ListPasskeyOptions): Promise<FindAllPasske
   pipe(listPasskeysE(options), Effect.runPromise)
 
 /**
- * Exchange a short-lived code from `@passlock/client` for an
- * {@link ExtendedPrincipal}.
+ * The `@passlock/client` library generates codes, which you will send to
+ * your backend for verification.
+ * 
+ * Use this function to exchange the code for details about
+ * the registration or authentication operation. 
+ * 
+ * During code verification you can also assign a `userId`. This is useful
+ * during passkey verification as you can register a passkey on the user's
+ * device, verify the passkey is authentic and if so, assign your own `userId`
+ * to it.
+ * 
+ * **Note:** a code is valid for 5 minutes.
  *
  * @param options
  * @returns A promise resolving to an extended principal.

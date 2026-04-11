@@ -34,7 +34,7 @@ export interface ExchangeCodeOptions extends AuthenticatedOptions {
 
   /**
    * Optionally assign a userId to the passkey **during code verification**.
-   * Equivalent to calling assignUser
+   * Equivalent to calling {@link assignUser} after exchanging a code
    */
   userId?: string
 }
