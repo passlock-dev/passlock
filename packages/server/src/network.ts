@@ -301,14 +301,14 @@ const toNetworkResponse = (response: Response, context: RequestContext): Network
 export const fetchNetwork = (
   url: string | URL,
   method: NetworkMethod,
-  payload?: unknown,
+  body?: unknown,
   options?: FetchNetworkOptions
 ): Effect.Effect<NetworkResponse, NetworkRequestError | NetworkPayloadError, NetworkFetch> =>
   Effect.gen(function* () {
     const requestUrl = String(url)
     const context: RequestContext = { method, url: requestUrl }
     const fetchImpl = yield* NetworkFetch
-    const serialized = yield* serializePayload(method, payload)
+    const serialized = yield* serializePayload(method, body)
 
     const providedHeaders = options?.headers
       ? headersToRecord(normalizeHeaders(options.headers))

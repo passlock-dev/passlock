@@ -32,6 +32,20 @@ export class InvalidCodeError extends Schema.TaggedError<InvalidCodeError>()("@e
 export const isInvalidCodeError = (payload: unknown): payload is InvalidCodeError =>
   Schema.is(InvalidCodeError)(payload)
 
+/* InvalidPrincipal */
+
+/** @internal */
+export class InvalidPrincipalError extends Schema.TaggedError<InvalidPrincipalError>()(
+  "@error/InvalidPrincipal",
+  {
+    message: Schema.String,
+  }
+) {}
+
+/** @internal */
+export const isInvalidPrincipalError = (payload: unknown): payload is InvalidPrincipalError =>
+  Schema.is(InvalidPrincipalError)(payload)
+
 /* InvalidChallenge */
 
 /** @internal */
@@ -97,7 +111,7 @@ export class ChallengeRateLimitedError extends Schema.TaggedError<ChallengeRateL
   "@error/ChallengeRateLimited",
   {
     message: Schema.String,
-    retryAfterSeconds: Schema.Number,
+    retryAfterSeconds: Schema.Int,
   }
 ) {}
 

@@ -31,6 +31,12 @@ export interface ExchangeCodeOptions extends AuthenticatedOptions {
    * Short-lived code emitted by `@passlock/client`.
    */
   code: string
+
+  /**
+   * Optionally assign a userId to the passkey **during code verification**.
+   * Equivalent to calling {@link assignUser} after exchanging a code
+   */
+  userId?: string
 }
 
 /**
@@ -51,13 +57,16 @@ export const exchangeCode = (
     Effect.gen(function* () {
       const baseUrl = options.endpoint ?? "https://api.passlock.dev"
       const { tenancyId, code } = options
-
+      const body = options.userId ? { userId: options.userId } : null
       const url = new URL(`/${tenancyId}/principal/${code}`, baseUrl)
 
-      const response = yield* fetchNetwork(url, "get", undefined, {
-        headers: {
-          authorization: `Bearer ${options.apiKey}`,
-        },
+      const headers = {
+        authorization: `Bearer ${options.apiKey}`,
+      } as const
+
+      const response = yield* Effect.if(body !== null, {
+        onTrue: () => fetchNetwork(url, "post", body, { headers }),
+        onFalse: () => fetchNetwork(url, "get", undefined, { headers }),
       })
 
       const encoded: ExtendedPrincipal | InvalidCodeError | ForbiddenError = yield* matchStatus(
