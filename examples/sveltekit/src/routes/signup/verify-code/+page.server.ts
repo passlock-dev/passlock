@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import { consumeSignupChallenge } from '$lib/server/mailboxChallenge.js';
+import { consumeSignupChallenge } from '$lib/server/mailbox/signupChallenge.js';
 import { createSession } from '$lib/server/repository.js';
 import { deleteSignupLoginCookie, setSessionTokenCookie } from '$lib/server/cookies.js';
 import { fail, redirect } from '@sveltejs/kit';
@@ -87,20 +87,15 @@ export const actions = {
 			redirect(303, toLoginLocation({ username: result.email, reason: 'account-exists' }));
 		}
 
-		if (result.code === 'CHALLENGE_EXPIRED' || result.code === 'PURPOSE_MISMATCH') {
-			deleteSignupLoginCookie(cookies);
-			redirect(303, resolve('/signup'));
-		}
-
-		if (result.code === 'ACCOUNT_NOT_FOUND') {
+		if (result._tag === '@error/InvalidChallenge') {
 			deleteSignupLoginCookie(cookies);
 			redirect(303, resolve('/signup'));
 		}
 
 		const message =
-			result.code === 'CODE_EXPIRED'
+			result._tag === '@error/ChallengeExpired'
 				? 'This code has expired. Request a new one.'
-				: result.code === 'TOO_MANY_ATTEMPTS'
+				: result._tag === '@error/ChallengeAttemptsExceeded'
 					? 'Too many incorrect attempts. Request a new code.'
 					: 'Invalid code';
 

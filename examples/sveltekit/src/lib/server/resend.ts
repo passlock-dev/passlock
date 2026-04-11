@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { createChallengeRateLimitView } from './mailboxChallenge.js';
+import { createChallengeRateLimitView } from './mailbox/mailboxChallenge';
 import type { ResendRedirectLocation } from '$lib/shared/routes.js';
 
 /**

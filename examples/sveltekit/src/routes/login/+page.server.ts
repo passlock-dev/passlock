@@ -1,10 +1,7 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import {
-	createChallengeRateLimitView,
-	createOrRefreshLoginChallenge,
-	restoreChallengeRateLimitView
-} from '$lib/server/mailboxChallenge.js';
+import { createChallengeRateLimitView } from '$lib/server/mailbox/mailboxChallenge.js';
+import { createOrRefreshLoginChallenge } from '$lib/server/mailbox/loginChallenge.js';
 import { getUserByEmail, countPasskeysByUserId } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setSignupLoginCookie } from '$lib/server/cookies.js';
@@ -39,10 +36,10 @@ export const load = (async ({ locals, url }) => {
 		redirect(302, '/');
 	}
 
-	const { username, reason, retryAtMs } = getLoginQueryState(url);
+	const { username, reason, retryAfterSeconds } = getLoginQueryState(url);
 	const rateLimit =
 		reason === 'challenge-rate-limited'
-			? restoreChallengeRateLimitView(retryAtMs ?? Number.NaN)
+			? createChallengeRateLimitView(retryAfterSeconds ?? Number.NaN)
 			: null;
 
 	const form = await superValidate({ username }, valibot(schema), { errors: false });

@@ -19,7 +19,7 @@
 	};
 
 	const isRateLimitActive = (value: RateLimit) =>
-		Boolean(value && value.initialRemainingSeconds > 0);
+		Boolean(value && value.retryAfterSeconds > 0);
 
 	const initialRateLimit = getInitialRateLimit();
 	let rateLimit = $state<RateLimit>(initialRateLimit);

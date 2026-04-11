@@ -1,8 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
-import {
-	createChallengeRateLimitView,
-	createOrRefreshEmailChallenge
-} from '$lib/server/mailboxChallenge.js';
+import { createChallengeRateLimitView } from '$lib/server/mailbox/mailboxChallenge.js';
+import { createOrRefreshEmailChallenge } from '$lib/server/mailbox/emailChange.js';
 import { updateUserNames } from '$lib/server/repository.js';
 import { requireAccountContext } from '$lib/server/account.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';

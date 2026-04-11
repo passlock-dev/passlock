@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import { consumeLoginChallenge } from '$lib/server/mailboxChallenge.js';
+import { consumeLoginChallenge } from '$lib/server/mailbox/loginChallenge.js';
 import { countPasskeysByUserId, createSession } from '$lib/server/repository.js';
 import { deleteSignupLoginCookie, setSessionTokenCookie } from '$lib/server/cookies.js';
 import { fail, redirect } from '@sveltejs/kit';
@@ -83,28 +83,19 @@ export const actions = {
 			redirect(303, redirectTo);
 		}
 
-		if (result._tag === '@error/ChallengeVerificationError') {
-			if (
-				result.code === 'CHALLENGE_EXPIRED' ||
-				result.code === 'ACCOUNT_NOT_FOUND' ||
-				result.code === 'PURPOSE_MISMATCH'
-			) {
-				deleteSignupLoginCookie(cookies);
-				redirect(303, resolve('/login'));
-			}
-
-			const message =
-				result.code === 'CODE_EXPIRED'
-					? 'This code has expired. Request a new one.'
-					: result.code === 'TOO_MANY_ATTEMPTS'
-						? 'Too many incorrect attempts. Request a new code.'
-						: 'Invalid code';
-
-			setError(verifyForm, 'code', message);
-			return fail(400, { verifyForm, email: challenge.email });
+		if (result._tag === '@error/InvalidChallenge' || result._tag === '@error/AccountNotFound') {
+			deleteSignupLoginCookie(cookies);
+			redirect(303, resolve('/login'));
 		}
 
-		deleteSignupLoginCookie(cookies);
-		redirect(303, resolve('/login'));
+		const message =
+			result._tag === '@error/ChallengeExpired'
+				? 'This code has expired. Request a new one.'
+				: result._tag === '@error/ChallengeAttemptsExceeded'
+					? 'Too many incorrect attempts. Request a new code.'
+					: 'Invalid code';
+
+		setError(verifyForm, 'code', message);
+		return fail(400, { verifyForm, email: challenge.email });
 	}
 } satisfies Actions;

@@ -1,10 +1,9 @@
 import type { PageServerLoad } from './$types';
 
 import {
-	createChallengeRateLimitView,
 	createOrRefreshLoginChallenge,
 	getPendingLoginChallenge
-} from '$lib/server/mailboxChallenge.js';
+} from '$lib/server/mailbox/loginChallenge.js';
 import { getUserByEmail } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { getSignupLoginCookie, setSignupLoginCookie } from '$lib/server/cookies.js';
@@ -17,13 +16,12 @@ import { redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
 
 const redirectToLoginRateLimited = (email: string, retryAfterSeconds: number): never => {
-	const rateLimit = createChallengeRateLimitView(retryAfterSeconds);
 	redirect(
 		303,
 		toLoginLocation({
 			username: email,
 			reason: 'challenge-rate-limited',
-			retryAtMs: rateLimit.retryAtMs
+			retryAfterSeconds
 		})
 	);
 };

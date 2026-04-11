@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import {
 		formatChallengeRateLimitCountdown,
-		getChallengeRateLimitRemainingSeconds,
 		type ChallengeRateLimitView
 	} from '$lib/shared/challengeRateLimit.js';
 
@@ -16,7 +15,8 @@
 		onActiveChange?: (active: boolean) => void;
 	} = $props();
 
-	let remainingSeconds = $derived(rateLimit.initialRemainingSeconds);
+	// svelte-ignore state_referenced_locally
+	let remainingSeconds = $state(rateLimit.retryAfterSeconds);
 
 	$effect(() => {
 		onActiveChange?.(remainingSeconds > 0);
@@ -31,8 +31,9 @@
 	let toneClass = $derived(remainingSeconds > 0 ? 'text-error' : 'text-success');
 
 	onMount(() => {
+		const targetMs = Date.now() + rateLimit.retryAfterSeconds * 1000;
 		const updateRemainingSeconds = () => {
-			remainingSeconds = getChallengeRateLimitRemainingSeconds(rateLimit.retryAtMs);
+			remainingSeconds = Math.max(0, Math.ceil((targetMs - Date.now()) / 1000));
 		};
 
 		updateRemainingSeconds();

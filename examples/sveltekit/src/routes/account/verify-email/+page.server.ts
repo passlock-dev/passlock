@@ -1,5 +1,5 @@
 import type { Actions, PageServerLoad } from './$types';
-import { consumeEmailChallenge as verifyChangeEmailChallenge } from '$lib/server/mailboxChallenge.js';
+import { consumeEmailChallenge as verifyChangeEmailChallenge } from '$lib/server/mailbox/emailChange.js';
 import { sendEmailUpdated } from '$lib/server/email.js';
 import { deleteEmailChangeCookie } from '$lib/server/cookies.js';
 import { resolve } from '$app/paths';
@@ -98,25 +98,15 @@ export const actions = {
 			redirect(303, getAccountEmailErrorLocation('taken', challenge.email));
 		}
 
-		if (result._tag !== '@error/ChallengeVerificationError') {
-			throw new Error('Unexpected email change verification result');
-		}
-
-		const error = result;
-		if (
-			error.code === 'CHALLENGE_EXPIRED' ||
-			error.code === 'ACCOUNT_NOT_FOUND' ||
-			error.code === 'PURPOSE_MISMATCH' ||
-			error.code === 'UNAUTHORIZED'
-		) {
+		if (result._tag === '@error/InvalidChallenge') {
 			deleteEmailChangeCookie(cookies);
 			redirect(303, getAccountEmailErrorLocation('expired', challenge.email));
 		}
 
 		const message =
-			error.code === 'CODE_EXPIRED'
+			result._tag === '@error/ChallengeExpired'
 				? 'This code has expired. Request a new one.'
-				: error.code === 'TOO_MANY_ATTEMPTS'
+				: result._tag === '@error/ChallengeAttemptsExceeded'
 					? 'Too many incorrect attempts. Request a new code.'
 					: 'Invalid code';
 
