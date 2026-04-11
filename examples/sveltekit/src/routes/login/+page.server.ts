@@ -1,13 +1,13 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import { createOrRefreshLoginChallenge } from '$lib/server/mailboxChallenge.js';
+import {
+	createChallengeRateLimitView,
+	createOrRefreshLoginChallenge,
+	restoreChallengeRateLimitView
+} from '$lib/server/mailboxChallenge.js';
 import { getUserByEmail, countPasskeysByUserId } from '$lib/server/repository.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setSignupLoginCookie } from '$lib/server/cookies.js';
-import {
-	createChallengeRateLimitView,
-	restoreChallengeRateLimitView
-} from '$lib/server/passlock.js';
 import {
 	getLoginQueryState,
 	toLoginPasskeyLocation as toPasskeyLogin,

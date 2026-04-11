@@ -1,10 +1,12 @@
 import type { Actions, PageServerLoad } from './$types';
-import { createOrRefreshEmailChallenge } from '$lib/server/mailboxChallenge.js';
+import {
+	createChallengeRateLimitView,
+	createOrRefreshEmailChallenge
+} from '$lib/server/mailboxChallenge.js';
 import { updateUserNames } from '$lib/server/repository.js';
 import { requireAccountContext } from '$lib/server/account.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setEmailChangeCookie } from '$lib/server/cookies.js';
-import { createChallengeRateLimitView } from '$lib/server/passlock.js';
 import { getPasslockClientConfig } from '$lib/server/passkeys.js';
 import { getAccountQueryState, type AccountEmailErrorReason } from '$lib/shared/queryState.js';
 import { EmailSchema, ProfileSchema } from '$lib/shared/schemas.js';
