@@ -54,6 +54,14 @@ export interface AuthenticationOptions extends PasslockOptions {
    * Abort the operation after N milliseconds
    */
   timeout?: Millis | undefined
+
+  /**
+   * Override the rpId. Use this when you want to accept passkeys from
+   * a different domain/rpId. 
+   * 
+   *  @see {@link https://passlock.dev/passkeys/related-origin-requests/ autofill (main docs)}
+   */
+  rpId?: string
 }
 
 /**
@@ -142,7 +150,7 @@ export const fetchOptions = (options: Omit<AuthenticationOptions, keyof Passlock
     const { endpoint } = yield* Micro.service(Endpoint)
     const { tenancyId } = yield* Micro.service(TenancyId)
 
-    const { userVerification, allowCredentials, timeout, onEvent } = options
+    const { userVerification, allowCredentials, timeout, rpId, onEvent } = options
     const url = new URL(`${tenancyId}/passkey/authentication/options`, endpoint)
 
     onEvent?.("optionsRequest")
@@ -151,6 +159,7 @@ export const fetchOptions = (options: Omit<AuthenticationOptions, keyof Passlock
     const payload = {
       allowCredentials,
       userVerification,
+      rpId,
       timeout,
     }
 
