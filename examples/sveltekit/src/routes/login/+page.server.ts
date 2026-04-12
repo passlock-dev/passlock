@@ -83,8 +83,7 @@ export const actions = {
 			// The cookie stores the challenge id + secret; the email contains the
 			// code, so both are required to finish the flow.
 			await sendCodeChallengeEmail({
-				email: result.challenge.email,
-				firstName: result.challenge.givenName ?? 'there',
+				recipientEmail: result.challenge.email,
 				code: result.code,
 				message: result.message
 			});

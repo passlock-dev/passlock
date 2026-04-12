@@ -1,52 +1,50 @@
-import { deleteSignupLoginCookie, setSignupLoginCookie } from '$lib/server/cookies.js';
-import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import {
-	resendRateLimitResponse,
+	deleteSignupLoginCookie,
+	getSignupLoginCookie,
+	setSignupLoginCookie
+} from '$lib/server/cookies.js';
+import {
+	resendMailboxChallenge,
 	resendRedirectResponse,
-	resendSuccessResponse
+	resendErrorResponse
 } from '$lib/server/resend.js';
-import { createOrRefreshLoginChallenge } from '$lib/server/mailbox/loginChallenge.js';
+import { getPendingChallengeContext } from '$lib/server/mailbox/pendingChallenge.js';
+import {
+	createOrRefreshLoginChallenge,
+	getPendingLoginChallenge
+} from '$lib/server/mailbox/loginChallenge.js';
 import { toSignupLocation } from '$lib/shared/queryState.js';
 import type { RequestHandler } from './$types';
-import { getPendingLoginChallengeContext } from '../challenge.js';
 
 export const POST: RequestHandler = async ({ cookies }) => {
-	const pendingContext = await getPendingLoginChallengeContext(cookies);
-	if (pendingContext._tag === 'MissingPendingLoginChallenge') {
+	const pendingContext = await getPendingChallengeContext({
+		cookies,
+		getPendingCookie: getSignupLoginCookie,
+		getChallenge: getPendingLoginChallenge
+	});
+	if (pendingContext._tag === 'MissingPendingChallenge') {
 		return resendRedirectResponse('/login');
 	}
-	if (pendingContext._tag === 'InvalidPendingLoginChallenge') {
+	if (pendingContext._tag === 'InvalidPendingChallenge') {
 		deleteSignupLoginCookie(cookies);
 		return resendRedirectResponse('/login');
 	}
 
 	const { challenge } = pendingContext;
 
-	const result = await createOrRefreshLoginChallenge(challenge.email);
+	return resendMailboxChallenge({
+		create: () => createOrRefreshLoginChallenge(challenge.email),
+		setPendingCookie: (pending) => setSignupLoginCookie(cookies, pending),
+		onErrorResult: (result) => {
+			if (result._tag === '@error/AccountNotFound') {
+				deleteSignupLoginCookie(cookies);
+				return resendRedirectResponse(
+					toSignupLocation({ email: challenge.email, reason: 'no-account' }),
+					404
+				);
+			}
 
-	if (result._tag === '@error/AccountNotFound') {
-		deleteSignupLoginCookie(cookies);
-		return resendRedirectResponse(
-			toSignupLocation({ email: challenge.email, reason: 'no-account' }),
-			404
-		);
-	}
-
-	if (result._tag === '@error/ChallengeRateLimited') {
-		return resendRateLimitResponse(result.retryAfterSeconds);
-	}
-
-	await sendCodeChallengeEmail({
-		email: result.challenge.email,
-		firstName: result.challenge.givenName ?? 'there',
-		code: result.code,
-		message: result.message
+			return resendErrorResponse();
+		}
 	});
-
-	setSignupLoginCookie(cookies, {
-		challengeId: result.challenge.id,
-		secret: result.secret
-	});
-
-	return resendSuccessResponse();
 };

@@ -1,28 +1,9 @@
 import { dev } from '$app/environment';
 import EmailChanged from '$lib/emails/EmailChanged.svelte';
-import OneTimeCode from '$lib/emails/OneTimeCode.svelte';
 import { render } from 'svelte/server';
 
-/**
- * Render the one-time-code email body from a Svelte component.
- *
- * The sample keeps email rendering intentionally simple so the auth flow stays
- * easy to follow.
- */
-export const renderCodeChallengeEmail = ({
-	firstName,
-	code
-}: {
-	firstName: string;
-	code: string;
-}) => {
-	const emailOutput = render(OneTimeCode, { props: { firstName, code } });
-	return `<html><body>${emailOutput.body}</body></html>`;
-};
-
 export type SendCodeChallengeEmail = {
-	email: string;
-	firstName: string;
+	recipientEmail: string;
 	code: string;
 	message: {
 		html: string;
@@ -39,7 +20,7 @@ export type SendCodeChallengeEmail = {
  */
 export const sendCodeChallengeEmail = async (input: SendCodeChallengeEmail) => {
 	if (dev) {
-		console.log(`*** Sending One Time Code to ${input.email} [STUBBED] ***`);
+		console.log(`*** Sending One Time Code to ${input.recipientEmail} [STUBBED] ***`);
 		console.log(`*** One Time Code: ${input.code} [DEV ONLY] ***`);
 	}
 };

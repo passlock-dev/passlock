@@ -227,8 +227,7 @@ export const actions = {
 
 		// The email contains the user-facing code; the cookie stores the secret.
 		await sendCodeChallengeEmail({
-			email: result.challenge.email,
-			firstName: user.givenName,
+			recipientEmail: result.challenge.email,
 			code: result.code,
 			message: result.message
 		});

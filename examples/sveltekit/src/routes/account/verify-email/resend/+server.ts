@@ -1,18 +1,21 @@
-import { deleteEmailChangeCookie, setEmailChangeCookie } from '$lib/server/cookies.js';
-import { sendCodeChallengeEmail } from '$lib/server/email.js';
-import { createOrRefreshEmailChallenge } from '$lib/server/mailbox/emailChange.js';
+import {
+	deleteEmailChangeCookie,
+	getEmailChangeCookie,
+	setEmailChangeCookie
+} from '$lib/server/cookies.js';
+import {
+	createOrRefreshEmailChallenge,
+	getPendingEmailChallenge
+} from '$lib/server/mailbox/emailChange.js';
+import { getPendingChallengeContext } from '$lib/server/mailbox/pendingChallenge.js';
 import {
 	resendErrorResponse,
-	resendRateLimitResponse,
-	resendRedirectResponse,
-	resendSuccessResponse
+	resendMailboxChallenge,
+	resendRedirectResponse
 } from '$lib/server/resend.js';
 import { toAccountLocation } from '$lib/shared/queryState.js';
 import type { RequestHandler } from './$types';
-import {
-	getAccountEmailErrorLocation,
-	getPendingEmailChangeChallengeContext
-} from '../challenge.js';
+import { getAccountEmailErrorLocation } from '../challenge.js';
 
 export const POST: RequestHandler = async ({ locals, cookies }) => {
 	if (!locals.user) {
@@ -20,51 +23,41 @@ export const POST: RequestHandler = async ({ locals, cookies }) => {
 	}
 
 	const user = locals.user;
-	const pendingContext = await getPendingEmailChangeChallengeContext(cookies, user.userId);
-	if (pendingContext._tag === 'MissingPendingEmailChangeChallenge') {
+	const pendingContext = await getPendingChallengeContext({
+		cookies,
+		getPendingCookie: getEmailChangeCookie,
+		getChallenge: getPendingEmailChallenge,
+		validateChallenge: (challenge) => challenge.userId === user.userId
+	});
+	if (pendingContext._tag === 'MissingPendingChallenge') {
 		return resendRedirectResponse(toAccountLocation({ emailError: 'expired' }));
 	}
-	if (pendingContext._tag === 'InvalidPendingEmailChangeChallenge') {
+	if (pendingContext._tag === 'InvalidPendingChallenge') {
 		deleteEmailChangeCookie(cookies);
 		return resendRedirectResponse(toAccountLocation({ emailError: 'expired' }));
 	}
 
 	const { challenge } = pendingContext;
 
-	const result = await createOrRefreshEmailChallenge({
-		userId: user.userId,
-		email: challenge.email
+	return resendMailboxChallenge({
+		create: () =>
+			createOrRefreshEmailChallenge({
+				userId: user.userId,
+				email: challenge.email
+			}),
+		setPendingCookie: (pending) => setEmailChangeCookie(cookies, pending),
+		onErrorResult: (result) => {
+			if (result._tag === '@error/AccountNotFound') {
+				deleteEmailChangeCookie(cookies);
+				return resendRedirectResponse('/login', 401);
+			}
+
+			if (result._tag === '@error/DuplicateUser') {
+				deleteEmailChangeCookie(cookies);
+				return resendRedirectResponse(getAccountEmailErrorLocation('taken', challenge.email));
+			}
+
+			return resendErrorResponse();
+		}
 	});
-
-	if (result._tag === '@error/AccountNotFound') {
-		deleteEmailChangeCookie(cookies);
-		return resendRedirectResponse('/login', 401);
-	}
-
-	if (result._tag === '@error/DuplicateUser') {
-		deleteEmailChangeCookie(cookies);
-		return resendRedirectResponse(getAccountEmailErrorLocation('taken', challenge.email));
-	}
-
-	if (result._tag === '@error/ChallengeRateLimited') {
-		return resendRateLimitResponse(result.retryAfterSeconds);
-	}
-
-	if (result._tag !== 'CreatedChallenge') {
-		return resendErrorResponse();
-	}
-
-	await sendCodeChallengeEmail({
-		email: result.challenge.email,
-		firstName: user.givenName,
-		code: result.code,
-		message: result.message
-	});
-
-	setEmailChangeCookie(cookies, {
-		challengeId: result.challenge.id,
-		secret: result.secret
-	});
-
-	return resendSuccessResponse();
 };

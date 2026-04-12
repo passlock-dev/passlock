@@ -1,9 +1,5 @@
-import * as v from 'valibot';
-import * as PasslockServer from '@passlock/server/safe';
-import type { MailboxChallengeMetadata } from '@passlock/server/safe';
-import { error as kitError } from '@sveltejs/kit';
+import type { MailboxChallengeDetails, MailboxChallengeMetadata } from '@passlock/server/safe';
 import { CHALLENGE_FLOW_TTL_MS } from '../cookies.js';
-import { getPasslockConfig } from '../passlock.js';
 import { getUserByEmail, type AccountNotFound } from '../repository.js';
 import {
 	type ChallengeAttemptsExceededError,
@@ -13,10 +9,13 @@ import {
 	type InvalidChallengeCodeError,
 	type InvalidChallengeError,
 	BaseMetadataSchema,
-	createInvalidChallengeError,
+	createPasslockMailboxChallenge,
 	getPasslockMailboxChallenge,
-	isProcessExpired
+	validateMailboxChallenge,
+	verifyPasslockMailboxChallenge
 } from './mailboxChallenge.js';
+
+import type * as v from 'valibot';
 
 export type LoginChallenge = {
 	_tag: 'LoginChallenge';
@@ -27,7 +26,7 @@ export type LoginChallenge = {
 
 export type CreatedLoginChallenge = {
 	_tag: 'CreatedChallenge';
-	challenge: LoginChallenge & { givenName: string | null };
+	challenge: LoginChallenge;
 	secret: string;
 	code: string;
 	message: {
@@ -36,27 +35,23 @@ export type CreatedLoginChallenge = {
 	};
 };
 
+type LoginMetadata = v.InferOutput<typeof BaseMetadataSchema>;
+
 const toLoginChallenge = (
-	details: PasslockServer.MailboxChallengeDetails
+	details: MailboxChallengeDetails
 ): LoginChallenge | InvalidChallengeError => {
-	if (details.purpose !== 'login') {
-		return createInvalidChallengeError('Challenge purpose does not match login flow');
-	}
-
-	const parsed = v.safeParse(BaseMetadataSchema, details.metadata);
-	if (!parsed.success) {
-		return createInvalidChallengeError('Challenge metadata is malformed');
-	}
-
-	if (isProcessExpired(parsed.output.processExpiresAt)) {
-		return createInvalidChallengeError('Login flow has expired');
-	}
+	const challenge = validateMailboxChallenge<LoginMetadata>(details, {
+		purpose: 'login',
+		metadataSchema: BaseMetadataSchema,
+		expiredMessage: 'Login flow has expired'
+	});
+	if (challenge._tag === '@error/InvalidChallenge') return challenge;
 
 	return {
 		_tag: 'LoginChallenge',
-		id: details.challengeId,
-		email: details.email,
-		processExpiresAt: parsed.output.processExpiresAt
+		id: challenge.id,
+		email: challenge.email,
+		processExpiresAt: challenge.metadata.processExpiresAt
 	};
 };
 
@@ -72,8 +67,7 @@ export const createOrRefreshLoginChallenge = async (
 	const processExpiresAt = Date.now() + CHALLENGE_FLOW_TTL_MS;
 	const metadata: MailboxChallengeMetadata = { processExpiresAt };
 
-	const result = await PasslockServer.createMailboxChallenge({
-		...getPasslockConfig(),
+	const result = await createPasslockMailboxChallenge({
 		email: account.email,
 		purpose: 'login',
 		userId: String(account.userId),
@@ -81,16 +75,9 @@ export const createOrRefreshLoginChallenge = async (
 		invalidateOthers: true,
 		skipRateLimit: true
 	});
+	if (result._tag === '@error/ChallengeRateLimited') return result;
 
-	if (result.failure) {
-		if (PasslockServer.isChallengeRateLimitedError(result)) {
-			return result.error;
-		} else {
-			kitError(500, 'Unable to create one-time code challenge');
-		}
-	}
-
-	const challenge = result.value.challenge;
+	const challenge = result.challenge;
 
 	return {
 		_tag: 'CreatedChallenge',
@@ -98,7 +85,6 @@ export const createOrRefreshLoginChallenge = async (
 			_tag: 'LoginChallenge',
 			id: challenge.challengeId,
 			email: challenge.email,
-			givenName: account.givenName,
 			processExpiresAt
 		},
 		secret: challenge.secret,
@@ -118,7 +104,7 @@ export const getPendingLoginChallenge = async (
 	if (!details) return null;
 
 	const result = toLoginChallenge(details);
-	return '_tag' in result ? null : result;
+	return result._tag === '@error/InvalidChallenge' ? null : result;
 };
 
 /**
@@ -136,22 +122,10 @@ export const consumeLoginChallenge = async (input: {
 	| ChallengeExpiredError
 	| ChallengeAttemptsExceededError
 > => {
-	const result = await PasslockServer.verifyMailboxChallenge({
-		...getPasslockConfig(),
-		challengeId: input.challengeId,
-		code: input.code,
-		secret: input.secret
-	});
+	const result = await verifyPasslockMailboxChallenge(input);
+	if (result._tag !== 'ChallengeVerified') return result;
 
-	if (!result.success) {
-		if (result._tag === '@error/Forbidden') {
-			console.error('Unable to verify mailbox challenge', result);
-			kitError(500, 'Unable to verify one-time code challenge');
-		}
-		return result.error;
-	}
-
-	const challenge = toLoginChallenge(result.value.challenge);
+	const challenge = toLoginChallenge(result.challenge);
 	if (challenge._tag === '@error/InvalidChallenge') return challenge;
 
 	const user = await getUserByEmail(challenge.email);

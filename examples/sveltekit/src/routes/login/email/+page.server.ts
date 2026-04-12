@@ -63,8 +63,7 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 
 	// Store the secret server-side in a cookie; send the code via email.
 	await sendCodeChallengeEmail({
-		email: result.challenge.email,
-		firstName: result.challenge.givenName ?? 'there',
+		recipientEmail: result.challenge.email,
 		code: result.code,
 		message: result.message
 	});
