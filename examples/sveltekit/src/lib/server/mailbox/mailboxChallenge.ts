@@ -50,25 +50,8 @@ export const getPasslockMailboxChallenge = async (input: {
 		}
 	}
 
-	return result;
+	return result.value;
 };
-
-/**
- * Ask Passlock to verify a submitted challenge code against the stored secret.
- *
- * Callers still apply app-specific checks afterwards, such as making sure the
- * challenge purpose matches the current route and that the challenge belongs
- * to the expected local user.
- */
-export const verifyPasslockMailboxChallenge = async (input: {
-	challengeId: string;
-	secret: string;
-	code: string;
-}) =>
-	PasslockServer.verifyMailboxChallenge({
-		...getPasslockConfig(),
-		...input
-	});
 
 // ============================================================================
 // Rate-limit view helpers

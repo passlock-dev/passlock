@@ -15,7 +15,6 @@ import {
 	createInvalidChallengeError,
 	getPasslockMailboxChallenge,
 	isProcessExpired,
-	verifyPasslockMailboxChallenge
 } from './mailboxChallenge.js';
 
 const SignupMetadataSchema = v.object({
@@ -25,6 +24,7 @@ const SignupMetadataSchema = v.object({
 });
 
 export type SignupChallenge = {
+  _tag: "SignupChallenge"
 	id: string;
 	email: string;
 	givenName: string;
@@ -60,6 +60,7 @@ const toSignupChallenge = (
 	}
 
 	return {
+    _tag: "SignupChallenge",
 		id: details.challengeId,
 		email: details.email,
 		givenName: parsed.output.givenName,
@@ -108,6 +109,7 @@ export const createOrRefreshSignupChallenge = async (input: {
 	return {
 		_tag: 'CreatedChallenge',
 		challenge: {
+      _tag: "SignupChallenge",
 			id: challenge.challengeId,
 			email: challenge.email,
 			givenName: input.givenName,
@@ -150,7 +152,8 @@ export const consumeSignupChallenge = async (input: {
 	| ChallengeExpiredError
 	| ChallengeAttemptsExceededError
 > => {
-	const result = await verifyPasslockMailboxChallenge({
+	const result = await PasslockServer.verifyMailboxChallenge({
+    ...getPasslockConfig(),
 		challengeId: input.challengeId,
 		code: input.code,
 		secret: input.secret
@@ -164,7 +167,7 @@ export const consumeSignupChallenge = async (input: {
 	}
 
 	const challenge = toSignupChallenge(result.challenge);
-	if ('_tag' in challenge) return challenge;
+	if (challenge._tag === "@error/InvalidChallenge") return challenge;
 
 	const existingAccount = await getUserByEmail(challenge.email);
 	if (existingAccount) {

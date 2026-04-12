@@ -23,10 +23,10 @@ import {
 	getPasslockMailboxChallenge,
 	isDuplicateUser,
 	isProcessExpired,
-	verifyPasslockMailboxChallenge
 } from './mailboxChallenge.js';
 
 export type EmailChangeChallenge = {
+  _tag: "EmailChangeChallenge";
 	id: string;
 	email: string;
 	userId: number;
@@ -79,6 +79,7 @@ const toEmailChangeChallenge = (
 	}
 
 	return {
+    _tag: "EmailChangeChallenge",
 		id: details.challengeId,
 		email: details.email,
 		userId,
@@ -170,11 +171,13 @@ export const consumeEmailChallenge = async (input: {
 	| ChallengeExpiredError
 	| ChallengeAttemptsExceededError
 > => {
-	const result = await verifyPasslockMailboxChallenge({
+  const result = await PasslockServer.verifyMailboxChallenge({
+    ...getPasslockConfig(),
 		challengeId: input.challengeId,
 		code: input.code,
 		secret: input.secret
-	});
+  });
+
 	if (!result.success) {
 		if (result._tag === '@error/Forbidden') {
 			console.error('Unable to verify mailbox challenge', result);
@@ -183,8 +186,8 @@ export const consumeEmailChallenge = async (input: {
 		return result.error;
 	}
 
-	const challenge = toEmailChangeChallenge(result.challenge);
-	if ('_tag' in challenge) return challenge;
+	const challenge = toEmailChangeChallenge(result.value.challenge);
+  if (challenge._tag === "@error/InvalidChallenge") return challenge;
 
 	if (challenge.userId !== input.userId) {
 		return createInvalidChallengeError('Challenge does not belong to the signed-in user');

@@ -16,10 +16,10 @@ import {
 	createInvalidChallengeError,
 	getPasslockMailboxChallenge,
 	isProcessExpired,
-	verifyPasslockMailboxChallenge
 } from './mailboxChallenge.js';
 
 export type LoginChallenge = {
+  _tag: "LoginChallenge";
 	id: string;
 	email: string;
 	processExpiresAt: number;
@@ -53,6 +53,7 @@ const toLoginChallenge = (
 	}
 
 	return {
+    _tag: "LoginChallenge",
 		id: details.challengeId,
 		email: details.email,
 		processExpiresAt: parsed.output.processExpiresAt
@@ -94,6 +95,7 @@ export const createOrRefreshLoginChallenge = async (
 	return {
 		_tag: 'CreatedChallenge',
 		challenge: {
+      _tag: "LoginChallenge",
 			id: challenge.challengeId,
 			email: challenge.email,
 			givenName: account.givenName,
@@ -134,11 +136,13 @@ export const consumeLoginChallenge = async (input: {
 	| ChallengeExpiredError
 	| ChallengeAttemptsExceededError
 > => {
-	const result = await verifyPasslockMailboxChallenge({
+	const result = await PasslockServer.verifyMailboxChallenge({
+    ...getPasslockConfig(),
 		challengeId: input.challengeId,
 		code: input.code,
 		secret: input.secret
 	});
+
 	if (!result.success) {
 		if (result._tag === '@error/Forbidden') {
 			console.error('Unable to verify mailbox challenge', result);
@@ -147,8 +151,8 @@ export const consumeLoginChallenge = async (input: {
 		return result.error;
 	}
 
-	const challenge = toLoginChallenge(result.challenge);
-	if ('_tag' in challenge) return challenge;
+	const challenge = toLoginChallenge(result.value.challenge);
+	if (challenge._tag === "@error/InvalidChallenge") return challenge;
 
 	const user = await getUserByEmail(challenge.email);
 	if (!user) {

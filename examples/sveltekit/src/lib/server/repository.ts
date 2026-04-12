@@ -97,6 +97,7 @@ export type PasskeyNotFound = {
  * Passkey metadata shown in account-management UI.
  */
 export type UserPasskey = {
+  _tag: "UserPasskey",
 	passkeyId: string;
 	username: string | null;
 	platformName: string | null;
@@ -108,6 +109,7 @@ export type UserPasskey = {
  * Server-side session record stored in SQLite.
  */
 export type Session = {
+  _tag: "Session",
 	id: string;
 	userId: number;
 	createdAt: number;
@@ -121,6 +123,7 @@ export type Session = {
  * User data hydrated into `event.locals` alongside a validated session.
  */
 export type SessionUser = {
+  _tag: "SessionUser";
 	userId: number;
 	email: string;
 	givenName: string;
@@ -200,7 +203,8 @@ export const getUserById = async (userId: number): Promise<SessionUser | null> =
 		.where(eq(usersTable.id, userId))
 		.limit(1);
 
-	return users[0] ?? null;
+  const user = users[0];
+  return user ? { _tag: "SessionUser", ...user } : null
 };
 
 /**
@@ -218,7 +222,8 @@ export const getUserByEmail = async (email: string): Promise<SessionUser | null>
 		.where(eq(usersTable.email, email))
 		.limit(1);
 
-	return users[0] ?? null;
+  const user = users[0];
+  return user ? { _tag: "SessionUser", ...user } : null
 };
 
 /**
@@ -241,7 +246,8 @@ export const updateUserNames = async (
 			familyName: usersTable.familyName
 		});
 
-	return users[0] ?? null;
+	const user = users[0];
+  return user ? { _tag: "SessionUser", ...user } : null
 };
 
 /**
@@ -264,7 +270,8 @@ export const updateUserEmail = async (
 				familyName: usersTable.familyName
 			});
 
-		return users[0] ?? null;
+    const user = users[0];
+    return user ? { _tag: "SessionUser", ...user } : null
 	} catch (e) {
 		if (!isSqliteConstraintError(e) || e.cause.extendedCode !== 'SQLITE_CONSTRAINT_UNIQUE') throw e;
 		return { _tag: '@error/DuplicateUser', email };
@@ -365,7 +372,12 @@ export const getPasskeysByUserId = async (userId: number): Promise<UserPasskey[]
 		})
 		.from(passkeysTable)
 		.where(eq(passkeysTable.userId, userId))
-		.orderBy(desc(passkeysTable.createdAt));
+		.orderBy(desc(passkeysTable.createdAt))
+    .then((passkeys) => 
+      passkeys.map((passkey) => 
+        ({ _tag: "UserPasskey", ...passkey })
+      )
+    );    
 };
 
 /**
@@ -384,7 +396,13 @@ export const getPasskeysByUsername = async (email: string): Promise<UserPasskey[
 		.from(passkeysTable)
 		.innerJoin(usersTable, eq(passkeysTable.userId, usersTable.id))
 		.where(eq(usersTable.email, email))
-		.orderBy(desc(passkeysTable.createdAt));
+		.orderBy(desc(passkeysTable.createdAt))
+    .then((passkeys) => 
+      passkeys.map((passkey) => 
+        ({ _tag: "UserPasskey", ...passkey })
+      )
+    );
+  
 };
 
 /**
@@ -456,6 +474,7 @@ export const createSession = async (
 
 		return {
 			session: {
+        _tag: "Session",
 				id: sessionId,
 				userId,
 				createdAt: now,
@@ -522,6 +541,7 @@ export const validateSessionToken = async (
 
 	return {
 		session: {
+      _tag: "Session",
 			id: row.sessionId,
 			userId: row.userId,
 			createdAt: row.createdAt,
@@ -529,6 +549,7 @@ export const validateSessionToken = async (
 			lastVerifiedAt
 		},
 		user: {
+      _tag: "SessionUser",
 			userId: row.userId,
 			email: row.email,
 			givenName: row.givenName,
