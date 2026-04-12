@@ -15,11 +15,11 @@ import {
 	BaseMetadataSchema,
 	createInvalidChallengeError,
 	getPasslockMailboxChallenge,
-	isProcessExpired,
+	isProcessExpired
 } from './mailboxChallenge.js';
 
 export type LoginChallenge = {
-  _tag: "LoginChallenge";
+	_tag: 'LoginChallenge';
 	id: string;
 	email: string;
 	processExpiresAt: number;
@@ -53,7 +53,7 @@ const toLoginChallenge = (
 	}
 
 	return {
-    _tag: "LoginChallenge",
+		_tag: 'LoginChallenge',
 		id: details.challengeId,
 		email: details.email,
 		processExpiresAt: parsed.output.processExpiresAt
@@ -95,7 +95,7 @@ export const createOrRefreshLoginChallenge = async (
 	return {
 		_tag: 'CreatedChallenge',
 		challenge: {
-      _tag: "LoginChallenge",
+			_tag: 'LoginChallenge',
 			id: challenge.challengeId,
 			email: challenge.email,
 			givenName: account.givenName,
@@ -137,7 +137,7 @@ export const consumeLoginChallenge = async (input: {
 	| ChallengeAttemptsExceededError
 > => {
 	const result = await PasslockServer.verifyMailboxChallenge({
-    ...getPasslockConfig(),
+		...getPasslockConfig(),
 		challengeId: input.challengeId,
 		code: input.code,
 		secret: input.secret
@@ -152,7 +152,7 @@ export const consumeLoginChallenge = async (input: {
 	}
 
 	const challenge = toLoginChallenge(result.value.challenge);
-	if (challenge._tag === "@error/InvalidChallenge") return challenge;
+	if (challenge._tag === '@error/InvalidChallenge') return challenge;
 
 	const user = await getUserByEmail(challenge.email);
 	if (!user) {

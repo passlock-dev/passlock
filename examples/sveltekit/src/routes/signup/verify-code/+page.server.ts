@@ -28,10 +28,10 @@ export const load = (async ({ locals, cookies }) => {
 	if (locals.user) redirect(302, '/');
 
 	const pendingContext = await getPendingSignupChallengeContext(cookies);
-	if (pendingContext._tag === 'MissingPendingSignupChallenge') {
+	if (pendingContext._tag === '@error/MissingPendingSignupChallenge') {
 		redirect(303, resolve('/signup'));
 	}
-	if (pendingContext._tag === 'InvalidPendingSignupChallenge') {
+	if (pendingContext._tag === '@error/InvalidPendingSignupChallenge') {
 		deleteSignupLoginCookie(cookies);
 		redirect(303, resolve('/signup'));
 	}
@@ -53,10 +53,10 @@ export const actions = {
 		if (!verifyForm.valid) return fail(400, { verifyForm });
 
 		const pendingContext = await getPendingSignupChallengeContext(cookies);
-		if (pendingContext._tag === 'MissingPendingSignupChallenge') {
+		if (pendingContext._tag === '@error/MissingPendingSignupChallenge') {
 			redirect(303, resolve('/signup'));
 		}
-		if (pendingContext._tag === 'InvalidPendingSignupChallenge') {
+		if (pendingContext._tag === '@error/InvalidPendingSignupChallenge') {
 			deleteSignupLoginCookie(cookies);
 			redirect(303, resolve('/signup'));
 		}

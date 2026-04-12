@@ -74,6 +74,7 @@ export type Passkey = {
 	passkeyId: string;
 	username: string | null;
 	platformName: string | null;
+	platformIcon: string | null;
 	createdAt: number;
 };
 
@@ -94,22 +95,10 @@ export type PasskeyNotFound = {
 };
 
 /**
- * Passkey metadata shown in account-management UI.
- */
-export type UserPasskey = {
-  _tag: "UserPasskey",
-	passkeyId: string;
-	username: string | null;
-	platformName: string | null;
-	platformIcon: string | null;
-	createdAt: number;
-};
-
-/**
  * Server-side session record stored in SQLite.
  */
 export type Session = {
-  _tag: "Session",
+	_tag: 'Session';
 	id: string;
 	userId: number;
 	createdAt: number;
@@ -123,7 +112,7 @@ export type Session = {
  * User data hydrated into `event.locals` alongside a validated session.
  */
 export type SessionUser = {
-  _tag: "SessionUser";
+	_tag: 'SessionUser';
 	userId: number;
 	email: string;
 	givenName: string;
@@ -134,6 +123,7 @@ export type SessionUser = {
  * Result of validating a session cookie against the local database.
  */
 export type SessionValidationResult = {
+	_tag: 'SessionValidationResult';
 	session: Session;
 	user: SessionUser;
 	fresh: boolean;
@@ -143,6 +133,7 @@ export type SessionValidationResult = {
  * Newly created session plus the opaque token sent to the browser cookie.
  */
 export type CreatedSession = {
+	_tag: 'CreatedSession';
 	session: Session;
 	token: string;
 };
@@ -176,12 +167,14 @@ export const createUser = async (newUser: CreateUser): Promise<User | DuplicateU
 
 	try {
 		const createdAt = Date.now();
-		const user = await db
+		const users = await db
 			.insert(usersTable)
 			.values({ email, givenName, familyName, createdAt })
 			.returning({ userId: usersTable.id, createdAt: usersTable.createdAt });
 
-		return { _tag: 'User', userId: user[0].userId, email, createdAt: user[0].createdAt };
+		const { userId } = users[0];
+
+		return { _tag: 'User', userId, email, createdAt };
 	} catch (e) {
 		if (!isSqliteConstraintError(e) || e.cause.extendedCode !== 'SQLITE_CONSTRAINT_UNIQUE') throw e;
 		return { _tag: '@error/DuplicateUser', email };
@@ -203,8 +196,8 @@ export const getUserById = async (userId: number): Promise<SessionUser | null> =
 		.where(eq(usersTable.id, userId))
 		.limit(1);
 
-  const user = users[0];
-  return user ? { _tag: "SessionUser", ...user } : null
+	const user = users[0];
+	return user ? { _tag: 'SessionUser', ...user } : null;
 };
 
 /**
@@ -222,8 +215,8 @@ export const getUserByEmail = async (email: string): Promise<SessionUser | null>
 		.where(eq(usersTable.email, email))
 		.limit(1);
 
-  const user = users[0];
-  return user ? { _tag: "SessionUser", ...user } : null
+	const user = users[0];
+	return user ? { _tag: 'SessionUser', ...user } : null;
 };
 
 /**
@@ -247,7 +240,7 @@ export const updateUserNames = async (
 		});
 
 	const user = users[0];
-  return user ? { _tag: "SessionUser", ...user } : null
+	return user ? { _tag: 'SessionUser', ...user } : null;
 };
 
 /**
@@ -270,8 +263,8 @@ export const updateUserEmail = async (
 				familyName: usersTable.familyName
 			});
 
-    const user = users[0];
-    return user ? { _tag: "SessionUser", ...user } : null
+		const user = users[0];
+		return user ? { _tag: 'SessionUser', ...user } : null;
 	} catch (e) {
 		if (!isSqliteConstraintError(e) || e.cause.extendedCode !== 'SQLITE_CONSTRAINT_UNIQUE') throw e;
 		return { _tag: '@error/DuplicateUser', email };
@@ -328,6 +321,7 @@ export const createPasskey = async (
 		passkeyId,
 		username,
 		platformName,
+		platformIcon,
 		createdAt
 	};
 };
@@ -361,9 +355,10 @@ export const countPasskeysByUserId = async (userId: number): Promise<number> => 
 /**
  * List the passkeys linked to a local user for account-management UI.
  */
-export const getPasskeysByUserId = async (userId: number): Promise<UserPasskey[]> => {
+export const getPasskeysByUserId = async (userId: number): Promise<Passkey[]> => {
 	return await db
 		.select({
+			userId: passkeysTable.userId,
 			passkeyId: passkeysTable.passkeyId,
 			username: passkeysTable.username,
 			platformName: passkeysTable.platformName,
@@ -373,20 +368,17 @@ export const getPasskeysByUserId = async (userId: number): Promise<UserPasskey[]
 		.from(passkeysTable)
 		.where(eq(passkeysTable.userId, userId))
 		.orderBy(desc(passkeysTable.createdAt))
-    .then((passkeys) => 
-      passkeys.map((passkey) => 
-        ({ _tag: "UserPasskey", ...passkey })
-      )
-    );    
+		.then((passkeys) => passkeys.map((passkey) => ({ _tag: 'Passkey', ...passkey })));
 };
 
 /**
  * Find passkeys by username/email so the passkey login route can pre-select
  * credentials for a known account.
  */
-export const getPasskeysByUsername = async (email: string): Promise<UserPasskey[]> => {
+export const getPasskeysByUsername = async (email: string): Promise<Passkey[]> => {
 	return await db
 		.select({
+			userId: passkeysTable.userId,
 			passkeyId: passkeysTable.passkeyId,
 			username: passkeysTable.username,
 			platformName: passkeysTable.platformName,
@@ -397,12 +389,7 @@ export const getPasskeysByUsername = async (email: string): Promise<UserPasskey[
 		.innerJoin(usersTable, eq(passkeysTable.userId, usersTable.id))
 		.where(eq(usersTable.email, email))
 		.orderBy(desc(passkeysTable.createdAt))
-    .then((passkeys) => 
-      passkeys.map((passkey) => 
-        ({ _tag: "UserPasskey", ...passkey })
-      )
-    );
-  
+		.then((passkeys) => passkeys.map((passkey) => ({ _tag: 'Passkey', ...passkey })));
 };
 
 /**
@@ -473,8 +460,9 @@ export const createSession = async (
 		}
 
 		return {
+			_tag: 'CreatedSession' as const,
 			session: {
-        _tag: "Session",
+				_tag: 'Session',
 				id: sessionId,
 				userId,
 				createdAt: now,
@@ -540,8 +528,9 @@ export const validateSessionToken = async (
 	}
 
 	return {
+		_tag: 'SessionValidationResult' as const,
 		session: {
-      _tag: "Session",
+			_tag: 'Session',
 			id: row.sessionId,
 			userId: row.userId,
 			createdAt: row.createdAt,
@@ -549,7 +538,7 @@ export const validateSessionToken = async (
 			lastVerifiedAt
 		},
 		user: {
-      _tag: "SessionUser",
+			_tag: 'SessionUser',
 			userId: row.userId,
 			email: row.email,
 			givenName: row.givenName,

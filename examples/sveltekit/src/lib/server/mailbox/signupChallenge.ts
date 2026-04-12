@@ -14,7 +14,7 @@ import {
 	type InvalidChallengeError,
 	createInvalidChallengeError,
 	getPasslockMailboxChallenge,
-	isProcessExpired,
+	isProcessExpired
 } from './mailboxChallenge.js';
 
 const SignupMetadataSchema = v.object({
@@ -24,7 +24,7 @@ const SignupMetadataSchema = v.object({
 });
 
 export type SignupChallenge = {
-  _tag: "SignupChallenge"
+	_tag: 'SignupChallenge';
 	id: string;
 	email: string;
 	givenName: string;
@@ -60,7 +60,7 @@ const toSignupChallenge = (
 	}
 
 	return {
-    _tag: "SignupChallenge",
+		_tag: 'SignupChallenge',
 		id: details.challengeId,
 		email: details.email,
 		givenName: parsed.output.givenName,
@@ -109,7 +109,7 @@ export const createOrRefreshSignupChallenge = async (input: {
 	return {
 		_tag: 'CreatedChallenge',
 		challenge: {
-      _tag: "SignupChallenge",
+			_tag: 'SignupChallenge',
 			id: challenge.challengeId,
 			email: challenge.email,
 			givenName: input.givenName,
@@ -129,11 +129,11 @@ export const createOrRefreshSignupChallenge = async (input: {
 export const getPendingSignupChallenge = async (
 	challengeId: string
 ): Promise<SignupChallenge | null> => {
-	const details = await getPasslockMailboxChallenge({ challengeId });
-	if (!details) return null;
+	const challenge = await getPasslockMailboxChallenge({ challengeId });
+	if (!challenge) return null;
 
-	const result = toSignupChallenge(details);
-	return '_tag' in result ? null : result;
+	const result = toSignupChallenge(challenge);
+	return result._tag === "@error/InvalidChallenge" ? null : result
 };
 
 /**
@@ -153,7 +153,7 @@ export const consumeSignupChallenge = async (input: {
 	| ChallengeAttemptsExceededError
 > => {
 	const result = await PasslockServer.verifyMailboxChallenge({
-    ...getPasslockConfig(),
+		...getPasslockConfig(),
 		challengeId: input.challengeId,
 		code: input.code,
 		secret: input.secret
@@ -167,7 +167,7 @@ export const consumeSignupChallenge = async (input: {
 	}
 
 	const challenge = toSignupChallenge(result.challenge);
-	if (challenge._tag === "@error/InvalidChallenge") return challenge;
+	if (challenge._tag === '@error/InvalidChallenge') return challenge;
 
 	const existingAccount = await getUserByEmail(challenge.email);
 	if (existingAccount) {

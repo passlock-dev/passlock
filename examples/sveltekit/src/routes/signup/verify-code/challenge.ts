@@ -6,8 +6,8 @@ import type { Cookies } from '@sveltejs/kit';
  * Route-local challenge context for the signup code verification page.
  */
 export type PendingSignupChallengeContext =
-	| { _tag: 'MissingPendingSignupChallenge' }
-	| { _tag: 'InvalidPendingSignupChallenge' }
+	| { _tag: '@error/MissingPendingSignupChallenge' }
+	| { _tag: '@error/InvalidPendingSignupChallenge' }
 	| {
 			_tag: 'PendingSignupChallenge';
 			pending: NonNullable<ReturnType<typeof getSignupLoginCookie>>;
@@ -22,12 +22,12 @@ export const getPendingSignupChallengeContext = async (
 ): Promise<PendingSignupChallengeContext> => {
 	const pending = getSignupLoginCookie(cookies);
 	if (!pending) {
-		return { _tag: 'MissingPendingSignupChallenge' };
+		return { _tag: '@error/MissingPendingSignupChallenge' };
 	}
 
 	const challenge = await getPendingSignupChallenge(pending.challengeId);
 	if (!challenge) {
-		return { _tag: 'InvalidPendingSignupChallenge' };
+		return { _tag: '@error/InvalidPendingSignupChallenge' };
 	}
 
 	return {

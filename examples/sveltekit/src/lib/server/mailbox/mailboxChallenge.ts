@@ -104,6 +104,3 @@ export const BaseMetadataSchema = v.object({
 
 export const isProcessExpired = (processExpiresAt: number): boolean =>
 	Date.now() > processExpiresAt;
-
-export const isDuplicateUser = (user: SessionUser | DuplicateUser): user is DuplicateUser =>
-	'_tag' in user && user._tag === '@error/DuplicateUser';

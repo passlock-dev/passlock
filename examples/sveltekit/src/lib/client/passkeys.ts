@@ -73,7 +73,7 @@ export const registerPasskey = async (input: CreatePasskeyInput) => {
 	const { code } = clientResult;
 
 	// Post to the /passkeys/+server.ts endpoint, which verifies
-  // the passkey and links it to the user account
+	// the passkey and links it to the user account
 	return fetchData({
 		url: resolve('/passkeys'),
 		method: 'POST',
@@ -137,9 +137,9 @@ export const authenticatePasskey = async (input: AuthenticatePasskeyInput) => {
 	}
 
 	// Post to the /login/passkeys/+server.ts endpoint, which verifies
-  // the passkey and creates a new session. Alternatively post to the
-  // /account/re-authenticate/+server.ts route which refreshes the session
-  // bumping the passkeyAuthenticatedAt timestamp.
+	// the passkey and creates a new session. Alternatively post to the
+	// /account/re-authenticate/+server.ts route which refreshes the session
+	// bumping the passkeyAuthenticatedAt timestamp.
 	return await fetchData({
 		url: verificationRoute,
 		method: 'POST',

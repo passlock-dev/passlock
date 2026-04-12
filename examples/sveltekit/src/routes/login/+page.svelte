@@ -19,8 +19,7 @@
 		return initialActionRateLimit === undefined ? data.rateLimit : initialActionRateLimit;
 	};
 
-	const isRateLimitActive = (value: RateLimit) =>
-		Boolean(value && value.retryAfterSeconds > 0);
+	const isRateLimitActive = (value: RateLimit) => Boolean(value && value.retryAfterSeconds > 0);
 
 	const initialRateLimit = getInitialRateLimit();
 	let rateLimit = $state<RateLimit>(initialRateLimit);

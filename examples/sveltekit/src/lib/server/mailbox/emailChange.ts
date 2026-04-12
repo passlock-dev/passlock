@@ -21,12 +21,11 @@ import {
 	BaseMetadataSchema,
 	createInvalidChallengeError,
 	getPasslockMailboxChallenge,
-	isDuplicateUser,
-	isProcessExpired,
+	isProcessExpired
 } from './mailboxChallenge.js';
 
 export type EmailChangeChallenge = {
-  _tag: "EmailChangeChallenge";
+	_tag: 'EmailChangeChallenge';
 	id: string;
 	email: string;
 	userId: number;
@@ -79,7 +78,7 @@ const toEmailChangeChallenge = (
 	}
 
 	return {
-    _tag: "EmailChangeChallenge",
+		_tag: 'EmailChangeChallenge',
 		id: details.challengeId,
 		email: details.email,
 		userId,
@@ -151,7 +150,7 @@ export const getPendingEmailChallenge = async (
 	if (!details) return null;
 
 	const result = toEmailChangeChallenge(details);
-	return '_tag' in result ? null : result;
+	return result._tag === "EmailChangeChallenge" ? result : null
 };
 
 /**
@@ -171,12 +170,12 @@ export const consumeEmailChallenge = async (input: {
 	| ChallengeExpiredError
 	| ChallengeAttemptsExceededError
 > => {
-  const result = await PasslockServer.verifyMailboxChallenge({
-    ...getPasslockConfig(),
+	const result = await PasslockServer.verifyMailboxChallenge({
+		...getPasslockConfig(),
 		challengeId: input.challengeId,
 		code: input.code,
 		secret: input.secret
-  });
+	});
 
 	if (!result.success) {
 		if (result._tag === '@error/Forbidden') {
@@ -187,7 +186,7 @@ export const consumeEmailChallenge = async (input: {
 	}
 
 	const challenge = toEmailChangeChallenge(result.value.challenge);
-  if (challenge._tag === "@error/InvalidChallenge") return challenge;
+	if (challenge._tag === '@error/InvalidChallenge') return challenge;
 
 	if (challenge.userId !== input.userId) {
 		return createInvalidChallengeError('Challenge does not belong to the signed-in user');
@@ -211,7 +210,7 @@ export const consumeEmailChallenge = async (input: {
 		});
 		kitError(500, 'Unable to load signed-in account');
 	}
-	if (isDuplicateUser(updatedUser)) return updatedUser;
+	if (updatedUser._tag === "@error/DuplicateUser") return updatedUser;
 
 	return {
 		_tag: 'EmailChangeSuccess',

@@ -49,7 +49,7 @@ export interface MailboxChallengeMetadata {
  * @internal
  */
 export type _MailboxChallengeMetadata = satisfy<
-  typeof ChallengeSchemas.MailboxChallengeMetadata.Type,
+  typeof ChallengeSchemas.ChallengeMetadata.Type,
   MailboxChallengeMetadata
 >
 
@@ -77,14 +77,14 @@ export type MailboxChallengeDetails = {
  * @category Mailbox
  */
 export const isMailboxChallengeDetails = (payload: unknown): payload is MailboxChallengeDetails =>
-  Schema.is(ChallengeSchemas.MailboxChallengeDetails)(payload)
+  Schema.is(ChallengeSchemas.ReadableChallenge)(payload)
 
 /**
  * needed to ensure the MailboxChallengeDetails === MailboxChallengeDetails.Type
  * @internal
  */
 export type _MailboxChallengeDetails = satisfy<
-  typeof ChallengeSchemas.MailboxChallengeDetails.Type,
+  typeof ChallengeSchemas.ReadableChallenge.Type,
   MailboxChallengeDetails
 >
 
@@ -135,14 +135,14 @@ export type MailboxChallenge = {
  * @category Mailbox
  */
 export const isMailboxChallenge = (payload: unknown): payload is MailboxChallenge =>
-  Schema.is(ChallengeSchemas.MailboxChallenge)(payload)
+  Schema.is(ChallengeSchemas.CreatedChallenge)(payload)
 
 /**
  * needed to ensure the MailboxChallenge === MailboxChallenge.Type
  * @internal
  */
 export type _MailboxChallenge = satisfy<
-  typeof ChallengeSchemas.MailboxChallenge.Type,
+  typeof ChallengeSchemas.CreatedChallenge.Type,
   MailboxChallenge
 >
 
@@ -166,14 +166,14 @@ export type MailboxChallengeCreated = {
  * @category Mailbox
  */
 export const isMailboxChallengeCreated = (payload: unknown): payload is MailboxChallengeCreated =>
-  Schema.is(ChallengeSchemas.MailboxChallengeCreated)(payload)
+  Schema.is(ChallengeSchemas.ChallengeCreated)(payload)
 
 /**
  * needed to ensure the MailboxChallengeCreated === MailboxChallengeCreated.Type
  * @internal
  */
 export type _MailboxChallengeCreated = satisfy<
-  typeof ChallengeSchemas.MailboxChallengeCreated.Type,
+  typeof ChallengeSchemas.ChallengeCreated.Type,
   MailboxChallengeCreated
 >
 
@@ -196,14 +196,14 @@ export type MailboxChallengeVerified = {
  * @category Mailbox
  */
 export const isMailboxChallengeVerified = (payload: unknown): payload is MailboxChallengeVerified =>
-  Schema.is(ChallengeSchemas.MailboxChallengeVerified)(payload)
+  Schema.is(ChallengeSchemas.ChallengeVerified)(payload)
 
 /**
  * needed to ensure the MailboxChallengeVerified === MailboxChallengeVerified.Type
  * @internal
  */
 export type _MailboxChallengeVerified = satisfy<
-  typeof ChallengeSchemas.MailboxChallengeVerified.Type,
+  typeof ChallengeSchemas.ChallengeVerified.Type,
   MailboxChallengeVerified
 >
 
@@ -224,14 +224,14 @@ export type MailboxChallengeDeleted = {
  * @category Mailbox
  */
 export const isMailboxChallengeDeleted = (payload: unknown): payload is MailboxChallengeDeleted =>
-  Schema.is(ChallengeSchemas.MailboxChallengeDeleted)(payload)
+  Schema.is(ChallengeSchemas.ChallengeDeleted)(payload)
 
 /**
  * needed to ensure the MailboxChallengeDeleted === MailboxChallengeDeleted.Type
  * @internal
  */
 export type _MailboxChallengeDeleted = satisfy<
-  typeof ChallengeSchemas.MailboxChallengeDeleted.Type,
+  typeof ChallengeSchemas.ChallengeDeleted.Type,
   MailboxChallengeDeleted
 >
 
@@ -326,7 +326,7 @@ export const createMailboxChallenge = (
 
       const encoded: MailboxChallengeCreated | ForbiddenError | ChallengeRateLimitedError =
         yield* matchStatus(response, {
-          "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.MailboxChallengeCreated),
+          "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.ChallengeCreated),
           orElse: (res) =>
             decodeResponseJson(res, Schema.Union(ForbiddenError, ChallengeRateLimitedError)),
         })
@@ -389,7 +389,7 @@ export const getMailboxChallenge = (
       const encoded: MailboxChallengeDetails | ForbiddenError | NotFoundError = yield* matchStatus(
         response,
         {
-          "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.MailboxChallengeDetails),
+          "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.ReadableChallenge),
           orElse: (res) => decodeResponseJson(res, Schema.Union(ForbiddenError, NotFoundError)),
         }
       )
@@ -484,7 +484,7 @@ export const verifyMailboxChallenge = (
         | InvalidChallengeCodeError
         | ChallengeExpiredError
         | ChallengeAttemptsExceededError = yield* matchStatus(response, {
-        "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.MailboxChallengeVerified),
+        "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.ChallengeVerified),
         orElse: (res) =>
           decodeResponseJson(
             res,
@@ -555,7 +555,7 @@ export const deleteMailboxChallenge = (
       })
 
       const encoded: MailboxChallengeDeleted | ForbiddenError = yield* matchStatus(response, {
-        "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.MailboxChallengeDeleted),
+        "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.ChallengeDeleted),
         orElse: (res) => decodeResponseJson(res, ForbiddenError),
       })
 
