@@ -1,6 +1,6 @@
 {
   "name": "@passlock/client",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "description": "Flexible passkey authentication for Astro, SvelteKit, NextJS and other frameworks",
   "keywords": [
     "passkey",

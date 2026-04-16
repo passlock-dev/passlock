@@ -1,5 +1,10 @@
 # @passlock/node
 
+## 2.1.1
+### Patch Changes
+
+- 503bf6d: Upgrade dependencies
+
 ## 2.0.9
 ### Patch Changes
 
