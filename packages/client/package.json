@@ -73,7 +73,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/language-service": "^0.84.3",
+    "@effect/language-service": "^0.85.1",
     "@fetch-mock/vitest": "^0.2.18",
     "@typescript/lib-dom": "npm:@types/web@^0.0.345",
     "globals": "catalog:",
@@ -81,7 +81,7 @@
     "publint": "catalog:",
     "rimraf": "catalog:",
     "tsx": "catalog:",
-    "typedoc": "^0.28.18",
+    "typedoc": "^0.28.19",
     "typescript": "catalog:",
     "vitest": "^4.0.16"
   },
