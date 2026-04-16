@@ -192,6 +192,9 @@ export type _Credential = satisfy<typeof PasskeySchemas.Credential.Type, Credent
 /**
  * Result payload returned when a single passkey has been deleted.
  *
+ * The nested `deleted` object contains the credential identifiers needed for
+ * optional client-side cleanup.
+ *
  * @category Passkeys
  */
 export type DeletedPasskey = {
@@ -266,11 +269,15 @@ export const isFindAllPasskeys = (payload: unknown): payload is FindAllPasskeys 
  */
 export type _FindAllPasskeys = satisfy<typeof FindAllPasskeysSchema.Type, FindAllPasskeys>
 
-/* UpdatedCredentials (update names by userId) */
+/* UpdatedCredentials (publicly re-exported as UpdatedUserDetails) */
 
 /**
- * Client-facing credential update payload returned by
+ * Client-facing user-details update payload returned by
  * {@link updatePasskeyUsernames}.
+ *
+ * The promise-based entrypoints re-export this shape as `UpdatedUserDetails`.
+ * Its runtime `_tag` remains `"UpdatedCredentials"` for backwards
+ * compatibility.
  *
  * Each entry describes one credential to update on the user's device. The
  * returned `displayName` is derived from
@@ -290,9 +297,12 @@ export type UpdatedCredentials = {
 }
 
 /**
- * Check whether an unknown value carries the `UpdatedCredentials` tag.
+ * Check whether an unknown value carries the runtime tag used by the public
+ * `UpdatedUserDetails` payload.
  *
- * This lightweight guard only checks the top-level `_tag`.
+ * The exported type name is `UpdatedUserDetails`, but the runtime `_tag`
+ * remains `"UpdatedCredentials"`. This lightweight guard only checks that
+ * top-level tag.
  *
  * @category Passkeys
  */
@@ -397,7 +407,7 @@ export interface DeletePasskeyOptions extends AuthenticatedOptions {
  *
  * @param options Request options including the passkey identifier.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds with the deleted credential.
+ * @returns An Effect that succeeds with the deleted credential identifiers.
  *
  * @category Passkeys
  */
@@ -739,6 +749,9 @@ export const deleteUserPasskeys = (
  * Options for updating username metadata for all passkeys that share a custom
  * user ID, plus optional display-name data to return for client-side updates.
  *
+ * The promise-based entrypoints re-export this interface as
+ * `UpdateUserDetailsOptions`.
+ *
  * @category Passkeys
  */
 export interface UpdateUsernamesOptions extends AuthenticatedOptions {
@@ -768,7 +781,8 @@ export interface UpdateUsernamesOptions extends AuthenticatedOptions {
  *
  * @param options Request options including the custom user ID and username metadata.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds with one credential update per updated passkey.
+ * @returns An Effect that succeeds with a user-details update payload
+ * containing one credential update per updated passkey.
  *
  * @category Passkeys
  */

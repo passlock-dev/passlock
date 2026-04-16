@@ -63,7 +63,7 @@ import type { OrphanedPasskeyError } from "./safe.js"
  * Send either value to your backend for verification.
  * See [register a passkey](https://passlock.dev/passkeys/registration/) in the documentation.
  *
- * @param options
+ * @param options Registration ceremony options and Passlock tenancy details.
  *
  * @returns A promise resolving to a {@link RegistrationSuccess}.
  *
@@ -117,7 +117,7 @@ export const registerPasskey = async (
  * See
  * [authenticate a passkey](https://passlock.dev/passkeys/authentication/) in the documentation.
  *
- * @param options
+ * @param options Authentication ceremony options and Passlock tenancy details.
  *
  * @returns A promise resolving to an {@link AuthenticationSuccess}.
  *
@@ -128,7 +128,8 @@ export const registerPasskey = async (
  *
  * @throws {@link AuthenticationError} (alias to a union of potential errors)
  * @throws {@link PasskeyUnsupportedError} if the device does not support passkeys
- * @throws {@link OrphanedPasskeyError} if the passkey is orphaned i.e. deleted from the vault but still present on the local device
+ * @throws {@link OrphanedPasskeyError} if the passkey is orphaned, that is,
+ * deleted from the vault but still present on the local device
  * @throws {@link OtherPasskeyError} typically a low level failure
  * @throws {@link NetworkError}
  *
@@ -372,7 +373,7 @@ export const deletePasskey = (
  *
  * try {
  *   const result = await prunePasskeys({ tenancyId, allowablePasskeyIds });
- *   console.log("accepted credentials sync requested", result);
+ *   console.log("accepted credentials sync requested");
  * } catch (error) {
  *   if (isPruningError(error)) {
  *     console.log(error.code);

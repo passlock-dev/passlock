@@ -39,7 +39,7 @@ export const isPasskeyUpdateSupport = Micro.sync(() => {
 })
 
 /**
- * Delete a local passkey by Passlock passkey ID.
+ * Delete a local passkey by Passlock passkey ID (authenticator ID).
  *
  * The library uses the tenancy information to look up the credential metadata
  * before signalling the browser.
@@ -148,7 +148,7 @@ const getCredential = (options: DeletePasskeyOptions) =>
   })
 
 /**
- * Keep only the listed Passlock passkeys for a user on the current device.
+ * Keep only the listed Passlock passkeys available for a user on the current device.
  *
  * The library resolves those passkey IDs to the accepted WebAuthn credential
  * list before signalling the browser.
@@ -222,7 +222,7 @@ export const prunePasskeys = (options: PrunePasskeyOptions) =>
       return yield* Micro.fail(
         new PruningError({
           code: "PASSKEY_PRUNING_UNSUPPORTED",
-          message: "Passkey deletion not supported on this device",
+          message: "Passkey pruning not supported on this device",
         })
       )
 
@@ -251,7 +251,7 @@ export const prunePasskeys = (options: PrunePasskeyOptions) =>
   })
 
 /**
- * Used when you want to update a local device passkey by Passkey ID aka authenticatorId.
+ * Update a local device passkey by Passlock passkey ID (authenticator ID).
  *
  * @see {@link updatePasskey}
  *
@@ -410,11 +410,11 @@ export const deleteUserPasskeys = (options: ReadonlyArray<Credential>) =>
 
 /**
  * Update a passkey e.g. change the username and/or display name.
- * Note: this is purely informational, it does not change any identifiers.
- * The typical use case is when a user changes their account email, you would
- * want to change the username in your backend system and also the user's
- * device local passkey. Otherwise the passkey associated with your new-name@gmail.com
- * account would still show up in their password manager as old-name@gmail.com.
+ * Note: this is purely informational. It does not change any identifiers.
+ * The typical use case is when a user changes their account email. You would
+ * update the username in your backend system and also on the user's device.
+ * Otherwise, the passkey associated with `new-name@gmail.com` would still show
+ * up in their password manager as `old-name@gmail.com`.
  *
  * Support and metadata lookup failures are surfaced as {@link UpdateError}.
  * Browser-side signalling failures are logged as warnings and do not fail the

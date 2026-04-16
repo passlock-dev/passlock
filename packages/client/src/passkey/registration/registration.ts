@@ -14,7 +14,7 @@ import { DuplicatePasskeyError, OtherPasskeyError, PasskeyUnsupportedError } fro
 import type { Millis, UserVerification } from "../shared.js"
 
 /**
- * Passkey registration options
+ * Passkey registration options.
  *
  * @see {@link registerPasskey}
  *
@@ -24,7 +24,8 @@ export interface RegistrationOptions extends PasslockOptions {
   /**
    * Username associated with passkey. Will be shown by the device during
    * registration and subsequent authentication. The value used should be
-   * meaningful to the user e.g. jdoe or jdoe@gmail.com vs 5487546.
+   * meaningful to the user, for example `jdoe` or `jdoe@gmail.com` rather
+   * than `5487546`.
    *
    * You won't directly associate the username with an account in your
    * backend. Instead, you'll associate the passkey ID with an account.
@@ -36,7 +37,7 @@ export interface RegistrationOptions extends PasslockOptions {
   /**
    * May be shown by devices in place of the username e.g. given a username
    * of jdoe or jdoe@gmail.com a suitable display name might be "John Doe"
-   * or "John Doe (personal)". **note:** There's no guarantee browsers/devices
+   * or "John Doe (personal)". Note: there is no guarantee browsers/devices
    * will choose to display this property.
    */
   displayName?: string | undefined
@@ -64,7 +65,7 @@ export interface RegistrationOptions extends PasslockOptions {
   onEvent?: OnRegistrationEvent
 
   /**
-   * Abort the operation after N milliseconds
+   * Abort the ceremony after N milliseconds.
    */
   timeout?: Millis | undefined
 }
@@ -90,7 +91,7 @@ export class RegistrationHelper extends Context.Tag("RegistrationHelper")<
  * Represents the outcome of a successful passkey registration.
  * Submit the `code` and/or `id_token` to your backend, then either
  * exchange the code with the Passlock REST API or decode and
- * verify the id_token (JWT). **note:** The @passlock/server library
+ * verify the id_token (JWT). Note: the `@passlock/server` library
  * includes utilities for this.
  *
  * @see {@link isRegistrationSuccess}
@@ -129,7 +130,7 @@ export type RegistrationSuccess = {
  * Type guard to test for a {@link RegistrationSuccess}. Typically used to test the
  * object returned from {@link registerPasskey}
  *
- * @param payload
+ * @param payload Unknown value to test.
  * @returns `true` if the payload is a {@link RegistrationSuccess}.
  *
  * @category Passkeys (other)
@@ -267,7 +268,7 @@ export const verifyCredential = (
   })
 
 /**
- * Potential errors associated with Passkey registration
+ * Potential errors associated with passkey registration.
  *
  * @category Passkeys (errors)
  */
@@ -281,7 +282,7 @@ export type RegistrationError =
  * Trigger local passkey registration then save the passkey in your Passlock vault.
  * Returns a code and id_token that can be exchanged/decoded in your backend.
  *
- * @param options
+ * @param options Registration ceremony options and Passlock tenancy details.
  * @returns A Micro effect that resolves with {@link RegistrationSuccess} or
  * fails with {@link RegistrationError}.
  */

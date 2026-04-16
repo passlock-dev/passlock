@@ -196,8 +196,9 @@ export const updatePasskey = (request: UpdatePasskeyOptions): Promise<Passkey> =
  * `updatePasskeyUsernames` helper to update those details on the user's device.
  *
  * @param request
- * @returns A promise resolving to an {@link UpdatedCredentials} payload.
- * Its `credentials` array can be passed to the client's `updatePasskeyUsernames` function.
+ * @returns A promise resolving to a user-details update payload whose
+ * `credentials` array can be passed to the client's
+ * `updatePasskeyUsernames` function.
  *
  * @category Passkeys
  */
@@ -212,7 +213,7 @@ export const updatePasskeyUsernames = (
  * `@passlock/client` to coordinate client-side removal when needed.
  *
  * @param options
- * @returns A promise resolving to the deleted credential.
+ * @returns A promise resolving to the deleted credential identifiers.
  * @throws {@link NotFoundError} if passkey does not exist
  * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
  *

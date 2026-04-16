@@ -1,16 +1,17 @@
 /**
- * Shared Passlock tenancy and API endpoint options.
+ * Shared Passlock tenancy and API endpoint options used by client requests.
  */
 export interface PasslockOptions {
   /**
-   * Obtain this from the settings tab in your Passlock console.
-   * Please note this is environment specific, so your dev
-   * environment will have a different tenancyId to prod.
+   * Tenancy identifier from the Passlock console settings page.
+   *
+   * This value is environment-specific, so development and production
+   * tenancies use different IDs.
    */
   tenancyId: string
 
   /**
-   * Override the default Passlock API base URL.
+   * Override the Passlock API base URL.
    *
    * Useful for tests, regional deployments, or self-hosted Passlock setups.
    * When omitted, requests are sent to `https://api.passlock.dev`.

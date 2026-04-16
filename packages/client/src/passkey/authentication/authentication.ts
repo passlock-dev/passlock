@@ -14,7 +14,7 @@ import { OrphanedPasskeyError, OtherPasskeyError, PasskeyUnsupportedError } from
 import type { Millis, UserVerification } from "../shared.js"
 
 /**
- * Passkey authentication options
+ * Passkey authentication options.
  *
  * @see {@link authenticatePasskey}
  *
@@ -22,7 +22,7 @@ import type { Millis, UserVerification } from "../shared.js"
  */
 export interface AuthenticationOptions extends PasslockOptions {
   /**
-   * Restrict the passkey(s) the device presents to the user to a given set
+   * Restrict the passkeys the device can present to the user to this set.
    *
    * @see {@link https://passlock.dev/passkeys/allow-credentials/ allowCredentials (main docs)}
    */
@@ -59,7 +59,7 @@ export interface AuthenticationOptions extends PasslockOptions {
    * Override the rpId. Use this when you want to accept passkeys from
    * a different domain/rpId.
    *
-   *  @see {@link https://passlock.dev/passkeys/related-origin-requests/ autofill (main docs)}
+   * @see {@link https://passlock.dev/passkeys/related-origin-requests/ related origin requests (main docs)}
    */
   rpId?: string
 }
@@ -91,7 +91,7 @@ export type AuthenticationSuccessTag = typeof AuthenticationSuccessTag
  * Represents the outcome of a successful passkey authentication.
  * Submit the `code` and/or `id_token` to your backend, then either
  * exchange the code with the Passlock REST API or decode and
- * verify the id_token (JWT). **note:** The @passlock/server library
+ * verify the id_token (JWT). Note: the `@passlock/server` library
  * includes utilities for this.
  *
  * @see {@link isAuthenticationSuccess}
@@ -130,7 +130,7 @@ export type AuthenticationSuccess = {
 /**
  * Type guard to narrow something down to an {@link AuthenticationSuccess}
  *
- * @param payload
+ * @param payload Unknown value to test.
  * @returns `true` if the payload is an {@link AuthenticationSuccess}.
  *
  * @category Passkeys (other)
@@ -298,7 +298,7 @@ export const verifyCredential = (
   })
 
 /**
- * Potential errors associated with Passkey authentication
+ * Potential errors associated with passkey authentication.
  *
  * @category Passkeys (errors)
  */
@@ -312,7 +312,7 @@ export type AuthenticationError =
  * Trigger local passkey authentication then verify the passkey in your Passlock vault.
  * Returns a code and id_token that can be exchanged/decoded in your backend.
  *
- * @param options
+ * @param options Authentication ceremony options and Passlock tenancy details.
  * @returns A Micro effect that resolves with {@link AuthenticationSuccess} or
  * fails with {@link AuthenticationError}.
  */

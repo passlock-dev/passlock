@@ -270,10 +270,9 @@ export const updatePasskey = (
  *
  * @param request
  * @returns A promise resolving to a {@link Result}.
- * The success branch contains an {@link UpdatedCredentials} payload, whose
- * `credentials` array can be passed into the client's `updatePasskeyUsernames` function.
- * The error branch contains
- * an API error.
+ * The success branch contains a user-details update payload whose
+ * `credentials` array can be passed into the client's
+ * `updatePasskeyUsernames` function. The error branch contains an API error.
  *
  * @category Passkeys
  */
@@ -303,7 +302,8 @@ export const updatePasskeyUsernames = (
  *
  * @param options
  * @returns A promise resolving to a {@link Result} whose success branch contains
- * the deleted credential and whose error branch contains an API error.
+ * the deleted credential identifiers and whose error branch contains an API
+ * error.
  *
  * @category Passkeys
  */
