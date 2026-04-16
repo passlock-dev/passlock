@@ -103,10 +103,7 @@ const ReadableChallengeFields = {
  *
  * @category Mailbox
  */
-export const ReadableChallenge = Schema.TaggedStruct(
-  "Challenge",
-  ReadableChallengeFields
-)
+export const ReadableChallenge = Schema.TaggedStruct("Challenge", ReadableChallengeFields)
 
 /**
  * Type produced by {@link ReadableChallenge}.

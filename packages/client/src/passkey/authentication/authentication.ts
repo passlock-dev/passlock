@@ -57,8 +57,8 @@ export interface AuthenticationOptions extends PasslockOptions {
 
   /**
    * Override the rpId. Use this when you want to accept passkeys from
-   * a different domain/rpId. 
-   * 
+   * a different domain/rpId.
+   *
    *  @see {@link https://passlock.dev/passkeys/related-origin-requests/ autofill (main docs)}
    */
   rpId?: string
