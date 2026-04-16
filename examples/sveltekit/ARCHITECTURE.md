@@ -12,24 +12,24 @@ Instead of throwing and catching errors, we use discriminated unions with a type
 
 ```typescript
 try {
-  const user = getUser()
-  console.log(`welcome ${user.name}`)
+	const user = getUser();
+	console.log(`welcome ${user.name}`);
 } catch (e) {
-  // e is "unknown" - no typechecks
+	// e is "unknown" - no typechecks
 }
 ```
 
-we adopt 
+we adopt
 
 ```typescript
-const user = getUser()
+const user = getUser();
 
-if (user._tag === "success") {
-  console.log(`welcome ${user.name}`)
-} else if (user._tag === "@error/NotFound") {
-  console.log(`user with email ${result.email} not found`)
-} else if (user._tag === "@error/AccountSuspended") {
-  console.log('account suspended')
+if (user._tag === 'success') {
+	console.log(`welcome ${user.name}`);
+} else if (user._tag === '@error/NotFound') {
+	console.log(`user with email ${result.email} not found`);
+} else if (user._tag === '@error/AccountSuspended') {
+	console.log('account suspended');
 }
 ```
 

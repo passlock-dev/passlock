@@ -1,25 +1,26 @@
 import type { Actions, PageServerLoad } from './$types';
-import { consumeEmailChallenge as verifyChangeEmailChallenge } from '$lib/server/mailboxChallenge.js';
+import type { Cookies } from '@sveltejs/kit';
+import {
+	consumeEmailChallenge as verifyChangeEmailChallenge,
+	getPendingEmailChallenge
+} from '$lib/server/mailbox/emailChange.js';
 import { sendEmailUpdated } from '$lib/server/email.js';
-import { deleteEmailChangeCookie } from '$lib/server/cookies.js';
+import { deleteEmailChangeCookie, getEmailChangeCookie } from '$lib/server/cookies.js';
+import { getChallengeCodeErrorMessage } from '$lib/server/mailbox/mailboxChallenge.js';
+import { getPendingChallengeContext } from '$lib/server/mailbox/pendingChallenge.js';
+import { createVerifyCodeForm, validateVerifyCodeForm } from '$lib/server/mailbox/verifyCode.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
-import { setError, superValidate } from 'sveltekit-superforms';
-import { valibot } from 'sveltekit-superforms/adapters';
-import * as v from 'valibot';
+import { setError } from 'sveltekit-superforms';
 import { toAccountLocation } from '$lib/shared/queryState.js';
-import {
-	getAccountEmailErrorLocation,
-	getPendingEmailChangeChallengeContext
-} from './challenge.js';
+import { getAccountEmailErrorLocation } from './challenge.js';
 
-const verifyCodeSchema = v.object({
-	code: v.pipe(v.string(), v.trim(), v.regex(/^\d{6}$/, 'Enter the 6-digit code'))
-});
-
-const createVerifyForm = () =>
-	superValidate(valibot(verifyCodeSchema), {
-		id: 'verify-code-form'
+const getPendingEmailChangeContext = (cookies: Cookies, userId: number) =>
+	getPendingChallengeContext({
+		cookies,
+		getPendingCookie: getEmailChangeCookie,
+		getChallenge: getPendingEmailChallenge,
+		validateChallenge: (challenge) => challenge.userId === userId
 	});
 
 /**
@@ -30,16 +31,16 @@ export const load = (async ({ locals, cookies }) => {
 
 	// The pending challenge cookie lets the page show which address is being
 	// verified before the user has entered the code.
-	const pendingContext = await getPendingEmailChangeChallengeContext(cookies, locals.user.userId);
-	if (pendingContext._tag === 'MissingPendingEmailChangeChallenge') {
+	const pendingContext = await getPendingEmailChangeContext(cookies, locals.user.userId);
+	if (pendingContext._tag === 'MissingPendingChallenge') {
 		redirect(303, toAccountLocation({ emailError: 'expired' }));
 	}
-	if (pendingContext._tag === 'InvalidPendingEmailChangeChallenge') {
+	if (pendingContext._tag === 'InvalidPendingChallenge') {
 		deleteEmailChangeCookie(cookies);
 		redirect(303, toAccountLocation({ emailError: 'expired' }));
 	}
 
-	const verifyForm = await createVerifyForm();
+	const verifyForm = await createVerifyCodeForm();
 
 	return {
 		verifyForm,
@@ -53,19 +54,17 @@ export const actions = {
 
 		const user = locals.user;
 
-		const verifyForm = await superValidate(request, valibot(verifyCodeSchema), {
-			id: 'verify-code-form'
-		});
+		const verifyForm = await validateVerifyCodeForm(request);
 
 		if (!verifyForm.valid) return fail(400, { verifyForm });
 
 		// Supplying the code is not enough; the browser must also present the
 		// stored challenge secret from the cookie.
-		const pendingContext = await getPendingEmailChangeChallengeContext(cookies, user.userId);
-		if (pendingContext._tag === 'MissingPendingEmailChangeChallenge') {
+		const pendingContext = await getPendingEmailChangeContext(cookies, user.userId);
+		if (pendingContext._tag === 'MissingPendingChallenge') {
 			redirect(303, toAccountLocation({ emailError: 'expired' }));
 		}
-		if (pendingContext._tag === 'InvalidPendingEmailChangeChallenge') {
+		if (pendingContext._tag === 'InvalidPendingChallenge') {
 			deleteEmailChangeCookie(cookies);
 			redirect(303, toAccountLocation({ emailError: 'expired' }));
 		}
@@ -98,29 +97,12 @@ export const actions = {
 			redirect(303, getAccountEmailErrorLocation('taken', challenge.email));
 		}
 
-		if (result._tag !== '@error/ChallengeVerificationError') {
-			throw new Error('Unexpected email change verification result');
-		}
-
-		const error = result;
-		if (
-			error.code === 'CHALLENGE_EXPIRED' ||
-			error.code === 'ACCOUNT_NOT_FOUND' ||
-			error.code === 'PURPOSE_MISMATCH' ||
-			error.code === 'UNAUTHORIZED'
-		) {
+		if (result._tag === '@error/InvalidChallenge') {
 			deleteEmailChangeCookie(cookies);
 			redirect(303, getAccountEmailErrorLocation('expired', challenge.email));
 		}
 
-		const message =
-			error.code === 'CODE_EXPIRED'
-				? 'This code has expired. Request a new one.'
-				: error.code === 'TOO_MANY_ATTEMPTS'
-					? 'Too many incorrect attempts. Request a new code.'
-					: 'Invalid code';
-
-		setError(verifyForm, 'code', message);
+		setError(verifyForm, 'code', getChallengeCodeErrorMessage(result));
 
 		return fail(400, { verifyForm, email: challenge.email });
 	}

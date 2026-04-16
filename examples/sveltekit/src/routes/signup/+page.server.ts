@@ -1,8 +1,8 @@
 import type { PageServerLoad } from './$types';
-import { createOrRefreshSignupChallenge } from '$lib/server/mailboxChallenge.js';
+import { createChallengeRateLimitView } from '$lib/server/mailbox/mailboxChallenge.js';
+import { createOrRefreshSignupChallenge } from '$lib/server/mailbox/signupChallenge.js';
 import { sendCodeChallengeEmail } from '$lib/server/email.js';
 import { setSignupLoginCookie } from '$lib/server/cookies.js';
-import { createChallengeRateLimitView } from '$lib/server/passlock.js';
 import { getSignupQueryState, toLoginLocation } from '$lib/shared/queryState.js';
 
 import { superValidate } from 'sveltekit-superforms';
@@ -62,8 +62,7 @@ export const actions = {
 		// The cookie carries the challenge id + secret; the emailed code provides
 		// the second factor needed to finish signup.
 		await sendCodeChallengeEmail({
-			email: result.challenge.email,
-			firstName: result.challenge.givenName ?? 'there',
+			recipientEmail: result.challenge.email,
 			code: result.code,
 			message: result.message
 		});

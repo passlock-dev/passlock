@@ -17,10 +17,10 @@
 		// The browser prompt happens here; the server verifies the returned code
 		// and creates the local session.
 		const result = await authenticatePasskey({
-      tenancyId: data.tenancyId,
-		  endpoint: data.endpoint,
-		  allowCredentials: data.allowCredentials,
-    });
+			tenancyId: data.tenancyId,
+			endpoint: data.endpoint,
+			allowCredentials: data.allowCredentials
+		});
 
 		if (result._tag == 'PasslockLoginSuccess') {
 			loading = false;

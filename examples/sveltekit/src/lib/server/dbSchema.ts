@@ -23,11 +23,11 @@ export const passkeysTable = sqliteTable(
 			.notNull()
 			.references(() => usersTable.id, { onDelete: 'cascade' }),
 		passkeyId: text({ length: 100 }).primaryKey(),
-    // inferred from the account email but could be different
+		// inferred from the account email but could be different
 		username: text(),
-    // Platform the passkey belongs to e.g. "Apple Passwords"
+		// Platform the passkey belongs to e.g. "Apple Passwords"
 		platformName: text(),
-    // Quick visual reference for the user 
+		// Quick visual reference for the user
 		platformIcon: text(),
 		createdAt: int().notNull()
 	},
@@ -42,12 +42,12 @@ export const sessionsTable = sqliteTable(
 			.notNull()
 			.references(() => usersTable.id, { onDelete: 'cascade' }),
 		// we dont want to store plaintext session secrets
-    secretHash: text().notNull(),
+		secretHash: text().notNull(),
 		// Updated whenever the session token is re-validated.
 		lastVerifiedAt: int().notNull(),
 		// Used to enforce fresh passkey confirmation for sensitive actions.
 		passkeyAuthenticatedAt: int(),
-		createdAt: int().notNull(),
+		createdAt: int().notNull()
 	},
 	(table) => [index('sessions_user_id_idx').on(table.userId)]
 );
