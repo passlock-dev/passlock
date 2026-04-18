@@ -1,6 +1,7 @@
 # @passlock/sveltekit-example
 
 ## 2.4.2
+
 ### Patch Changes
 
 - 503bf6d: Upgrade dependencies
