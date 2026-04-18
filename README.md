@@ -81,7 +81,7 @@ Passlock uses short-lived, single-use codes to safely bridge the browser and bac
 
 ```typescript
 // frontend/register.ts
-import { registerPasskey } from "@passlock/client/passkey";
+import { registerPasskey } from "@passlock/client";
 
 const tenancyId = "myTenancyId";
 
@@ -104,7 +104,7 @@ import { exchangeCode } from "@passlock/server";
 const tenancyId = "myTenancyId";
 const apiKey = "myApiKey";
 
-const result = await exchangeCode(code, { tenancyId, apiKey });
+const result = await exchangeCode({ code, tenancyId, apiKey });
 
 // includes details about the new passkey
 // associate the authenticatorId (passkey ID) with a local user account
@@ -117,7 +117,7 @@ Very similar to the registration process, authenticate in your frontend and send
 
 ```typescript
 // frontend/authenticate.ts
-import { authenticatePasskey } from "@passlock/client/passkey";
+import { authenticatePasskey } from "@passlock/client";
 
 const tenancyId = "myTenancyId";
 
@@ -137,7 +137,7 @@ import { exchangeCode } from "@passlock/server";
 const tenancyId = "myTenancyId";
 const apiKey = "myApiKey";
 
-const result = await exchangeCode(code, { tenancyId, apiKey });
+const result = await exchangeCode({ code, tenancyId, apiKey });
 
 // lookup the user based on their authenticatorId
 console.log('passkey id: %s', result.authenticatorId); 
