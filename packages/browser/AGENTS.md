@@ -8,7 +8,7 @@ Most functions are developed using a subset of the [Effect][effect] framework, s
 
 ### "Safe" functions
 
-Developers using the `@passlock/client` library will most likely not be using the Effect framework, so we expose Promise-based variants of public functions. For tagged success/error APIs, the safe entrypoint returns result envelopes over the original payloads. For example, given a function like `registerPasskey` in `src/passkey/registration/registration.ts` returning a `Micro<A, E>`, the `src/safe.ts` entrypoint exposes a `registerPasskey` returning `Promise<Result<A, E>>`, where:
+Developers using the `@passlock/browser` library will most likely not be using the Effect framework, so we expose Promise-based variants of public functions. For tagged success/error APIs, the safe entrypoint returns result envelopes over the original payloads. For example, given a function like `registerPasskey` in `src/passkey/registration/registration.ts` returning a `Micro<A, E>`, the `src/safe.ts` entrypoint exposes a `registerPasskey` returning `Promise<Result<A, E>>`, where:
 
 * `Ok<A>` is `A & { readonly success: true; readonly failure: false; readonly value: A }`
 * `Err<E>` is `E & { readonly success: false; readonly failure: true; readonly error: E }`

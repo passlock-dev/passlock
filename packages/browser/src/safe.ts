@@ -33,7 +33,7 @@
 
 import { Micro, pipe } from "effect"
 import { runToPromise } from "./internal/index.js"
-import type { Result as PasslockClient } from "./internal/result.js"
+import type { Result } from "./internal/result.js"
 import { eventLogger, Logger } from "./logger.js"
 import type {
   AuthenticationError,
@@ -96,7 +96,7 @@ import {
  *
  * @param options Registration ceremony options and Passlock tenancy details.
  *
- * @returns A {@link PasslockClient} whose success branch contains a {@link RegistrationSuccess}
+ * @returns A {@link Result} whose success branch contains a {@link RegistrationSuccess}
  * and whose error branch contains a {@link RegistrationError}. Existing
  * {@link isRegistrationSuccess} checks and `_tag` discrimination still work.
  *
@@ -131,7 +131,7 @@ export const registerPasskey = async (
   options: RegistrationOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<PasslockClient<RegistrationSuccess, RegistrationError>> =>
+): Promise<Result<RegistrationSuccess, RegistrationError>> =>
   pipe(
     registerPasskeyM(options),
     Micro.provideService(RegistrationHelper, RegistrationHelper.Default),
@@ -142,14 +142,14 @@ export const registerPasskey = async (
 /* Authentication */
 
 /**
- * Asks the client to present a passkey, which is then verified against the server-side component in your vault.
+ * Asks the device to present a passkey, which is then verified against the server-side component in your vault.
  * If successful, this function returns both a `code` and an `id_token` (JWT).
  * Send either value to your backend for verification. See
  * [authenticate a passkey](https://passlock.dev/passkeys/authentication/) in the documentation.
  *
  * @param options Authentication ceremony options and Passlock tenancy details.
  *
- * @returns A {@link PasslockClient} whose success branch contains an
+ * @returns A {@link Result} whose success branch contains an
  * {@link AuthenticationSuccess} and whose error branch contains an
  * {@link AuthenticationError}. Existing {@link isAuthenticationSuccess}
  * checks and `_tag` discrimination still work.
@@ -182,7 +182,7 @@ export const authenticatePasskey = (
   options: AuthenticationOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<PasslockClient<AuthenticationSuccess, AuthenticationError>> =>
+): Promise<Result<AuthenticationSuccess, AuthenticationError>> =>
   pipe(
     authenticatePasskeyM(options),
     Micro.provideService(AuthenticationHelper, AuthenticationHelper.Default),
@@ -193,7 +193,7 @@ export const authenticatePasskey = (
 /* Signals */
 
 /**
- * Attempt to update the username or display name for a passkey (client-side only).
+ * Attempt to update the username or display name for a passkey on the local device.
  *
  * Useful if the user has changed their account identifier. For example, they register
  * using jdoe@gmail.com but later change their account username to jdoe@yahoo.com.
@@ -210,7 +210,7 @@ export const authenticatePasskey = (
  * {@link UpdatePasskeyOptions}. {@link UpdateCredentialOptions} is intended
  * for credential-scoped updates, for example when replaying data returned by
  * `@passlock/server`.
- * @returns A {@link PasslockClient} whose success branch contains an
+ * @returns A {@link Result} whose success branch contains an
  * {@link UpdateSuccess} after the local update workflow has been started, and
  * whose error branch contains an {@link UpdateError}.
  * Existing {@link isUpdateSuccess}, {@link isUpdateError}, and `_tag` checks
@@ -240,13 +240,13 @@ export const updatePasskey = (
   options: UpdatePasskeyOptions | UpdateCredentialOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<PasslockClient<UpdateSuccess, UpdateError>> => {
+): Promise<Result<UpdateSuccess, UpdateError>> => {
   const micro = updatePasskeyM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
 
 /**
- * Attempt to update the username and/or display name for multiple passkeys (client-side only).
+ * Attempt to update the username and/or display name for multiple passkeys on the local device.
  *
  * Useful if the user has changed their account identifier. For example, they register
  * using jdoe@gmail.com but later change their account username to jdoe@yahoo.com.
@@ -261,7 +261,7 @@ export const updatePasskey = (
  *
  * @param options The `credentials` array returned by
  * `@passlock/server/safe`'s `updatePasskeyUsernames` success branch.
- * @returns A {@link PasslockClient} whose success branch contains an
+ * @returns A {@link Result} whose success branch contains an
  * {@link UpdateSuccess} after the local update workflows have been started,
  * and whose error branch contains an {@link UpdateError}.
  * Existing {@link isUpdateSuccess}, {@link isUpdateError}, and `_tag` checks
@@ -282,8 +282,8 @@ export const updatePasskey = (
  * });
  * // send backendResult.value.credentials to your frontend when backendResult.success
  *
- * // client code
- * import { updatePasskeyUsernames } from "@passlock/client/safe";
+ * // browser code
+ * import { updatePasskeyUsernames } from "@passlock/browser/safe";
  *
  * const credentialsFromBackend = backendResult.value.credentials;
  * const result = await updatePasskeyUsernames(credentialsFromBackend);
@@ -295,7 +295,7 @@ export const updatePasskeyUsernames = (
   options: ReadonlyArray<UpdateCredentialOptions>,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<PasslockClient<UpdateSuccess, UpdateError>> => {
+): Promise<Result<UpdateSuccess, UpdateError>> => {
   const micro = updatePasskeyUsernamesM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
@@ -311,7 +311,7 @@ export const updatePasskeyUsernames = (
  * the error branch.
  *
  * @param options Credentials derived from deleted backend passkeys.
- * @returns A {@link PasslockClient} whose success branch contains a
+ * @returns A {@link Result} whose success branch contains a
  * {@link DeleteSuccess} once the local removal workflows have been started,
  * and whose error branch contains a {@link DeleteError}. Existing
  * {@link isDeleteSuccess}, {@link isDeleteError}, and `_tag` checks still work.
@@ -330,8 +330,8 @@ export const updatePasskeyUsernames = (
  *
  * // send backendResult.value.deleted to your frontend when backendResult.success
  *
- * // client code
- * import { deleteUserPasskeys } from "@passlock/client/safe";
+ * // browser code
+ * import { deleteUserPasskeys } from "@passlock/browser/safe";
  *
  * const deletedCredentials = backendResult.value.deleted;
  * const result = await deleteUserPasskeys(deletedCredentials);
@@ -343,7 +343,7 @@ export const deleteUserPasskeys = (
   options: ReadonlyArray<Credential>,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<PasslockClient<DeleteSuccess, DeleteError>> => {
+): Promise<Result<DeleteSuccess, DeleteError>> => {
   const micro = deleteUserPasskeysM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
@@ -353,10 +353,10 @@ export const deleteUserPasskeys = (
  * scenarios in which this function is useful:
  *
  * 1. **Deleting a passkey** - Use the `@passlock/server` package or make vanilla REST calls from your
- * backend to delete the server-side component, then use this function to delete the client-side component.
+ * backend to delete the server-side component, then use this function to delete the passkey from the user's local device.
  *
  * 2. **Missing passkey** - When a user presented a passkey but the server-side component could not be found.
- * Remove the passkey from the local device to prevent it happening again.
+ * Remove the passkey from the user's local device to prevent it happening again.
  *
  * See [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/) and
  * [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/) in the documentation.
@@ -367,7 +367,7 @@ export const deleteUserPasskeys = (
  * @param options You will typically pass {@link DeletePasskeyOptions}. Use
  * {@link DeleteCredentialOptions} or {@link OrphanedPasskeyError} when you
  * already have the credential metadata.
- * @returns A {@link PasslockClient} whose success branch contains a
+ * @returns A {@link Result} whose success branch contains a
  * {@link DeleteSuccess} once the local removal workflow has been started, and
  * whose error branch contains a {@link DeleteError}. Existing
  * {@link isDeleteSuccess}, {@link isDeleteError}, and `_tag` checks still work.
@@ -393,22 +393,26 @@ export const deletePasskey = (
   options: DeletePasskeyOptions | DeleteCredentialOptions | OrphanedPasskeyError,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<PasslockClient<DeleteSuccess, DeleteError>> => {
+): Promise<Result<DeleteSuccess, DeleteError>> => {
   const micro = deletePasskeyM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
 
 /**
- * Attempt to prune local passkeys by keeping only the passkey IDs you trust.
+ * Attempt to prune redundant local passkeys by keeping only the passkey IDs
+ * you trust.
  *
  * This is useful when your backend is the source of truth for which passkeys
- * should still exist for a given account on this device.
+ * should still exist for a given account on this device. Only passkeys for the
+ * same account on the same relying party can be pruned; passkeys for different
+ * accounts are retained.
  * Support and metadata lookup failures populate the error branch as
  * {@link PruningError}. Browser-side signalling failures are logged as
  * warnings and do not populate the error branch.
  *
- * @param options Pass the passkeys you **want to retain**.
- * @returns A {@link PasslockClient} whose success branch contains a
+ * @param options Pass the passkey IDs you **want to retain** for that account
+ * on this device.
+ * @returns A {@link Result} whose success branch contains a
  * {@link PruningSuccess} once the accepted-credentials signalling attempt has
  * completed, and whose error branch contains a
  * {@link PruningError}. Existing {@link isPruningSuccess},
@@ -425,7 +429,7 @@ export const deletePasskey = (
  * const result = await prunePasskeys({ tenancyId, allowablePasskeyIds });
  *
  * if (result.success) {
- *   console.log("accepted credentials sync requested");
+ *   console.log("accepted credentials sync completed");
  * } else {
  *   console.log(result.error.code);
  * }
@@ -436,7 +440,7 @@ export const prunePasskeys = (
   options: PrunePasskeyOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<PasslockClient<PruningSuccess, PruningError>> => {
+): Promise<Result<PruningSuccess, PruningError>> => {
   const micro = prunePasskeysM(options)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
@@ -453,7 +457,8 @@ export const prunePasskeys = (
 export const isPasskeyDeleteSupport = () => pipe(isPasskeyDeleteSupportM, Micro.runSync)
 
 /**
- * Does the local device support programmatic passkey pruning?
+ * Does the local device support programmatic passkey pruning via accepted
+ * credentials signalling?
  *
  * @returns `true` if local passkey pruning is supported.
  *

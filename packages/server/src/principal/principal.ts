@@ -28,7 +28,7 @@ import type { AuthenticatedOptions, PasslockOptions } from "../shared.js"
  */
 export interface ExchangeCodeOptions extends AuthenticatedOptions {
   /**
-   * Short-lived code emitted by `@passlock/client`.
+   * Short-lived code emitted by `@passlock/browser`.
    */
   code: string
 

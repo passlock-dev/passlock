@@ -8,7 +8,7 @@ The sibling private repository exists at `../private`.
 
 Key packages in this repo:
 
-- `packages/client` — browser/client SDK
+- `packages/browser` — browser/device SDK
 - `packages/server` — server-side SDK
 - `packages/cli` — developer CLI
 - `packages/node` — deprecated

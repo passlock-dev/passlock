@@ -6,7 +6,7 @@
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
   "fixed": [
-    ["@passlock/client", "@passlock/server", "@passlock/sveltekit-example"]
+    ["@passlock/browser", "@passlock/server", "@passlock/sveltekit-example"]
   ],
   "ignore": [],
   "prettier": false

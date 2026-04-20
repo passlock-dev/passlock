@@ -5,6 +5,8 @@
  * The top-level object still exposes its original `_tag`, so
  * existing `_tag` checks and type guards continue to work, while
  * `success` and `failure` provide boolean branch narrowing.
+ *
+ * @category Common
  */
 export type Ok<T extends object> = T & {
   readonly success: true
@@ -19,6 +21,8 @@ export type Ok<T extends object> = T & {
  * The top-level object still exposes its original `_tag`, so
  * existing `_tag` checks and type guards continue to work, while
  * `success` and `failure` provide boolean branch narrowing.
+ *
+ * @category Common
  */
 export type Err<E extends object> = E & {
   readonly success: false
@@ -28,6 +32,8 @@ export type Err<E extends object> = E & {
 
 /**
  * Result envelope used by the `@passlock/server/safe` entrypoint.
+ *
+ * @category Common
  */
 export type Result<T extends object, E extends object> =
   | Ok<T>

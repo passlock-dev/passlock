@@ -27,7 +27,7 @@ export class PasskeyUnsupportedError extends Error {
 }
 
 /**
- * Client tried to authenticate with a passkey that was not found in the vault.
+ * The device tried to authenticate with a passkey that was not found in the vault.
  * Note: this error can be passed to the {@link deletePasskey} function. This is
  * useful when the user has an orphaned passkey on their device with no server-side
  * component. Just pass this error into deletePasskey and the library will attempt
@@ -42,7 +42,7 @@ export const isOrphanedPasskeyError = (payload: unknown): payload is OrphanedPas
 }
 
 /**
- * Client tried to authenticate with a passkey that was not found in the vault.
+ * The device tried to authenticate with a passkey that was not found in the vault.
  * Note: this error can be passed to the {@link deletePasskey} function. This is
  * useful when the user has an orphaned passkey on their device with no server-side
  * component. Just pass this error into deletePasskey and the library will attempt
@@ -156,7 +156,10 @@ export class DuplicatePasskeyError extends Error {
 }
 
 /**
- * Local passkey removal could not be prepared or signalled.
+ * Local passkey removal could not be prepared.
+ *
+ * This usually means deletion signalling is unsupported on the current device
+ * or the required credential metadata could not be loaded.
  *
  * @category Passkeys (errors)
  */
@@ -167,7 +170,10 @@ export const isDeleteError = (payload: unknown): payload is DeleteError => {
 }
 
 /**
- * Local passkey removal could not be prepared or signalled.
+ * Local passkey removal could not be prepared.
+ *
+ * This usually means deletion signalling is unsupported on the current device
+ * or the required credential metadata could not be loaded.
  *
  * @category Passkeys (errors)
  */
@@ -192,7 +198,10 @@ export class DeleteError extends Error {
 /* Pruning error */
 
 /**
- * Local passkey pruning could not be prepared or signalled.
+ * Local passkey pruning could not be prepared.
+ *
+ * This usually means accepted-credentials signalling is unsupported on the
+ * current device or the required credential metadata could not be loaded.
  *
  * @category Passkeys (errors)
  */
@@ -203,7 +212,10 @@ export const isPruningError = (payload: unknown): payload is PruningError => {
 }
 
 /**
- * Local passkey pruning could not be prepared or signalled.
+ * Local passkey pruning could not be prepared.
+ *
+ * This usually means accepted-credentials signalling is unsupported on the
+ * current device or the required credential metadata could not be loaded.
  *
  * @category Passkeys (errors)
  */
@@ -223,7 +235,10 @@ export class PruningError extends Error {
 }
 
 /**
- * Local passkey updates could not be prepared or signalled.
+ * Local passkey updates could not be prepared.
+ *
+ * This usually means update signalling is unsupported on the current device
+ * or the required credential metadata could not be loaded.
  *
  * @category Passkeys (errors)
  */
@@ -234,7 +249,10 @@ export const isUpdateError = (payload: unknown): payload is UpdateError => {
 }
 
 /**
- * Local passkey updates could not be prepared or signalled.
+ * Local passkey updates could not be prepared.
+ *
+ * This usually means update signalling is unsupported on the current device
+ * or the required credential metadata could not be loaded.
  *
  * @category Passkeys (errors)
  */

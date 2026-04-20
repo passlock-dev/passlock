@@ -51,7 +51,7 @@ export interface AuthenticationOptions extends PasslockOptions {
   onEvent?: OnAuthenticationEvent | undefined
 
   /**
-   * Abort the operation after N milliseconds
+   * Abort the authentication ceremony after N milliseconds.
    */
   timeout?: Millis | undefined
 

@@ -190,23 +190,17 @@ export const isPruningSuccess = (payload: unknown): payload is PruningSuccess =>
  * Given a list of passkey IDs to keep, instruct the device to remove any
  * redundant passkeys for the same account on the same relying party.
  *
- * Note: this will only remove redundant passkeys (based on the userId).
- *
- * For example:
- *
- * The user has two passkeys registered against the jdoe@gmail.com account: passkey1
- * and passkey2. The user has another passkey (passkey3) registered against the
- * jdoe@work.com account.
- *
- * If you pass in the id for passkey1, the device will recognise it's assigned to the
- * jdoe@gmail.com account and remove passkey2. However as passkey3 is registered to a
- * different account, the device will retain it.
+ * This only affects passkeys that share the same `userId` and `rpId`. For
+ * example, if you keep one passkey for `jdoe@gmail.com`, the browser can prune
+ * other passkeys for that same account on that same site, but it will retain
+ * passkeys for a different account such as `jdoe@work.com`.
  *
  * Support and metadata lookup failures are surfaced as {@link PruningError}.
  * Browser-side signalling failures are logged as warnings and do not fail the
  * effect.
  *
- * @param options Passlock tenancy/endpoint options and the passkey IDs to keep.
+ * @param options Passlock tenancy/endpoint options and the passkey IDs that
+ * should remain available for the relevant account on this device.
  * @returns A Micro effect that resolves with a {@link PruningSuccess} once the
  * accepted-credentials signalling attempt has completed.
  */

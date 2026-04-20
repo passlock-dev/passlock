@@ -44,7 +44,7 @@
  * Functions and related types for managing mailbox one-time-code challenges.
  *
  * @categoryDescription Principal
- * Functions and related types for exchanging client codes and verifying
+ * Functions and related types for exchanging browser codes and verifying
  * Passlock tokens.
  *
  * @categoryDescription Validation
@@ -260,12 +260,12 @@ export const updatePasskey = (
  * **Important:** changing these values has no bearing on authentication. The
  * server-side operation updates the username stored in Passlock. The optional
  * `displayName` is only included in the returned credential updates for
- * follow-up use with `@passlock/client`; it is not persisted in the vault.
+ * follow-up use with `@passlock/browser`; it is not persisted in the vault.
  *
  * However you might choose to align the username in your vault with the
  * client-side component to simplify end user support.
  *
- * **Note:** This can be used alongside `@passlock/client`'s
+ * **Note:** This can be used alongside `@passlock/browser`'s
  * `updatePasskeyUsernames` helper to update those details on the user's device.
  *
  * @param request
@@ -287,14 +287,14 @@ export const updatePasskeyUsernames = (
  * **Note:** The user will still retain the passkey on their device so
  * you will need to either:
  *
- * a) Use the @passlock/client functions to delete the passkey from the user's device.
+ * a) Use the @passlock/browser functions to delete the passkey from the user's device.
  * b) Remind the user to delete the passkey
  *
  * See [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/) in the documentation.
  *
  * In addition, during authentication you should handle a missing passkey scenario.
  * This happens when a user tries to authenticate with a passkey that is missing from
- * your vault. The @passlock/client library can help with this. See
+ * your vault. The @passlock/browser library can help with this. See
  * [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/)
  *
  * @see [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/)
@@ -318,7 +318,7 @@ export const deletePasskey = (
  * @param request
  * @returns A promise resolving to a {@link Result}.
  * The success branch contains a {@link DeletedPasskeys} payload whose
- * `deleted` array can be passed directly into `@passlock/client`'s
+ * `deleted` array can be passed directly into `@passlock/browser`'s
  * `deleteUserPasskeys` helper for follow-up client-side passkey removal.
  * The error branch contains an API error.
  *
@@ -360,7 +360,7 @@ export const listPasskeys = (
 ): Promise<Result<FindAllPasskeys, ForbiddenError>> => runSafe(listPasskeysE(options))
 
 /**
- * The `@passlock/client` library generates codes, which you will send to
+ * The `@passlock/browser` library generates codes, which you will send to
  * your backend for verification.
  *
  * Use this function to exchange the code for details about

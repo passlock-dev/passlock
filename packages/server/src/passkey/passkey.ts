@@ -679,7 +679,7 @@ export interface DeleteUserPasskeysOptions extends AuthenticatedOptions {
  * Delete all passkeys associated with a custom user ID.
  *
  * The resulting `deleted` credentials can be passed to
- * `@passlock/client` to remove the corresponding passkeys from the user's
+ * `@passlock/browser` to remove the corresponding passkeys from the user's
  * device.
  *
  * @param options Request options including the custom user ID.
@@ -775,7 +775,7 @@ export interface UpdateUsernamesOptions extends AuthenticatedOptions {
  * Update the username metadata for all passkeys belonging to a custom user ID.
  *
  * The resulting payload is designed to be passed to
- * `@passlock/client` so matching device credentials can be updated.
+ * `@passlock/browser` so matching device credentials can be updated.
  * The optional `displayName` is not stored in Passlock; it is only copied into
  * the returned client payload.
  *

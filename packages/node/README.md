@@ -14,7 +14,7 @@ in README.template.md and outputs to README.md
     <img align="center" width=550 height=50 src="https://passlock-assets.b-cdn.net/images/client-repo-banner.svg" />
   </picture>
   <p align="center">
-    Backend NodeJS library to accompany the <a href="https://www.npmjs.com/package/@passlock/client">@passlock/client</a> package
+    Backend NodeJS library to accompany the <a href="https://www.npmjs.com/package/@passlock/browser">@passlock/browser</a> package
     <br />
     <a href="https://passlock.dev"><strong>Project website »</strong></a>
     <br />
@@ -32,7 +32,7 @@ in README.template.md and outputs to README.md
 
 ## See also
 
-For frontend usage please see the accompanying [@passlock/client][client] package
+For frontend usage please see the accompanying [@passlock/browser][browser] package
 
 ## Requirements
 
@@ -42,4 +42,4 @@ Node 22+
 
 Please see the [Quick start guide](https://passlock.dev/getting-started/)
 
-[client]: https://www.npmjs.com/package/@passlock/client
+[browser]: https://www.npmjs.com/package/@passlock/browser

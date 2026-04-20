@@ -1,11 +1,11 @@
 import { Context, Micro } from "effect"
 
 /**
- * Effect service used by the client modules for structured logging.
+ * Effect service used by the browser modules for structured logging.
  *
  * @see consoleLogger and eventLogger
  */
-export class Logger extends Context.Tag("ClientLogger")<
+export class Logger extends Context.Tag("BrowserLogger")<
   Logger,
   {
     readonly logDebug: (message: string) => Micro.Micro<void>

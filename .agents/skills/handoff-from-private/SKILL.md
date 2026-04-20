@@ -26,7 +26,7 @@ Expect one or more of:
 ## Process
 
 1. Identify which public package(s) are affected:
-   - `packages/client`
+   - `packages/browser`
    - `packages/server`
    - `packages/cli`
    - `examples/sveltekit`

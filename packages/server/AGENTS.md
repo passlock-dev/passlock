@@ -1,6 +1,6 @@
 ## Overview
 
-This library allows developers to interact with the Passlock API in backend/server-side code. It includes functions for verifying frontend registration and authentication operations performed using the [@passlock/client](../client/) project. It also includes functions to manage passkeys in the Passlock vault along with other capabilities.
+This library allows developers to interact with the Passlock API in backend/server-side code. It includes functions for verifying frontend registration and authentication operations performed using the [@passlock/browser](../browser/) project. It also includes functions to manage passkeys in the Passlock vault along with other capabilities.
 
 ## Project structure
 
@@ -8,7 +8,7 @@ This library allows developers to interact with the Passlock API in backend/serv
 
 * `src/passkey` - passkey management
 
-* `src/principal` - verifying passkey registration and authentication operations performed by the `@passlock/client` library. 
+* `src/principal` - verifying passkey registration and authentication operations performed by the `@passlock/browser` library. 
 
 * `src/schemas` - Effect schemas representing the various types that can be returned by the Passlock REST API (private repo).
 

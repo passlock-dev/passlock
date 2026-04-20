@@ -29,7 +29,7 @@
     "📖 Main Site": "https://passlock.dev"
   },
   "sidebarLinks": {
-    "@passlock/client": "https://apidocs.passlock.dev/client/index.html"
+    "@passlock/browser": "https://apidocs.passlock.dev/browser/index.html"
   },
   "hostedBaseUrl": "https://apidocs.passlock.dev/server/",
   "includeVersion": true

@@ -1,5 +1,12 @@
 # @passlock/sveltekit-example
 
+## 2.4.3
+
+### Patch Changes
+
+- Upgrade dependencies
+- Renamed @passlock/client to @passlock/browser to reflect its intended usage and deployment
+
 ## 2.4.2
 
 ### Patch Changes

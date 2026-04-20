@@ -112,7 +112,7 @@ export const registerPasskey = async (
 /* Authentication */
 
 /**
- * Asks the client to present a passkey, which is then verified against the server-side component in your vault.
+ * Asks the device to present a passkey, which is then verified against the server-side component in your vault.
  * If successful, this function returns both a `code` and an `id_token` (JWT). Send either value to your backend for verification.
  * See
  * [authenticate a passkey](https://passlock.dev/passkeys/authentication/) in the documentation.
@@ -166,7 +166,7 @@ export const authenticatePasskey = (
 /* Signals */
 
 /**
- * Attempt to update the username or display name for a passkey (client-side only).
+ * Attempt to update the username or display name for a passkey on the local device.
  *
  * Useful if the user has changed their account identifier. For example, they register
  * using jdoe@gmail.com but later change their account username to jdoe@yahoo.com.
@@ -214,7 +214,7 @@ export const updatePasskey = (
 }
 
 /**
- * Attempt to update the username or display name for multiple passkeys (client-side only).
+ * Attempt to update the username or display name for multiple passkeys on the local device.
  *
  * Useful if the user has changed their account identifier. For example, they register
  * using jdoe@gmail.com but later change their account username to jdoe@yahoo.com.
@@ -244,8 +244,8 @@ export const updatePasskey = (
  *   displayName,
  * });
  *
- * // client code
- * import { updatePasskeyUsernames } from "@passlock/client";
+ * // browser code
+ * import { updatePasskeyUsernames } from "@passlock/browser";
  *
  * const credentialsFromBackend = backendResult.credentials;
  * const result = await updatePasskeyUsernames(credentialsFromBackend);
@@ -286,8 +286,8 @@ export const updatePasskeyUsernames = (
  *   apiKey,
  * });
  *
- * // client code
- * import { deleteUserPasskeys } from "@passlock/client";
+ * // browser code
+ * import { deleteUserPasskeys } from "@passlock/browser";
  *
  * const deletedCredentials = deletedPasskeys.deleted;
  * const result = await deleteUserPasskeys(deletedCredentials);
@@ -308,10 +308,10 @@ export const deleteUserPasskeys = (
  * scenarios in which this function proves useful:
  *
  * 1. **Deleting a passkey**. Use the `@passlock/server` package or make vanilla REST calls from your
- * backend to delete the server-side component, then use this function to delete the client-side component.
+ * backend to delete the server-side component, then use this function to delete the passkey from the user's device.
  *
  * 2. **Missing passkey**. The user tried to present a passkey, but the server-side component could not be found.
- * Remove the passkey from the local device to prevent it happening again.
+ * Remove the passkey from the user's local device to prevent it happening again.
  *
  * See [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/) and
  * [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/) in the documentation.
@@ -351,14 +351,18 @@ export const deletePasskey = (
 }
 
 /**
- * Attempt to prune local passkeys by keeping only the passkey IDs you trust.
+ * Attempt to prune redundant local passkeys by keeping only the passkey IDs
+ * you trust.
  *
  * This is useful when your backend is the source of truth for which passkeys
- * should still exist for a given account on this device.
+ * should still exist for a given account on this device. Only passkeys for the
+ * same account on the same relying party can be pruned; passkeys for different
+ * accounts are retained.
  * Support and metadata lookup failures are thrown as {@link PruningError}.
  * Browser-side signalling failures are logged as warnings and are not thrown.
  *
- * @param options Pass the passkeys you want to retain.
+ * @param options Pass the passkey IDs you want to retain for that account on
+ * this device.
  * @returns A {@link PruningSuccess} payload once the accepted-credentials
  * signalling attempt has completed.
  * @see {@link isPruningError}
@@ -373,7 +377,7 @@ export const deletePasskey = (
  *
  * try {
  *   const result = await prunePasskeys({ tenancyId, allowablePasskeyIds });
- *   console.log("accepted credentials sync requested");
+ *   console.log("accepted credentials sync completed");
  * } catch (error) {
  *   if (isPruningError(error)) {
  *     console.log(error.code);
@@ -405,7 +409,8 @@ export const prunePasskeys = (
 export const isPasskeyDeleteSupport = () => pipe(isPasskeyDeleteSupportM, Micro.runSync)
 
 /**
- * Does the local device support programmatic passkey pruning?
+ * Does the local device support programmatic passkey pruning via accepted
+ * credentials signalling?
  *
  * @returns `true` if local passkey pruning is supported.
  *

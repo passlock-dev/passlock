@@ -1,7 +1,7 @@
 // typedoc.json
 {
   "$schema": "https://typedoc.org/schema.json",
-  "name": "@passlock/client",
+  "name": "@passlock/browser",
   "entryPoints": ["src/safe.ts", "src/index.ts"],
   "outputs": [
     {
@@ -10,7 +10,7 @@
     },
     {
       "name": "html",
-      "path": "../../../private/packages/public-api-docs/public/client/"
+      "path": "../../../private/packages/public-api-docs/public/browser/"
     }
   ],
   "navigation": {
@@ -31,6 +31,6 @@
   "sidebarLinks": {
     "@passlock/server": "https://apidocs.passlock.dev/server/index.html"
   },
-  "hostedBaseUrl": "https://apidocs.passlock.dev/client/",
+  "hostedBaseUrl": "https://apidocs.passlock.dev/browser/",
   "includeVersion": true
 }

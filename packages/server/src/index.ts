@@ -13,7 +13,7 @@
  * Functions and related types for managing passkeys.
  *
  * @categoryDescription Principal
- * Functions and related types for exchanging client codes and verifying
+ * Functions and related types for exchanging browser generated codes and verifying
  * Passlock tokens.
  *
  * @showCategories
@@ -187,12 +187,12 @@ export const updatePasskey = (request: UpdatePasskeyOptions): Promise<Passkey> =
  * **Important:** changing these values has no bearing on authentication. The
  * server-side operation updates the username stored in Passlock. The optional
  * `displayName` is only included in the returned credential updates for
- * follow-up use with `@passlock/client`; it is not persisted in the vault.
+ * follow-up use with `@passlock/browser`; it is not persisted in the vault.
  *
  * However you might choose to align the username in your vault with the
  * client-side component to simplify end user support.
  *
- * **Note:** This can be used alongside `@passlock/client`'s
+ * **Note:** This can be used alongside `@passlock/browser`'s
  * `updatePasskeyUsernames` helper to update those details on the user's device.
  *
  * @param request
@@ -210,7 +210,7 @@ export const updatePasskeyUsernames = (
  * Delete a passkey from the Passlock vault.
  *
  * This does not remove the passkey from the user's device. Use
- * `@passlock/client` to coordinate client-side removal when needed.
+ * `@passlock/browser` to coordinate client-side removal when needed.
  *
  * @param options
  * @returns A promise resolving to the deleted credential identifiers.
@@ -227,7 +227,7 @@ export const deletePasskey = (options: DeletePasskeyOptions): Promise<DeletedPas
  *
  * @param request
  * @returns A promise resolving to a {@link DeletedPasskeys} payload.
- * Its `deleted` array can be passed directly into `@passlock/client`'s
+ * Its `deleted` array can be passed directly into `@passlock/browser`'s
  * `deleteUserPasskeys` helper for follow-up client-side passkey removal.
  * @throws {@link NotFoundError} if the user does not exist
  * @throws {@link ForbiddenError} if the Tenancy ID or API key is invalid
@@ -264,7 +264,7 @@ export const listPasskeys = (options: ListPasskeyOptions): Promise<FindAllPasske
   pipe(listPasskeysE(options), Effect.runPromise)
 
 /**
- * The `@passlock/client` library generates codes, which you will send to
+ * The `@passlock/browser` library generates codes, which you will send to
  * your backend for verification.
  *
  * Use this function to exchange the code for details about

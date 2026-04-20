@@ -33,6 +33,8 @@ export type UnauthorizedError = {
 
 /**
  * Type guard for {@link UnauthorizedError}.
+ *
+ * @category Authentication
  */
 export const isUnauthorizedError = isTagged<UnauthorizedError>("@error/Unauthorized")
 
@@ -51,6 +53,8 @@ export type ForbiddenError = {
 
 /**
  * Type guard for {@link ForbiddenError}.
+ *
+ * @category Authentication
  */
 export const isForbiddenError = isTagged<ForbiddenError>("@error/Forbidden")
 
@@ -68,6 +72,8 @@ export type InvalidCodeError = {
 
 /**
  * Type guard for {@link InvalidCodeError}.
+ *
+ * @category Principal
  */
 export const isInvalidCodeError = isTagged<InvalidCodeError>("@error/InvalidCode")
 
@@ -86,6 +92,8 @@ export type InvalidChallengeError = {
 
 /**
  * Type guard for {@link InvalidChallengeError}.
+ *
+ * @category Mailbox
  */
 export const isInvalidChallengeError = isTagged<InvalidChallengeError>("@error/InvalidChallenge")
 
@@ -103,6 +111,8 @@ export type InvalidChallengeCodeError = {
 
 /**
  * Type guard for {@link InvalidChallengeCodeError}.
+ *
+ * @category Mailbox
  */
 export const isInvalidChallengeCodeError = isTagged<InvalidChallengeCodeError>(
   "@error/InvalidChallengeCode"
@@ -122,6 +132,8 @@ export type ChallengeExpiredError = {
 
 /**
  * Type guard for {@link ChallengeExpiredError}.
+ *
+ * @category Mailbox
  */
 export const isChallengeExpiredError = isTagged<ChallengeExpiredError>("@error/ChallengeExpired")
 
@@ -140,6 +152,8 @@ export type ChallengeAttemptsExceededError = {
 
 /**
  * Type guard for {@link ChallengeAttemptsExceededError}.
+ *
+ * @category Mailbox
  */
 export const isChallengeAttemptsExceededError = isTagged<ChallengeAttemptsExceededError>(
   "@error/ChallengeAttemptsExceeded"
@@ -160,6 +174,8 @@ export type ChallengeRateLimitedError = {
 
 /**
  * Type guard for {@link ChallengeRateLimitedError}.
+ *
+ * @category Mailbox
  */
 export const isChallengeRateLimitedError = isTagged<ChallengeRateLimitedError>(
   "@error/ChallengeRateLimited"
@@ -179,6 +195,8 @@ export type VerificationError = {
 
 /**
  * Type guard for {@link VerificationError}.
+ *
+ * @category Principal
  */
 export const isVerificationError = isTagged<VerificationError>("@error/Verification")
 
@@ -196,6 +214,8 @@ export type InvalidTenancyError = {
 
 /**
  * Type guard for {@link InvalidTenancyError}.
+ *
+ * @category Authentication
  */
 export const isInvalidTenancyError = isTagged<InvalidTenancyError>("@error/InvalidTenancy")
 
@@ -216,6 +236,8 @@ export type PasskeyNotFoundError = {
 
 /**
  * Type guard for {@link PasskeyNotFoundError}.
+ *
+ * @category Passkeys
  */
 export const isPasskeyNotFoundError = isTagged<PasskeyNotFoundError>("@error/PasskeyNotFound")
 
@@ -233,6 +255,8 @@ export type NotFoundError = {
 
 /**
  * Type guard for {@link NotFoundError}.
+ *
+ * @category Common
  */
 export const isNotFoundError = isTagged<NotFoundError>("@error/NotFound")
 
@@ -250,6 +274,8 @@ export type InvalidEmailError = {
 
 /**
  * Type guard for {@link InvalidEmailError}.
+ *
+ * @category Validation
  */
 export const isInvalidEmailError = isTagged<InvalidEmailError>("@error/InvalidEmail")
 
@@ -267,6 +293,8 @@ export type DuplicateEmailError = {
 
 /**
  * Type guard for {@link DuplicateEmailError}.
+ *
+ * @category Validation
  */
 export const isDuplicateEmailError = isTagged<DuplicateEmailError>("@error/DuplicateEmail")
 
@@ -284,5 +312,7 @@ export type BadRequestError = {
 
 /**
  * Type guard for {@link BadRequestError}.
+ *
+ * @category Validation
  */
 export const isBadRequestError = isTagged<BadRequestError>("@error/BadRequest")

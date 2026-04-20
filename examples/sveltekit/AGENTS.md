@@ -1,6 +1,6 @@
 ## Overview
 
-The `@passlock/sveltekit-example` project is a SvelteKit app. It illustrates how the `@passlock/client` and `@passlock/server` packages can be applied to add authentication to a SvelteKit app.
+The `@passlock/sveltekit-example` project is a SvelteKit app. It illustrates how the `@passlock/browser` and `@passlock/server` packages can be applied to add authentication to a SvelteKit app.
 
 ## Purpose
 
@@ -12,9 +12,9 @@ Given the intended audience, we want to include helpful JSDoc and comments where
 
 ## Project structure
 
-- `src/lib/client` - Code intended to run client side, but could also run on the server during SSR/SSG rendering. This code should use the `@passlock/client` library, it **should not** use `@passlock/server` or make authenticated REST calls to the Passlock API.
+- `src/lib/client` - Code intended to run client side, but could also run on the server during SSR/SSG rendering. This code should use the `@passlock/browser` library, it **should not** use `@passlock/server` or make authenticated REST calls to the Passlock API.
 
-- `src/lib/server` - Server side code responsible for verifying passkey registration and authentication operations, managing passkeys in the Passlock vault and other tasks. This code will generally use the `@passlock/server` library, it **should not** use `@passlock/client`.
+- `src/lib/server` - Server side code responsible for verifying passkey registration and authentication operations, managing passkeys in the Passlock vault and other tasks. This code will generally use the `@passlock/server` library, it **should not** use `@passlock/browser`.
 
 - `src/lib/server/dbSchema.ts` - The [Drizzle ORM][drizzle] schema.
 

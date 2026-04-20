@@ -1,5 +1,11 @@
 # @passlock/cli
 
+## 2.1.5
+### Patch Changes
+
+- Upgrade dependencies
+- Renamed @passlock/client to @passlock/browser to reflect its intended usage and deployment
+
 ## 2.1.4
 ### Patch Changes
 
@@ -28,7 +34,7 @@
 
   If you have assigned a `userId` to one or more passkeys you can now use the `deleteUserPasskeys` function to delete all passkeys associated with that `userId`. This is useful for account closure scenarios.
 
-  Note: `deleteUserPasskeys` is available in the `@passlock/client` and `@passlock/server` packages and can be used to delete passkeys in your Passlock vault and also from local devices/browsers.
+  Note: `deleteUserPasskeys` is available in the `@passlock/browser` and `@passlock/server` packages and can be used to delete passkeys in your Passlock vault and also from local devices/browsers.
 
 - 9490817: Simplify typeguards
 

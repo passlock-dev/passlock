@@ -31,7 +31,7 @@ export const getPasslockConfig = () => {
  * Read the subset of Passlock config that is safe to expose to the browser.
  *
  * Client code needs the tenancy and optional endpoint so it can talk to
- * Passlock via `@passlock/client`, but it must never receive the API key.
+ * Passlock via `@passlock/browser`, but it must never receive the API key.
  */
 export const getPasslockClientConfig = () => {
 	const { apiKey, ...rest } = getPasslockConfig();

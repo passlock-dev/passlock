@@ -40,7 +40,7 @@ Passkeys are made up of a browser/device component (the private key) and a serve
 The general pattern is:
 
 1. A `+page.svelte` template manages the UI state (messaging, loading icons etc.), delegating logic utilities in `$lib/client`
-2. The client-side helper invokes functions from `@passlock/client` to manage the passkey on the user's device
+2. The client-side helper invokes functions from `@passlock/browser` to manage the passkey on the user's device
 3. Client-side helper talks to the backend, making fetch requests to a `+server.ts` endpoint
 4. The `+server.ts` endpoint delegates logic to utilities in `$lib/server`
 5. The server-side helper invokes functions from `@passlock/server` where necessary.

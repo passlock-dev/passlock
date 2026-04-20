@@ -1,5 +1,7 @@
 /**
- * Shared Passlock tenancy and API endpoint options used by client requests.
+ * Shared Passlock tenancy and API endpoint options used for browser requests.
+ *
+ * @category Passkeys (core)
  */
 export interface PasslockOptions {
   /**

@@ -19,8 +19,8 @@ const repoRoot = path.resolve(__dirname, "..")
 
 const packagesToSync = [
   {
-    packageName: "@passlock/client",
-    sourcePackageJsonPath: path.join(repoRoot, "packages/client/package.json"),
+    packageName: "@passlock/browser",
+    sourcePackageJsonPath: path.join(repoRoot, "packages/browser/package.json"),
   },
   {
     packageName: "@passlock/server",

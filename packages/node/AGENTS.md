@@ -8,7 +8,7 @@ This package is therefore deprecated in favour of the `@passlock/server` package
 
 * `src/passkey` - managing passkeys in the passkey vault
 
-* `src/principal` - verifying passkey registration and authentication operations performed by the `@passlock/client` library. Functions in the client library typically return a `code` and `id_token`, which developers send to their backends. The code in this package allows them to exchange a code or id_token for a Principal or ExtendedPrincipal, representing the frontend operation.
+* `src/principal` - verifying passkey registration and authentication operations performed by the `@passlock/browser` library. Functions in the client library typically return a `code` and `id_token`, which developers send to their backends. The code in this package allows them to exchange a code or id_token for a Principal or ExtendedPrincipal, representing the frontend operation.
 
 * `src/schemas` - Effect schemas representing the various types that can be returned by the Passlock REST API (private repo)
 

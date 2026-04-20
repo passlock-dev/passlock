@@ -1,7 +1,7 @@
 import { browserSupportsWebAuthn, browserSupportsWebAuthnAutofill } from "@simplewebauthn/browser"
 
 /**
- * Test for passkey support on the device
+ * Test whether the current browser supports passkeys.
  *
  * @returns `true` if the current browser supports passkeys.
  *
@@ -10,7 +10,8 @@ import { browserSupportsWebAuthn, browserSupportsWebAuthnAutofill } from "@simpl
 export const isPasskeySupport = (): boolean => browserSupportsWebAuthn()
 
 /**
- * Test for passkey [autofill](https://passlock.dev/passkeys/autofill/) support on the device.
+ * Test whether the current browser supports passkey
+ * [autofill](https://passlock.dev/passkeys/autofill/).
  *
  * @returns A promise that resolves to `true` if passkey autofill is supported.
  *

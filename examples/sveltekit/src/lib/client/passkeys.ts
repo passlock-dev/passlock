@@ -12,7 +12,7 @@
  * checks.
  */
 
-import * as PasslockClient from '@passlock/client/safe';
+import * as PasslockBrowser from '@passlock/browser/safe';
 
 import {
 	DeletePasskeySuccess,
@@ -40,7 +40,7 @@ export type CreatePasskeyInput = {
  * signed-in account.
  *
  * Registration is split across trust boundaries:
- * - `@passlock/client` talks to the browser's WebAuthn APIs.
+ * - `@passlock/browser` talks to the browser's WebAuthn APIs.
  * - `POST /passkeys` verifies the Passlock code and stores the passkey
  *   association in server-side state.
  */
@@ -53,7 +53,7 @@ export const registerPasskey = async (input: CreatePasskeyInput) => {
 	const { email: username, existingPasskeys: excludeCredentials } = input;
 
 	// WebAuthn registration must happen in the browser.
-	const clientResult = await PasslockClient.registerPasskey({
+	const clientResult = await PasslockBrowser.registerPasskey({
 		...input,
 		username,
 		excludeCredentials,
@@ -100,7 +100,7 @@ export type AuthenticatePasskeyInput = {
 	 * Used with autofill so the page can react to browser events such as the
 	 * user selecting a credential before the server round-trip completes.
 	 */
-	onEvent?: (event: PasslockClient.AuthenticationEvent) => void;
+	onEvent?: (event: PasslockBrowser.AuthenticationEvent) => void;
 	/**
 	 * Restrict the prompt to passkeys already linked to the account. This maps
 	 * to WebAuthn's `allowCredentials`.
@@ -125,7 +125,7 @@ export const authenticatePasskey = async (input: AuthenticatePasskeyInput) => {
 	const { allowCredentials, verificationRoute = '/login/passkey' } = input;
 
 	// WebAuthn prompts can only run in the browser.
-	const clientResult = await PasslockClient.authenticatePasskey({
+	const clientResult = await PasslockBrowser.authenticatePasskey({
 		...input,
 		allowCredentials
 	});
@@ -218,7 +218,7 @@ export const updateUserPasskeys = async (input: UpdatePasskeysInput) => {
 
 	// This step is purely local to the browser/device, so no tenancy config is
 	// required.
-	const clientResult = await PasslockClient.updatePasskeyUsernames(serverResult.credentials);
+	const clientResult = await PasslockBrowser.updatePasskeyUsernames(serverResult.credentials);
 
 	if (clientResult.success) return { _tag: 'UpdatePasskeySuccess' } as const;
 
@@ -264,7 +264,7 @@ export const deletePasskey = async (input: DeletePasskeyInput) => {
 	if (serverResult._tag === '@warning/PasskeyNotFound') return serverResult;
 
 	// Local device deletion is best-effort and browser-dependent.
-	const clientResult = await PasslockClient.deletePasskey(serverResult.deleted);
+	const clientResult = await PasslockBrowser.deletePasskey(serverResult.deleted);
 
 	if (clientResult.success) return { _tag: 'DeleteSuccess' } as const;
 
@@ -309,7 +309,7 @@ export const deleteAccountPasskeys = async () => {
 		return serverResult;
 	}
 
-	const clientResult = await PasslockClient.deleteUserPasskeys(serverResult.deleted);
+	const clientResult = await PasslockBrowser.deleteUserPasskeys(serverResult.deleted);
 
 	if (clientResult.success) return { _tag: 'DeleteSuccess' } as const;
 
