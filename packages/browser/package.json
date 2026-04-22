@@ -81,7 +81,8 @@
     "publint": "catalog:",
     "rimraf": "catalog:",
     "tsx": "catalog:",
-    "typedoc": "^0.28.19",
+    "typedoc": "catalog:",
+    "typedoc-plugin-markdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "^4.0.16"
   },

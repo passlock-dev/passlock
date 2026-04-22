@@ -21,6 +21,6 @@ export const isAutofillSupport = (): Promise<boolean> => browserSupportsWebAuthn
 
 export {
   isPasskeyDeleteSupport,
-  isPasskeyPruningSupport as isPasskeySyncSupport,
+  isPasskeyPruningSupport,
   isPasskeyUpdateSupport,
 } from "./signals/signals.js"
