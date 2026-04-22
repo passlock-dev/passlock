@@ -3,6 +3,7 @@
   "$schema": "https://typedoc.org/schema.json",
   "name": "@passlock/browser",
   "entryPoints": ["src/safe.ts", "src/index.ts"],
+  "plugin": ["typedoc-plugin-markdown"],
   "outputs": [
     {
       "name": "html",
@@ -11,6 +12,14 @@
     {
       "name": "html",
       "path": "../../../private/packages/public-api-docs/public/browser/"
+    },
+    {
+      "name": "markdown",
+      "path": "./docs/llms-api"
+    },
+    {
+      "name": "markdown",
+      "path": "../../../private/packages/public-api-docs/public/llms/browser/"
     }
   ],
   "navigation": {
@@ -22,7 +31,12 @@
   "categorizeByGroup": false,
   "readme": "none",
   "cleanOutputDir": true,
-  "categoryOrder": ["Passkeys (core)", "Passkeys (other)", "Passkeys (errors)", "*"],
+  "categoryOrder": [
+    "Passkeys (core)",
+    "Passkeys (other)",
+    "Passkeys (errors)",
+    "*"
+  ],
   "groupOrder": ["Functions", "Interfaces", "Classes", "*"],
   "sort": ["kind", "instance-first", "source-order"],
   "navigationLinks": {

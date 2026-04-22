@@ -30,6 +30,12 @@ catalogs:
     tsx:
       specifier: ^4.21.0
       version: 4.21.0
+    typedoc:
+      specifier: ^0.28.19
+      version: 0.28.19
+    typedoc-plugin-markdown:
+      specifier: ^4.11.0
+      version: 4.11.0
     typescript:
       specifier: ^6.0.3
       version: 6.0.3
@@ -88,10 +94,10 @@ importers:
         specifier: ^1.8.0
         version: 1.8.0(svelte@5.55.4)
       '@passlock/browser':
-        specifier: ^2.4.2
+        specifier: ^2.4.3
         version: link:../../packages/browser
       '@passlock/server':
-        specifier: ^2.4.2
+        specifier: ^2.4.3
         version: link:../../packages/server
       '@sveltejs/adapter-auto':
         specifier: ^7.0.1
@@ -206,8 +212,11 @@ importers:
         specifier: 'catalog:'
         version: 4.21.0
       typedoc:
-        specifier: ^0.28.19
+        specifier: 'catalog:'
         version: 0.28.19(typescript@6.0.3)
+      typedoc-plugin-markdown:
+        specifier: 'catalog:'
+        version: 4.11.0(typedoc@0.28.19(typescript@6.0.3))
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -332,8 +341,11 @@ importers:
         specifier: 'catalog:'
         version: 4.21.0
       typedoc:
-        specifier: ^0.28.19
+        specifier: 'catalog:'
         version: 0.28.19(typescript@6.0.3)
+      typedoc-plugin-markdown:
+        specifier: 'catalog:'
+        version: 4.11.0(typedoc@0.28.19(typescript@6.0.3))
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -2950,6 +2962,12 @@ packages:
 
   typebox@1.1.19:
     resolution: {integrity: sha512-w4m14nMOFEugDrcYeqmTXZZk7WUJKeh7NBZW+6sxhqIgspAg2DEmvubONp9DGVlaUZ28N6W7LUd0JcFKowGP4Q==}
+
+  typedoc-plugin-markdown@4.11.0:
+    resolution: {integrity: sha512-2iunh2ALyfyh204OF7h2u0kuQ84xB3jFZtFyUr01nThJkLvR8oGGSSDlyt2gyO4kXhvUxDcVbO0y43+qX+wFbw==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      typedoc: 0.28.x
 
   typedoc@0.28.19:
     resolution: {integrity: sha512-wKh+lhdmMFivMlc6vRRcMGXeGEHGU2g8a2CkPTJjJlwRf1iXbimWIPcFolCqe4E0d/FRtGszpIrsp3WLpDB8Pw==}
@@ -5575,6 +5593,10 @@ snapshots:
 
   typebox@1.1.19:
     optional: true
+
+  typedoc-plugin-markdown@4.11.0(typedoc@0.28.19(typescript@6.0.3)):
+    dependencies:
+      typedoc: 0.28.19(typescript@6.0.3)
 
   typedoc@0.28.19(typescript@6.0.3):
     dependencies:
