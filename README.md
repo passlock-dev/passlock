@@ -31,6 +31,9 @@ in README.template.md and outputs to README.md
 
 <br />
 
+> [!TIP]
+> Use our [LLM Agent Skill][agent-skill] to supercharge Codex, Claude, Copilot or your coding agent of choice.
+
 ## How Passlock works (in 60 seconds)
 
 1. Passlock handles WebAuthn complexity (browser quirks, ceremonies, encoding)
@@ -156,6 +159,7 @@ Please see the [tutorial](https://passlock.dev/getting-started/) and [documentat
 
 If Passlock saved you time or helped you ship passkeys faster, a ⭐ on GitHub helps more than you think.
 
+[agent-skill]: https://passlock.dev/agents/agent-skill/
 [contact]: https://passlock.dev/contact
 [passlock-server]: https://www.npmjs.com/package/@passlock/server
 [simplewebauthn]: https://simplewebauthn.dev
