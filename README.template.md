@@ -56,14 +56,14 @@ This monorepo contains the public browser SDK, server SDK, CLI, and a reference 
 **:unlock: No lock-in**  
 Framework agnostic. Standards compliant.
 
-**:key: Related origins (domain migration)**  
-Accept passkeys from other domains on your site (subject to security constraints).
-
 **:rocket: Zero config passkeys**  
 Works out of the box with sensible defaults.
 
+**:arrow_right: Related origins**  
+Migrate user passkeys to a new domain.
+
 **:iphone: Credential management**  
-Update, prune and remove passkeys on supported end user devices.
+Manage passkeys on end-user devices.
 
 **:muscle: Powerful**  
 User verification, autofill, roaming authenticators and more.
