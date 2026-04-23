@@ -32,7 +32,7 @@ in README.template.md and outputs to README.md
 <br />
 
 > [!TIP]
-> Use our [LLM Agent Skill][agent-skill] to supercharge Codex, Claude, Copilot or your coding agent of choice.
+> Use our [LLM Agent Skill][agent-skill] to supercharge Codex, Claude, Copilot or your coding agent of choice :robot:
 
 ## How Passlock works (in 60 seconds)
 
