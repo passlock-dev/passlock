@@ -51,4 +51,4 @@ We use cookie based sessions. Sessions are created in the database and the assso
 
 ## Re-authentication
 
-For sensitive operations e.g. account email changes we require the user to have authenticated with a passkey (if they have one) within the last N minutes. We examing the `passkeyAuthenticatedAt` property on the user's session. If it's no longer valid we prompt them to re-authenticate using their passkey.
+For sensitive operations e.g. account email changes we require the user to have authenticated with a passkey (if they have one) within the last N minutes. We examine the `passkeyAuthenticatedAt` property on the user's session. If it's no longer valid we prompt them to re-authenticate.

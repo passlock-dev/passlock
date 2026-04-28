@@ -3,20 +3,20 @@
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
 	import DevNotes from '$lib/components/DevNotes.svelte';
+	import Link from '$lib/components/Link.svelte';
 	import ResendChallengeButton from '$lib/components/ResendChallengeButton.svelte';
+	import SubmitButton from '$lib/components/SubmitButton.svelte';
+	import TextInput from '$lib/components/TextInput.svelte';
 
 	let { data }: PageProps = $props();
 
 	// svelte-ignore state_referenced_locally
-	const {
-		form: verifyForm,
-		errors: verifyErrors,
-		enhance: verifyEnhance,
-		constraints: verifyConstraints
-	} = superForm(data.verifyForm, {
+	const superform = superForm(data.verifyForm, {
 		applyAction: true,
 		invalidateAll: 'pessimistic'
 	});
+
+	const { enhance, delayed } = superform;
 </script>
 
 <svelte:head>
@@ -34,25 +34,16 @@
 			Your account email will only change after you enter this code.
 		</p>
 
-		<form method="POST" action="?/verify" use:verifyEnhance class="mt-6">
+		<form method="post" action="?/verify" use:enhance class="mt-6">
 			<fieldset class="fieldset">
-				<label for="code" class="label">One-time code</label>
-				<input
-					id="code"
-					type="text"
-					name="code"
+				<TextInput
+					{superform}
+					field="code"
+					label="One-time code"
 					autocomplete="one-time-code"
-					class={['input tracking-[0.3em]', { 'input-error': $verifyErrors.code }]}
-					bind:value={$verifyForm.code}
-					{...$verifyConstraints.code} />
+					class="text-center font-mono text-lg tracking-[0.8em]" />
 
-				{#if $verifyErrors.code}
-					{#each $verifyErrors.code as error (error)}
-						<span class="text-error">{error}</span>
-					{/each}
-				{/if}
-
-				<button class="btn mt-4 btn-primary">Verify email</button>
+				<SubmitButton loading={$delayed} disabled={false}>Verify email</SubmitButton>
 			</fieldset>
 		</form>
 
@@ -60,7 +51,7 @@
 
 		<p class="mt-4 text-center text-sm">
 			Need to start over?
-			<a href={resolve('/account')} class="ml-1 text-primary hover:underline">Back to account</a>
+			<Link href={resolve('/account')} class="ml-1">Back to account</Link>
 		</p>
 	</div>
 </div>

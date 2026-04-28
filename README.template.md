@@ -94,10 +94,15 @@ const tenancyId = "myTenancyId";
 const username = "jdoe@gmail.com";
 
 // call this in a click handler or similar action
-const result = await registerPasskey({ tenancyId, username });
+const result = await registerPasskey({ username }, { tenancyId });
+
+if (!result.success) {
+  // handle the error
+  throw new Error(result.error.message);
+}
 
 // send result.code or result.id_token to your backend for verification
-console.log('code: %s', result.code); 
+console.log('code: %s', result.value.code); 
 ```
 
 In your backend exchange the code to obtain details about the completed registration. We'll use the [@passlock/server][passlock-server] library for this, but you can also make vanilla REST calls or verify the `id_token` instead.
@@ -109,11 +114,16 @@ import { exchangeCode } from "@passlock/server";
 const tenancyId = "myTenancyId";
 const apiKey = "myApiKey";
 
-const result = await exchangeCode({ code, tenancyId, apiKey });
+const result = await exchangeCode({ code }, { tenancyId, apiKey });
+
+if (!result.success) {
+  // handle the error
+  throw new Error(result.error.message);
+}
 
 // includes details about the completed registration
 // associate the authenticatorId (passkey ID) with a local user account
-console.log('passkey id: %s', result.authenticatorId); 
+console.log('passkey id: %s', result.value.authenticatorId); 
 ```
 
 ### Authenticate a passkey
@@ -127,10 +137,15 @@ import { authenticatePasskey } from "@passlock/browser";
 const tenancyId = "myTenancyId";
 
 // call this in a button click handler or similar action
-const result = await authenticatePasskey({ tenancyId });
+const result = await authenticatePasskey({}, { tenancyId });
+
+if (!result.success) {
+  // handle the error
+  throw new Error(result.error.message);
+}
 
 // send result.code or result.id_token to your backend for verification
-console.log('code: %s', result.code); 
+console.log('code: %s', result.value.code); 
 ```
 
 In your backend, exchange the code and look up the user by `authenticatorId` ...
@@ -142,10 +157,15 @@ import { exchangeCode } from "@passlock/server";
 const tenancyId = "myTenancyId";
 const apiKey = "myApiKey";
 
-const result = await exchangeCode({ code, tenancyId, apiKey });
+const result = await exchangeCode({ code }, { tenancyId, apiKey });
+
+if (!result.success) {
+  // handle the error
+  throw new Error(result.error.message);
+}
 
 // lookup the user based on their authenticatorId
-console.log('passkey id: %s', result.authenticatorId); 
+console.log('passkey id: %s', result.value.authenticatorId); 
 ```
 
 > [!TIP]  

@@ -1,5 +1,10 @@
 # @passlock/browser
 
+## 2.5.0
+### Minor Changes
+
+- Introduce class based variants in addition to the safe and unsafe functions
+
 ## 2.4.3
 ### Patch Changes
 

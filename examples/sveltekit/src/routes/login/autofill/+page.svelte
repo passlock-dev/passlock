@@ -7,29 +7,39 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import DevNotes from '$lib/components/DevNotes.svelte';
+	import EmailInput from '$lib/components/EmailInput.svelte';
+	import SubmitButton from '$lib/components/SubmitButton.svelte';
+	import Link from '$lib/components/Link.svelte';
 
 	let { data }: PageProps = $props();
 	let disabled = $state(false);
 
 	/* can be ignored as superforms uses stores for dynamic state */
 	// svelte-ignore state_referenced_locally
-	const { form, errors } = superForm(data.form);
+	const superform = superForm(data.form);
+	const { enhance, delayed } = superform;
 
 	onMount(async () => {
+		const config = {
+			tenancyId: data.tenancyId,
+			endpoint: data.endpoint
+		};
+
 		// Autofill-capable browsers can surface a passkey picker as soon as the
 		// page mounts, avoiding the usual explicit "continue" click.
-		const result = await authenticatePasskey({
-			tenancyId: data.tenancyId,
-			endpoint: data.endpoint,
-			autofill: true,
-			onEvent: (event) => {
-				// Once the user picks a passkey, freeze the fallback form to avoid
-				// competing submissions during server verification.
-				if (event === 'verifyCredential') {
-					disabled = true;
+		const result = await authenticatePasskey(
+			{
+				autofill: true,
+				onEvent: (event) => {
+					// Once the user picks a passkey, freeze the fallback form to avoid
+					// competing submissions during server verification.
+					if (event === 'verifyCredential') {
+						disabled = true;
+					}
 				}
-			}
-		});
+			},
+			config
+		);
 
 		if (result._tag === 'PasslockLoginSuccess') {
 			// Refresh the root layout so navigation and account UI pick up the new
@@ -49,29 +59,23 @@
 </svelte:head>
 
 <div class="flex h-full w-full items-center justify-center">
-	<form method="POST" class="rounded-lg bg-base-200 p-10 pt-8">
+	<form method="post" use:enhance class="rounded-lg bg-base-200 p-10 pt-8">
 		<h2 class="text-center text-xl font-semibold">Login</h2>
 
-		<fieldset class="fieldset w-xs">
-			<label for="username" class="label">Email</label>
-			<input
-				id="username"
-				type="email"
+		<fieldset class="mt-3 fieldset w-xs">
+			<EmailInput
+				{superform}
+				field="email"
+				label="Account email"
 				autocomplete="email webauthn"
-				name="username"
-				class={['input', { 'input-error': $errors.username }]}
 				required
-				bind:value={$form.username}
 				{disabled} />
-			{#if $errors.username}<span class="text-error">{$errors.username}</span>{/if}
-
-			<button class="btn mt-4 btn-primary" {disabled}>Continue</button>
+			<SubmitButton loading={$delayed} {disabled}>Continue</SubmitButton>
 		</fieldset>
 
 		<p class="mt-4 text-center text-sm">
-			Not yet a member? <a href={resolve('/signup')} class="ml-1 text-primary hover:underline">
-				Sign up
-			</a>
+			Not yet a member?
+			<Link href={resolve('/signup')} class="ml-1">Sign up</Link>
 		</p>
 	</form>
 </div>

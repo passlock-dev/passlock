@@ -2,7 +2,7 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "name": "@passlock/browser",
-  "entryPoints": ["src/safe.ts", "src/index.ts"],
+  "entryPoints": ["src/safe.ts", "src/unsafe.ts"],
   "plugin": ["typedoc-plugin-markdown"],
   "outputs": [
     {
@@ -31,12 +31,7 @@
   "categorizeByGroup": false,
   "readme": "none",
   "cleanOutputDir": true,
-  "categoryOrder": [
-    "Passkeys (core)",
-    "Passkeys (other)",
-    "Passkeys (errors)",
-    "*"
-  ],
+  "categoryOrder": ["Clients", "Passkeys (core)", "Passkeys (other)", "Passkeys (errors)", "*"],
   "groupOrder": ["Functions", "Interfaces", "Classes", "*"],
   "sort": ["kind", "instance-first", "source-order"],
   "navigationLinks": {

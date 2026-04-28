@@ -9,54 +9,17 @@
 	import { updateUserPasskeys } from '$lib/client/passkeys';
 	import { reAuthenticateIfNecessary } from './utils.js';
 	import DevNotes from '$lib/components/DevNotes.svelte';
+	import EmailInput from '$lib/components/EmailInput.svelte';
+	import TextInput from '$lib/components/TextInput.svelte';
 	import type { PageProps } from './$types';
 	import { replaceState } from '$app/navigation';
-	import type { SuperFormErrors } from 'sveltekit-superforms/client';
-	import type { ChallengeRateLimitView } from '$lib/shared/challengeRateLimit.js';
+	import SubmitButton from '$lib/components/SubmitButton.svelte';
+	import { clearFormErrors, setFormError } from '$lib/client/forms.js';
 
-	let { data, form: actionData }: PageProps = $props();
+	let { data }: PageProps = $props();
 
 	let syncingUpdatedEmailPasskeys = $state(false);
-	type EmailRateLimit = ChallengeRateLimitView | null;
-
-	const getActionEmailRateLimit = (value: PageProps['form']): EmailRateLimit | undefined => {
-		if (!value || typeof value !== 'object' || !('emailRateLimit' in value)) return undefined;
-		return value.emailRateLimit as EmailRateLimit;
-	};
-
-	const getInitialEmailRateLimit = (): EmailRateLimit => {
-		const initialActionEmailRateLimit = getActionEmailRateLimit(actionData);
-		return initialActionEmailRateLimit === undefined
-			? data.emailRateLimit
-			: initialActionEmailRateLimit;
-	};
-
-	const isEmailRateLimitActive = (value: EmailRateLimit) =>
-		Boolean(value && value.retryAfterSeconds > 0);
-
-	const initialEmailRateLimit = getInitialEmailRateLimit();
-	let emailRateLimit = $state<EmailRateLimit>(initialEmailRateLimit);
-	let emailRateLimitActive = $state(isEmailRateLimitActive(initialEmailRateLimit));
-
-	$effect(() => {
-		const nextEmailRateLimit = getActionEmailRateLimit(actionData);
-		if (nextEmailRateLimit === undefined) return;
-
-		emailRateLimit = nextEmailRateLimit;
-		emailRateLimitActive = isEmailRateLimitActive(nextEmailRateLimit);
-	});
-
-	type FormErrors = SuperFormErrors<Record<string, unknown>>;
-
-	// Clear form level errors
-	const clearFormErrors = (errors: FormErrors) => {
-		errors.update((current) => ({ ...current, _errors: undefined }));
-	};
-
-	// Set a form level error
-	const setFormError = (errors: FormErrors, message: string) => {
-		errors.update((current) => ({ ...current, _errors: [message] }));
-	};
+	let rateLimitActive = $state(false);
 
 	/**
 	 * Once the redirect-driven status has been rendered, clear the transient
@@ -75,7 +38,7 @@
 	 */
 	const syncPasskeys = async () => {
 		syncingUpdatedEmailPasskeys = true;
-		clearFormErrors(emailErrors);
+		clearFormErrors(accountEmailErrors);
 
 		const result = await updateUserPasskeys({
 			username: data.currentEmail,
@@ -85,7 +48,7 @@
 
 		if (result._tag === '@error/UpdatePasskeyError') {
 			setFormError(
-				emailErrors,
+				accountEmailErrors,
 				'Email address updated, but local passkeys could not be refreshed automatically.'
 			);
 			syncingUpdatedEmailPasskeys = false;
@@ -93,7 +56,10 @@
 			return;
 		}
 
-		emailMessage.set('Email address updated and passkeys refreshed.');
+		accountEmailMessage.set({
+			type: 'success',
+			text: 'Email address updated and passkeys refreshed.'
+		});
 		syncingUpdatedEmailPasskeys = false;
 		clearQueryState();
 	};
@@ -105,8 +71,11 @@
 		if (data.syncPasskeysOnLoad) {
 			void syncPasskeys();
 			return;
-		} else if (data.clearQueryState) {
+		}
+
+		if (data.clearQueryStateOnLoad) {
 			clearQueryState();
+			return;
 		}
 	});
 
@@ -120,24 +89,23 @@
 	 *
 	 */
 	// svelte-ignore state_referenced_locally
-	const {
-		form: profileForm,
-		errors: profileErrors,
-		message: profileMessage,
-		enhance: profileEnhance,
-		validateForm: validateProfileForm,
-		constraints: profileConstraints
-	} = superForm(data.profileForm, {
+	const profileSuperform = superForm(data.profileForm, {
 		applyAction: true,
 		invalidateAll: 'pessimistic',
 		validators: valibotClient(ProfileSchema),
 		onSubmit: async ({ cancel }) => {
-			const authResult = await reAuthenticateIfNecessary({
-				errors: profileErrors,
-				validateForm: () => validateProfileForm({ update: true }),
+			const config = {
 				tenancyId: data.tenancyId,
 				endpoint: data.endpoint
-			});
+			};
+
+			const authResult = await reAuthenticateIfNecessary(
+				{
+					errors: profileErrors,
+					validateForm: () => validateProfileForm({ update: true })
+				},
+				config
+			);
 
 			// something went wrong, abort
 			if (authResult._tag === '@error/ReAuthenticationFailure') {
@@ -165,6 +133,14 @@
 		}
 	});
 
+	const {
+		errors: profileErrors,
+		message: profileMessage,
+		enhance: profileEnhance,
+		delayed: profileDelayed,
+		validateForm: validateProfileForm
+	} = profileSuperform;
+
 	/**
 	 * When the user changes their email we:
 	 *
@@ -179,30 +155,37 @@
 	 *
 	 */
 	// svelte-ignore state_referenced_locally
-	const {
-		form: emailForm,
-		errors: emailErrors,
-		message: emailMessage,
-		enhance: emailEnhance,
-		validateForm: validateEmailForm,
-		constraints: emailConstraints
-	} = superForm(data.emailForm, {
+	const accountEmailSuperform = superForm(data.accountEmailForm, {
 		applyAction: true,
 		invalidateAll: 'pessimistic',
 		validators: valibotClient(EmailSchema),
 		onSubmit: async ({ cancel }) => {
-			const authResult = await reAuthenticateIfNecessary({
-				errors: emailErrors,
-				validateForm: () => validateEmailForm({ update: true }),
+			const config = {
 				tenancyId: data.tenancyId,
 				endpoint: data.endpoint
-			});
+			};
+
+			const authResult = await reAuthenticateIfNecessary(
+				{
+					errors: accountEmailErrors,
+					validateForm: () => validateAccountEmailForm({ update: true })
+				},
+				config
+			);
 
 			if (authResult._tag === '@error/ReAuthenticationFailure') {
 				cancel();
 			}
 		}
 	});
+
+	const {
+		errors: accountEmailErrors,
+		message: accountEmailMessage,
+		delayed: accountEmailDelayed,
+		enhance: accountEmailEnhance,
+		validateForm: validateAccountEmailForm
+	} = accountEmailSuperform;
 </script>
 
 <svelte:head>
@@ -211,7 +194,7 @@
 
 <div class="flex h-full w-full flex-col items-center justify-center gap-4 px-4 py-8">
 	<fieldset class="mt-4 fieldset max-w-md rounded-lg bg-base-200 p-10 pt-8">
-		<form method="POST" action="?/profile" use:profileEnhance>
+		<form method="post" action="?/profile" use:profileEnhance>
 			<h2 class="text-center text-xl font-semibold">My account</h2>
 			<p class="mt-3 text-center text-sm text-base-content/80">
 				Update your name and keep your passkeys aligned with your account profile.
@@ -229,44 +212,30 @@
 
 			<div class="mt-4 flex flex-col gap-2">
 				<div>
-					<label for="givenName" class="label">First name</label>
-					<input
-						id="givenName"
-						type="text"
-						name="givenName"
+					<TextInput
+						superform={profileSuperform}
+						field="givenName"
+						label="First name"
 						autocomplete="given-name"
-						class={['input mt-2 w-full', { 'input-error': $profileErrors.givenName }]}
-						bind:value={$profileForm.givenName}
-						{...$profileConstraints.givenName} />
-					{#if $profileErrors.givenName}
-						{#each $profileErrors.givenName as error (error)}
-							<span class="text-error">{error}</span>
-						{/each}
-					{/if}
+						class="mt-2 w-full" />
 				</div>
+
 				<div>
-					<label for="familyName" class="label">Last name</label>
-					<input
-						id="familyName"
-						type="text"
-						name="familyName"
+					<TextInput
+						superform={profileSuperform}
+						field="familyName"
+						label="Last name"
 						autocomplete="family-name"
-						class={['input mt-2 w-full', { 'input-error': $profileErrors.familyName }]}
-						bind:value={$profileForm.familyName}
-						{...$profileConstraints.familyName} />
-					{#if $profileErrors.familyName}
-						{#each $profileErrors.familyName as error (error)}
-							<span class="text-error">{error}</span>
-						{/each}
-					{/if}
+						class="mt-2 w-full" />
 				</div>
 			</div>
-			<button class="btn mt-4 btn-block btn-primary">Save name changes</button>
+
+			<SubmitButton class="w-full" loading={$profileDelayed}>Save name changes</SubmitButton>
 		</form>
 
 		<div class="divider"></div>
 
-		<form method="POST" action="?/email" use:emailEnhance>
+		<form method="post" action="?/email" use:accountEmailEnhance>
 			<h3 class="text-center text-xl font-semibold">Change email address</h3>
 			<p class="mt-3 text-center text-sm text-base-content/80">
 				We’ll send a verification code to your new email before updating your account.
@@ -274,21 +243,19 @@
 
 			{#if syncingUpdatedEmailPasskeys}
 				<p class="mt-4 text-center text-sm text-base-content/80">Refreshing your passkeys...</p>
-			{:else if $emailMessage}
-				<p class="mt-4 text-center text-sm text-success">{$emailMessage}</p>
-			{/if}
-
-			{#if emailRateLimit}
+			{:else if $accountEmailMessage?.type === 'success'}
+				<p class="mt-4 text-center text-sm text-success">{$accountEmailMessage.text}</p>
+			{:else if $accountEmailMessage?.type === 'rateLimited'}
 				<ChallengeRateLimitNotice
-					onActiveChange={(active) => {
-						emailRateLimitActive = active;
+					rateLimit={$accountEmailMessage.rateLimit}
+					onActiveChange={(isActive) => {
+						rateLimitActive = isActive;
 					}}
-					rateLimit={emailRateLimit}
-					className="mt-4 text-center text-sm" />
+					class="mt-4 text-center text-sm" />
 			{/if}
 
-			{#if $emailErrors._errors}
-				{#each $emailErrors._errors as error (error)}
+			{#if $accountEmailErrors._errors}
+				{#each $accountEmailErrors._errors as error (error)}
 					<p class="mt-4 text-center text-sm text-error">{error}</p>
 				{/each}
 			{/if}
@@ -306,27 +273,18 @@
 				</div>
 
 				<div>
-					<label for="new-email" class="label">New email</label>
-					<input
-						id="new-email"
-						type="email"
-						name="email"
+					<EmailInput
+						superform={accountEmailSuperform}
+						field="email"
+						label="New email"
 						autocomplete="email"
-						class={['input mt-2 w-full', { 'input-error': $emailErrors.email }]}
-						bind:value={$emailForm.email}
-						{...$emailConstraints.email} />
-
-					{#if $emailErrors.email}
-						{#each $emailErrors.email as error (error)}
-							<span class="text-error">{error}</span>
-						{/each}
-					{/if}
+						class="mt-2 w-full" />
 				</div>
 			</div>
 
-			<button class="btn mt-4 btn-block btn-primary" disabled={emailRateLimitActive}>
+			<SubmitButton class="w-full" disabled={rateLimitActive} loading={$accountEmailDelayed}>
 				Verify new email
-			</button>
+			</SubmitButton>
 		</form>
 
 		<div class="divider"></div>

@@ -1,5 +1,10 @@
 # @passlock/cli
 
+## 2.5.0
+### Minor Changes
+
+- Introduce class based variants in addition to the safe and unsafe functions
+
 ## 2.1.5
 ### Patch Changes
 

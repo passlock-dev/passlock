@@ -1,4 +1,4 @@
-import type { MailboxChallengeDetails, MailboxChallengeMetadata } from '@passlock/server/safe';
+import type { MailboxChallengeDetails } from '@passlock/server';
 import { error as kitError } from '@sveltejs/kit';
 import { CHALLENGE_FLOW_TTL_MS } from '../cookies.js';
 import {
@@ -18,10 +18,10 @@ import {
 	BaseMetadataSchema,
 	createPasslockMailboxChallenge,
 	createInvalidChallengeError,
-	getPasslockMailboxChallenge,
+	getProjectedMailboxChallenge,
 	parseChallengeUserId,
 	validateMailboxChallenge,
-	verifyPasslockMailboxChallenge
+	verifyAndProjectMailboxChallenge
 } from './mailboxChallenge.js';
 
 import type * as v from 'valibot';
@@ -36,10 +36,7 @@ export type EmailChangeChallenge = {
 
 export type CreatedEmailChangeChallenge = {
 	_tag: 'CreatedChallenge';
-	challenge: {
-		id: string;
-		email: string;
-	};
+	challenge: EmailChangeChallenge;
 	secret: string;
 	code: string;
 	message: {
@@ -100,13 +97,12 @@ export const createOrRefreshEmailChallenge = async (input: {
 	}
 
 	const processExpiresAt = Date.now() + CHALLENGE_FLOW_TTL_MS;
-	const metadata: MailboxChallengeMetadata = { processExpiresAt };
 
 	const result = await createPasslockMailboxChallenge({
 		email: input.email,
 		purpose: 'email-change',
 		userId: String(account.userId),
-		metadata,
+		metadata: { processExpiresAt },
 		invalidateOthers: true,
 		skipRateLimit: true
 	});
@@ -117,8 +113,11 @@ export const createOrRefreshEmailChallenge = async (input: {
 	return {
 		_tag: 'CreatedChallenge',
 		challenge: {
+			_tag: 'EmailChangeChallenge',
 			id: challenge.challengeId,
-			email: challenge.email
+			email: challenge.email,
+			userId: account.userId,
+			processExpiresAt
 		},
 		secret: challenge.secret,
 		code: challenge.code,
@@ -130,15 +129,10 @@ export const createOrRefreshEmailChallenge = async (input: {
  * Read a pending email-change challenge if it still exists and still matches
  * the expected purpose.
  */
-export const getPendingEmailChallenge = async (
+export const getPendingEmailChallenge = (
 	challengeId: string
-): Promise<EmailChangeChallenge | null> => {
-	const details = await getPasslockMailboxChallenge({ challengeId });
-	if (!details) return null;
-
-	const result = toEmailChangeChallenge(details);
-	return result._tag === 'EmailChangeChallenge' ? result : null;
-};
+): Promise<EmailChangeChallenge | null> =>
+	getProjectedMailboxChallenge(challengeId, toEmailChangeChallenge);
 
 /**
  * Verify an email-change code, ensure it belongs to the signed-in user, and
@@ -157,11 +151,8 @@ export const consumeEmailChallenge = async (input: {
 	| ChallengeExpiredError
 	| ChallengeAttemptsExceededError
 > => {
-	const result = await verifyPasslockMailboxChallenge(input);
-	if (result._tag !== 'ChallengeVerified') return result;
-
-	const challenge = toEmailChangeChallenge(result.challenge);
-	if (challenge._tag === '@error/InvalidChallenge') return challenge;
+	const challenge = await verifyAndProjectMailboxChallenge(input, toEmailChangeChallenge);
+	if (challenge._tag !== 'EmailChangeChallenge') return challenge;
 
 	if (challenge.userId !== input.userId) {
 		return createInvalidChallengeError('Challenge does not belong to the signed-in user');

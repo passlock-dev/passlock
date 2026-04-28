@@ -84,15 +84,14 @@ describe(createMailboxChallenge.name, () => {
 
       const result = yield* createMailboxChallenge(
         {
-          apiKey,
           email: "user@example.com",
           invalidateOthers: true,
           metadata,
           purpose: "LOGIN_CODE",
           skipRateLimit: true,
-          tenancyId,
           userId: "dummyUserId",
         },
+        { apiKey, tenancyId },
         Layer.succeed(NetworkFetch, testFetch)
       )
 
@@ -144,11 +143,10 @@ describe(createMailboxChallenge.name, () => {
 
       const result = yield* createMailboxChallenge(
         {
-          apiKey,
           email: "user@example.com",
           purpose: "LOGIN_CODE",
-          tenancyId,
         },
+        { apiKey, tenancyId },
         Layer.succeed(NetworkFetch, testFetch)
       )
 
@@ -179,12 +177,11 @@ describe(createMailboxChallenge.name, () => {
 
       const result = yield* createMailboxChallenge(
         {
-          apiKey,
           email: "user@example.com",
           purpose: "LOGIN_CODE",
           skipRateLimit: false,
-          tenancyId,
         },
+        { apiKey, tenancyId },
         Layer.succeed(NetworkFetch, testFetch)
       )
 
@@ -204,11 +201,10 @@ describe(createMailboxChallenge.name, () => {
       const error = yield* pipe(
         createMailboxChallenge(
           {
-            apiKey,
             email: "user@example.com",
             purpose: "LOGIN_CODE",
-            tenancyId,
           },
+          { apiKey, tenancyId },
           Layer.succeed(NetworkFetch, () =>
             Promise.resolve(
               new Response(
@@ -258,7 +254,8 @@ describe(getMailboxChallenge.name, () => {
       })
 
       const result = yield* getMailboxChallenge(
-        { apiKey, challengeId, tenancyId },
+        { challengeId },
+        { apiKey, tenancyId },
         Layer.succeed(NetworkFetch, testFetch)
       )
 
@@ -273,7 +270,8 @@ describe(getMailboxChallenge.name, () => {
     Effect.gen(function* () {
       const error = yield* pipe(
         getMailboxChallenge(
-          { apiKey, challengeId, tenancyId },
+          { challengeId },
+          { apiKey, tenancyId },
           Layer.succeed(NetworkFetch, () =>
             Promise.resolve(
               new Response(
@@ -326,12 +324,11 @@ describe(verifyMailboxChallenge.name, () => {
 
       const result = yield* verifyMailboxChallenge(
         {
-          apiKey,
           challengeId,
           code: "123456",
           secret: "secret",
-          tenancyId,
         },
+        { apiKey, tenancyId },
         Layer.succeed(NetworkFetch, testFetch)
       )
 
@@ -354,12 +351,11 @@ describe(verifyMailboxChallenge.name, () => {
       const error = yield* pipe(
         verifyMailboxChallenge(
           {
-            apiKey,
             challengeId,
             code: "000000",
             secret: "secret",
-            tenancyId,
           },
+          { apiKey, tenancyId },
           Layer.succeed(NetworkFetch, () =>
             Promise.resolve(
               new Response(
@@ -385,12 +381,11 @@ describe(verifyMailboxChallenge.name, () => {
       const error = yield* pipe(
         verifyMailboxChallenge(
           {
-            apiKey,
             challengeId,
             code: "123456",
             secret: "wrong-secret",
-            tenancyId,
           },
+          { apiKey, tenancyId },
           Layer.succeed(NetworkFetch, () =>
             Promise.resolve(
               new Response(
@@ -435,7 +430,8 @@ describe(deleteMailboxChallenge.name, () => {
       })
 
       const result = yield* deleteMailboxChallenge(
-        { apiKey, challengeId, tenancyId },
+        { challengeId },
+        { apiKey, tenancyId },
         Layer.succeed(NetworkFetch, testFetch)
       )
 

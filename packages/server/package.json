@@ -1,6 +1,6 @@
 {
   "name": "@passlock/server",
-  "version": "2.4.3",
+  "version": "2.5.0",
   "description": "Passkey authentication library for Fetch capable backends (Node, Bun, Vercel, Cloudflare workers etc.)",
   "keywords": [
     "passkey",
@@ -31,6 +31,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./unsafe": {
+      "types": "./dist/unsafe.d.ts",
+      "import": "./dist/unsafe.js",
+      "default": "./dist/unsafe.js"
     },
     "./safe": {
       "types": "./dist/safe.d.ts",
@@ -68,7 +73,7 @@
   },
   "dependencies": {
     "effect": "catalog:",
-    "jose": "^6.2.2"
+    "jose": "^6.2.3"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
@@ -83,7 +88,7 @@
     "typescript": "catalog:",
     "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@10.33.3",
   "engines": {
     "node": ">=20"
   }

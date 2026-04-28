@@ -19,9 +19,7 @@ const loggerTest = {
 
 const deleteOptions = {
   credentialId: "dummyCredentialId",
-  endpoint: "https://api.passlock.dev",
   rpId: "localhost",
-  tenancyId: "dummyTenancyId",
   userId: "dummyUserId",
 } as const
 
@@ -64,7 +62,7 @@ describe("safe result envelopes", () => {
       signalUnknownCredential,
     })
 
-    const result = await deletePasskey(deleteOptions, loggerTest)
+    const result = await deletePasskey(deleteOptions, undefined, loggerTest)
 
     expect(result.success).toBe(true)
     expect(result.failure).toBe(false)
@@ -95,7 +93,7 @@ describe("safe result envelopes", () => {
   it("decorates delete errors without breaking _tag narrowing", async () => {
     setPublicKeyCredential(undefined)
 
-    const result = await deletePasskey(deleteOptions, loggerTest)
+    const result = await deletePasskey(deleteOptions, undefined, loggerTest)
 
     expect(result.success).toBe(false)
     expect(result.failure).toBe(true)

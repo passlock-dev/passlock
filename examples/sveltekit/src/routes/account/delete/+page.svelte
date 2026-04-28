@@ -7,6 +7,7 @@
 	import type { SuperFormErrors } from 'sveltekit-superforms/client';
 	import type { PageProps } from './$types';
 	import { deleteAccountSchema } from './schema.js';
+	import { Loader } from '@lucide/svelte';
 
 	let { data }: PageProps = $props();
 	let passkeyCount = $derived(data.passkeyCount);
@@ -21,21 +22,27 @@
 	};
 
 	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance, validateForm } = superForm(data.form, {
+	const { form, errors, enhance, delayed, validateForm } = superForm(data.form, {
 		applyAction: true,
 		invalidateAll: 'pessimistic',
 		validators: valibotClient(deleteAccountSchema),
 		onSubmit: async ({ cancel }) => {
 			warning = '';
 
-			// Account deletion is sensitive, so reuse the same passkey re-auth
-			// helper used by the profile/email forms before allowing submission.
-			const authResult = await reAuthenticateIfNecessary({
-				errors,
-				validateForm: () => validateForm({ update: true }),
+			const config = {
 				tenancyId: data.tenancyId,
 				endpoint: data.endpoint
-			});
+			};
+
+			// Account deletion is sensitive, so reuse the same passkey re-auth
+			// helper used by the profile/email forms before allowing submission.
+			const authResult = await reAuthenticateIfNecessary(
+				{
+					errors,
+					validateForm: () => validateForm({ update: true })
+				},
+				config
+			);
 
 			if (authResult._tag === '@error/ReAuthenticationFailure') {
 				cancel();
@@ -71,7 +78,7 @@
 </svelte:head>
 
 <div class="flex h-full w-full items-center justify-center">
-	<form method="POST" use:enhance class="w-full max-w-sm rounded-lg bg-base-200 p-10 pt-8">
+	<form method="post" use:enhance class="w-full max-w-sm rounded-lg bg-base-200 p-10 pt-8">
 		<h2 class="text-center text-xl font-semibold">Delete account</h2>
 		<p class="mt-3 text-center text-sm text-base-content/80">
 			This permanently deletes <span class="font-semibold">{data.user.email}</span>
@@ -108,7 +115,11 @@
 		<div class="mt-6 flex gap-3">
 			<a href={resolve('/account')} class="btn flex-1 btn-neutral">Cancel</a>
 			<button class="btn flex-1 btn-error" disabled={deletingPasskeys}>
-				{#if deletingPasskeys}Deleting passkeys...{:else}Delete account{/if}
+				{#if $delayed || deletingPasskeys}
+					<Loader class="animate-spin duration-[4s]" />
+				{:else}
+					Delete account
+				{/if}
 			</button>
 		</div>
 	</form>

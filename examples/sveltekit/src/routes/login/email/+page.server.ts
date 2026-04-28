@@ -5,7 +5,7 @@ import {
 	getPendingLoginChallenge
 } from '$lib/server/mailbox/loginChallenge.js';
 import { getUserByEmail } from '$lib/server/repository.js';
-import { sendCodeChallengeEmail } from '$lib/server/email.js';
+import { sendMailboxVerificationEmail } from '$lib/server/email';
 import { getSignupLoginCookie, setSignupLoginCookie } from '$lib/server/cookies.js';
 import {
 	getLoginEmailQueryState,
@@ -62,10 +62,11 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 	}
 
 	// Store the secret server-side in a cookie; send the code via email.
-	await sendCodeChallengeEmail({
+	await sendMailboxVerificationEmail({
+		subject: 'Your login code',
 		recipientEmail: result.challenge.email,
-		code: result.code,
-		message: result.message
+		body: result.message,
+		code: result.code
 	});
 	setSignupLoginCookie(cookies, {
 		challengeId: result.challenge.id,

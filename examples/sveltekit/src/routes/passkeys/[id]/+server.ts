@@ -1,7 +1,7 @@
 import { getPasslockConfig } from '$lib/server/passkeys.js';
 import { deletePasskeyByUserId, getUserByPasskeyId } from '$lib/server/repository.js';
 import { DeletePasskeySuccess, DeletePasskeyWarning } from '$lib/shared/schemas';
-import { deletePasskey, isNotFoundError } from '@passlock/server/safe';
+import * as PassslockServer from '@passlock/server';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import * as v from 'valibot';
@@ -39,10 +39,12 @@ export const DELETE: RequestHandler = async (event) => {
 
 	// Remove the credential from the Passlock vault first so the account stops
 	// trusting it.
-	const vaultResult = await deletePasskey({
-		...getPasslockConfig(),
-		passkeyId: passkeyId.output
-	});
+	const vaultResult = await PassslockServer.deletePasskey(
+		{
+			passkeyId: passkeyId.output
+		},
+		getPasslockConfig()
+	);
 
 	// Do not fail hard when Passlock says the credential is already gone. The
 	// local record may still need cleanup.
@@ -57,7 +59,7 @@ export const DELETE: RequestHandler = async (event) => {
 		return errorResponse('Unable to delete passkey from local account.', 404);
 	}
 
-	if (isNotFoundError(vaultResult)) {
+	if (PassslockServer.isNotFoundError(vaultResult)) {
 		const message = 'Passkey was already deleted from Passlock vault.';
 		const response: DeletePasskeyWarning = {
 			_tag: '@warning/PasskeyNotFound',

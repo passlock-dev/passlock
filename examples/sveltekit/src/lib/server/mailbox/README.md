@@ -40,7 +40,7 @@ secret }` in a short-lived HTTP-only cookie.
 
 ### `mailboxChallenge.ts`
 
-This file is the shared integration layer around `@passlock/server/safe`.
+This file is the shared integration layer around `@passlock/server`.
 
 Key responsibilities:
 
@@ -141,7 +141,7 @@ updated user and the previous email address.
 These are the main types worth understanding when working on mailbox
 verification:
 
-- `MailboxChallengeMetadata` from `@passlock/server/safe`: arbitrary metadata
+- `MailboxChallengeMetadata` from `@passlock/server`: arbitrary metadata
   stored with the Passlock challenge when it is created
 - `MailboxChallengeDetails`: the readable Passlock challenge payload returned by
   `getMailboxChallenge(...)`

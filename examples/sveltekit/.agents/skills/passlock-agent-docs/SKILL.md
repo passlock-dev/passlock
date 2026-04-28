@@ -10,7 +10,7 @@ Use this workflow for tasks that need authoritative Passlock docs or API referen
 ## Scope
 
 - Use public docs only: `https://passlock.dev/llms/...` and `https://apidocs.passlock.dev/llms/...`.
-- Prefer safe imports: `@passlock/browser/safe` and `@passlock/server/safe`.
+- Prefer safe imports: `@passlock/browser` and `@passlock/server`.
 - Use runbook docs first for integration flow and security guidance.
 - Use API reference markdown for exact signatures, options, result types, and symbol names.
 - Cite public source URLs used in the final answer.

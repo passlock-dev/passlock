@@ -70,11 +70,12 @@ export type Platform = {
 export type Passkey = {
   _tag: "Passkey"
   /**
-   * Not to be confused with the credential.id
+   * Passlock passkey record identifier, not the WebAuthn credential ID.
    */
   id: string
   /**
-   * Not to be confused with the credential.userId
+   * Optional custom user ID assigned by your application, not the WebAuthn
+   * credential user ID.
    */
   userId?: string | undefined
   enabled: boolean
@@ -94,13 +95,13 @@ export const isPasskey = (payload: unknown): payload is Passkey =>
   Schema.is(PasskeySchemas.Passkey)(payload)
 
 /**
- * needed to ensure the Passkey === Passkey.Type
+ * Ensures the public Passkey type matches the runtime schema.
  * @internal
  * */
 export type _Passkey = satisfy<typeof PasskeySchemas.Passkey.Type, Passkey>
 
 /**
- * needed to ensure the PasskeyCredential === PasskeyCredential.Type
+ * Ensures the public PasskeyCredential type matches the runtime schema.
  * @internal
  * */
 export type _PasskeyCredential = satisfy<
@@ -137,7 +138,7 @@ export const isPasskeySummary = (payload: unknown): payload is PasskeySummary =>
   Schema.is(PasskeySchemas.PasskeySummary)(payload)
 
 /**
- * needed to ensure the PasskeySummary === PasskeySummary.Type
+ * Ensures the public PasskeySummary type matches the runtime schema.
  * @internal
  */
 export type _PasskeySummary = satisfy<typeof PasskeySchemas.PasskeySummary.Type, PasskeySummary>
@@ -163,7 +164,7 @@ export const isUpdatedPasskeys = (payload: unknown): payload is UpdatedPasskeys 
   Schema.is(PasskeySchemas.UpdatedPasskeys)(payload)
 
 /**
- * needed to ensure the UpdatedPasskeys === UpdatedPasskeys.Type
+ * Ensures the public UpdatedPasskeys type matches the runtime schema.
  * @internal
  * */
 export type _UpdatedPasskeys = satisfy<typeof PasskeySchemas.UpdatedPasskeys.Type, UpdatedPasskeys>
@@ -182,7 +183,7 @@ export type Credential = {
 }
 
 /**
- * needed to ensure the Credential === Credential.Type
+ * Ensures the public Credential type matches the runtime schema.
  * @internal
  */
 export type _Credential = satisfy<typeof PasskeySchemas.Credential.Type, Credential>
@@ -211,7 +212,7 @@ export const isDeletedPasskey = (payload: unknown): payload is DeletedPasskey =>
   Schema.is(PasskeySchemas.DeletedPasskey)(payload)
 
 /**
- * needed to ensure the DeletedPasskey === DeletedPasskey.Type
+ * Ensures the public DeletedPasskey type matches the runtime schema.
  * @internal
  * */
 export type _DeletedPasskey = satisfy<typeof PasskeySchemas.DeletedPasskey.Type, DeletedPasskey>
@@ -237,7 +238,7 @@ export const isDeletedPasskeys = (payload: unknown): payload is DeletedPasskeys 
   Schema.is(PasskeySchemas.DeletedPasskeys)(payload)
 
 /**
- * needed to ensure the DeletedPasskeys === DeletedPasskeys.Type
+ * Ensures the public DeletedPasskeys type matches the runtime schema.
  * @internal
  * */
 export type _DeletedPasskeys = satisfy<typeof PasskeySchemas.DeletedPasskeys.Type, DeletedPasskeys>
@@ -264,7 +265,7 @@ export const isFindAllPasskeys = (payload: unknown): payload is FindAllPasskeys 
   Schema.is(PasskeySchemas.FindAllPasskeys)(payload)
 
 /**
- * needed to ensure the FindAllPasskeys === FindAllPasskeys.Type
+ * Ensures the public FindAllPasskeys type matches the runtime schema.
  * @internal
  */
 export type _FindAllPasskeys = satisfy<typeof FindAllPasskeysSchema.Type, FindAllPasskeys>
@@ -332,7 +333,7 @@ const decodeResponseJson = <A, I, R>(response: NetworkResponse, schema: Schema.S
  *
  * @category Passkeys
  */
-export interface GetPasskeyOptions extends AuthenticatedOptions {
+export interface GetPasskeyOptions {
   /**
    * Identifier of the passkey to fetch.
    */
@@ -342,7 +343,8 @@ export interface GetPasskeyOptions extends AuthenticatedOptions {
 /**
  * Fetch a single passkey from the Passlock vault.
  *
- * @param options Request options including the passkey identifier.
+ * @param options Passkey-specific request options.
+ * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with the requested passkey.
  *
@@ -350,17 +352,19 @@ export interface GetPasskeyOptions extends AuthenticatedOptions {
  */
 export const getPasskey = (
   options: GetPasskeyOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Effect.Effect<Passkey, NotFoundError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
-      const { tenancyId, passkeyId } = options
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId } = config
+      const { passkeyId } = options
 
       const url = new URL(`/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
 
       const response = yield* fetchNetwork(url, "get", undefined, {
-        headers: authorizationHeaders(options.apiKey),
+        headers: authorizationHeaders(config.apiKey),
       })
 
       const encoded: Passkey | ForbiddenError | NotFoundError = yield* matchStatus(response, {
@@ -392,7 +396,7 @@ export const getPasskey = (
  *
  * @category Passkeys
  */
-export interface DeletePasskeyOptions extends AuthenticatedOptions {
+export interface DeletePasskeyOptions {
   /**
    * Identifier of the passkey to delete.
    */
@@ -405,7 +409,8 @@ export interface DeletePasskeyOptions extends AuthenticatedOptions {
  * This only removes the server-side record. It does not remove the passkey
  * from the user's device.
  *
- * @param options Request options including the passkey identifier.
+ * @param options Passkey-specific request options.
+ * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with the deleted credential identifiers.
  *
@@ -413,17 +418,19 @@ export interface DeletePasskeyOptions extends AuthenticatedOptions {
  */
 export const deletePasskey = (
   options: DeletePasskeyOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Effect.Effect<DeletedPasskey, NotFoundError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
-      const { tenancyId, passkeyId } = options
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId } = config
+      const { passkeyId } = options
 
       const url = new URL(`/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
 
       const response = yield* fetchNetwork(url, "delete", undefined, {
-        headers: authorizationHeaders(options.apiKey),
+        headers: authorizationHeaders(config.apiKey),
       })
 
       const encoded: Passkey | ForbiddenError | NotFoundError = yield* matchStatus(response, {
@@ -464,14 +471,14 @@ export const deletePasskey = (
  *
  * @category Passkeys
  */
-export interface AssignUserOptions extends AuthenticatedOptions {
+export interface AssignUserOptions {
   /**
    * Identifier of the passkey to update.
    */
   passkeyId: string
 
   /**
-   * Custom User ID to align with your own systems
+   * Custom user ID to align with your own systems.
    */
   userId: string
 }
@@ -483,7 +490,8 @@ export interface AssignUserOptions extends AuthenticatedOptions {
  * This updates Passlock's mapping for the passkey. It does not change the
  * underlying WebAuthn credential's `userId`.
  *
- * @param options Request options including the passkey identifier and custom user ID.
+ * @param options Passkey-specific request options.
+ * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with the updated passkey.
  *
@@ -491,13 +499,14 @@ export interface AssignUserOptions extends AuthenticatedOptions {
  */
 export const assignUser = (
   options: AssignUserOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Effect.Effect<Passkey, NotFoundError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
       const { userId, passkeyId } = options
-      const { tenancyId } = options
+      const { tenancyId } = config
 
       const url = new URL(`/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
 
@@ -506,7 +515,7 @@ export const assignUser = (
         "patch",
         { userId },
         {
-          headers: authorizationHeaders(options.apiKey),
+          headers: authorizationHeaders(config.apiKey),
         }
       )
 
@@ -539,7 +548,7 @@ export const assignUser = (
  *
  * @category Passkeys
  */
-export interface UpdatePasskeyOptions extends AuthenticatedOptions {
+export interface UpdatePasskeyOptions {
   /**
    * Identifier of the passkey to update.
    */
@@ -557,7 +566,8 @@ export interface UpdatePasskeyOptions extends AuthenticatedOptions {
 /**
  * Update a single passkey's custom user ID and/or username metadata.
  *
- * @param options Request options including the passkey identifier and fields to update.
+ * @param options Passkey-specific request options.
+ * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with the updated passkey.
  *
@@ -565,14 +575,15 @@ export interface UpdatePasskeyOptions extends AuthenticatedOptions {
  */
 export const updatePasskey = (
   options: UpdatePasskeyOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Effect.Effect<Passkey, NotFoundError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
 
       const { userId, passkeyId, username } = options
-      const { tenancyId } = options
+      const { tenancyId } = config
 
       const url = new URL(`/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
 
@@ -581,7 +592,7 @@ export const updatePasskey = (
         "patch",
         { userId, username },
         {
-          headers: authorizationHeaders(options.apiKey),
+          headers: authorizationHeaders(config.apiKey),
         }
       )
 
@@ -609,21 +620,22 @@ export const updatePasskey = (
 
 /* Update passkeys by userId (currently not exported) */
 
-interface UpdateUserPasskeyOptions extends AuthenticatedOptions {
+interface UpdateUserPasskeyOptions {
   userId: string
   username?: string
 }
 
 const updateUserPasskeys = (
   options: UpdateUserPasskeyOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Effect.Effect<UpdatedPasskeys, NotFoundError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
 
       const { userId, username } = options
-      const { tenancyId } = options
+      const { tenancyId } = config
 
       const url = new URL(`/${tenancyId}/users/${userId}/passkeys/`, baseUrl)
 
@@ -632,7 +644,7 @@ const updateUserPasskeys = (
         "patch",
         { userId, username },
         {
-          headers: authorizationHeaders(options.apiKey),
+          headers: authorizationHeaders(config.apiKey),
         }
       )
 
@@ -668,7 +680,7 @@ const updateUserPasskeys = (
  *
  * @category Passkeys
  */
-export interface DeleteUserPasskeysOptions extends AuthenticatedOptions {
+export interface DeleteUserPasskeysOptions {
   /**
    * Custom user ID whose passkeys should be deleted.
    */
@@ -682,7 +694,8 @@ export interface DeleteUserPasskeysOptions extends AuthenticatedOptions {
  * `@passlock/browser` to remove the corresponding passkeys from the user's
  * device.
  *
- * @param options Request options including the custom user ID.
+ * @param options User-specific request options.
+ * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with the deleted credential identifiers.
  *
@@ -690,13 +703,15 @@ export interface DeleteUserPasskeysOptions extends AuthenticatedOptions {
  */
 export const deleteUserPasskeys = (
   options: DeleteUserPasskeysOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Effect.Effect<DeletedPasskeys, NotFoundError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
 
-      const { tenancyId, userId } = options
+      const { tenancyId } = config
+      const { userId } = options
 
       const url = new URL(`/${tenancyId}/users/${userId}/passkeys/`, baseUrl)
 
@@ -705,7 +720,7 @@ export const deleteUserPasskeys = (
         "delete",
         { userId },
         {
-          headers: authorizationHeaders(options.apiKey),
+          headers: authorizationHeaders(config.apiKey),
         }
       )
 
@@ -754,7 +769,7 @@ export const deleteUserPasskeys = (
  *
  * @category Passkeys
  */
-export interface UpdateUsernamesOptions extends AuthenticatedOptions {
+export interface UpdateUsernamesOptions {
   /**
    * Custom user ID whose passkeys should be updated.
    */
@@ -779,7 +794,8 @@ export interface UpdateUsernamesOptions extends AuthenticatedOptions {
  * The optional `displayName` is not stored in Passlock; it is only copied into
  * the returned client payload.
  *
- * @param options Request options including the custom user ID and username metadata.
+ * @param options User-specific request options.
+ * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with a user-details update payload
  * containing one credential update per updated passkey.
@@ -788,10 +804,11 @@ export interface UpdateUsernamesOptions extends AuthenticatedOptions {
  */
 export const updatePasskeyUsernames = (
   options: UpdateUsernamesOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Effect.Effect<UpdatedCredentials, NotFoundError | ForbiddenError> =>
   pipe(
-    updateUserPasskeys(options, fetchLayer),
+    updateUserPasskeys(options, config, fetchLayer),
     Effect.map((result) => result.updated),
     Effect.map(
       Array.map((passkey) => {
@@ -814,20 +831,20 @@ export const updatePasskeyUsernames = (
 /**
  * Stream every passkey summary for a tenancy across all result pages.
  *
- * @param options Request options used for each paginated request.
+ * @param config Shared Passlock configuration used for each paginated request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns A stream of passkey summaries.
  *
  * @category Passkeys
  */
 export const listPasskeysStream = (
-  options: AuthenticatedOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Stream.Stream<PasskeySummary, ForbiddenError> =>
   pipe(
     Stream.paginateChunkEffect(null as string | null, (cursor) =>
       pipe(
-        listPasskeys(cursor ? { ...options, cursor } : options, fetchLayer),
+        listPasskeys(cursor ? { cursor } : {}, config, fetchLayer),
         Effect.map((result) => [
           Chunk.fromIterable(result.records),
           Option.fromNullable(result.cursor),
@@ -841,7 +858,7 @@ export const listPasskeysStream = (
  *
  * @category Passkeys
  */
-export interface ListPasskeyOptions extends AuthenticatedOptions {
+export interface ListPasskeyOptions {
   /**
    * Pagination cursor returned from a previous {@link listPasskeys} call.
    */
@@ -851,7 +868,8 @@ export interface ListPasskeyOptions extends AuthenticatedOptions {
 /**
  * Fetch a single page of passkey summaries for a tenancy.
  *
- * @param options Request options including an optional pagination cursor.
+ * @param options List-specific request options, including an optional pagination cursor.
+ * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with one page of passkey summaries.
  *
@@ -859,12 +877,13 @@ export interface ListPasskeyOptions extends AuthenticatedOptions {
  */
 export const listPasskeys = (
   options: ListPasskeyOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Effect.Effect<FindAllPasskeys, ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
-      const { tenancyId } = options
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId } = config
 
       const url = new URL(`/${tenancyId}/passkeys/`, baseUrl)
       if (options.cursor) {
@@ -872,7 +891,7 @@ export const listPasskeys = (
       }
 
       const response = yield* fetchNetwork(url, "get", undefined, {
-        headers: authorizationHeaders(options.apiKey),
+        headers: authorizationHeaders(config.apiKey),
       })
 
       const encoded: FindAllPasskeys | ForbiddenError = yield* matchStatus(response, {

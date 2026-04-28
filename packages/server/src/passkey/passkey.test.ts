@@ -131,7 +131,7 @@ describe(listPasskeys.name, () => {
           )
         })
 
-        const result = yield* pipe(listPasskeys({ apiKey, tenancyId }, TestLayer))
+        const result = yield* pipe(listPasskeys({}, { apiKey, tenancyId }, TestLayer))
 
         expect(result).toStrictEqual(findAllPasskeysResponse)
 
@@ -159,7 +159,7 @@ describe(listPasskeys.name, () => {
         })
 
         const result = yield* pipe(
-          listPasskeys({ apiKey, tenancyId, cursor: "dummyCursor" }, TestLayer)
+          listPasskeys({ cursor: "dummyCursor" }, { apiKey, tenancyId }, TestLayer)
         )
 
         expect(result).toStrictEqual(findAllPasskeysResponse)
@@ -184,7 +184,7 @@ describe(listPasskeys.name, () => {
           )
         })
 
-        const result = yield* pipe(listPasskeys({ apiKey, tenancyId }, TestLayer))
+        const result = yield* pipe(listPasskeys({}, { apiKey, tenancyId }, TestLayer))
 
         expect(result.cursor).toEqual("dummyCursor")
       })
@@ -324,7 +324,7 @@ describe(getPasskey.name, () => {
           return Promise.resolve(new Response(JSON.stringify(passkeyResponse), { status: 200 }))
         })
 
-        const passkey = yield* pipe(getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer))
+        const passkey = yield* pipe(getPasskey({ passkeyId }, { apiKey, tenancyId }, TestLayer))
 
         expect(passkey).toStrictEqual(expectedPasskey)
 
@@ -350,7 +350,7 @@ describe(getPasskey.name, () => {
         )
 
         const error = yield* pipe(
-          getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer),
+          getPasskey({ passkeyId }, { apiKey, tenancyId }, TestLayer),
           Effect.flip
         )
 
@@ -368,7 +368,7 @@ describe(getPasskey.name, () => {
         return Promise.resolve(new Response(JSON.stringify(passkeyResponse), { status: 200 }))
       })
 
-      yield* pipe(getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer))
+      yield* pipe(getPasskey({ passkeyId }, { apiKey, tenancyId }, TestLayer))
 
       expect(invokedUrl).toEqual("https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId")
     })
@@ -386,7 +386,7 @@ describe(getPasskey.name, () => {
         return Promise.resolve(new Response(JSON.stringify(passkeyResponse), { status: 200 }))
       })
 
-      yield* pipe(getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer))
+      yield* pipe(getPasskey({ passkeyId }, { apiKey, tenancyId }, TestLayer))
 
       expect(authorizationHeader).toEqual("Bearer dummyApiKey")
     })
@@ -404,7 +404,7 @@ describe(getPasskey.name, () => {
       )
 
       const error = yield* pipe(
-        getPasskey({ passkeyId, apiKey, tenancyId }, TestLayer),
+        getPasskey({ passkeyId }, { apiKey, tenancyId }, TestLayer),
         Effect.flip
       )
 
@@ -430,7 +430,7 @@ describe(deletePasskey.name, () => {
           )
         })
 
-        const result = yield* pipe(deletePasskey({ passkeyId, apiKey, tenancyId }, TestLayer))
+        const result = yield* pipe(deletePasskey({ passkeyId }, { apiKey, tenancyId }, TestLayer))
 
         expect(result).toStrictEqual(expectedDeletedPasskey)
 
@@ -456,7 +456,7 @@ describe(deletePasskey.name, () => {
         )
 
         const error = yield* pipe(
-          deletePasskey({ passkeyId, apiKey, tenancyId }, TestLayer),
+          deletePasskey({ passkeyId }, { apiKey, tenancyId }, TestLayer),
           Effect.flip
         )
 
@@ -493,7 +493,7 @@ describe(deleteUserPasskeys.name, () => {
         })
 
         const result = yield* pipe(
-          deleteUserPasskeys({ apiKey, tenancyId, userId: "dummyUserId" }, TestLayer)
+          deleteUserPasskeys({ userId: "dummyUserId" }, { apiKey, tenancyId }, TestLayer)
         )
 
         expect(result).toStrictEqual(expectedDeletedPasskeys)
@@ -520,7 +520,7 @@ describe(deleteUserPasskeys.name, () => {
         )
 
         const error = yield* pipe(
-          deleteUserPasskeys({ apiKey, tenancyId, userId: "dummyUserId" }, TestLayer),
+          deleteUserPasskeys({ userId: "dummyUserId" }, { apiKey, tenancyId }, TestLayer),
           Effect.flip
         )
 
@@ -542,7 +542,7 @@ describe(deleteUserPasskeys.name, () => {
         )
 
         const error = yield* pipe(
-          deleteUserPasskeys({ apiKey, tenancyId, userId: "dummyUserId" }, TestLayer),
+          deleteUserPasskeys({ userId: "dummyUserId" }, { apiKey, tenancyId }, TestLayer),
           Effect.flip
         )
 
@@ -570,7 +570,8 @@ describe(assignUser.name, () => {
         })
 
         const result = yield* assignUser(
-          { apiKey, passkeyId, tenancyId, userId: "newUserId" },
+          { passkeyId, userId: "newUserId" },
+          { apiKey, tenancyId },
           TestLayer
         )
 
@@ -598,7 +599,7 @@ describe(assignUser.name, () => {
         )
 
         const error = yield* pipe(
-          assignUser({ apiKey, passkeyId, tenancyId, userId: "newUserId" }, TestLayer),
+          assignUser({ passkeyId, userId: "newUserId" }, { apiKey, tenancyId }, TestLayer),
           Effect.flip
         )
 
@@ -637,12 +638,11 @@ describe(updatePasskey.name, () => {
 
         const result = yield* updatePasskey(
           {
-            apiKey,
             passkeyId,
-            tenancyId,
             userId: "newUserId",
             username: "newUsername",
           },
+          { apiKey, tenancyId },
           TestLayer
         )
 
@@ -671,7 +671,7 @@ describe(updatePasskey.name, () => {
         )
 
         const error = yield* pipe(
-          assignUser({ apiKey, passkeyId, tenancyId, userId: "newUserId" }, TestLayer),
+          assignUser({ passkeyId, userId: "newUserId" }, { apiKey, tenancyId }, TestLayer),
           Effect.flip
         )
 

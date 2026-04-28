@@ -65,7 +65,7 @@
   },
   "dependencies": {
     "effect": "catalog:",
-    "jose": "^6.2.2"
+    "jose": "^6.2.3"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
@@ -80,7 +80,7 @@
     "typescript": "catalog:",
     "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@10.33.3",
   "engines": {
     "node": ">=22"
   }

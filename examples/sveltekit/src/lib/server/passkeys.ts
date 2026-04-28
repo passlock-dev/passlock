@@ -1,6 +1,6 @@
 import { updatePasskeysByUserId } from '$lib/server/repository';
 import { getPasslockConfig } from './passlock.js';
-import * as PasslockServer from '@passlock/server/safe';
+import * as PasslockServer from '@passlock/server';
 
 /**
  * Update the passkey username/display name in both trusted server-side stores:
@@ -14,12 +14,14 @@ export const updatePasskeyUsernames = async (input: {
 	username: string;
 	displayName?: string | undefined;
 }) => {
-	const vaultResult = await PasslockServer.updatePasskeyUsernames({
-		userId: String(input.userId),
-		...getPasslockConfig(),
-		username: input.username,
-		displayName: input.displayName
-	});
+	const vaultResult = await PasslockServer.updatePasskeyUsernames(
+		{
+			userId: String(input.userId),
+			username: input.username,
+			displayName: input.displayName
+		},
+		getPasslockConfig()
+	);
 
 	if (vaultResult.failure) {
 		return vaultResult;

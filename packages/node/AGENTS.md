@@ -1,8 +1,6 @@
 ## Overview
 
-Originally the `@passlock/node` library was the primary library for interacting with Passlock in backend (Node.js) runtimes. It used Node specific libraries e.g. `@effect/platform-node`. However we subsequently replaced the Node specific code with standardized fetch calls and created a new package - (@passlock/server). The `@passlock/server` package is now the recommended package for backend code, including Node apps.
-
-This package is therefore deprecated in favour of the `@passlock/server` package.
+`@passlock/node` is deprecated in favour of the `@passlock/server` package.
 
 ## Project structure
 

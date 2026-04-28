@@ -1,4 +1,4 @@
-import type { MailboxChallengeDetails, MailboxChallengeMetadata } from '@passlock/server/safe';
+import type { MailboxChallengeDetails } from '@passlock/server';
 import { CHALLENGE_FLOW_TTL_MS } from '../cookies.js';
 import { getUserByEmail, type AccountNotFound } from '../repository.js';
 import {
@@ -10,9 +10,9 @@ import {
 	type InvalidChallengeError,
 	BaseMetadataSchema,
 	createPasslockMailboxChallenge,
-	getPasslockMailboxChallenge,
+	getProjectedMailboxChallenge,
 	validateMailboxChallenge,
-	verifyPasslockMailboxChallenge
+	verifyAndProjectMailboxChallenge
 } from './mailboxChallenge.js';
 
 import type * as v from 'valibot';
@@ -65,13 +65,12 @@ export const createOrRefreshLoginChallenge = async (
 	if (!account) return { _tag: '@error/AccountNotFound', email };
 
 	const processExpiresAt = Date.now() + CHALLENGE_FLOW_TTL_MS;
-	const metadata: MailboxChallengeMetadata = { processExpiresAt };
 
 	const result = await createPasslockMailboxChallenge({
 		email: account.email,
 		purpose: 'login',
 		userId: String(account.userId),
-		metadata,
+		metadata: { processExpiresAt },
 		invalidateOthers: true,
 		skipRateLimit: true
 	});
@@ -97,15 +96,8 @@ export const createOrRefreshLoginChallenge = async (
  * Read a pending login challenge if it still exists and still matches the
  * expected purpose.
  */
-export const getPendingLoginChallenge = async (
-	challengeId: string
-): Promise<LoginChallenge | null> => {
-	const details = await getPasslockMailboxChallenge({ challengeId });
-	if (!details) return null;
-
-	const result = toLoginChallenge(details);
-	return result._tag === '@error/InvalidChallenge' ? null : result;
-};
+export const getPendingLoginChallenge = (challengeId: string): Promise<LoginChallenge | null> =>
+	getProjectedMailboxChallenge(challengeId, toLoginChallenge);
 
 /**
  * Verify a login code and resolve it to the existing local account.
@@ -122,11 +114,8 @@ export const consumeLoginChallenge = async (input: {
 	| ChallengeExpiredError
 	| ChallengeAttemptsExceededError
 > => {
-	const result = await verifyPasslockMailboxChallenge(input);
-	if (result._tag !== 'ChallengeVerified') return result;
-
-	const challenge = toLoginChallenge(result.challenge);
-	if (challenge._tag === '@error/InvalidChallenge') return challenge;
+	const challenge = await verifyAndProjectMailboxChallenge(input, toLoginChallenge);
+	if (challenge._tag !== 'LoginChallenge') return challenge;
 
 	const user = await getUserByEmail(challenge.email);
 	if (!user) {

@@ -4,7 +4,7 @@ import {
 	consumeEmailChallenge as verifyChangeEmailChallenge,
 	getPendingEmailChallenge
 } from '$lib/server/mailbox/emailChange.js';
-import { sendEmailUpdated } from '$lib/server/email.js';
+import { sendEmailUpdatedNotification } from '$lib/server/email/index.js';
 import { deleteEmailChangeCookie, getEmailChangeCookie } from '$lib/server/cookies.js';
 import { getChallengeCodeErrorMessage } from '$lib/server/mailbox/mailboxChallenge.js';
 import { getPendingChallengeContext } from '$lib/server/mailbox/pendingChallenge.js';
@@ -82,10 +82,7 @@ export const actions = {
 			deleteEmailChangeCookie(cookies);
 
 			// Notify the old address in case the change was unexpected.
-			await sendEmailUpdated({
-				email: result.oldEmail,
-				firstName: result.user.givenName
-			});
+			await sendEmailUpdatedNotification({ givenName: user.givenName, email: result.oldEmail });
 
 			// The account page uses this query state to show a success message and
 			// trigger a browser-side passkey metadata sync.

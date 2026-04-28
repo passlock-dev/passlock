@@ -1,54 +1,33 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import svelteLogo from '$lib/assets/svelte-logo.svg';
-	import RectangleEllipsis from '@lucide/svelte/icons/rectangle-ellipsis';
+	import Mail from '@lucide/svelte/icons/mail';
 	import Database from '@lucide/svelte/icons/database';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import Smartphone from '@lucide/svelte/icons/smartphone';
-	import List from '@lucide/svelte/icons/list';
-	import Fingerprint from '@lucide/svelte/icons/fingerprint-pattern';
-
-	const headlineFeature = {
-		icon: RectangleEllipsis,
-		title: 'Progressive enhancement',
-		description: 'Supports passkeys alongside email based one-time-code authentication.'
-	};
+	import PasskeyIcon from '$lib/components/PasskeyIcon.svelte';
 
 	const features = [
 		{
-			icon: Database,
-			title: 'Session management',
-			description: 'Lucia sessions deliver great power & flexibility, with no framework lock-in.'
-		},
-		{
-			icon: Fingerprint,
-			title: 'Passkey platform data',
-			description:
-				'Informs the user which platform a passkey belongs to e.g. Apple or Google Chrome.'
-		},
-		{
 			icon: Smartphone,
-			title: 'Local passkey updates',
-			description: 'Updates the passkey account name on the users local device/password manager.'
+			title: 'Local device updates',
+			description: "Update passkeys on a user's device to reflect account username/email changes"
 		},
 		{
 			icon: Trash2,
 			title: 'Local passkey deletion',
-			description: "Prevents orphaned passkeys by deleting passkeys on the user's device."
-		}
-	];
-
-	const otherFeatures = [
-		{
-			icon: RectangleEllipsis,
-			title: 'Passkey autofill',
 			description:
-				'One click login for passkey users, falling back to emailed one-time codes for others.'
+				"Prevent orphaned passkeys by deleting stale passkeys from the user's passkey manager"
 		},
 		{
-			icon: List,
-			title: 'Pre-selected passkeys',
-			description: 'Two step passkey login flow pre-selects suitable passkeys for the user.'
+			icon: Database,
+			title: 'Session management',
+			description: 'Lucia style sessions offer power and flexibility, with no framework lock-in'
+		},
+		{
+			icon: Mail,
+			title: 'One time codes',
+			description: 'Email based one time codes for mailbox verification and account recovery'
 		}
 	];
 </script>
@@ -69,13 +48,13 @@
 			<span class="font-mono text-primary">Passlock</span>
 		</div>
 		<div>
-			<h1 class="text-4xl font-semibold lg:text-5xl">Sample passkey app</h1>
+			<h1 class="text-4xl font-semibold lg:text-5xl">Advanced SvelteKit authentication</h1>
 		</div>
 		<div>
 			<p class="text-lg leading-relaxed">
 				Sample SvelteKit app illustrating how to support passkey authentication alongside email
-				one-time-code authentication. Includes advanced features including autofill, local passkey
-				updates, deletion and more.
+				one-time-codes. Includes advanced features including rate limiting, account recovery, local
+				credential management and more..
 			</p>
 		</div>
 		<div class="flex items-center gap-6">
@@ -93,10 +72,13 @@
 				<article class="card col-span-2 border border-base-300/80 bg-base-100 shadow-sm">
 					<div class="card-body gap-2 p-3">
 						<h3 class="card-title text-secondary">
-							<svelte:component this={headlineFeature.icon} />
-							{headlineFeature.title}
+							<PasskeyIcon class="size-7 text-secondary" />
+							Advanced passkeys
 						</h3>
-						<p class="text-sm leading-6 text-base-content/75">{headlineFeature.description}</p>
+						<p class="text-sm leading-6 text-base-content/75">
+							Passkey registration, authentication and management. Plus support for multiple
+							authentication flows
+						</p>
 					</div>
 				</article>
 
@@ -104,20 +86,6 @@
 					<article class="card border border-base-300/80 bg-base-100 shadow-sm">
 						<div class="card-body gap-2 p-3">
 							<h3 class="card-title text-primary">
-								{#if feature.icon}
-									<svelte:component this={feature.icon} />
-								{/if}
-								{feature.title}
-							</h3>
-							<p class="text-sm leading-6 text-base-content/75">{feature.description}</p>
-						</div>
-					</article>
-				{/each}
-
-				{#each otherFeatures as feature (feature.title)}
-					<article class="card border border-base-300/80 bg-base-100 shadow-sm">
-						<div class="card-body gap-2 p-3">
-							<h3 class="card-title text-gray-700 dark:text-gray-200">
 								{#if feature.icon}
 									<svelte:component this={feature.icon} />
 								{/if}

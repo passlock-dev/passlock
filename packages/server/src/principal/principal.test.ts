@@ -46,7 +46,8 @@ describe(exchangeCode.name, () => {
         })
 
         const principal = yield* exchangeCode(
-          { code, apiKey, tenancyId },
+          { code },
+          { apiKey, tenancyId },
           Layer.succeed(NetworkFetch, testFetch)
         )
 
@@ -74,7 +75,7 @@ describe(exchangeCode.name, () => {
         )
 
         const error = yield* pipe(
-          exchangeCode({ code, apiKey, tenancyId }, Layer.succeed(NetworkFetch, testFetch)),
+          exchangeCode({ code }, { apiKey, tenancyId }, Layer.succeed(NetworkFetch, testFetch)),
           Effect.flip
         )
 
@@ -96,7 +97,7 @@ describe(exchangeCode.name, () => {
         )
       })
 
-      yield* exchangeCode({ code, apiKey, tenancyId }, Layer.succeed(NetworkFetch, testFetch))
+      yield* exchangeCode({ code }, { apiKey, tenancyId }, Layer.succeed(NetworkFetch, testFetch))
 
       expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/principal/${code}`)
     })
@@ -118,7 +119,7 @@ describe(exchangeCode.name, () => {
         )
       })
 
-      yield* exchangeCode({ code, apiKey, tenancyId }, Layer.succeed(NetworkFetch, testFetch))
+      yield* exchangeCode({ code }, { apiKey, tenancyId }, Layer.succeed(NetworkFetch, testFetch))
 
       expect(authorizationHeader).toEqual("Bearer dummyApiKey")
     })
@@ -136,7 +137,7 @@ describe(exchangeCode.name, () => {
       )
 
       const error = yield* pipe(
-        exchangeCode({ code, apiKey, tenancyId }, Layer.succeed(NetworkFetch, testFetch)),
+        exchangeCode({ code }, { apiKey, tenancyId }, Layer.succeed(NetworkFetch, testFetch)),
         Effect.flip
       )
 
@@ -201,7 +202,7 @@ describe(verifyIdToken.name, () => {
 
       const principal = yield* Effect.acquireUseRelease(
         mockGlobalFetch,
-        () => verifyIdToken({ token, tenancyId }),
+        () => verifyIdToken({ token }, { tenancyId }),
         restoreGlobalFetch
       )
 

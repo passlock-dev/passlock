@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+
 	import {
 		formatChallengeRateLimitCountdown,
 		type ChallengeRateLimitView
@@ -7,12 +8,12 @@
 
 	let {
 		rateLimit,
-		className = '',
-		onActiveChange
+		onActiveChange,
+		class: clazz = ''
 	}: {
 		rateLimit: ChallengeRateLimitView;
-		className?: string;
 		onActiveChange?: (active: boolean) => void;
+		class?: string;
 	} = $props();
 
 	// svelte-ignore state_referenced_locally
@@ -43,4 +44,4 @@
 	});
 </script>
 
-<p aria-live="polite" class={[className, toneClass]}>{message}</p>
+<p aria-live="polite" class={[clazz, toneClass]}>{message}</p>

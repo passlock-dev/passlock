@@ -1,5 +1,9 @@
 import type { SuperFormErrors } from 'sveltekit-superforms/client';
-import { authenticatePasskey, getPasskeyStatus } from '$lib/client/passkeys';
+import {
+	authenticatePasskey,
+	getPasskeyStatus,
+	type PasslockClientConfig
+} from '$lib/client/passkeys';
 
 type FormErrors = SuperFormErrors<Record<string, unknown>>;
 
@@ -21,12 +25,13 @@ const setFormError = (errors: FormErrors, message: string) => {
  *
  * If the user authenticated recently or has no passkeys, this is a no-op.
  */
-export const reAuthenticateIfNecessary = async (input: {
-	errors: FormErrors;
-	validateForm: () => Promise<{ valid: boolean }>;
-	tenancyId: string;
-	endpoint?: string | undefined;
-}) => {
+export const reAuthenticateIfNecessary = async (
+	input: {
+		errors: FormErrors;
+		validateForm: () => Promise<{ valid: boolean }>;
+	},
+	config: PasslockClientConfig
+) => {
 	clearFormErrors(input.errors);
 	const error = { _tag: '@error/ReAuthenticationFailure' as const };
 
@@ -51,13 +56,14 @@ export const reAuthenticateIfNecessary = async (input: {
 
 	// Restrict the prompt to the account's known passkeys, then let the server
 	// refresh the re-auth timestamp for the current session.
-	const result = await authenticatePasskey({
-		tenancyId: input.tenancyId,
-		endpoint: input.endpoint,
-		allowCredentials: [...passkeyStatus.passkeyIds],
-		userVerification: 'required',
-		verificationRoute: '/account/re-authenticate'
-	});
+	const result = await authenticatePasskey(
+		{
+			allowCredentials: [...passkeyStatus.passkeyIds],
+			userVerification: 'required',
+			verificationRoute: '/account/re-authenticate'
+		},
+		config
+	);
 
 	if (result._tag === 'PasslockLoginSuccess') {
 		return {

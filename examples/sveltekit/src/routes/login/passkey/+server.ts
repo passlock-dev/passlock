@@ -4,7 +4,7 @@ import { setSessionTokenCookie } from '$lib/server/cookies.js';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import * as v from 'valibot';
-import { exchangeCode } from '@passlock/server/safe';
+import * as PasslockServer from '@passlock/server';
 
 const payloadSchema = v.object({
 	code: v.pipe(v.string(), v.trim(), v.minLength(8))
@@ -21,10 +21,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ error: 'Invalid request. Expected code.' }, { status: 400 });
 	}
 
-	const principal = await exchangeCode({
-		...getPasslockConfig(),
-		code: payload.output.code
-	});
+	const principal = await PasslockServer.exchangeCode(
+		{
+			code: payload.output.code
+		},
+		getPasslockConfig()
+	);
 
 	if (principal._tag !== 'ExtendedPrincipal') {
 		const status = principal._tag === '@error/InvalidCode' ? 401 : 500;

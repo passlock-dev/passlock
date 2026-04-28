@@ -26,15 +26,15 @@ import type { AuthenticatedOptions, PasslockOptions } from "../shared.js"
  *
  * @category Principal
  */
-export interface ExchangeCodeOptions extends AuthenticatedOptions {
+export interface ExchangeCodeOptions {
   /**
    * Short-lived code emitted by `@passlock/browser`.
    */
   code: string
 
   /**
-   * Optionally assign a userId to the passkey **during code verification**.
-   * Equivalent to calling {@link assignUser} after exchanging a code
+   * Optionally assign a custom user ID to the passkey **during code verification**.
+   * Equivalent to calling {@link assignUser} after exchanging a code.
    */
   userId?: string
 }
@@ -43,7 +43,8 @@ export interface ExchangeCodeOptions extends AuthenticatedOptions {
  * Exchange a short-lived Passlock code for details about the completed
  * registration or authentication operation.
  *
- * @param options Request options including the code to exchange.
+ * @param options Principal-specific request options.
+ * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with the resolved {@link ExtendedPrincipal}.
  *
@@ -51,17 +52,19 @@ export interface ExchangeCodeOptions extends AuthenticatedOptions {
  */
 export const exchangeCode = (
   options: ExchangeCodeOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Effect.Effect<ExtendedPrincipal, InvalidCodeError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
-      const { tenancyId, code } = options
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId } = config
+      const { code } = options
       const body = options.userId ? { userId: options.userId } : null
       const url = new URL(`/${tenancyId}/principal/${code}`, baseUrl)
 
       const headers = {
-        authorization: `Bearer ${options.apiKey}`,
+        authorization: `Bearer ${config.apiKey}`,
       } as const
 
       const response = yield* Effect.if(body !== null, {
@@ -114,7 +117,7 @@ export class VerificationError extends Data.TaggedError("@error/Verification")<{
  *
  * @category Principal
  */
-export interface VerifyIdTokenOptions extends PasslockOptions {
+export interface VerifyIdTokenOptions {
   /**
    * JWT to decode and verify.
    */
@@ -127,17 +130,19 @@ export interface VerifyIdTokenOptions extends PasslockOptions {
  * The JWKS endpoint is derived from `endpoint` and cached between calls in the
  * current process.
  *
- * @param options Request options including the token to verify.
+ * @param options Principal-specific request options.
+ * @param config Shared Passlock configuration for token verification.
  * @returns An Effect that succeeds with a decoded {@link Principal}.
  *
  * @category Principal
  */
 export const verifyIdToken = (
-  options: VerifyIdTokenOptions
+  options: VerifyIdTokenOptions,
+  config: PasslockOptions
 ): Effect.Effect<Principal, VerificationError> =>
   pipe(
     Effect.gen(function* () {
-      const JWKS = yield* createCachedRemoteJwks(options.endpoint)
+      const JWKS = yield* createCachedRemoteJwks(config.endpoint)
 
       const { payload } = yield* Effect.tryPromise({
         catch: (err) => {
@@ -147,7 +152,7 @@ export const verifyIdToken = (
         },
         try: () =>
           jose.jwtVerify(options.token, JWKS, {
-            audience: options.tenancyId,
+            audience: config.tenancyId,
             issuer: "passlock.dev",
           }),
       })

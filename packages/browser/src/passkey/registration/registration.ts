@@ -20,7 +20,7 @@ import type { Millis, UserVerification } from "../shared.js"
  *
  * @category Passkeys (core)
  */
-export interface RegistrationOptions extends PasslockOptions {
+export interface RegistrationOptions {
   /**
    * Username associated with passkey. Will be shown by the device during
    * registration and subsequent authentication. The value used should be
@@ -163,7 +163,7 @@ export const isOptionsResponse = (payload: unknown): payload is OptionsResponse 
   return true
 }
 
-export const fetchOptions = (options: Omit<RegistrationOptions, keyof PasslockOptions>) =>
+export const fetchOptions = (options: RegistrationOptions) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
     const { endpoint } = yield* Micro.service(Endpoint)
@@ -282,14 +282,16 @@ export type RegistrationError =
  * Trigger local passkey registration then save the passkey in your Passlock vault.
  * Returns a code and id_token that can be exchanged/decoded in your backend.
  *
- * @param options Registration ceremony options and Passlock tenancy details.
+ * @param options Registration ceremony options.
+ * @param config Passlock tenancy and API endpoint options.
  * @returns A Micro effect that resolves with {@link RegistrationSuccess} or
  * fails with {@link RegistrationError}.
  */
 export const registerPasskey = (
-  options: RegistrationOptions
+  options: RegistrationOptions,
+  config: PasslockOptions
 ): Micro.Micro<RegistrationSuccess, RegistrationError, Logger | RegistrationHelper> => {
-  const endpoint = makeEndpoint(options)
+  const endpoint = makeEndpoint(config)
 
   const effect = Micro.gen(function* () {
     const { sessionToken, optionsJSON } = yield* fetchOptions(options)
@@ -303,7 +305,7 @@ export const registerPasskey = (
 
   return pipe(
     effect,
-    Micro.provideService(TenancyId, options),
+    Micro.provideService(TenancyId, config),
     Micro.provideService(Endpoint, endpoint)
   )
 }

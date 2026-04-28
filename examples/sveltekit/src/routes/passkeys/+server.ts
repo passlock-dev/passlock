@@ -10,12 +10,7 @@ import {
 	RegisterPasskeySuccess,
 	UpdatePasskeysSuccess
 } from '$lib/shared/schemas';
-import {
-	assignUser,
-	deleteUserPasskeys as deletePasskeysByUserId,
-	exchangeCode,
-	isNotFoundError
-} from '@passlock/server/safe';
+import * as PasslockServer from '@passlock/server';
 
 const errorResponse = (message: string, status: number) =>
 	json({ _tag: '@error/Error' as const, message }, { status });
@@ -64,21 +59,23 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	// Exchange the code with Passlock so the server can trust the registration.
-	const principal = await exchangeCode({ ...getPasslockConfig(), ...payload.output });
+	const principal = await PasslockServer.exchangeCode(payload.output, getPasslockConfig());
 	if (principal.failure) {
 		return errorResponse('Unable to verify passkey', 500);
 	}
 
 	// Assigning the local user id to the Passlock credential makes later bulk
 	// updates and deletes much easier.
-	const passlockPasskey = await assignUser({
-		...getPasslockConfig(),
-		passkeyId: principal.authenticatorId,
-		userId: String(event.locals.user.userId)
-	});
+	const passlockPasskey = await PasslockServer.assignUser(
+		{
+			passkeyId: principal.authenticatorId,
+			userId: String(event.locals.user.userId)
+		},
+		getPasslockConfig()
+	);
 
 	if (passlockPasskey.failure) {
-		const status = isNotFoundError(passlockPasskey) ? 401 : 500;
+		const status = PasslockServer.isNotFoundError(passlockPasskey) ? 401 : 500;
 		return errorResponse(passlockPasskey.message, status);
 	}
 
@@ -176,13 +173,15 @@ export const DELETE: RequestHandler = async (event) => {
 	}
 
 	// Account deletion reuses this endpoint to clear server-side passkeys first.
-	const vaultResult = await deletePasskeysByUserId({
-		...getPasslockConfig(),
-		userId: String(context.user.userId)
-	});
+	const vaultResult = await PasslockServer.deleteUserPasskeys(
+		{
+			userId: String(context.user.userId)
+		},
+		getPasslockConfig()
+	);
 
 	if (vaultResult.failure) {
-		const status = isNotFoundError(vaultResult) ? 404 : 500;
+		const status = PasslockServer.isNotFoundError(vaultResult) ? 404 : 500;
 		return errorResponse('Unable to delete passkeys', status);
 	}
 

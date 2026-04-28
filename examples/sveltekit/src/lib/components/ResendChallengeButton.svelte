@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
+	import { Loader } from '@lucide/svelte';
 	import { resendChallenge } from '$lib/client/challenges.js';
 	import { asResendRedirectLocation } from '$lib/shared/routes.js';
 	import type { ChallengeRateLimitView } from '$lib/shared/challengeRateLimit.js';
@@ -9,12 +10,10 @@
 	let {
 		url,
 		buttonLabel = 'Send a new code',
-		loadingLabel = 'Sending...',
 		initialRateLimit: providedInitialRateLimit = null
 	}: {
 		url: string;
 		buttonLabel?: string;
-		loadingLabel?: string;
 		initialRateLimit?: ChallengeRateLimitView | null;
 	} = $props();
 
@@ -29,6 +28,10 @@
 	let error = $state('');
 	let rateLimit = $state<ChallengeRateLimitView | null>(initialRateLimit);
 	let rateLimitActive = $state(isRateLimitActive(initialRateLimit));
+
+	const onActiveChange = (active: boolean) => {
+		rateLimitActive = active;
+	};
 
 	const handleClick = async () => {
 		if (loading || rateLimitActive) return;
@@ -68,12 +71,7 @@
 </script>
 
 {#if rateLimit}
-	<ChallengeRateLimitNotice
-		onActiveChange={(active) => {
-			rateLimitActive = active;
-		}}
-		{rateLimit}
-		className="mt-4 text-center text-sm" />
+	<ChallengeRateLimitNotice {onActiveChange} {rateLimit} class="mt-4 text-center text-sm" />
 {/if}
 
 {#if error}
@@ -90,7 +88,7 @@
 	disabled={loading || rateLimitActive}
 	onclick={handleClick}>
 	{#if loading}
-		{loadingLabel}
+		<Loader class="animate-spin duration-[4s]" />
 	{:else}
 		{buttonLabel}
 	{/if}

@@ -12,7 +12,7 @@
  * checks.
  */
 
-import * as PasslockBrowser from '@passlock/browser/safe';
+import * as PasslockBrowser from '@passlock/browser';
 
 import {
 	DeletePasskeySuccess,
@@ -26,12 +26,15 @@ import { parse, variant } from 'valibot';
 import { resolve } from '$app/paths';
 import { fetchData } from './network';
 
+export type PasslockClientConfig = {
+	tenancyId: string;
+	endpoint?: string | undefined;
+};
+
 export type CreatePasskeyInput = {
 	email: string;
 	displayName: string;
 	existingPasskeys: Array<string>;
-	tenancyId: string;
-	endpoint?: string | undefined;
 };
 
 /**
@@ -44,7 +47,7 @@ export type CreatePasskeyInput = {
  * - `POST /passkeys` verifies the Passlock code and stores the passkey
  *   association in server-side state.
  */
-export const registerPasskey = async (input: CreatePasskeyInput) => {
+export const registerPasskey = async (input: CreatePasskeyInput, config: PasslockClientConfig) => {
 	const ERROR_TAG = '@error/CreatePasskeyError' as const;
 
 	// `excludeCredentials` prevents users from re-registering the same account
@@ -53,12 +56,15 @@ export const registerPasskey = async (input: CreatePasskeyInput) => {
 	const { email: username, existingPasskeys: excludeCredentials } = input;
 
 	// WebAuthn registration must happen in the browser.
-	const clientResult = await PasslockBrowser.registerPasskey({
-		...input,
-		username,
-		excludeCredentials,
-		userVerification: 'preferred'
-	});
+	const clientResult = await PasslockBrowser.registerPasskey(
+		{
+			...input,
+			username,
+			excludeCredentials,
+			userVerification: 'preferred'
+		},
+		config
+	);
 
 	// The browser matched one of the supplied credentials to a passkey that is
 	// already present on this device.
@@ -106,8 +112,6 @@ export type AuthenticatePasskeyInput = {
 	 * to WebAuthn's `allowCredentials`.
 	 */
 	allowCredentials?: Array<string> | undefined;
-	tenancyId: string;
-	endpoint?: string | undefined;
 };
 
 /**
@@ -118,17 +122,23 @@ export type AuthenticatePasskeyInput = {
  * that proof means for the app, such as creating a session or refreshing a
  * re-authentication timestamp.
  */
-export const authenticatePasskey = async (input: AuthenticatePasskeyInput) => {
+export const authenticatePasskey = async (
+	input: AuthenticatePasskeyInput,
+	config: PasslockClientConfig
+) => {
 	const ERROR_TAG = '@error/PasskeyLoginError';
 
 	// allowCredentials == known user passkey ids
 	const { allowCredentials, verificationRoute = '/login/passkey' } = input;
 
 	// WebAuthn prompts can only run in the browser.
-	const clientResult = await PasslockBrowser.authenticatePasskey({
-		...input,
-		allowCredentials
-	});
+	const clientResult = await PasslockBrowser.authenticatePasskey(
+		{
+			...input,
+			allowCredentials
+		},
+		config
+	);
 
 	// Authentication never left the device, so there is nothing to verify
 	// server-side.

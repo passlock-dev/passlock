@@ -10,6 +10,9 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<!-- TODO remove for production -->
+	<meta name="robots" content="noindex, nofollow" />
+	<meta name="version" content={data.version} />
 </svelte:head>
 
 <div class="flex h-full flex-col">

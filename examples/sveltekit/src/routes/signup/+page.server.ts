@@ -1,11 +1,12 @@
 import type { PageServerLoad } from './$types';
 import { createChallengeRateLimitView } from '$lib/server/mailbox/mailboxChallenge.js';
 import { createOrRefreshSignupChallenge } from '$lib/server/mailbox/signupChallenge.js';
-import { sendCodeChallengeEmail } from '$lib/server/email.js';
+import { sendMailboxVerificationEmail } from '$lib/server/email/index.js';
 import { setSignupLoginCookie } from '$lib/server/cookies.js';
 import { getSignupQueryState, toLoginLocation } from '$lib/shared/queryState.js';
+import type { SignupFormMessage } from '$lib/shared/challengeRateLimit.js';
 
-import { superValidate } from 'sveltekit-superforms';
+import { message, setMessage, superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
@@ -22,6 +23,8 @@ const schema = v.object({
 	familyName: v.pipe(v.string(), v.trim(), v.nonEmpty('Last name is required'))
 });
 
+type SignupFormData = v.InferOutput<typeof schema>;
+
 /**
  * Load the signup form that starts the emailed one-time-code flow for new
  * accounts.
@@ -33,16 +36,23 @@ export const load = (async ({ locals, url }) => {
 
 	const { email, reason } = getSignupQueryState(url);
 
-	const form = await superValidate({ email }, valibot(schema), { errors: false });
-	const notice =
-		reason === 'no-account' ? 'No account exists for that email. Create one to continue.' : null;
+	const form = await superValidate<SignupFormData, SignupFormMessage>({ email }, valibot(schema), {
+		errors: false
+	});
 
-	return { form, notice, rateLimit: null };
+	if (reason === 'no-account') {
+		setMessage(form, {
+			type: 'notice',
+			text: 'No account exists for that email. Create one to continue.'
+		});
+	}
+
+	return { form };
 }) satisfies PageServerLoad;
 
 export const actions = {
 	default: async ({ request, cookies }) => {
-		const form = await superValidate(request, valibot(schema));
+		const form = await superValidate<SignupFormData, SignupFormMessage>(request, valibot(schema));
 
 		if (!form.valid) {
 			return fail(400, { form });
@@ -53,18 +63,23 @@ export const actions = {
 			redirect(303, toLoginLocation({ username: form.data.email, reason: 'account-exists' }));
 		}
 		if (result._tag === '@error/ChallengeRateLimited') {
-			return fail(429, {
+			return message(
 				form,
-				rateLimit: createChallengeRateLimitView(result.retryAfterSeconds)
-			});
+				{
+					type: 'rateLimited',
+					rateLimit: createChallengeRateLimitView(result.retryAfterSeconds)
+				},
+				{ status: 429 }
+			);
 		}
 
 		// The cookie carries the challenge id + secret; the emailed code provides
 		// the second factor needed to finish signup.
-		await sendCodeChallengeEmail({
+		await sendMailboxVerificationEmail({
+			subject: 'Your signup code',
 			recipientEmail: result.challenge.email,
-			code: result.code,
-			message: result.message
+			body: result.message,
+			code: result.code
 		});
 		setSignupLoginCookie(cookies, {
 			challengeId: result.challenge.id,

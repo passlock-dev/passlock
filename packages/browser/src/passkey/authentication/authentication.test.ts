@@ -227,7 +227,7 @@ describe(authenticatePasskey.name, () => {
     fetchMock.mockGlobal().postOnce(optionsRoute, optionsResponse)
     fetchMock.mockGlobal().postOnce(verificationRoute, verificationResponse)
 
-    pipe(authenticatePasskey({ tenancyId }), Micro.provideContext(ctx), Micro.runPromise)
+    pipe(authenticatePasskey({}, { tenancyId }), Micro.provideContext(ctx), Micro.runPromise)
   })
 })
 

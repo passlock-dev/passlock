@@ -13,7 +13,7 @@ import {
 } from '$lib/shared/queryState.js';
 
 const schema = v.object({
-	username: v.pipe(
+	email: v.pipe(
 		v.string(),
 		v.trim(),
 		v.nonEmpty('Email is required'),
@@ -47,18 +47,18 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		const account = await getUserByEmail(form.data.username);
+		const account = await getUserByEmail(form.data.email);
 		if (account) {
 			const passkeysCount = await countPasskeysByUserId(account.userId);
 			if (passkeysCount > 0) {
 				// Passkey-capable accounts stay on the passkey path; others fall
 				// back to the standard emailed-code route.
-				redirect(303, toLoginPasskeyLocation({ username: form.data.username }));
+				redirect(303, toLoginPasskeyLocation({ username: form.data.email }));
 			}
 
-			redirect(303, toLoginEmailLocation({ username: form.data.username }));
+			redirect(303, toLoginEmailLocation({ username: form.data.email }));
 		}
 
-		redirect(303, toSignupLocation({ email: form.data.username, reason: 'no-account' }));
+		redirect(303, toSignupLocation({ email: form.data.email, reason: 'no-account' }));
 	}
 } satisfies Actions;

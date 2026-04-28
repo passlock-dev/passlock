@@ -4,6 +4,8 @@
 	import { authenticatePasskey } from '$lib/client/passkeys';
 	import DevNotes from '$lib/components/DevNotes.svelte';
 	import type { PageProps } from './$types';
+	import Link from '$lib/components/Link.svelte';
+	import SubmitButton from '$lib/components/SubmitButton.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -14,13 +16,16 @@
 		error = '';
 		loading = true;
 
+		const config = { tenancyId: data.tenancyId, endpoint: data.endpoint };
+
 		// The browser prompt happens here; the server verifies the returned code
 		// and creates the local session.
-		const result = await authenticatePasskey({
-			tenancyId: data.tenancyId,
-			endpoint: data.endpoint,
-			allowCredentials: data.allowCredentials
-		});
+		const result = await authenticatePasskey(
+			{
+				allowCredentials: data.allowCredentials
+			},
+			config
+		);
 
 		if (result._tag == 'PasslockLoginSuccess') {
 			loading = false;
@@ -40,9 +45,9 @@
 			Use your device passkey to sign in without waiting for an email code.
 		</p>
 
-		<button type="button" class="btn mt-6 w-full btn-primary" onclick={login} disabled={loading}>
-			{#if loading}Logging in...{:else}Login using your passkey{/if}
-		</button>
+		<SubmitButton {loading} disabled={loading} class="w-full" onclick={login}>
+			Login using your passkey
+		</SubmitButton>
 
 		{#if error}
 			<p class="mt-4 text-sm text-error">{error}</p>
@@ -51,16 +56,14 @@
 		<div class="mt-4 text-center text-sm">
 			Need email login instead?
 			{#if data.username}
-				<form method="GET" action={resolve('/login/email')} class="inline">
+				<form method="get" action={resolve('/login/email')} class="inline">
 					<input type="hidden" name="username" value={data.username} />
 					<button type="submit" class="ml-1 cursor-pointer text-primary hover:underline">
 						Use an emailed code
 					</button>
 				</form>
 			{:else}
-				<a class="ml-1 text-primary hover:underline" href={resolve('/login')}>
-					Use an emailed code
-				</a>
+				<Link href={resolve('/login')} class="ml-1">Use an emailed code</Link>
 			{/if}
 		</div>
 	</div>

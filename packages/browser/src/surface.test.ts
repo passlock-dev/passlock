@@ -1,17 +1,5 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type {
-  AuthenticationError as UnsafeAuthenticationError,
-  AuthenticationOptions as UnsafeAuthenticationOptions,
-  AuthenticationSuccess as UnsafeAuthenticationSuccess,
-  Credential as UnsafeCredential,
-  PasslockOptions as UnsafePasslockOptions,
-  RegistrationError as UnsafeRegistrationError,
-  RegistrationOptions as UnsafeRegistrationOptions,
-  RegistrationSuccess as UnsafeRegistrationSuccess,
-  UpdatePasskeyOptions as UpdatePasskeyOptionsUnsafe,
-} from "../src/index.js"
-import * as unsafe from "../src/index.js"
-import type {
   AuthenticationError,
   AuthenticationOptions,
   AuthenticationSuccess,
@@ -32,11 +20,25 @@ import type {
   UpdateSuccess,
 } from "../src/safe.js"
 import * as root from "../src/safe.js"
+import { Passlock as SafePasslock } from "../src/safe.js"
+import type {
+  AuthenticationError as UnsafeAuthenticationError,
+  AuthenticationOptions as UnsafeAuthenticationOptions,
+  AuthenticationSuccess as UnsafeAuthenticationSuccess,
+  Credential as UnsafeCredential,
+  PasslockOptions as UnsafePasslockOptions,
+  RegistrationError as UnsafeRegistrationError,
+  RegistrationOptions as UnsafeRegistrationOptions,
+  RegistrationSuccess as UnsafeRegistrationSuccess,
+  UpdatePasskeyOptions as UpdatePasskeyOptionsUnsafe,
+} from "../src/unsafe.js"
+import * as unsafe from "../src/unsafe.js"
+import { Passlock as UnsafePasslock } from "../src/unsafe.js"
 
 describe("public surface", () => {
   it("exports identical keys for root and unsafe", () => {
     type Root = typeof import("../src/safe.js")
-    type Unsafe = typeof import("../src/index.js")
+    type Unsafe = typeof import("../src/unsafe.js")
     type RootKeys = keyof Root
     type UnsafeKeys = keyof Unsafe
     type Assert<T extends true> = T
@@ -139,6 +141,60 @@ describe("public surface", () => {
     type _2 = Assert<IsEqual<ErrorBranch, Err<DeleteError>>>
     type _3 = Assert<IsEqual<SuccessBranch["failure"], false>>
     type _4 = Assert<IsEqual<ErrorBranch["failure"], true>>
+
+    expect(true).toBe(true)
+  })
+
+  it("exposes class clients from the safe and unsafe entrypoints", () => {
+    const config = { tenancyId: "tenancy-id" }
+    const passlock = new SafePasslock(config)
+    const passlockUnsafe = new UnsafePasslock(config)
+
+    expect(passlock.config).toEqual(config)
+    expect(passlockUnsafe.config).toEqual(config)
+
+    expectTypeOf(passlock.registerPasskey).toBeFunction()
+    expectTypeOf(passlock.authenticatePasskey).toBeFunction()
+    expectTypeOf(passlock.updatePasskey).toBeFunction()
+    expectTypeOf(passlock.updatePasskeyUsernames).toBeFunction()
+    expectTypeOf(passlock.deletePasskey).toBeFunction()
+    expectTypeOf(passlock.deleteUserPasskeys).toBeFunction()
+    expectTypeOf(passlock.prunePasskeys).toBeFunction()
+
+    expectTypeOf(passlockUnsafe.registerPasskey).toBeFunction()
+    expectTypeOf(passlockUnsafe.authenticatePasskey).toBeFunction()
+    expectTypeOf(passlockUnsafe.updatePasskey).toBeFunction()
+    expectTypeOf(passlockUnsafe.updatePasskeyUsernames).toBeFunction()
+    expectTypeOf(passlockUnsafe.deletePasskey).toBeFunction()
+    expectTypeOf(passlockUnsafe.deleteUserPasskeys).toBeFunction()
+    expectTypeOf(passlockUnsafe.prunePasskeys).toBeFunction()
+  })
+
+  it("returns safe and unsafe results from class clients", () => {
+    type IsEqual<A, B> =
+      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
+    type Assert<T extends true> = T
+    type SafeClient = InstanceType<typeof SafePasslock>
+    type UnsafeClient = InstanceType<typeof UnsafePasslock>
+
+    type _1 = Assert<
+      IsEqual<
+        Awaited<ReturnType<SafeClient["registerPasskey"]>>,
+        Result<RegistrationSuccess, RegistrationError>
+      >
+    >
+    type _2 = Assert<
+      IsEqual<
+        Awaited<ReturnType<SafeClient["authenticatePasskey"]>>,
+        Result<AuthenticationSuccess, AuthenticationError>
+      >
+    >
+    type _3 = Assert<
+      IsEqual<Awaited<ReturnType<UnsafeClient["registerPasskey"]>>, UnsafeRegistrationSuccess>
+    >
+    type _4 = Assert<
+      IsEqual<Awaited<ReturnType<UnsafeClient["authenticatePasskey"]>>, UnsafeAuthenticationSuccess>
+    >
 
     expect(true).toBe(true)
   })

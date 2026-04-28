@@ -1,5 +1,6 @@
 /**
- * Base options accepted by most `@passlock/server` operations.
+ * Shared Passlock configuration accepted as the second argument by most
+ * `@passlock/server` operations.
  *
  * @category Configuration
  */
@@ -18,7 +19,8 @@ export type PasslockOptions = {
 }
 
 /**
- * Request options for operations that call authenticated Passlock REST APIs.
+ * Shared Passlock configuration for operations that call authenticated
+ * Passlock REST APIs.
  *
  * @category Configuration
  */

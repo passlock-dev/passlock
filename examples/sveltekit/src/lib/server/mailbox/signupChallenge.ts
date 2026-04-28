@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import type { MailboxChallengeDetails, MailboxChallengeMetadata } from '@passlock/server/safe';
+import type { MailboxChallengeDetails } from '@passlock/server';
 import { error as kitError } from '@sveltejs/kit';
 import { CHALLENGE_FLOW_TTL_MS } from '../cookies.js';
 import { createUser, getUserByEmail, getUserById, type DuplicateUser } from '../repository.js';
@@ -11,9 +11,9 @@ import {
 	type InvalidChallengeCodeError,
 	type InvalidChallengeError,
 	createPasslockMailboxChallenge,
-	getPasslockMailboxChallenge,
+	getProjectedMailboxChallenge,
 	validateMailboxChallenge,
-	verifyPasslockMailboxChallenge
+	verifyAndProjectMailboxChallenge
 } from './mailboxChallenge.js';
 
 const SignupMetadataSchema = v.object({
@@ -67,28 +67,28 @@ const toSignupChallenge = (
 /**
  * Create or refresh the signup one-time-code challenge for a new account.
  */
-export const createOrRefreshSignupChallenge = async (input: {
+export const createOrRefreshSignupChallenge = async ({
+	email,
+	givenName,
+	familyName
+}: {
 	email: string;
 	givenName: string;
 	familyName: string;
 }): Promise<CreatedSignupChallenge | DuplicateUser | ChallengeRateLimitedError> => {
-	const existingAccount = await getUserByEmail(input.email);
-	if (existingAccount) return { _tag: '@error/DuplicateUser', email: input.email };
+	const existingAccount = await getUserByEmail(email);
+	if (existingAccount) return { _tag: '@error/DuplicateUser', email };
 
 	const processExpiresAt = Date.now() + CHALLENGE_FLOW_TTL_MS;
-	const metadata: MailboxChallengeMetadata = {
-		processExpiresAt,
-		givenName: input.givenName,
-		familyName: input.familyName
-	};
 
 	const result = await createPasslockMailboxChallenge({
-		email: input.email,
+		email,
 		purpose: 'signup',
-		metadata,
+		metadata: { processExpiresAt, givenName, familyName },
 		invalidateOthers: true,
 		skipRateLimit: true
 	});
+	// only relevant when skipRateLimit: false
 	if (result._tag === '@error/ChallengeRateLimited') return result;
 
 	const challenge = result.challenge;
@@ -99,8 +99,8 @@ export const createOrRefreshSignupChallenge = async (input: {
 			_tag: 'SignupChallenge',
 			id: challenge.challengeId,
 			email: challenge.email,
-			givenName: input.givenName,
-			familyName: input.familyName,
+			givenName,
+			familyName,
 			processExpiresAt
 		},
 		secret: challenge.secret,
@@ -113,15 +113,8 @@ export const createOrRefreshSignupChallenge = async (input: {
  * Read a pending signup challenge if it still exists and still matches the
  * expected purpose.
  */
-export const getPendingSignupChallenge = async (
-	challengeId: string
-): Promise<SignupChallenge | null> => {
-	const challenge = await getPasslockMailboxChallenge({ challengeId });
-	if (!challenge) return null;
-
-	const result = toSignupChallenge(challenge);
-	return result._tag === '@error/InvalidChallenge' ? null : result;
-};
+export const getPendingSignupChallenge = (challengeId: string): Promise<SignupChallenge | null> =>
+	getProjectedMailboxChallenge(challengeId, toSignupChallenge);
 
 /**
  * Verify a signup code, create the local account if needed, and resolve to
@@ -139,11 +132,8 @@ export const consumeSignupChallenge = async (input: {
 	| ChallengeExpiredError
 	| ChallengeAttemptsExceededError
 > => {
-	const result = await verifyPasslockMailboxChallenge(input);
-	if (result._tag !== 'ChallengeVerified') return result;
-
-	const challenge = toSignupChallenge(result.challenge);
-	if (challenge._tag === '@error/InvalidChallenge') return challenge;
+	const challenge = await verifyAndProjectMailboxChallenge(input, toSignupChallenge);
+	if (challenge._tag !== 'SignupChallenge') return challenge;
 
 	const existingAccount = await getUserByEmail(challenge.email);
 	if (existingAccount) {

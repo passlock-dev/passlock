@@ -1,4 +1,3 @@
-# allow crawling everything by default
 User-agent: *
-# TODO change this
+# FIXME
 Disallow: /

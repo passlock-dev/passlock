@@ -1,5 +1,5 @@
 /**
- * Promise-based safe entrypoint for `@passlock/server`.
+ * Promise-based safe entrypoint for `@passlock/server`. Import from `@passlock/server/safe`.
  *
  * These functions return result envelopes over the original tagged success and
  * error payloads. The returned value keeps its original `_tag` shape and is
@@ -9,22 +9,16 @@
  * Note: unexpected runtime failures may still throw.
  *
  * ```ts
- * const result = await exchangeCode({
- *   apiKey,
- *   code,
- *   tenancyId,
- * })
+ * import { exchangeCode } from "@passlock/server/safe";
+ *
+ * const result = await exchangeCode({ code }, { apiKey, tenancyId });
  *
  * if (result.success) {
- *   console.log(result.value.id)
+ *   console.log(result.value.id);
  * }
  *
  * if (result.failure) {
- *   console.log(result.error.message)
- * }
- *
- * if (isExtendedPrincipal(result)) {
- *   console.log(result.id)
+ *   console.log(result.error.message);
  * }
  * ```
  *
@@ -35,7 +29,7 @@
  * Cross-cutting payloads shared across multiple feature areas.
  *
  * @categoryDescription Configuration
- * Shared request options for tenancy scope and API endpoints.
+ * Shared Passlock configuration for tenancy scope and API endpoints.
  *
  * @categoryDescription Passkeys
  * Functions and related types for managing passkeys.
@@ -113,6 +107,7 @@ import {
 } from "./principal/principal.js"
 import { type Result, toErrResult, toOkResult } from "./safe-result.js"
 import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
+import type { AuthenticatedOptions, PasslockOptions } from "./shared.js"
 
 const runSafe = <A extends object, E extends object>(
   effect: Effect.Effect<A, E>
@@ -127,6 +122,86 @@ const runSafe = <A extends object, E extends object>(
   )
 
 /**
+ * Configured safe Passlock server client.
+ *
+ * Methods wrap the functions from `@passlock/server/safe` and supply the
+ * constructor config as each operation's second argument.
+ *
+ * @category Classes
+ */
+export class Passlock {
+  readonly #config: AuthenticatedOptions
+
+  constructor(config: AuthenticatedOptions) {
+    this.#config = { ...config }
+  }
+
+  createMailboxChallenge(
+    options: Parameters<typeof createMailboxChallenge>[0]
+  ): ReturnType<typeof createMailboxChallenge> {
+    return createMailboxChallenge(options, this.#config)
+  }
+
+  getMailboxChallenge(
+    options: Parameters<typeof getMailboxChallenge>[0]
+  ): ReturnType<typeof getMailboxChallenge> {
+    return getMailboxChallenge(options, this.#config)
+  }
+
+  verifyMailboxChallenge(
+    options: Parameters<typeof verifyMailboxChallenge>[0]
+  ): ReturnType<typeof verifyMailboxChallenge> {
+    return verifyMailboxChallenge(options, this.#config)
+  }
+
+  deleteMailboxChallenge(
+    options: Parameters<typeof deleteMailboxChallenge>[0]
+  ): ReturnType<typeof deleteMailboxChallenge> {
+    return deleteMailboxChallenge(options, this.#config)
+  }
+
+  assignUser(options: Parameters<typeof assignUser>[0]): ReturnType<typeof assignUser> {
+    return assignUser(options, this.#config)
+  }
+
+  updatePasskey(request: Parameters<typeof updatePasskey>[0]): ReturnType<typeof updatePasskey> {
+    return updatePasskey(request, this.#config)
+  }
+
+  updatePasskeyUsernames(
+    request: Parameters<typeof updatePasskeyUsernames>[0]
+  ): ReturnType<typeof updatePasskeyUsernames> {
+    return updatePasskeyUsernames(request, this.#config)
+  }
+
+  deletePasskey(options: Parameters<typeof deletePasskey>[0]): ReturnType<typeof deletePasskey> {
+    return deletePasskey(options, this.#config)
+  }
+
+  deleteUserPasskeys(
+    request: Parameters<typeof deleteUserPasskeys>[0]
+  ): ReturnType<typeof deleteUserPasskeys> {
+    return deleteUserPasskeys(request, this.#config)
+  }
+
+  getPasskey(options: Parameters<typeof getPasskey>[0]): ReturnType<typeof getPasskey> {
+    return getPasskey(options, this.#config)
+  }
+
+  listPasskeys(options: Parameters<typeof listPasskeys>[0]): ReturnType<typeof listPasskeys> {
+    return listPasskeys(options, this.#config)
+  }
+
+  exchangeCode(options: Parameters<typeof exchangeCode>[0]): ReturnType<typeof exchangeCode> {
+    return exchangeCode(options, this.#config)
+  }
+
+  verifyIdToken(options: Parameters<typeof verifyIdToken>[0]): ReturnType<typeof verifyIdToken> {
+    return verifyIdToken(options, this.#config)
+  }
+}
+
+/**
  * Create a mailbox one-time-code challenge.
  *
  * `metadata` is stored as opaque application state. When `invalidateOthers` is
@@ -137,20 +212,23 @@ const runSafe = <A extends object, E extends object>(
  * one-time `code`, plus rendered email content in `message.html` and
  * `message.text`.
  *
- * Persist `challengeId` and `secret` so you can verify the challenge later.
- * Send the provided message content through your own email provider or use the
- * raw `code` to render your own email body.
+ * Persist `challengeId` and `secret` so you can call
+ * {@link verifyMailboxChallenge} later. Send the provided message content
+ * through your own email provider or use the raw `code` to render your own
+ * email body.
  *
  * @param options
+ * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * the created mailbox challenge payload and whose error branch contains an API error.
  *
  * @category Mailbox
  */
 export const createMailboxChallenge = (
-  options: CreateMailboxChallengeOptions
+  options: CreateMailboxChallengeOptions,
+  config: AuthenticatedOptions
 ): Promise<Result<MailboxChallengeCreated, ForbiddenError | ChallengeRateLimitedError>> =>
-  runSafe(createMailboxChallengeE(options))
+  runSafe(createMailboxChallengeE(options, config))
 
 /**
  * Fetch a mailbox one-time-code challenge.
@@ -159,15 +237,17 @@ export const createMailboxChallenge = (
  * secret and one-time code.
  *
  * @param options
+ * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * the readable challenge and whose error branch contains an API error.
  *
  * @category Mailbox
  */
 export const getMailboxChallenge = (
-  options: GetMailboxChallengeOptions
+  options: GetMailboxChallengeOptions,
+  config: AuthenticatedOptions
 ): Promise<Result<MailboxChallengeDetails, ForbiddenError | NotFoundError>> =>
-  runSafe(getMailboxChallengeE(options))
+  runSafe(getMailboxChallengeE(options, config))
 
 /**
  * Verify a mailbox one-time-code challenge.
@@ -177,6 +257,7 @@ export const getMailboxChallenge = (
  * the end user.
  *
  * @param options
+ * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * the verification payload, including the readable challenge, and whose error
  * branch contains an API error. The verified challenge excludes the secret and
@@ -185,7 +266,8 @@ export const getMailboxChallenge = (
  * @category Mailbox
  */
 export const verifyMailboxChallenge = (
-  options: VerifyMailboxChallengeOptions
+  options: VerifyMailboxChallengeOptions,
+  config: AuthenticatedOptions
 ): Promise<
   Result<
     MailboxChallengeVerified,
@@ -195,12 +277,13 @@ export const verifyMailboxChallenge = (
     | ChallengeExpiredError
     | ChallengeAttemptsExceededError
   >
-> => runSafe(verifyMailboxChallengeE(options))
+> => runSafe(verifyMailboxChallengeE(options, config))
 
 /**
  * Delete a mailbox one-time-code challenge.
  *
  * @param options
+ * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * the tagged delete payload `{ _tag: "ChallengeDeleted" }` and whose error
  * branch contains an API error.
@@ -208,30 +291,32 @@ export const verifyMailboxChallenge = (
  * @category Mailbox
  */
 export const deleteMailboxChallenge = (
-  options: DeleteMailboxChallengeOptions
+  options: DeleteMailboxChallengeOptions,
+  config: AuthenticatedOptions
 ): Promise<Result<MailboxChallengeDeleted, ForbiddenError>> =>
-  runSafe(deleteMailboxChallengeE(options))
+  runSafe(deleteMailboxChallengeE(options, config))
 
 /**
- * Assign a custom User ID to a passkey. Will be reflected in the next
- * {@link Principal} or {@link ExtendedPrincipal} generated.
+ * Assign a custom user ID to a passkey.
  *
- * **Note:** This does not change the underlying WebAuthn credential's `userId`.
- * Instead we apply a layer of indirection.
+ * This updates Passlock's server-side mapping for the passkey. It does not
+ * change the underlying WebAuthn credential's `userId`.
  *
  * @see {@link Principal}
  * @see {@link ExtendedPrincipal}
  * @see [credential](https://passlock.dev/rest-api/credential/)
  *
  * @param request
+ * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * a passkey and whose error branch contains an API error.
  *
  * @category Passkeys
  */
 export const assignUser = (
-  request: AssignUserOptions
-): Promise<Result<Passkey, NotFoundError | ForbiddenError>> => runSafe(assignUserE(request))
+  request: AssignUserOptions,
+  config: AuthenticatedOptions
+): Promise<Result<Passkey, NotFoundError | ForbiddenError>> => runSafe(assignUserE(request, config))
 
 /**
  * Update a passkey's custom user ID and/or username metadata.
@@ -244,14 +329,17 @@ export const assignUser = (
  * client-side component to simplify end user support.
  *
  * @param request
+ * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * a passkey and whose error branch contains an API error.
  *
  * @category Passkeys
  */
 export const updatePasskey = (
-  request: UpdatePasskeyOptions
-): Promise<Result<Passkey, NotFoundError | ForbiddenError>> => runSafe(updatePasskeyE(request))
+  request: UpdatePasskeyOptions,
+  config: AuthenticatedOptions
+): Promise<Result<Passkey, NotFoundError | ForbiddenError>> =>
+  runSafe(updatePasskeyE(request, config))
 
 /**
  * Update the stored username metadata for all passkeys belonging to a given
@@ -269,6 +357,7 @@ export const updatePasskey = (
  * `updatePasskeyUsernames` helper to update those details on the user's device.
  *
  * @param request
+ * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result}.
  * The success branch contains a user-details update payload whose
  * `credentials` array can be passed into the client's
@@ -277,9 +366,10 @@ export const updatePasskey = (
  * @category Passkeys
  */
 export const updatePasskeyUsernames = (
-  request: UpdateUsernamesOptions
+  request: UpdateUsernamesOptions,
+  config: AuthenticatedOptions
 ): Promise<Result<UpdatedCredentials, NotFoundError | ForbiddenError>> =>
-  runSafe(updatePasskeyUsernamesE(request))
+  runSafe(updatePasskeyUsernamesE(request, config))
 
 /**
  * Delete a passkey from your vault.
@@ -287,20 +377,21 @@ export const updatePasskeyUsernames = (
  * **Note:** The user will still retain the passkey on their device so
  * you will need to either:
  *
- * a) Use the @passlock/browser functions to delete the passkey from the user's device.
- * b) Remind the user to delete the passkey
+ * a) Use the `@passlock/browser` functions to delete the passkey from the user's device.
+ * b) Remind the user to delete the passkey.
  *
  * See [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/) in the documentation.
  *
  * In addition, during authentication you should handle a missing passkey scenario.
  * This happens when a user tries to authenticate with a passkey that is missing from
- * your vault. The @passlock/browser library can help with this. See
+ * your vault. The `@passlock/browser` library can help with this. See
  * [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/)
  *
  * @see [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/)
  * @see [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/)
  *
  * @param options
+ * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * the deleted credential identifiers and whose error branch contains an API
  * error.
@@ -308,14 +399,16 @@ export const updatePasskeyUsernames = (
  * @category Passkeys
  */
 export const deletePasskey = (
-  options: DeletePasskeyOptions
+  options: DeletePasskeyOptions,
+  config: AuthenticatedOptions
 ): Promise<Result<DeletedPasskey, ForbiddenError | NotFoundError>> =>
-  runSafe(deletePasskeyE(options))
+  runSafe(deletePasskeyE(options, config))
 
 /**
  * Delete all passkeys associated with a user.
  *
  * @param request
+ * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result}.
  * The success branch contains a {@link DeletedPasskeys} payload whose
  * `deleted` array can be passed directly into `@passlock/browser`'s
@@ -325,39 +418,46 @@ export const deletePasskey = (
  * @category Passkeys
  */
 export const deleteUserPasskeys = (
-  request: DeleteUserPasskeysOptions
+  request: DeleteUserPasskeysOptions,
+  config: AuthenticatedOptions
 ): Promise<Result<DeletedPasskeys, ForbiddenError | NotFoundError>> =>
-  runSafe(deleteUserPasskeysE(request))
+  runSafe(deleteUserPasskeysE(request, config))
 
 /**
- * Fetch details about a passkey. **Important**: Not to be confused with
- * the {@link exchangeCode} or {@link verifyIdToken} functions, which
- * return details about specific authentication or registration operations.
+ * Fetch details about a passkey.
+ *
+ * **Important:** Not to be confused with the {@link exchangeCode}
+ * or {@link verifyIdToken} functions, which return details about
+ * specific authentication or registration operations.
  * Use this function for passkey management, not authentication.
  *
  * @param options
+ * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * passkey details and whose error branch contains an API error.
  *
  * @category Passkeys
  */
 export const getPasskey = (
-  options: GetPasskeyOptions
-): Promise<Result<Passkey, ForbiddenError | NotFoundError>> => runSafe(getPasskeyE(options))
+  options: GetPasskeyOptions,
+  config: AuthenticatedOptions
+): Promise<Result<Passkey, ForbiddenError | NotFoundError>> => runSafe(getPasskeyE(options, config))
 
 /**
  * List passkeys for the given tenancy. Note: This could return a cursor.
  * If so, call again, passing the cursor back in.
  *
  * @param options
+ * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * a page of passkey summaries and whose error branch contains an API error.
  *
  * @category Passkeys
  */
 export const listPasskeys = (
-  options: ListPasskeyOptions
-): Promise<Result<FindAllPasskeys, ForbiddenError>> => runSafe(listPasskeysE(options))
+  options: ListPasskeyOptions,
+  config: AuthenticatedOptions
+): Promise<Result<FindAllPasskeys, ForbiddenError>> => runSafe(listPasskeysE(options, config))
 
 /**
  * The `@passlock/browser` library generates codes, which you will send to
@@ -376,15 +476,17 @@ export const listPasskeys = (
  * @see {@link ExtendedPrincipal}
  *
  * @param options
+ * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * an extended principal and whose error branch contains an API error.
  *
  * @category Principal
  */
 export const exchangeCode = (
-  options: ExchangeCodeOptions
+  options: ExchangeCodeOptions,
+  config: AuthenticatedOptions
 ): Promise<Result<ExtendedPrincipal, ForbiddenError | InvalidCodeError>> =>
-  runSafe(exchangeCodeE(options))
+  runSafe(exchangeCodeE(options, config))
 
 /**
  * Decode and verify an id_token (JWT) locally.
@@ -398,14 +500,16 @@ export const exchangeCode = (
  * @see {@link Principal}
  *
  * @param options
+ * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * a verified principal and whose error branch contains a verification error.
  *
  * @category Principal
  */
 export const verifyIdToken = (
-  options: VerifyIdTokenOptions
-): Promise<Result<Principal, VerificationError>> => runSafe(verifyIdTokenE(options))
+  options: VerifyIdTokenOptions,
+  config: PasslockOptions
+): Promise<Result<Principal, VerificationError>> => runSafe(verifyIdTokenE(options, config))
 
 /* Re-exports */
 

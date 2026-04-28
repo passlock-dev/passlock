@@ -1,13 +1,15 @@
 /**
+ * Import from `@passlock/browser/safe`;
+ *
  * _safe_ functions, i.e. functions that return result envelopes over the original
  * tagged success and error payloads. Use `result.success` or `result.failure`
- * to branch between success and error outcomes. Existing type guards and `_tag`
- * checks remain supported.
+ * to branch between success and error outcomes.
  *
  * Note: unexpected runtime failures may still throw.
  *
  * @example
- * const result = await registerPasskey({ tenancyId, username: "jdoe@gmail.com" });
+ * const username = "jdoe@gmail.com";
+ * const result = await registerPasskey({ username }, { tenancyId });
  *
  * if (result.success) {
  *   console.log(result.value.code);
@@ -35,6 +37,7 @@ import { Micro, pipe } from "effect"
 import { runToPromise } from "./internal/index.js"
 import type { Result } from "./internal/result.js"
 import { eventLogger, Logger } from "./logger.js"
+import type { PasslockOptions } from "./options.js"
 import type {
   AuthenticationError,
   AuthenticationOptions,
@@ -86,6 +89,16 @@ import {
   updatePasskeyUsernames as updatePasskeyUsernamesM,
 } from "./passkey/signals/signals.js"
 
+type SafeUpdatePasskey = (
+  options: UpdatePasskeyOptions | UpdateCredentialOptions,
+  config: PasslockOptions
+) => Promise<Result<UpdateSuccess, UpdateError>>
+
+type SafeDeletePasskey = (
+  options: DeletePasskeyOptions | DeleteCredentialOptions | OrphanedPasskeyError,
+  config: PasslockOptions
+) => Promise<Result<DeleteSuccess, DeleteError>>
+
 /* Registration */
 
 /**
@@ -94,7 +107,8 @@ import {
  * Send either value to your backend for verification. See
  * [register a passkey](https://passlock.dev/passkeys/registration/) in the documentation.
  *
- * @param options Registration ceremony options and Passlock tenancy details.
+ * @param options Registration ceremony options.
+ * @param config Passlock tenancy and API endpoint options.
  *
  * @returns A {@link Result} whose success branch contains a {@link RegistrationSuccess}
  * and whose error branch contains a {@link RegistrationError}. Existing
@@ -110,7 +124,7 @@ import {
  * const tenancyId = "myTenancyId";
  * const username = "jdoe@gmail.com";
  *
- * const result = await registerPasskey({ tenancyId, username });
+ * const result = await registerPasskey({ username }, { tenancyId });
  *
  * if (result.success) {
  *   // send this to your backend for verification
@@ -129,11 +143,12 @@ import {
  */
 export const registerPasskey = async (
   options: RegistrationOptions,
+  config: PasslockOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<Result<RegistrationSuccess, RegistrationError>> =>
   pipe(
-    registerPasskeyM(options),
+    registerPasskeyM(options, config),
     Micro.provideService(RegistrationHelper, RegistrationHelper.Default),
     Micro.provideService(Logger, logger),
     runToPromise
@@ -147,7 +162,8 @@ export const registerPasskey = async (
  * Send either value to your backend for verification. See
  * [authenticate a passkey](https://passlock.dev/passkeys/authentication/) in the documentation.
  *
- * @param options Authentication ceremony options and Passlock tenancy details.
+ * @param options Authentication ceremony options.
+ * @param config Passlock tenancy and API endpoint options.
  *
  * @returns A {@link Result} whose success branch contains an
  * {@link AuthenticationSuccess} and whose error branch contains an
@@ -163,7 +179,7 @@ export const registerPasskey = async (
  * // from your Passlock console settings
  * const tenancyId = "myTenancyId";
  *
- * const result = await authenticatePasskey({ tenancyId });
+ * const result = await authenticatePasskey({}, { tenancyId });
  *
  * if (result.success) {
  *   // send this to your backend for verification
@@ -180,11 +196,12 @@ export const registerPasskey = async (
  */
 export const authenticatePasskey = (
   options: AuthenticationOptions,
+  config: PasslockOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<Result<AuthenticationSuccess, AuthenticationError>> =>
   pipe(
-    authenticatePasskeyM(options),
+    authenticatePasskeyM(options, config),
     Micro.provideService(AuthenticationHelper, AuthenticationHelper.Default),
     Micro.provideService(Logger, logger),
     runToPromise
@@ -210,6 +227,8 @@ export const authenticatePasskey = (
  * {@link UpdatePasskeyOptions}. {@link UpdateCredentialOptions} is intended
  * for credential-scoped updates, for example when replaying data returned by
  * `@passlock/server`.
+ * @param config Passlock tenancy and API endpoint options. Required when
+ * passing a Passlock passkey ID.
  * @returns A {@link Result} whose success branch contains an
  * {@link UpdateSuccess} after the local update workflow has been started, and
  * whose error branch contains an {@link UpdateError}.
@@ -226,7 +245,7 @@ export const authenticatePasskey = (
  * const username = "newUsername@gmail.com";
  * const displayName = "New Account Name";
  *
- * const result = await updatePasskey({ tenancyId, passkeyId, username, displayName });
+ * const result = await updatePasskey({ passkeyId, username, displayName }, { tenancyId });
  *
  * if (result.success) {
  *   console.log("passkey update requested");
@@ -236,12 +255,26 @@ export const authenticatePasskey = (
  *
  * @category Passkeys (core)
  */
-export const updatePasskey = (
+export function updatePasskey(
+  options: UpdatePasskeyOptions,
+  config: PasslockOptions,
+  /** @hidden */
+  logger?: typeof Logger.Service
+): Promise<Result<UpdateSuccess, UpdateError>>
+export function updatePasskey(
+  options: UpdateCredentialOptions,
+  config?: PasslockOptions,
+  /** @hidden */
+  logger?: typeof Logger.Service
+): Promise<Result<UpdateSuccess, UpdateError>>
+export function updatePasskey(
   options: UpdatePasskeyOptions | UpdateCredentialOptions,
+  config?: PasslockOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<Result<UpdateSuccess, UpdateError>> => {
-  const micro = updatePasskeyM(options)
+): Promise<Result<UpdateSuccess, UpdateError>> {
+  const micro =
+    "rpId" in options ? updatePasskeyM(options) : updatePasskeyM(options, config as PasslockOptions)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
 
@@ -367,6 +400,8 @@ export const deleteUserPasskeys = (
  * @param options You will typically pass {@link DeletePasskeyOptions}. Use
  * {@link DeleteCredentialOptions} or {@link OrphanedPasskeyError} when you
  * already have the credential metadata.
+ * @param config Passlock tenancy and API endpoint options. Required when
+ * passing a Passlock passkey ID.
  * @returns A {@link Result} whose success branch contains a
  * {@link DeleteSuccess} once the local removal workflow has been started, and
  * whose error branch contains a {@link DeleteError}. Existing
@@ -379,7 +414,7 @@ export const deleteUserPasskeys = (
  * const tenancyId = "myTenancyId";
  * const passkeyId = "myPasskeyId";
  *
- * const result = await deletePasskey({ tenancyId, passkeyId });
+ * const result = await deletePasskey({ passkeyId }, { tenancyId });
  *
  * if (result.success) {
  *   console.log("passkey removal requested");
@@ -389,12 +424,26 @@ export const deleteUserPasskeys = (
  *
  * @category Passkeys (core)
  */
-export const deletePasskey = (
+export function deletePasskey(
+  options: DeletePasskeyOptions,
+  config: PasslockOptions,
+  /** @hidden */
+  logger?: typeof Logger.Service
+): Promise<Result<DeleteSuccess, DeleteError>>
+export function deletePasskey(
+  options: DeleteCredentialOptions | OrphanedPasskeyError,
+  config?: PasslockOptions,
+  /** @hidden */
+  logger?: typeof Logger.Service
+): Promise<Result<DeleteSuccess, DeleteError>>
+export function deletePasskey(
   options: DeletePasskeyOptions | DeleteCredentialOptions | OrphanedPasskeyError,
+  config?: PasslockOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<Result<DeleteSuccess, DeleteError>> => {
-  const micro = deletePasskeyM(options)
+): Promise<Result<DeleteSuccess, DeleteError>> {
+  const micro =
+    "rpId" in options ? deletePasskeyM(options) : deletePasskeyM(options, config as PasslockOptions)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
 
@@ -412,6 +461,7 @@ export const deletePasskey = (
  *
  * @param options Pass the passkey IDs you **want to retain** for that account
  * on this device.
+ * @param config Passlock tenancy and API endpoint options.
  * @returns A {@link Result} whose success branch contains a
  * {@link PruningSuccess} once the accepted-credentials signalling attempt has
  * completed, and whose error branch contains a
@@ -426,7 +476,7 @@ export const deletePasskey = (
  * const tenancyId = "myTenancyId";
  * const allowablePasskeyIds = ["passkey-1", "passkey-2"];
  *
- * const result = await prunePasskeys({ tenancyId, allowablePasskeyIds });
+ * const result = await prunePasskeys({ allowablePasskeyIds }, { tenancyId });
  *
  * if (result.success) {
  *   console.log("accepted credentials sync completed");
@@ -438,10 +488,11 @@ export const deletePasskey = (
  */
 export const prunePasskeys = (
   options: PrunePasskeyOptions,
+  config: PasslockOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<Result<PruningSuccess, PruningError>> => {
-  const micro = prunePasskeysM(options)
+  const micro = prunePasskeysM(options, config)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
 
@@ -474,6 +525,67 @@ export const isPasskeyPruningSupport = () => pipe(isPasskeyPruningSupportM, Micr
  * @category Passkeys (other)
  */
 export const isPasskeyUpdateSupport = () => pipe(isPasskeyUpdateSupportM, Micro.runSync)
+
+/* Client */
+
+const updatePasskeySafe = updatePasskey as SafeUpdatePasskey
+const deletePasskeySafe = deletePasskey as SafeDeletePasskey
+
+/**
+ * Safe Passlock browser client.
+ *
+ * Methods return result envelopes over the original success and error payloads.
+ * Use `result.success` or `result.failure` to branch between outcomes.
+ *
+ * @category Clients
+ */
+export class Passlock {
+  readonly config: PasslockOptions
+
+  constructor(config: PasslockOptions) {
+    this.config = config
+  }
+
+  registerPasskey(
+    options: RegistrationOptions
+  ): Promise<Result<RegistrationSuccess, RegistrationError>> {
+    return registerPasskey(options, this.config)
+  }
+
+  authenticatePasskey(
+    options: AuthenticationOptions
+  ): Promise<Result<AuthenticationSuccess, AuthenticationError>> {
+    return authenticatePasskey(options, this.config)
+  }
+
+  updatePasskey(
+    options: UpdatePasskeyOptions | UpdateCredentialOptions
+  ): Promise<Result<UpdateSuccess, UpdateError>> {
+    return updatePasskeySafe(options, this.config)
+  }
+
+  updatePasskeyUsernames(
+    options: ReadonlyArray<UpdateCredentialOptions>
+  ): Promise<Result<UpdateSuccess, UpdateError>> {
+    return updatePasskeyUsernames(options)
+  }
+
+  deletePasskey(
+    options: DeletePasskeyOptions | DeleteCredentialOptions | OrphanedPasskeyError
+  ): Promise<Result<DeleteSuccess, DeleteError>> {
+    return deletePasskeySafe(options, this.config)
+  }
+
+  deleteUserPasskeys(
+    options: ReadonlyArray<Credential>
+  ): Promise<Result<DeleteSuccess, DeleteError>> {
+    return deleteUserPasskeys(options)
+  }
+
+  prunePasskeys(options: PrunePasskeyOptions): Promise<Result<PruningSuccess, PruningError>> {
+    return prunePasskeys(options, this.config)
+  }
+}
 
 /* Re-exports */
 

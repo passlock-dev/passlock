@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
 	import { registerPasskey, deletePasskey } from '$lib/client/passkeys';
-	import { KeyRound, Trash2 } from '@lucide/svelte';
+	import { KeyRound, Loader, Trash2 } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 	import DevNotes from '$lib/components/DevNotes.svelte';
+	import SubmitButton from '$lib/components/SubmitButton.svelte';
 
 	let { data }: PageProps = $props();
 	let passkeys = $derived(data.existingPasskeys);
@@ -21,15 +22,18 @@
 		error = '';
 		loading = true;
 
+		const config = { tenancyId: data.tenancyId, endpoint: data.endpoint };
+
 		// Browser-side registration creates the passkey locally, then the server
 		// verifies and links it to the signed-in account.
-		const result = await registerPasskey({
-			tenancyId: data.tenancyId,
-			endpoint: data.endpoint,
-			email: data.user.email,
-			displayName: `${data.user.givenName} ${data.user.familyName}`.trim(),
-			existingPasskeys
-		});
+		const result = await registerPasskey(
+			{
+				email: data.user.email,
+				displayName: `${data.user.givenName} ${data.user.familyName}`.trim(),
+				existingPasskeys
+			},
+			config
+		);
 
 		if (result._tag === '@error/CreatePasskeyError') {
 			error = result.message;
@@ -85,13 +89,13 @@
 				Create a passkey to sign in faster and without waiting for an email code.
 			</p>
 
-			<button
-				type="button"
-				class="btn mt-6 w-full btn-primary"
+			<SubmitButton
+				class="mt-6 w-full"
 				onclick={createPasskey}
+				{loading}
 				disabled={loading || deletingPasskeyId !== null}>
-				{#if loading}Creating...{:else}Create a passkey{/if}
-			</button>
+				Create a passkey
+			</SubmitButton>
 
 			{#if info}
 				<p class="mt-4 text-sm text-success">{info}</p>
@@ -136,7 +140,7 @@
 							disabled={loading || deletingPasskeyId === passkey.passkeyId}
 							onclick={() => removePasskey(passkey.passkeyId)}>
 							{#if deletingPasskeyId === passkey.passkeyId}
-								<span class="loading loading-xs loading-spinner"></span>
+								<Loader class="animate-spin duration-[4s]" />
 							{:else}
 								<Trash2 />
 							{/if}

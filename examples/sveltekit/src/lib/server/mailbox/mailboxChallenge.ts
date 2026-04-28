@@ -1,5 +1,5 @@
-import * as PasslockServer from '@passlock/server/safe';
-import type { MailboxChallengeDetails, MailboxChallengeMetadata } from '@passlock/server/safe';
+import * as PasslockServer from '@passlock/server';
+import type { MailboxChallengeDetails, MailboxChallengeMetadata } from '@passlock/server';
 import { error as kitError } from '@sveltejs/kit';
 import {
 	CHALLENGE_RATE_LIMIT_READY_MESSAGE,
@@ -36,10 +36,7 @@ export type ChallengeAttemptsExceededError = PasslockServer.ChallengeAttemptsExc
 export const getPasslockMailboxChallenge = async (input: {
 	challengeId: string;
 }): Promise<MailboxChallengeDetails | null> => {
-	const result = await PasslockServer.getMailboxChallenge({
-		...getPasslockConfig(),
-		...input
-	});
+	const result = await PasslockServer.getMailboxChallenge(input, getPasslockConfig());
 
 	if (result.failure) {
 		if (PasslockServer.isNotFoundError(result.error)) {
@@ -65,10 +62,7 @@ export const createPasslockMailboxChallenge = async (input: {
 	invalidateOthers?: boolean;
 	skipRateLimit?: boolean;
 }): Promise<PasslockServer.MailboxChallengeCreated | ChallengeRateLimitedError> => {
-	const result = await PasslockServer.createMailboxChallenge({
-		...getPasslockConfig(),
-		...input
-	});
+	const result = await PasslockServer.createMailboxChallenge(input, getPasslockConfig());
 
 	if (result.failure) {
 		if (PasslockServer.isChallengeRateLimitedError(result)) {
@@ -95,10 +89,7 @@ export const verifyPasslockMailboxChallenge = async (input: {
 	| ChallengeExpiredError
 	| ChallengeAttemptsExceededError
 > => {
-	const result = await PasslockServer.verifyMailboxChallenge({
-		...getPasslockConfig(),
-		...input
-	});
+	const result = await PasslockServer.verifyMailboxChallenge(input, getPasslockConfig());
 
 	if (!result.success) {
 		if (result._tag === '@error/Forbidden') {
@@ -150,6 +141,11 @@ export const createInvalidChallengeError = (message: string): InvalidChallengeEr
 	message
 });
 
+const isInvalidChallengeError = (value: unknown): value is InvalidChallengeError =>
+	typeof value === 'object' &&
+	value !== null &&
+	(value as { _tag?: unknown })._tag === '@error/InvalidChallenge';
+
 /**
  * Minimal metadata schema common to every flow. The `processExpiresAt`
  * timestamp bounds the local process flow (e.g. how long the user has from
@@ -186,21 +182,15 @@ export const validateMailboxChallenge = <TMetadata extends BaseMetadata>(
 		purpose: string;
 		metadataSchema: MailboxMetadataSchema;
 		expiredMessage: string;
-		invalidPurposeMessage?: string;
-		invalidMetadataMessage?: string;
 	}
 ): ValidatedMailboxChallenge<TMetadata> | InvalidChallengeError => {
 	if (details.purpose !== options.purpose) {
-		return createInvalidChallengeError(
-			options.invalidPurposeMessage ?? `Challenge purpose does not match ${options.purpose} flow`
-		);
+		return createInvalidChallengeError(`Challenge purpose does not match ${options.purpose} flow`);
 	}
 
 	const parsed = v.safeParse(options.metadataSchema, details.metadata);
 	if (!parsed.success) {
-		return createInvalidChallengeError(
-			options.invalidMetadataMessage ?? 'Challenge metadata is malformed'
-		);
+		return createInvalidChallengeError('Challenge metadata is malformed');
 	}
 
 	const metadata = parsed.output as TMetadata;
@@ -215,6 +205,41 @@ export const validateMailboxChallenge = <TMetadata extends BaseMetadata>(
 		userId: details.userId,
 		metadata
 	};
+};
+
+/**
+ * Read a pending mailbox challenge and project it into a flow-specific type,
+ * returning null when the challenge is missing or fails validation.
+ */
+export const getProjectedMailboxChallenge = async <TChallenge>(
+	challengeId: string,
+	project: (details: PasslockServer.MailboxChallengeDetails) => TChallenge | InvalidChallengeError
+): Promise<TChallenge | null> => {
+	const details = await getPasslockMailboxChallenge({ challengeId });
+	if (!details) return null;
+
+	const result = project(details);
+	return isInvalidChallengeError(result) ? null : result;
+};
+
+/**
+ * Verify a mailbox challenge code and project the resulting challenge into a
+ * flow-specific type, surfacing both verification and projection errors.
+ */
+export const verifyAndProjectMailboxChallenge = async <TChallenge>(
+	input: { challengeId: string; secret: string; code: string },
+	project: (details: PasslockServer.MailboxChallengeDetails) => TChallenge | InvalidChallengeError
+): Promise<
+	| TChallenge
+	| InvalidChallengeError
+	| InvalidChallengeCodeError
+	| ChallengeExpiredError
+	| ChallengeAttemptsExceededError
+> => {
+	const result = await verifyPasslockMailboxChallenge(input);
+	if (result._tag !== 'ChallengeVerified') return result;
+
+	return project(result.challenge);
 };
 
 /**

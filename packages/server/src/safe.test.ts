@@ -50,7 +50,7 @@ describe("safe result envelopes", () => {
     )
 
     const { exchangeCode, isExtendedPrincipal } = await import("./safe.js")
-    const result = await exchangeCode({ apiKey, code, tenancyId })
+    const result = await exchangeCode({ code }, { apiKey, tenancyId })
 
     expect(result.success).toBe(true)
     expect(result.failure).toBe(false)
@@ -96,13 +96,14 @@ describe("safe result envelopes", () => {
     )
 
     const { createMailboxChallenge, isMailboxChallengeCreated } = await import("./safe.js")
-    const result = await createMailboxChallenge({
-      apiKey,
-      email: "user@example.com",
-      purpose: "LOGIN_CODE",
-      skipRateLimit: true,
-      tenancyId,
-    })
+    const result = await createMailboxChallenge(
+      {
+        email: "user@example.com",
+        purpose: "LOGIN_CODE",
+        skipRateLimit: true,
+      },
+      { apiKey, tenancyId }
+    )
 
     expect(result.success).toBe(true)
     expect(result.failure).toBe(false)
@@ -133,13 +134,14 @@ describe("safe result envelopes", () => {
     )
 
     const { createMailboxChallenge, isChallengeRateLimitedError } = await import("./safe.js")
-    const result = await createMailboxChallenge({
-      apiKey,
-      email: "user@example.com",
-      purpose: "LOGIN_CODE",
-      skipRateLimit: false,
-      tenancyId,
-    })
+    const result = await createMailboxChallenge(
+      {
+        email: "user@example.com",
+        purpose: "LOGIN_CODE",
+        skipRateLimit: false,
+      },
+      { apiKey, tenancyId }
+    )
 
     expect(result.success).toBe(false)
     expect(result.failure).toBe(true)
@@ -173,7 +175,7 @@ describe("safe result envelopes", () => {
     )
 
     const { exchangeCode, isInvalidCodeError } = await import("./safe.js")
-    const result = await exchangeCode({ apiKey, code, tenancyId })
+    const result = await exchangeCode({ code }, { apiKey, tenancyId })
 
     expect(result.success).toBe(false)
     expect(result.failure).toBe(true)
@@ -206,13 +208,14 @@ describe("safe result envelopes", () => {
     )
 
     const { isInvalidChallengeCodeError, verifyMailboxChallenge } = await import("./safe.js")
-    const result = await verifyMailboxChallenge({
-      apiKey,
-      challengeId,
-      code: "000000",
-      secret: "secret",
-      tenancyId,
-    })
+    const result = await verifyMailboxChallenge(
+      {
+        challengeId,
+        code: "000000",
+        secret: "secret",
+      },
+      { apiKey, tenancyId }
+    )
 
     expect(result.success).toBe(false)
     expect(result.failure).toBe(true)
@@ -242,13 +245,14 @@ describe("safe result envelopes", () => {
     )
 
     const { verifyMailboxChallenge } = await import("./safe.js")
-    const result = await verifyMailboxChallenge({
-      apiKey,
-      challengeId,
-      code: "123456",
-      secret: "secret",
-      tenancyId,
-    })
+    const result = await verifyMailboxChallenge(
+      {
+        challengeId,
+        code: "123456",
+        secret: "secret",
+      },
+      { apiKey, tenancyId }
+    )
 
     expect(result.success).toBe(true)
     expect(result.failure).toBe(false)
@@ -274,11 +278,12 @@ describe("safe result envelopes", () => {
     )
 
     const { getMailboxChallenge, isMailboxChallengeDetails } = await import("./safe.js")
-    const result = await getMailboxChallenge({
-      apiKey,
-      challengeId,
-      tenancyId,
-    })
+    const result = await getMailboxChallenge(
+      {
+        challengeId,
+      },
+      { apiKey, tenancyId }
+    )
 
     expect(result.success).toBe(true)
     expect(result.failure).toBe(false)
@@ -308,11 +313,12 @@ describe("safe result envelopes", () => {
     )
 
     const { getMailboxChallenge, isNotFoundError } = await import("./safe.js")
-    const result = await getMailboxChallenge({
-      apiKey,
-      challengeId,
-      tenancyId,
-    })
+    const result = await getMailboxChallenge(
+      {
+        challengeId,
+      },
+      { apiKey, tenancyId }
+    )
 
     expect(result.success).toBe(false)
     expect(result.failure).toBe(true)

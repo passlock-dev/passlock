@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { createChallengeRateLimitView } from './mailbox/mailboxChallenge';
-import { sendCodeChallengeEmail } from './email.js';
+import { sendMailboxVerificationEmail } from './email/index.js';
 import type { PendingChallengeCookie } from './cookies.js';
 import type { ResendRedirectLocation } from '$lib/shared/routes.js';
 
@@ -51,34 +51,29 @@ export const resendErrorResponse = (message = 'Unable to send a new code.', stat
  * challenge. Flow-specific redirect decisions stay in the caller via
  * `onErrorResult`.
  */
-export const resendMailboxChallenge = async <
-	TResult extends CreatedChallengeLike | ChallengeRateLimitedLike | { _tag: string }
->(options: {
-	create: () => Promise<TResult>;
+export const resendMailboxChallenge = async <TError extends { _tag: string }>(options: {
+	create: () => Promise<CreatedChallengeLike | ChallengeRateLimitedLike | TError>;
 	setPendingCookie: (pending: PendingChallengeCookie) => void;
-	onErrorResult: (
-		result: Exclude<TResult, CreatedChallengeLike | ChallengeRateLimitedLike>
-	) => Response | Promise<Response>;
+	onErrorResult: (result: TError) => Response | Promise<Response>;
 }): Promise<Response> => {
 	const result = await options.create();
 
 	if (result._tag === '@error/ChallengeRateLimited') {
-		const rateLimited = result as Extract<TResult, ChallengeRateLimitedLike>;
+		const rateLimited = result as ChallengeRateLimitedLike;
 		return resendRateLimitResponse(rateLimited.retryAfterSeconds);
 	}
 
 	if (result._tag !== 'CreatedChallenge') {
-		return options.onErrorResult(
-			result as Exclude<TResult, CreatedChallengeLike | ChallengeRateLimitedLike>
-		);
+		return options.onErrorResult(result as TError);
 	}
 
-	const created = result as Extract<TResult, CreatedChallengeLike>;
+	const created = result as CreatedChallengeLike;
 
-	await sendCodeChallengeEmail({
+	await sendMailboxVerificationEmail({
+		subject: 'Your verification code',
 		recipientEmail: created.challenge.email,
-		code: created.code,
-		message: created.message
+		body: created.message,
+		code: created.code
 	});
 
 	options.setPendingCookie({

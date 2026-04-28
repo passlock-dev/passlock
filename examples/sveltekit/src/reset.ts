@@ -1,13 +1,9 @@
 import db from '$lib/server/db';
 import { passkeysTable, sessionsTable, usersTable } from '$lib/server/dbSchema';
-import {
-	PUBLIC_PASSLOCK_TENANCY_ID as tenancyId,
-	PUBLIC_PASSLOCK_ENDPOINT as endpoint
-} from '$env/static/public';
-import { PASSLOCK_API_KEY as apiKey } from '$env/static/private';
-import { deletePasskey } from '@passlock/server';
+import { getPasslockConfig } from '$lib/server/passlock';
+import { confirm, intro, isCancel, log, outro } from '@clack/prompts';
+import * as PasslockServer from '@passlock/server';
 import { eq } from 'drizzle-orm';
-import { intro, outro, log, confirm, isCancel } from '@clack/prompts';
 
 const findAllPasskeys = async () => {
 	const passkeys = await db
@@ -18,9 +14,8 @@ const findAllPasskeys = async () => {
 
 const deletePasskeys = async (passkeyIds: Array<string>) => {
 	for (const passkeyId of passkeyIds) {
-		try {
-			await deletePasskey({ tenancyId, apiKey, endpoint, passkeyId });
-		} catch {
+		const result = await PasslockServer.deletePasskey({ passkeyId }, getPasslockConfig());
+		if (!result.success) {
 			log.warn('Warning: passkey no longer exists in Passlock vault');
 		}
 		await db.delete(passkeysTable).where(eq(passkeysTable.passkeyId, passkeyId));

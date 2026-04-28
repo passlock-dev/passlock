@@ -20,7 +20,7 @@ import type { Millis, UserVerification } from "../shared.js"
  *
  * @category Passkeys (core)
  */
-export interface AuthenticationOptions extends PasslockOptions {
+export interface AuthenticationOptions {
   /**
    * Restrict the passkeys the device can present to the user to this set.
    *
@@ -144,7 +144,7 @@ export const isAuthenticationSuccess = (payload: unknown): payload is Authentica
   return payload._tag === AuthenticationSuccessTag
 }
 
-export const fetchOptions = (options: Omit<AuthenticationOptions, keyof PasslockOptions>) =>
+export const fetchOptions = (options: AuthenticationOptions) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
     const { endpoint } = yield* Micro.service(Endpoint)
@@ -312,14 +312,16 @@ export type AuthenticationError =
  * Trigger local passkey authentication then verify the passkey in your Passlock vault.
  * Returns a code and id_token that can be exchanged/decoded in your backend.
  *
- * @param options Authentication ceremony options and Passlock tenancy details.
+ * @param options Authentication ceremony options.
+ * @param config Passlock tenancy and API endpoint options.
  * @returns A Micro effect that resolves with {@link AuthenticationSuccess} or
  * fails with {@link AuthenticationError}.
  */
 export const authenticatePasskey = (
-  options: AuthenticationOptions
+  options: AuthenticationOptions,
+  config: PasslockOptions
 ): Micro.Micro<AuthenticationSuccess, AuthenticationError, Logger | AuthenticationHelper> => {
-  const endpoint = makeEndpoint(options)
+  const endpoint = makeEndpoint(config)
 
   const micro = Micro.gen(function* () {
     const { sessionToken, optionsJSON } = yield* fetchOptions(options)
@@ -348,7 +350,7 @@ export const authenticatePasskey = (
 
   return pipe(
     micro,
-    Micro.provideService(TenancyId, options),
+    Micro.provideService(TenancyId, config),
     Micro.provideService(Endpoint, endpoint)
   )
 }

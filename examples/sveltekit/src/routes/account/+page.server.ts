@@ -3,15 +3,19 @@ import { createChallengeRateLimitView } from '$lib/server/mailbox/mailboxChallen
 import { createOrRefreshEmailChallenge } from '$lib/server/mailbox/emailChange.js';
 import { updateUserNames } from '$lib/server/repository.js';
 import { requireAccountContext } from '$lib/server/account.js';
-import { sendCodeChallengeEmail } from '$lib/server/email.js';
+import { sendMailboxVerificationEmail } from '$lib/server/email';
 import { setEmailChangeCookie } from '$lib/server/cookies.js';
 import { getPasslockClientConfig } from '$lib/server/passkeys.js';
 import { getAccountQueryState, type AccountEmailErrorReason } from '$lib/shared/queryState.js';
+import type { AccountEmailFormMessage } from '$lib/shared/challengeRateLimit.js';
 import { EmailSchema, ProfileSchema } from '$lib/shared/schemas.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
+import * as v from 'valibot';
 import { message, setError, setMessage, superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
+
+type AccountEmailFormData = v.InferOutput<typeof EmailSchema>;
 
 const createProfileForm = (input?: { givenName?: string; familyName?: string }) =>
 	superValidate(
@@ -23,11 +27,15 @@ const createProfileForm = (input?: { givenName?: string; familyName?: string }) 
 		{ id: 'profile-form' }
 	);
 
-const createEmailForm = (input?: { email?: string }, options?: { errors?: boolean }) =>
-	superValidate({ email: input?.email }, valibot(EmailSchema), {
-		id: 'email-form',
-		errors: options?.errors
-	});
+const createAccountEmailForm = (input?: { email?: string }, options?: { errors?: boolean }) =>
+	superValidate<AccountEmailFormData, AccountEmailFormMessage>(
+		{ email: input?.email },
+		valibot(EmailSchema),
+		{
+			id: 'email-form',
+			errors: options?.errors
+		}
+	);
 
 /**
  * The user submitted the form but the authentication timestamp expired.
@@ -37,7 +45,7 @@ const createEmailForm = (input?: { email?: string }, options?: { errors?: boolea
  */
 const authenticationRequired = (
 	profileForm: Awaited<ReturnType<typeof createProfileForm>>,
-	emailForm: Awaited<ReturnType<typeof createEmailForm>>,
+	accountEmailForm: Awaited<ReturnType<typeof createAccountEmailForm>>,
 	formToDisplayError: 'profile' | 'email',
 	user: Awaited<ReturnType<typeof requireAccountContext>>['user'],
 	hasPasskeys: boolean
@@ -47,13 +55,13 @@ const authenticationRequired = (
 			setError(profileForm, 'Confirm your passkey before saving account changes.');
 			break;
 		case 'email':
-			setError(emailForm, 'Confirm your passkey before saving account changes.');
+			setError(accountEmailForm, 'Confirm your passkey before saving account changes.');
 			break;
 	}
 
 	return fail(400, {
 		profileForm,
-		emailForm,
+		accountEmailForm,
 		currentEmail: user.email,
 		hasPasskeys
 	});
@@ -86,7 +94,7 @@ export const load = (async ({ locals, url }) => {
 	// has expired we redirect them back to the account page but
 	// we pre-fill the email so they don't have to enter it again
 	// see /verify-email/+server.ts#redirectToAccountWithError
-	const emailForm = await createEmailForm(
+	const accountEmailForm = await createAccountEmailForm(
 		// this is the NEW email address
 		{ email },
 		{ errors: false }
@@ -95,21 +103,20 @@ export const load = (async ({ locals, url }) => {
 	// After the user successfully enters the email verification code
 	// they are redirected back here with ?email-updated=1
 	// see /verify-email/+server.ts (~ line 140)
-	const emailStatusMessage = emailUpdated ? 'Email address updated.' : null;
-	if (emailStatusMessage) setMessage(emailForm, emailStatusMessage);
+	if (emailUpdated)
+		setMessage(accountEmailForm, { type: 'success', text: 'Email address updated.' });
 
 	// If we couldn't verify the new email address
 	// the user is redirected back here with a failure code
 	const emailStatusError = getEmailStatusError(emailError);
-	if (emailStatusError) setError(emailForm, emailStatusError);
+	if (emailStatusError) setError(accountEmailForm, emailStatusError);
 
 	return {
 		profileForm,
-		emailForm,
-		emailRateLimit: null,
+		accountEmailForm,
 		currentEmail: user.email,
 		hasPasskeys,
-		clearQueryState: emailUpdated || emailStatusError,
+		clearQueryStateOnLoad: emailUpdated || emailStatusError,
 		syncPasskeysOnLoad: emailUpdated && hasPasskeys,
 		...passlockConfig
 	};
@@ -119,7 +126,7 @@ export const actions = {
 	profile: async ({ request, locals }) => {
 		const { user, hasPasskeys, reauthenticationRequired } = await requireAccountContext(locals);
 
-		const emailForm = await createEmailForm(undefined, { errors: false });
+		const accountEmailForm = await createAccountEmailForm(undefined, { errors: false });
 		const profileForm = await superValidate(request, valibot(ProfileSchema), {
 			id: 'profile-form'
 		});
@@ -127,7 +134,7 @@ export const actions = {
 		if (!profileForm.valid) {
 			return fail(400, {
 				profileForm,
-				emailForm,
+				accountEmailForm,
 				currentEmail: user.email,
 				hasPasskeys
 			});
@@ -135,7 +142,7 @@ export const actions = {
 
 		if (reauthenticationRequired) {
 			// The server enforces the same re-auth rule as the client helper.
-			return authenticationRequired(profileForm, emailForm, 'profile', user, hasPasskeys);
+			return authenticationRequired(profileForm, accountEmailForm, 'profile', user, hasPasskeys);
 		}
 
 		const updatedUser = await updateUserNames(user.userId, {
@@ -147,7 +154,7 @@ export const actions = {
 			setError(profileForm, 'givenName', 'Unable to update this account');
 			return fail(400, {
 				profileForm,
-				emailForm,
+				accountEmailForm,
 				currentEmail: user.email,
 				hasPasskeys
 			});
@@ -163,24 +170,26 @@ export const actions = {
 			familyName: user.familyName
 		});
 
-		const emailForm = await superValidate(request, valibot(EmailSchema), {
-			id: 'email-form'
-		});
+		const accountEmailForm = await superValidate<AccountEmailFormData, AccountEmailFormMessage>(
+			request,
+			valibot(EmailSchema),
+			{ id: 'email-form' }
+		);
 
-		if (!emailForm.valid) {
+		if (!accountEmailForm.valid) {
 			return fail(400, {
 				profileForm,
-				emailForm,
+				accountEmailForm,
 				currentEmail: user.email,
 				hasPasskeys
 			});
 		}
 
-		if (emailForm.data.email === user.email) {
-			setError(emailForm, 'email', 'Enter a different email address.');
+		if (accountEmailForm.data.email === user.email) {
+			setError(accountEmailForm, 'email', 'Enter a different email address.');
 			return fail(400, {
 				profileForm,
-				emailForm,
+				accountEmailForm,
 				currentEmail: user.email,
 				hasPasskeys
 			});
@@ -189,14 +198,14 @@ export const actions = {
 		if (reauthenticationRequired) {
 			// Changing the sign-in email is sensitive, so it requires a recent
 			// passkey confirmation when the account has passkeys.
-			return authenticationRequired(profileForm, emailForm, 'email', user, hasPasskeys);
+			return authenticationRequired(profileForm, accountEmailForm, 'email', user, hasPasskeys);
 		}
 
 		// We do not change the email immediately. First we verify that the user
 		// controls the replacement address by sending a code there.
 		const result = await createOrRefreshEmailChallenge({
 			userId: user.userId,
-			email: emailForm.data.email
+			email: accountEmailForm.data.email
 		});
 
 		// shouldn't normally happen but could occur
@@ -207,29 +216,31 @@ export const actions = {
 		}
 
 		if (result._tag === '@error/DuplicateUser') {
-			setError(emailForm, 'email', 'That email address is already in use.');
+			setError(accountEmailForm, 'email', 'That email address is already in use.');
 			return fail(400, {
 				profileForm,
-				emailForm,
+				accountEmailForm,
 				currentEmail: user.email,
 				hasPasskeys
 			});
 		}
 		if (result._tag === '@error/ChallengeRateLimited') {
-			return fail(429, {
-				profileForm,
-				emailForm,
-				emailRateLimit: createChallengeRateLimitView(result.retryAfterSeconds),
-				currentEmail: user.email,
-				hasPasskeys
-			});
+			return message(
+				accountEmailForm,
+				{
+					type: 'rateLimited',
+					rateLimit: createChallengeRateLimitView(result.retryAfterSeconds)
+				},
+				{ status: 429 }
+			);
 		}
 
 		// The email contains the user-facing code; the cookie stores the secret.
-		await sendCodeChallengeEmail({
+		await sendMailboxVerificationEmail({
+			subject: 'Verify your email address',
 			recipientEmail: result.challenge.email,
-			code: result.code,
-			message: result.message
+			body: result.message,
+			code: result.code
 		});
 
 		// Verification requires both the code and this secret-bearing cookie.

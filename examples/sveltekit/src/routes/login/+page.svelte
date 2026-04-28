@@ -4,38 +4,19 @@
 	import { resolve } from '$app/paths';
 	import ChallengeRateLimitNotice from '$lib/components/ChallengeRateLimitNotice.svelte';
 	import DevNotes from '$lib/components/DevNotes.svelte';
-	import type { ChallengeRateLimitView } from '$lib/shared/challengeRateLimit.js';
+	import EmailInput from '$lib/components/EmailInput.svelte';
+	import SubmitButton from '$lib/components/SubmitButton.svelte';
+	import Link from '$lib/components/Link.svelte';
+	import FormErrors from '$lib/components/FormErrors.svelte';
 
-	let { data, form: actionData }: PageProps = $props();
-	type RateLimit = ChallengeRateLimitView | null;
+	let { data }: PageProps = $props();
 
-	const getActionRateLimit = (value: PageProps['form']): RateLimit | undefined => {
-		if (!value || typeof value !== 'object' || !('rateLimit' in value)) return undefined;
-		return value.rateLimit as RateLimit;
-	};
-
-	const getInitialRateLimit = (): RateLimit => {
-		const initialActionRateLimit = getActionRateLimit(actionData);
-		return initialActionRateLimit === undefined ? data.rateLimit : initialActionRateLimit;
-	};
-
-	const isRateLimitActive = (value: RateLimit) => Boolean(value && value.retryAfterSeconds > 0);
-
-	const initialRateLimit = getInitialRateLimit();
-	let rateLimit = $state<RateLimit>(initialRateLimit);
-	let rateLimitActive = $state(isRateLimitActive(initialRateLimit));
-
-	$effect(() => {
-		const nextRateLimit = getActionRateLimit(actionData);
-		if (nextRateLimit === undefined) return;
-
-		rateLimit = nextRateLimit;
-		rateLimitActive = isRateLimitActive(nextRateLimit);
-	});
+	let rateLimitActive = $state(false);
 
 	/* can be ignored as superforms uses stores for dynamic state */
 	// svelte-ignore state_referenced_locally
-	const { form, errors } = superForm(data.form);
+	const superform = superForm(data.form);
+	const { enhance, delayed, message } = superform;
 </script>
 
 <svelte:head>
@@ -43,53 +24,34 @@
 </svelte:head>
 
 <div class="flex h-full w-full items-center justify-center">
-	<form method="POST" class="rounded-lg bg-base-200 p-10 pt-8">
+	<form method="post" use:enhance class="rounded-lg bg-base-200 p-10 pt-8">
 		<h2 class="text-center text-xl font-semibold">Login</h2>
 
-		{#if data.notice}
-			<p class="mt-3 max-w-xs text-center text-sm text-error">{data.notice}</p>
-		{/if}
-
-		{#if rateLimit}
+		{#if $message?.type === 'notice'}
+			<p class="mt-3 max-w-xs text-center text-sm text-error">{$message.text}</p>
+		{:else if $message?.type === 'rateLimited'}
 			<ChallengeRateLimitNotice
-				onActiveChange={(active) => {
-					rateLimitActive = active;
+				rateLimit={$message.rateLimit}
+				onActiveChange={(isActive) => {
+					rateLimitActive = isActive;
 				}}
-				{rateLimit}
-				className="mt-3 max-w-xs text-center text-sm" />
+				class="mt-3 max-w-xs text-center text-sm" />
 		{/if}
 
-		{#if $errors._errors}
-			{#each $errors._errors as error (error)}
-				<p class="mt-3 max-w-xs text-center text-sm text-error">{error}</p>
-			{/each}
-		{/if}
+		<FormErrors {superform} />
 
-		<fieldset class="fieldset w-xs">
-			<label for="username" class="label">Email</label>
-			<input
-				id="username"
-				type="email"
-				autocomplete="email"
-				name="username"
-				class={['input', { 'input-error': $errors.username }]}
-				bind:value={$form.username}
-				required />
-			{#if $errors.username}<span class="text-error">{$errors.username}</span>{/if}
-
-			<button class="btn mt-4 btn-primary" disabled={rateLimitActive}>Continue</button>
+		<fieldset class="mt-3 fieldset w-xs">
+			<EmailInput {superform} field="email" label="Account email" autocomplete="email" required />
+			<SubmitButton loading={$delayed} disabled={rateLimitActive}>Continue</SubmitButton>
 		</fieldset>
 
 		<p class="mt-4 text-center text-sm">
 			Prefer passkeys?
-			<a href={resolve('/login/passkey')} class="ml-1 text-primary hover:underline">
-				Login using your passkey
-			</a>
+			<Link href={resolve('/login/passkey')} class="ml-1">Login using your passkey</Link>
 		</p>
 		<p class="mt-1 text-center text-sm">
-			Not yet a member? <a href={resolve('/signup')} class="ml-1 text-primary hover:underline">
-				Sign up
-			</a>
+			Not yet a member?
+			<Link href={resolve('/signup')} class="ml-1">Sign up</Link>
 		</p>
 	</form>
 </div>

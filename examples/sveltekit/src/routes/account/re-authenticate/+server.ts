@@ -5,7 +5,7 @@ import {
 	refreshPasskeyAuthenticatedAt
 } from '$lib/server/repository.js';
 import { json } from '@sveltejs/kit';
-import { exchangeCode } from '@passlock/server/safe';
+import * as PasslockServer from '@passlock/server';
 import type { RequestHandler } from './$types';
 import * as v from 'valibot';
 
@@ -36,10 +36,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		return errorResponse('Invalid request. Expected code.', 400);
 	}
 
-	const principal = await exchangeCode({
-		...getPasslockConfig(),
-		code: payload.output.code
-	});
+	const principal = await PasslockServer.exchangeCode(
+		{
+			code: payload.output.code
+		},
+		getPasslockConfig()
+	);
 
 	if (principal.failure) {
 		const status = principal._tag === '@error/InvalidCode' ? 401 : 500;

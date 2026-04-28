@@ -45,7 +45,7 @@ export interface MailboxChallengeMetadata {
 }
 
 /**
- * needed to ensure the MailboxChallengeMetadata === MailboxChallengeMetadata.Type
+ * Ensures the public MailboxChallengeMetadata type matches the runtime schema.
  * @internal
  */
 export type _MailboxChallengeMetadata = satisfy<
@@ -80,7 +80,7 @@ export const isMailboxChallengeDetails = (payload: unknown): payload is MailboxC
   Schema.is(ChallengeSchemas.ReadableChallenge)(payload)
 
 /**
- * needed to ensure the MailboxChallengeDetails === MailboxChallengeDetails.Type
+ * Ensures the public MailboxChallengeDetails type matches the runtime schema.
  * @internal
  */
 export type _MailboxChallengeDetails = satisfy<
@@ -138,7 +138,7 @@ export const isMailboxChallenge = (payload: unknown): payload is MailboxChalleng
   Schema.is(ChallengeSchemas.CreatedChallenge)(payload)
 
 /**
- * needed to ensure the MailboxChallenge === MailboxChallenge.Type
+ * Ensures the public MailboxChallenge type matches the runtime schema.
  * @internal
  */
 export type _MailboxChallenge = satisfy<
@@ -169,7 +169,7 @@ export const isMailboxChallengeCreated = (payload: unknown): payload is MailboxC
   Schema.is(ChallengeSchemas.ChallengeCreated)(payload)
 
 /**
- * needed to ensure the MailboxChallengeCreated === MailboxChallengeCreated.Type
+ * Ensures the public MailboxChallengeCreated type matches the runtime schema.
  * @internal
  */
 export type _MailboxChallengeCreated = satisfy<
@@ -199,7 +199,7 @@ export const isMailboxChallengeVerified = (payload: unknown): payload is Mailbox
   Schema.is(ChallengeSchemas.ChallengeVerified)(payload)
 
 /**
- * needed to ensure the MailboxChallengeVerified === MailboxChallengeVerified.Type
+ * Ensures the public MailboxChallengeVerified type matches the runtime schema.
  * @internal
  */
 export type _MailboxChallengeVerified = satisfy<
@@ -227,7 +227,7 @@ export const isMailboxChallengeDeleted = (payload: unknown): payload is MailboxC
   Schema.is(ChallengeSchemas.ChallengeDeleted)(payload)
 
 /**
- * needed to ensure the MailboxChallengeDeleted === MailboxChallengeDeleted.Type
+ * Ensures the public MailboxChallengeDeleted type matches the runtime schema.
  * @internal
  */
 export type _MailboxChallengeDeleted = satisfy<
@@ -247,7 +247,7 @@ const decodeResponseJson = <A, I, R>(response: NetworkResponse, schema: Schema.S
  *
  * @category Mailbox
  */
-export interface CreateMailboxChallengeOptions extends AuthenticatedOptions {
+export interface CreateMailboxChallengeOptions {
   /**
    * Recipient email address for the challenge.
    */
@@ -298,7 +298,8 @@ export interface CreateMailboxChallengeOptions extends AuthenticatedOptions {
  * {@link verifyMailboxChallenge}. Use the raw `code` if you want to render
  * your own email content instead of sending the provided message body.
  *
- * @param options Request options including challenge details.
+ * @param options Mailbox challenge-specific request options.
+ * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with the created mailbox challenge payload.
  *
@@ -306,13 +307,14 @@ export interface CreateMailboxChallengeOptions extends AuthenticatedOptions {
  */
 export const createMailboxChallenge = (
   options: CreateMailboxChallengeOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Effect.Effect<MailboxChallengeCreated, ForbiddenError | ChallengeRateLimitedError> =>
   pipe(
     Effect.gen(function* () {
-      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
-      const { tenancyId, email, purpose, userId, metadata, invalidateOthers, skipRateLimit } =
-        options
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId } = config
+      const { email, purpose, userId, metadata, invalidateOthers, skipRateLimit } = options
 
       const url = new URL(`/${tenancyId}/challenges`, baseUrl)
       const response = yield* fetchNetwork(
@@ -320,7 +322,7 @@ export const createMailboxChallenge = (
         "post",
         { email, purpose, userId, metadata, invalidateOthers, skipRateLimit },
         {
-          headers: authorizationHeaders(options.apiKey),
+          headers: authorizationHeaders(config.apiKey),
         }
       )
 
@@ -353,7 +355,7 @@ export const createMailboxChallenge = (
  *
  * @category Mailbox
  */
-export interface GetMailboxChallengeOptions extends AuthenticatedOptions {
+export interface GetMailboxChallengeOptions {
   /**
    * Identifier of the challenge to fetch.
    */
@@ -366,7 +368,8 @@ export interface GetMailboxChallengeOptions extends AuthenticatedOptions {
  * The returned challenge is a readable tagged object and therefore excludes
  * the secret and one-time code.
  *
- * @param options Request options including the challenge identifier.
+ * @param options Mailbox challenge-specific request options.
+ * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with the readable challenge payload.
  *
@@ -374,16 +377,18 @@ export interface GetMailboxChallengeOptions extends AuthenticatedOptions {
  */
 export const getMailboxChallenge = (
   options: GetMailboxChallengeOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Effect.Effect<MailboxChallengeDetails, ForbiddenError | NotFoundError> =>
   pipe(
     Effect.gen(function* () {
-      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
-      const { tenancyId, challengeId } = options
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId } = config
+      const { challengeId } = options
 
       const url = new URL(`/${tenancyId}/challenges/${challengeId}`, baseUrl)
       const response = yield* fetchNetwork(url, "get", undefined, {
-        headers: authorizationHeaders(options.apiKey),
+        headers: authorizationHeaders(config.apiKey),
       })
 
       const encoded: MailboxChallengeDetails | ForbiddenError | NotFoundError = yield* matchStatus(
@@ -416,7 +421,7 @@ export const getMailboxChallenge = (
  *
  * @category Mailbox
  */
-export interface VerifyMailboxChallengeOptions extends AuthenticatedOptions {
+export interface VerifyMailboxChallengeOptions {
   /**
    * Identifier returned when the challenge was created.
    */
@@ -443,8 +448,9 @@ export interface VerifyMailboxChallengeOptions extends AuthenticatedOptions {
  * {@link createMailboxChallenge}, together with the one-time code supplied by
  * the end user.
  *
- * @param options Request options including the challenge identifier, secret,
+ * @param options Mailbox challenge-specific request options including the challenge identifier, secret,
  * and code.
+ * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with the verified readable challenge
  * payload. The returned challenge excludes the secret and code.
@@ -453,6 +459,7 @@ export interface VerifyMailboxChallengeOptions extends AuthenticatedOptions {
  */
 export const verifyMailboxChallenge = (
   options: VerifyMailboxChallengeOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Effect.Effect<
   MailboxChallengeVerified,
@@ -464,8 +471,9 @@ export const verifyMailboxChallenge = (
 > =>
   pipe(
     Effect.gen(function* () {
-      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
-      const { tenancyId, challengeId, secret, code } = options
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId } = config
+      const { challengeId, secret, code } = options
 
       const url = new URL(`/${tenancyId}/challenges/verify`, baseUrl)
       const response = yield* fetchNetwork(
@@ -473,7 +481,7 @@ export const verifyMailboxChallenge = (
         "post",
         { challengeId, secret, code },
         {
-          headers: authorizationHeaders(options.apiKey),
+          headers: authorizationHeaders(config.apiKey),
         }
       )
 
@@ -523,7 +531,7 @@ export const verifyMailboxChallenge = (
  *
  * @category Mailbox
  */
-export interface DeleteMailboxChallengeOptions extends AuthenticatedOptions {
+export interface DeleteMailboxChallengeOptions {
   /**
    * Identifier of the challenge to delete.
    */
@@ -533,7 +541,8 @@ export interface DeleteMailboxChallengeOptions extends AuthenticatedOptions {
 /**
  * Delete a mailbox one-time-code challenge.
  *
- * @param options Request options including the challenge identifier.
+ * @param options Mailbox challenge-specific request options.
+ * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with the tagged delete payload
  * `{ _tag: "ChallengeDeleted" }`.
@@ -542,16 +551,18 @@ export interface DeleteMailboxChallengeOptions extends AuthenticatedOptions {
  */
 export const deleteMailboxChallenge = (
   options: DeleteMailboxChallengeOptions,
+  config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Effect.Effect<MailboxChallengeDeleted, ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
-      const baseUrl = options.endpoint ?? "https://api.passlock.dev"
-      const { tenancyId, challengeId } = options
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId } = config
+      const { challengeId } = options
 
       const url = new URL(`/${tenancyId}/challenges/${challengeId}`, baseUrl)
       const response = yield* fetchNetwork(url, "delete", undefined, {
-        headers: authorizationHeaders(options.apiKey),
+        headers: authorizationHeaders(config.apiKey),
       })
 
       const encoded: MailboxChallengeDeleted | ForbiddenError = yield* matchStatus(response, {
