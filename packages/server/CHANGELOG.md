@@ -1,5 +1,10 @@
 # @passlock/server
 
+## 2.5.1
+### Patch Changes
+
+- 3d6e52d: Upgrade dependencies including upgrade to PNPM v11
+
 ## 2.5.0
 ### Minor Changes
 

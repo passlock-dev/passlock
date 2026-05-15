@@ -1,5 +1,16 @@
 # Passlock changelog
 
+## 2.5.1
+
+### Patch Changes
+
+- Upgrade dependencies including upgrade to PNPM v11
+- Packages affected:
+  - `@passlock/browser`
+  - `@passlock/server`
+  - `@passlock/cli`
+  - `@passlock/sveltekit-example`
+
 ## 2.5.0
 
 ### Minor Changes

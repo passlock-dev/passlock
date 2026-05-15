@@ -1,6 +1,6 @@
 {
   "name": "@passlock/server",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Passkey authentication library for Fetch capable backends (Node, Bun, Vercel, Cloudflare workers etc.)",
   "keywords": [
     "passkey",
@@ -50,6 +50,7 @@
     "!dist/**/*.test.*",
     "!dist/**/*.spec.*"
   ],
+  "sideEffects": false,
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "build:clean": "$npm_execpath run clean:all && $npm_execpath run build",
@@ -88,7 +89,7 @@
     "typescript": "catalog:",
     "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@10.33.3",
+  "packageManager": "pnpm@11.1.2",
   "engines": {
     "node": ">=20"
   }

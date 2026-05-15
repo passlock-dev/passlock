@@ -64,18 +64,19 @@ const toSignupChallenge = (
 	};
 };
 
-/**
- * Create or refresh the signup one-time-code challenge for a new account.
- */
-export const createOrRefreshSignupChallenge = async ({
-	email,
-	givenName,
-	familyName
-}: {
+export type CreatedChallengeInput = {
 	email: string;
 	givenName: string;
 	familyName: string;
-}): Promise<CreatedSignupChallenge | DuplicateUser | ChallengeRateLimitedError> => {
+};
+
+/**
+ * Create or refresh the signup one-time-code challenge for a new account.
+ */
+export const createOrRefreshSignupChallenge = async (
+	input: CreatedChallengeInput
+): Promise<CreatedSignupChallenge | DuplicateUser | ChallengeRateLimitedError> => {
+	const { email, givenName, familyName } = input;
 	const existingAccount = await getUserByEmail(email);
 	if (existingAccount) return { _tag: '@error/DuplicateUser', email };
 

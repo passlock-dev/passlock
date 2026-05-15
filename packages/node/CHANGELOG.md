@@ -1,5 +1,10 @@
 # @passlock/node
 
+## 2.1.3
+### Patch Changes
+
+- 3d6e52d: Upgrade dependencies including upgrade to PNPM v11
+
 ## 2.1.2
 ### Patch Changes
 

@@ -115,13 +115,11 @@ Important types:
   `SessionUser`
 
 `consumeLoginChallenge(...)` verifies the Passlock challenge and maps it back to
-an existing local account by email.
+an existing local account.
 
 ### `emailChange.ts`
 
-Email change also uses the shared base metadata, but it additionally binds the
-challenge to a Passlock `userId`. The sample app uses that binding to ensure
-the verified challenge belongs to the currently signed-in user.
+Login and email change also uses the shared base metadata, but they additionally bind the challenge to a Passlock `userId`. The sample app uses that binding to ensure the verified challenge belongs to the currently signed-in user.
 
 Important types:
 

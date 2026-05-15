@@ -1,12 +1,12 @@
 {
   "name": "passlock",
-  "version": "2.4.3",
+  "version": "2.5.1",
   "description": "",
   "type": "module",
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
-  "packageManager": "pnpm@10.33.3",
+  "packageManager": "pnpm@11.1.2",
   "scripts": {
     "ncu": "pnpm exec ncu -x vitest --workspaces",
     "build:readme": "VERSION=${npm_package_version} tsx ./scripts/replace-readme-tokens.ts .",
@@ -24,20 +24,5 @@
     "npm-check-updates": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:"
-  },
-  "pnpm": {
-    "overrides": {
-      "qs": "6.15.0",
-      "esbuild@<=0.24.2": ">=0.25.0",
-      "cookie@<0.7.0": ">=0.7.0",
-      "minimatch@>=10.0.0 <10.2.3": ">=10.2.3",
-      "postcss@<8.5.10": ">=8.5.10"
-    },
-    "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "better-sqlite3",
-      "esbuild",
-      "msgpackr-extract"
-    ]
   }
 }
