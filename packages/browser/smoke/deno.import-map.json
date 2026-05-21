@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@simplewebauthn/browser": "../node_modules/@simplewebauthn/browser/esm/index.js",
+    "effect": "../node_modules/effect/dist/esm/index.js"
+  }
+}

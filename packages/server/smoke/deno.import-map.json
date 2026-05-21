@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "effect": "../node_modules/effect/dist/esm/index.js",
+    "jose": "../node_modules/jose/dist/webapi/index.js"
+  }
+}
