@@ -1,5 +1,10 @@
 # @passlock/server
 
+## 2.5.2
+### Patch Changes
+
+- 059d6dd: Update dependencies
+
 ## 2.5.1
 ### Patch Changes
 

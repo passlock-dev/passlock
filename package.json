@@ -1,11 +1,31 @@
 {
   "name": "passlock",
-  "version": "2.5.1",
-  "description": "",
+  "version": "2.5.2",
+  "private": true,
+  "description": "Passlock monorepo root",
+  "keywords": [
+    "passkey",
+    "webauthn",
+    "node",
+    "Bun",
+    "Vercel",
+    "CF Workers"
+  ],
+  "homepage": "https://passlock.dev",
+  "bugs": {
+    "url": "https://github.com/passlock-dev/passlock/issues",
+    "email": "team@passlock.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/passlock-dev/passlock.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Toby Hobson",
+    "email": "toby@passlock.dev"
+  },
   "type": "module",
-  "keywords": [],
-  "author": "",
-  "license": "Apache-2.0",
   "packageManager": "pnpm@11.1.2",
   "scripts": {
     "ncu": "pnpm update --recursive --latest --interactive \\!vitest",
