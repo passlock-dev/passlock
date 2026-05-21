@@ -82,7 +82,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/language-service": "^0.86.1",
+    "@effect/language-service": "^0.86.2",
     "@fetch-mock/vitest": "^0.2.18",
     "@typescript/lib-dom": "npm:@types/web@^0.0.349",
     "globals": "catalog:",
