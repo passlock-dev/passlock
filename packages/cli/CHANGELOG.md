@@ -1,5 +1,10 @@
 # @passlock/cli
 
+## 2.5.3
+### Patch Changes
+
+- Upgrade dependencies
+
 ## 2.5.2
 ### Patch Changes
 

@@ -1,11 +1,19 @@
 # @passlock/sveltekit-example
 
+## 2.5.3
+
+### Patch Changes
+
+- Upgrade dependencies
+
 ## 2.5.2
+
 ### Patch Changes
 
 - 059d6dd: Update dependencies
 
 ## 2.5.1
+
 ### Patch Changes
 
 - 3d6e52d: Upgrade dependencies including upgrade to PNPM v11

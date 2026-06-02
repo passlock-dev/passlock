@@ -1,14 +1,36 @@
 # Passlock changelog
 
+## 2.5.3
+
+### Patch Changes
+
+- Upgrade dependencies
+- Packages affected:
+  - `@passlock/cli`
+  - `@passlock/browser`
+  - `@passlock/server`
+  - `@passlock/sveltekit-example`
+
+## 2.5.2
+
+### Patch Changes
+
+- Upgrade dependencies
+- Packages affected:
+  - `@passlock/cli`
+  - `@passlock/browser`
+  - `@passlock/server`
+  - `@passlock/sveltekit-example`
+
 ## 2.5.1
 
 ### Patch Changes
 
 - Upgrade dependencies including upgrade to PNPM v11
 - Packages affected:
+  - `@passlock/cli`
   - `@passlock/browser`
   - `@passlock/server`
-  - `@passlock/cli`
   - `@passlock/sveltekit-example`
 
 ## 2.5.0
@@ -17,9 +39,9 @@
 
 - Introduce class based variants in addition to the safe and unsafe functions
 - Packages affected:
+  - `@passlock/cli`
   - `@passlock/browser`
   - `@passlock/server`
-  - `@passlock/cli`
   - `@passlock/sveltekit-example`
 
 ## 2.4.3
