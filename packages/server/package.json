@@ -25,6 +25,7 @@
     "name": "Toby Hobson",
     "email": "toby@passlock.dev"
   },
+  "sideEffects": false,
   "type": "module",
   "exports": {
     ".": {
@@ -50,30 +51,30 @@
     "!dist/**/*.test.*",
     "!dist/**/*.spec.*"
   ],
-  "sideEffects": false,
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "build:clean": "$npm_execpath run clean:all && $npm_execpath run build",
     "build:production": "$npm_execpath run build:clean && $npm_execpath run build:readme && $npm_execpath run replaceTokens && echo '' && publint",
     "build:readme": "VERSION=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/server",
-    "typedoc": "typedoc",
     "clean": "tsc -p tsconfig.build.json --clean",
     "clean:all": "rimraf dist tsconfig.build.tsbuildinfo",
+    "format": "biome format --fix .",
+    "format:check": "biome format .",
+    "lint": "biome check .",
+    "lint:ci": "biome ci .",
+    "lint:fix": "biome check --fix .",
+    "prepublishOnly": "$npm_execpath run build:production",
     "replaceTokens": "VERSION=${npm_package_version} tsx ../../scripts/replace-tokens.ts ./packages/server",
-    "test:unit": "vitest --project unit run",
-    "test:unit:watch": "vitest --project unit",
+    "sort-package-json": "sort-package-json",
+    "test:all": "vitest --project unit --project integration run",
     "test:integration": "vitest --project integration run",
     "test:smoke": "$npm_execpath run test:smoke:deno && $npm_execpath run test:smoke:bun",
     "test:smoke:bun": "$npm_execpath run build && bun smoke/runtime.js",
     "test:smoke:deno": "$npm_execpath run build && deno run --allow-read --no-lock --import-map=smoke/deno.import-map.json smoke/runtime.js",
-    "test:all": "vitest --project unit --project integration run",
+    "test:unit": "vitest --project unit run",
+    "test:unit:watch": "vitest --project unit",
     "typecheck": "tsc -p tsconfig.test.json --noEmit",
-    "lint": "biome check .",
-    "lint:fix": "biome check --fix .",
-    "lint:ci": "biome ci .",
-    "format": "biome format --fix .",
-    "format:check": "biome format .",
-    "prepublishOnly": "$npm_execpath run build:production"
+    "typedoc": "typedoc"
   },
   "dependencies": {
     "effect": "catalog:",
@@ -86,11 +87,12 @@
     "npm-check-updates": "catalog:",
     "publint": "catalog:",
     "rimraf": "catalog:",
+    "sort-package-json": "catalog:",
     "tsx": "catalog:",
     "typedoc": "catalog:",
     "typedoc-plugin-markdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@11.1.2"
+  "packageManager": "pnpm@11.5.0"
 }

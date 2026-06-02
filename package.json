@@ -26,14 +26,14 @@
     "email": "toby@passlock.dev"
   },
   "type": "module",
-  "packageManager": "pnpm@11.1.2",
   "scripts": {
-    "ncu": "pnpm update --recursive --latest --interactive \\!vitest",
     "build:readme": "VERSION=${npm_package_version} tsx ./scripts/replace-readme-tokens.ts .",
     "changeset": "changeset",
-    "version-packages": "changeset version",
+    "ncu": "pnpm update --recursive --latest --interactive \\!vitest",
     "release": "changeset publish",
-    "update-example-deps": "tsx scripts/update-example-deps.ts"
+    "sort-package-json": "sort-package-json",
+    "update-example-deps": "tsx scripts/update-example-deps.ts",
+    "version-packages": "changeset version"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
@@ -42,7 +42,9 @@
     "@types/node": "catalog:",
     "kleur": "^4.1.5",
     "npm-check-updates": "catalog:",
+    "sort-package-json": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:"
-  }
+  },
+  "packageManager": "pnpm@11.5.0"
 }
