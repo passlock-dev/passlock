@@ -69,12 +69,13 @@ type UnsafeDeletePasskey = (
 /* Registration */
 
 /**
- * Registers a passkey on the user's device, then saves the server-side component in your vault.
- * If successful, this function returns both a `code` and an `id_token` (JWT).
- * Send either value to your backend for verification.
- * See [register a passkey](https://passlock.dev/passkeys/registration/) in the documentation.
+ * Register a passkey from a server-prepared registration token.
  *
- * @param options Registration ceremony options.
+ * Your backend should first call `preparePasskeyRegistration` from
+ * `@passlock/server`, return the resulting `registrationToken` to the browser,
+ * then pass that token to this function.
+ *
+ * @param options Registration token and optional lifecycle callback.
  * @param config Passlock tenancy and API endpoint options.
  *
  * @returns A promise resolving to a {@link RegistrationSuccess}.
@@ -86,17 +87,17 @@ type UnsafeDeletePasskey = (
  *
  * @throws {@link RegistrationError} (alias to a union of potential errors)
  * @throws {@link PasskeyUnsupportedError} if the device does not support passkeys
- * @throws {@link DuplicatePasskeyError} if `excludeCredentials` includes a passkey that already exists on the device
+ * @throws {@link DuplicatePasskeyError} if the authenticator reports that the passkey already exists on the device
  * @throws {@link OtherPasskeyError} typically a low level failure
  * @throws {@link NetworkError}
  *
  * @example
  * // from your Passlock console settings
  * const tenancyId = "myTenancyId";
- * const username = "jdoe@gmail.com";
+ * const registrationToken = "registration-token-from-your-backend";
  *
  * try {
- *   const result = await registerPasskey({ username }, { tenancyId });
+ *   const result = await registerPasskey({ registrationToken }, { tenancyId });
  *   // send this to your backend for verification
  *   console.log(result.code);
  * } catch (error) {
@@ -125,10 +126,14 @@ export const registerPasskey = async (
 /* Authentication */
 
 /**
- * Asks the device to present a passkey, which is then verified against the server-side component in your vault.
- * If successful, this function returns both a `code` and an `id_token` (JWT). Send either value to your backend for verification.
- * See
- * [authenticate a passkey](https://passlock.dev/passkeys/authentication/) in the documentation.
+ * Asks the device to present a passkey, then verifies it against the
+ * server-side component in your vault.
+ *
+ * Pass browser-started options with an `rpId`, or pass an
+ * `authenticationToken` created by `@passlock/server`'s
+ * `preparePasskeyAuthentication` function. If successful, this function
+ * returns both a `code` and an `id_token` (JWT). Send either value to your
+ * backend for verification.
  *
  * @param options Authentication ceremony options.
  * @param config Passlock tenancy and API endpoint options.
@@ -150,9 +155,10 @@ export const registerPasskey = async (
  * @example
  * // from your Passlock console settings
  * const tenancyId = "myTenancyId";
+ * const rpId = "example.com";
  *
  * try {
- *   const result = await authenticatePasskey({}, { tenancyId });
+ *   const result = await authenticatePasskey({ rpId }, { tenancyId });
  *   // send this to your backend for verification
  *   console.log(result.code);
  * } catch (error) {
@@ -541,7 +547,9 @@ export type {
   AuthenticationEvents,
   AuthenticationOptions,
   AuthenticationSuccess,
+  BrowserStartedAuthenticationOptions,
   OnAuthenticationEvent,
+  PreparedAuthenticationOptions,
 } from "./passkey/authentication/authentication.js"
 export {
   AuthenticationHelper,

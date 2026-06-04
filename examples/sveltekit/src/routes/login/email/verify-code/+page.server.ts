@@ -64,7 +64,7 @@ export const actions = {
 			redirect(303, resolve('/login'));
 		}
 
-		const { challenge, pending } = pendingContext;
+		const { challenge, cookie: pending } = pendingContext;
 
 		// The user-supplied code is not enough on its own. The browser must also
 		// present the stored challenge secret from the HTTP-only cookie.

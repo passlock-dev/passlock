@@ -96,7 +96,7 @@ describe(createMailboxChallenge.name, () => {
       )
 
       expect(result).toStrictEqual(responseWithMetadata)
-      expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/challenges`)
+      expect(invokedUrl).toEqual(`https://api.passlock.dev/v2/${tenancyId}/challenges`)
       expect(method).toEqual("POST")
       expect(authorizationHeader).toEqual("Bearer dummyApiKey")
       expect(JSON.parse(body ?? "{}")).toStrictEqual({
@@ -260,7 +260,9 @@ describe(getMailboxChallenge.name, () => {
       )
 
       expect(result).toStrictEqual(readableChallenge)
-      expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/challenges/${challengeId}`)
+      expect(invokedUrl).toEqual(
+        `https://api.passlock.dev/v2/${tenancyId}/challenges/${challengeId}`
+      )
       expect(method).toEqual("GET")
       expect(authorizationHeader).toEqual("Bearer dummyApiKey")
     })
@@ -333,7 +335,7 @@ describe(verifyMailboxChallenge.name, () => {
       )
 
       expect(result).toStrictEqual(verifiedChallengeResponse)
-      expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/challenges/verify`)
+      expect(invokedUrl).toEqual(`https://api.passlock.dev/v2/${tenancyId}/challenges/verify`)
       expect(method).toEqual("POST")
       expect(authorizationHeader).toEqual("Bearer dummyApiKey")
       expect(body).toEqual(
@@ -436,7 +438,9 @@ describe(deleteMailboxChallenge.name, () => {
       )
 
       expect(result).toStrictEqual({ _tag: "ChallengeDeleted" })
-      expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/challenges/${challengeId}`)
+      expect(invokedUrl).toEqual(
+        `https://api.passlock.dev/v2/${tenancyId}/challenges/${challengeId}`
+      )
       expect(method).toEqual("DELETE")
       expect(authorizationHeader).toEqual("Bearer dummyApiKey")
     })

@@ -55,7 +55,7 @@ describe(exchangeCode.name, () => {
         expect(principal.metadata.ipAddress).toEqual("127.0.0.1")
         expect(principal.metadata.userAgent).toEqual("Safari")
 
-        expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/principal/${code}`)
+        expect(invokedUrl).toEqual(`https://api.passlock.dev/v2/${tenancyId}/principal/${code}`)
 
         expect(method).toEqual("GET")
       })
@@ -99,7 +99,7 @@ describe(exchangeCode.name, () => {
 
       yield* exchangeCode({ code }, { apiKey, tenancyId }, Layer.succeed(NetworkFetch, testFetch))
 
-      expect(invokedUrl).toEqual(`https://api.passlock.dev/${tenancyId}/principal/${code}`)
+      expect(invokedUrl).toEqual(`https://api.passlock.dev/v2/${tenancyId}/principal/${code}`)
     })
   )
 

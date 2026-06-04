@@ -8,8 +8,6 @@
 
 	let { data }: PageProps = $props();
 	let passkeys = $derived(data.existingPasskeys);
-	let existingPasskeys = $derived(data.existingPasskeys.map(({ passkeyId }) => passkeyId));
-
 	let loading = $state(false);
 	let deletingPasskeyId = $state<string | null>(null);
 	let info = $state('');
@@ -22,18 +20,11 @@
 		error = '';
 		loading = true;
 
-		const config = { tenancyId: data.tenancyId, endpoint: data.endpoint };
+		const config = { tenancyId: data.tenancyId, rpId: data.rpId, endpoint: data.endpoint };
 
-		// Browser-side registration creates the passkey locally, then the server
-		// verifies and links it to the signed-in account.
-		const result = await registerPasskey(
-			{
-				email: data.user.email,
-				displayName: `${data.user.givenName} ${data.user.familyName}`.trim(),
-				existingPasskeys
-			},
-			config
-		);
+		// The server prepares registration for the signed-in account, the browser
+		// creates the passkey, then the server verifies and stores the result.
+		const result = await registerPasskey(config);
 
 		if (result._tag === '@error/CreatePasskeyError') {
 			error = result.message;

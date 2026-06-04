@@ -2,11 +2,10 @@ import { getPasslockClientConfig } from '$lib/server/passkeys.js';
 import { getLoginPasskeyQueryState } from '$lib/shared/queryState.js';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getPasskeysByUsername } from '$lib/server/repository';
 
 /**
- * Load the passkey login page and optionally pre-select credentials for a
- * known email address.
+ * Load the passkey login page. A known email address lets the browser request
+ * a prepared authentication token before starting the WebAuthn ceremony.
  */
 export const load = (async ({ locals, url }) => {
 	if (locals.user) {
@@ -16,14 +15,8 @@ export const load = (async ({ locals, url }) => {
 	const passlockConfig = getPasslockClientConfig();
 	const { username } = getLoginPasskeyQueryState(url);
 
-	// When the user has already identified their account, we can narrow the
-	// prompt to passkeys linked to that account.
-	const passkeys = username ? await getPasskeysByUsername(username) : [];
-	const allowCredentials = passkeys.map(({ passkeyId }) => passkeyId);
-
 	return {
 		...passlockConfig,
-		username,
-		allowCredentials
+		username
 	};
 }) satisfies PageServerLoad;

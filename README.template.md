@@ -82,19 +82,43 @@ Take a note of your `Tenancy ID` and `API Key`.
 
 ### Register a passkey
 
-Passlock uses short-lived, single-use codes and signed `id_token`s to safely bridge the browser and backend. Register a passkey in your frontend JS and send either value to your backend for verification:
+Passkey registration starts on your backend. Prepare a short-lived registration token for the signed-in user, send that token to the browser, then exchange the returned code after the browser ceremony completes:
+
+```typescript
+// backend/prepare-registration.ts
+import { preparePasskeyRegistration } from "@passlock/server";
+
+const tenancyId = "myTenancyId";
+const apiKey = "myApiKey";
+
+const result = await preparePasskeyRegistration(
+  {
+    rpId: "example.com",
+    userId: "user_123",
+    username: "jdoe@gmail.com",
+    displayName: "Jane Doe",
+  },
+  { tenancyId, apiKey }
+);
+
+if (!result.success) {
+  // handle the error
+  throw new Error(result.error.message);
+}
+
+// send only this token to your frontend
+console.log("registration token: %s", result.value.registrationToken);
+```
 
 ```typescript
 // frontend/register.ts
 import { registerPasskey } from "@passlock/browser";
 
 const tenancyId = "myTenancyId";
-
-// supply or capture a username
-const username = "jdoe@gmail.com";
+const registrationToken = "..."; // returned by your backend
 
 // call this in a click handler or similar action
-const result = await registerPasskey({ username }, { tenancyId });
+const result = await registerPasskey({ registrationToken }, { tenancyId });
 
 if (!result.success) {
   // handle the error
@@ -102,10 +126,10 @@ if (!result.success) {
 }
 
 // send result.code or result.id_token to your backend for verification
-console.log('code: %s', result.value.code); 
+console.log("code: %s", result.value.code);
 ```
 
-In your backend exchange the code to obtain details about the completed registration. We'll use the [@passlock/server][passlock-server] library for this, but you can also make vanilla REST calls or verify the `id_token` instead.
+In your backend, exchange the code to obtain details about the completed registration. We'll use the [@passlock/server][passlock-server] library for this, but you can also make vanilla REST calls or verify the `id_token` instead.
 
 ```typescript
 // backend/register.ts
@@ -122,8 +146,8 @@ if (!result.success) {
 }
 
 // includes details about the completed registration
-// associate the authenticatorId (passkey ID) with a local user account
-console.log('passkey id: %s', result.value.authenticatorId); 
+// store the authenticatorId (passkey ID) against the prepared local user
+console.log("passkey id: %s", result.value.authenticatorId);
 ```
 
 ### Authenticate a passkey

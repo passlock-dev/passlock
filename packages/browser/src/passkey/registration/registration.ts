@@ -11,10 +11,9 @@ import { Logger } from "../../logger.js"
 import type { PasslockOptions } from "../../options.js"
 import type { Principal } from "../../principal"
 import { DuplicatePasskeyError, OtherPasskeyError, PasskeyUnsupportedError } from "../errors.js"
-import type { Millis, UserVerification } from "../shared.js"
 
 /**
- * Passkey registration options.
+ * Options for registering a passkey from a server-prepared registration token.
  *
  * @see {@link registerPasskey}
  *
@@ -22,52 +21,15 @@ import type { Millis, UserVerification } from "../shared.js"
  */
 export interface RegistrationOptions {
   /**
-   * Username associated with passkey. Will be shown by the device during
-   * registration and subsequent authentication. The value used should be
-   * meaningful to the user, for example `jdoe` or `jdoe@gmail.com` rather
-   * than `5487546`.
-   *
-   * You won't directly associate the username with an account in your
-   * backend. Instead, you'll associate the passkey ID with an account.
-   *
-   * @see {@link https://passlock.dev/passkeys/registration Register a passkey (main docs)}
+   * One-time token created by your backend using `@passlock/server`'s
+   * `preparePasskeyRegistration` function.
    */
-  username: string
-
-  /**
-   * May be shown by devices in place of the username e.g. given a username
-   * of jdoe or jdoe@gmail.com a suitable display name might be "John Doe"
-   * or "John Doe (personal)". Note: there is no guarantee browsers/devices
-   * will choose to display this property.
-   */
-  displayName?: string | undefined
-
-  /**
-   * Prevents the user registering a passkey if they already have one
-   * (associated with the same user account) registered on the current device.
-   *
-   * @see {@link https://passlock.dev/passkeys/exclude-credentials Excluding credentials (main docs)}
-   */
-  excludeCredentials?: Array<string> | undefined
-
-  /**
-   * Whether the device should re-authenticate the user locally before registering the passkey.
-   *
-   * @see {@link https://passlock.dev/passkeys/user-verification User verification (main docs)}
-   */
-  userVerification?: UserVerification | undefined
+  registrationToken: string
 
   /**
    * Receive notifications about key stages in the registration process.
-   * For example, you might use event notifications to toggle loading icons or
-   * to disable certain form fields.
    */
   onEvent?: OnRegistrationEvent
-
-  /**
-   * Abort the ceremony after N milliseconds.
-   */
-  timeout?: Millis | undefined
 }
 
 /**
@@ -169,25 +131,16 @@ export const fetchOptions = (options: RegistrationOptions) =>
     const { endpoint } = yield* Micro.service(Endpoint)
     const { tenancyId } = yield* Micro.service(TenancyId)
 
-    const { username, displayName, excludeCredentials, userVerification, timeout, onEvent } =
-      options
+    const { registrationToken, onEvent } = options
 
-    const url = new URL(`${tenancyId}/passkey/registration/options`, endpoint)
+    const url = new URL(`v2/${tenancyId}/passkey/registration/options`, endpoint)
 
     onEvent?.("optionsRequest")
     yield* logger.logInfo("Fetching passkey registration options from Passlock")
 
-    const payload = {
-      excludeCredentials,
-      timeout,
-      displayName,
-      username,
-      userVerification,
-    }
-
     return yield* makeRequest({
       label: "registration options",
-      payload,
+      payload: { registrationToken },
       responsePredicate: isOptionsResponse,
       url,
     })
@@ -243,19 +196,17 @@ export const verifyCredential = (
     const { endpoint } = yield* Micro.service(Endpoint)
     const { tenancyId } = yield* Micro.service(TenancyId)
 
-    const url = new URL(`${tenancyId}/passkey/registration/verification`, endpoint)
+    const url = new URL(`v2/${tenancyId}/passkey/registration/verification`, endpoint)
 
     onEvent?.("saveCredential")
     yield* logger.logInfo("Registering passkey in Passlock vault")
 
-    const payload = {
-      response,
-      sessionToken,
-    }
-
     const registrationResponse = yield* makeRequest({
       label: "registration verification",
-      payload,
+      payload: {
+        response,
+        sessionToken,
+      },
       responsePredicate: isRegistrationSuccess,
       url,
     })
@@ -279,10 +230,14 @@ export type RegistrationError =
   | NetworkError
 
 /**
- * Trigger local passkey registration then save the passkey in your Passlock vault.
- * Returns a code and id_token that can be exchanged/decoded in your backend.
+ * Trigger local passkey registration from a server-prepared registration token,
+ * then save the passkey in your Passlock vault.
  *
- * @param options Registration ceremony options.
+ * Use this with `@passlock/server`'s `preparePasskeyRegistration` function so
+ * your backend authorizes the passkey creation and supplies the final user ID
+ * before the browser starts the WebAuthn ceremony.
+ *
+ * @param options Registration token and optional lifecycle callback.
  * @param config Passlock tenancy and API endpoint options.
  * @returns A Micro effect that resolves with {@link RegistrationSuccess} or
  * fails with {@link RegistrationError}.

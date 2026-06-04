@@ -18,7 +18,6 @@ const assertServerSurface = (module, label) => {
     "getMailboxChallenge",
     "verifyMailboxChallenge",
     "deleteMailboxChallenge",
-    "assignUser",
     "updatePasskey",
     "updatePasskeyUsernames",
     "deletePasskey",

@@ -145,7 +145,7 @@ const getCredential = (options: DeletePasskeyOptions, config: PasslockOptions | 
     const { endpoint } = makeEndpoint(config)
 
     yield* logger.logInfo("Fetching passkey credential and rp id")
-    const url = new URL(`${tenancyId}/credential/${options.passkeyId}`, endpoint)
+    const url = new URL(`v2/${tenancyId}/credential/${options.passkeyId}`, endpoint)
     const response = yield* Micro.promise(() => fetch(url))
     if (response.status === 404)
       return yield* Micro.fail(
@@ -243,7 +243,7 @@ export const prunePasskeys = (options: PrunePasskeyOptions, config: PasslockOpti
 
     yield* logger.logInfo("Fetching passkey credentials and rp id")
     const encodedPasskeyIds = encodeUriComponent(options.allowablePasskeyIds.join(","))
-    const url = new URL(`${tenancyId}/credentials/${encodedPasskeyIds}`, endpoint)
+    const url = new URL(`v2/${tenancyId}/credentials/${encodedPasskeyIds}`, endpoint)
     const response = yield* Micro.promise(() => fetch(url))
     if (response.status === 404)
       return yield* Micro.fail(
@@ -487,7 +487,7 @@ const getUserCredential = (options: UpdatePasskeyOptions, config: PasslockOption
     const { endpoint } = makeEndpoint(config)
 
     yield* logger.logInfo("Fetching passkey credential and rp id")
-    const url = new URL(`${tenancyId}/credential/${options.passkeyId}`, endpoint)
+    const url = new URL(`v2/${tenancyId}/credential/${options.passkeyId}`, endpoint)
     const response = yield* Micro.promise(() => fetch(url))
     if (response.status === 404)
       return yield* Micro.fail(

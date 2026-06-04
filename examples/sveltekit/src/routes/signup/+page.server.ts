@@ -40,6 +40,7 @@ export const load = (async ({ locals, url }) => {
 		errors: false
 	});
 
+	// we have been redirected here from the login page
 	if (reason === 'no-account') {
 		setMessage(form, {
 			type: 'notice',
@@ -73,8 +74,8 @@ export const actions = {
 			);
 		}
 
-		// The cookie carries the challenge id + secret; the emailed code provides
-		// the second factor needed to finish signup.
+		// The cookie carries the challenge id + secret;
+		// the emailed code provides the second factor needed to finish signup.
 		await sendMailboxVerificationEmail({
 			subject: 'Your signup code',
 			recipientEmail: result.challenge.email,

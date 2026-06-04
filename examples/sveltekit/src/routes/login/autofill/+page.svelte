@@ -22,6 +22,7 @@
 	onMount(async () => {
 		const config = {
 			tenancyId: data.tenancyId,
+			rpId: data.rpId,
 			endpoint: data.endpoint
 		};
 

@@ -31,12 +31,6 @@ export interface ExchangeCodeOptions {
    * Short-lived code emitted by `@passlock/browser`.
    */
   code: string
-
-  /**
-   * Optionally assign a custom user ID to the passkey **during code verification**.
-   * Equivalent to calling {@link assignUser} after exchanging a code.
-   */
-  userId?: string
 }
 
 /**
@@ -60,17 +54,13 @@ export const exchangeCode = (
       const baseUrl = config.endpoint ?? "https://api.passlock.dev"
       const { tenancyId } = config
       const { code } = options
-      const body = options.userId ? { userId: options.userId } : null
-      const url = new URL(`/${tenancyId}/principal/${code}`, baseUrl)
+      const url = new URL(`/v2/${tenancyId}/principal/${code}`, baseUrl)
 
       const headers = {
         authorization: `Bearer ${config.apiKey}`,
       } as const
 
-      const response = yield* Effect.if(body !== null, {
-        onTrue: () => fetchNetwork(url, "post", body, { headers }),
-        onFalse: () => fetchNetwork(url, "get", undefined, { headers }),
-      })
+      const response = yield* fetchNetwork(url, "get", undefined, { headers })
 
       const encoded: ExtendedPrincipal | InvalidCodeError | ForbiddenError = yield* matchStatus(
         response,
@@ -185,7 +175,7 @@ const createJwks = (endpoint?: string) =>
   Effect.sync(() => {
     const baseUrl = endpoint ?? "https://api.passlock.dev"
 
-    return jose.createRemoteJWKSet(new URL("/.well-known/jwks.json", baseUrl))
+    return jose.createRemoteJWKSet(new URL("/v2/.well-known/jwks.json", baseUrl))
   })
 
 const createCachedRemoteJwks = pipe(Effect.cachedFunction(createJwks), Effect.runSync)

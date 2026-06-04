@@ -26,8 +26,7 @@ const loggerTest = {
 describe(fetchOptions.name, () => {
   const endpoint = "https://api.passlock.dev"
   const tenancyId = "dummyTenancyId"
-  const username = "dummyUsername"
-  const displayName = "dummyDisplayName"
+  const registrationToken = "dummyRegistrationToken"
 
   const ctx = pipe(
     Context.make(Endpoint, { endpoint }),
@@ -35,88 +34,25 @@ describe(fetchOptions.name, () => {
     Context.add(TenancyId, { tenancyId })
   )
 
-  const expectedRoute = `${endpoint}/${tenancyId}/passkey/registration/options`
+  const expectedRoute = `${endpoint}/v2/${tenancyId}/passkey/registration/options`
 
   const mockResponse = {
     optionsJSON: {},
     sessionToken: "dummySessionToken",
   }
 
-  describe("given an empty set of options", () => {
-    it("should fetch some PublicKeyCredentialCreationOptions", async () => {
-      fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
+  it("should redeem the registration token", async () => {
+    fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
 
-      const result = await pipe(
-        fetchOptions({ username }),
-        Micro.provideContext(ctx),
-        Micro.runPromise
-      )
+    const result = await pipe(
+      fetchOptions({ registrationToken }),
+      Micro.provideContext(ctx),
+      Micro.runPromise
+    )
 
-      expect(result.sessionToken).toBeTruthy()
-      expect(result.optionsJSON).toBeTruthy()
-    })
-  })
-
-  describe("given a username", () => {
-    it("should send it to the backend", async () => {
-      fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
-
-      await pipe(fetchOptions({ username }), Micro.provideContext(ctx), Micro.runPromise)
-
-      expect(fetchMock).toHavePosted(expectedRoute, { body: { username } })
-    })
-  })
-
-  describe("given a displayName", () => {
-    it("should send it to the backend", async () => {
-      fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
-
-      await pipe(
-        fetchOptions({ displayName: displayName, username }),
-        Micro.provideContext(ctx),
-        Micro.runPromise
-      )
-
-      expect(fetchMock).toHavePosted(expectedRoute, {
-        body: { displayName, username },
-      })
-    })
-  })
-
-  describe("given a list of excludeCredentials", () => {
-    const excludeCredentials = ["dummyCredential"]
-
-    it("should send them to the backend", async () => {
-      fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
-
-      await pipe(
-        fetchOptions({ excludeCredentials, username }),
-        Micro.provideContext(ctx),
-        Micro.runPromise
-      )
-
-      expect(fetchMock).toHavePosted(expectedRoute, {
-        body: { excludeCredentials, username },
-      })
-    })
-  })
-
-  describe("given a userVerification", () => {
-    const userVerification = "required" as const
-
-    it("should send it to the backend", async () => {
-      fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
-
-      await pipe(
-        fetchOptions({ username, userVerification }),
-        Micro.provideContext(ctx),
-        Micro.runPromise
-      )
-
-      expect(fetchMock).toHavePosted(expectedRoute, {
-        body: { username, userVerification },
-      })
-    })
+    expect(result.sessionToken).toBeTruthy()
+    expect(result.optionsJSON).toBeTruthy()
+    expect(fetchMock).toHavePosted(expectedRoute, { body: { registrationToken } })
   })
 
   it("should invoke the onEvent handler", async () => {
@@ -124,7 +60,11 @@ describe(fetchOptions.name, () => {
 
     const onEvent = vi.fn()
 
-    await pipe(fetchOptions({ onEvent, username }), Micro.provideContext(ctx), Micro.runPromise)
+    await pipe(
+      fetchOptions({ onEvent, registrationToken }),
+      Micro.provideContext(ctx),
+      Micro.runPromise
+    )
 
     expect(onEvent).toHaveBeenCalledWith("optionsRequest")
   })
@@ -177,36 +117,34 @@ describe(verifyCredential.name, () => {
     Context.add(TenancyId, { tenancyId })
   )
 
-  const expectedRoute = `${endpoint}/${tenancyId}/passkey/registration/verification`
+  const expectedRoute = `${endpoint}/v2/${tenancyId}/passkey/registration/verification`
 
-  describe("when the passkey exists", () => {
-    const mockResponse = {
-      _tag: "RegistrationSuccess",
-      code: "dummyCode",
-      id_token: "dummyIdToken",
-      principal: {
-        authenticatorId: "dummyPasskeyId",
-      },
-    }
+  const mockResponse = {
+    _tag: "RegistrationSuccess",
+    code: "dummyCode",
+    id_token: "dummyIdToken",
+    principal: {
+      authenticatorId: "dummyPasskeyId",
+    },
+  }
 
-    it("should return a successful response", async () => {
-      fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
+  it("should verify the registration credential", async () => {
+    fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
 
-      const result = await pipe(
-        verifyCredential("dummySessionToken", {} as RegistrationResponseJSON, {}),
-        Micro.provideContext(ctx),
-        Micro.runPromise
-      )
+    const result = await pipe(
+      verifyCredential("dummySessionToken", {} as RegistrationResponseJSON, {}),
+      Micro.provideContext(ctx),
+      Micro.runPromise
+    )
 
-      expect(result).toStrictEqual(mockResponse)
-    })
+    expect(result).toStrictEqual(mockResponse)
   })
 })
 
 describe(registerPasskey.name, () => {
   const endpoint = "https://api.passlock.dev"
   const tenancyId = "dummyTenancyId"
-  const username = "dummyUsername"
+  const registrationToken = "dummyRegistrationToken"
 
   const registrationHelperTest = {
     browserSupportsWebAuthn: () => true,
@@ -220,14 +158,14 @@ describe(registerPasskey.name, () => {
     Context.add(RegistrationHelper, registrationHelperTest)
   )
 
-  const optionsRoute = `${endpoint}/${tenancyId}/passkey/registration/options`
+  const optionsRoute = `${endpoint}/v2/${tenancyId}/passkey/registration/options`
 
   const optionsResponse = {
     optionsJSON: {},
     sessionToken: "dummySessionToken",
   }
 
-  const verificationRoute = `${endpoint}/${tenancyId}/passkey/registration/verification`
+  const verificationRoute = `${endpoint}/v2/${tenancyId}/passkey/registration/verification`
 
   const verificationResponse = {
     _tag: "RegistrationSuccess",
@@ -238,11 +176,15 @@ describe(registerPasskey.name, () => {
     },
   }
 
-  it("should fetch the options and kick off the registration", async () => {
+  it("should redeem the token and kick off the registration", async () => {
     fetchMock.mockGlobal().postOnce(optionsRoute, optionsResponse)
     fetchMock.mockGlobal().postOnce(verificationRoute, verificationResponse)
 
-    pipe(registerPasskey({ username }, { tenancyId }), Micro.provideContext(ctx), Micro.runPromise)
+    await pipe(
+      registerPasskey({ registrationToken }, { tenancyId }),
+      Micro.provideContext(ctx),
+      Micro.runPromise
+    )
   })
 })
 

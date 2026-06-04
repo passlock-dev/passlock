@@ -316,7 +316,7 @@ export const createMailboxChallenge = (
       const { tenancyId } = config
       const { email, purpose, userId, metadata, invalidateOthers, skipRateLimit } = options
 
-      const url = new URL(`/${tenancyId}/challenges`, baseUrl)
+      const url = new URL(`/v2/${tenancyId}/challenges`, baseUrl)
       const response = yield* fetchNetwork(
         url,
         "post",
@@ -386,7 +386,7 @@ export const getMailboxChallenge = (
       const { tenancyId } = config
       const { challengeId } = options
 
-      const url = new URL(`/${tenancyId}/challenges/${challengeId}`, baseUrl)
+      const url = new URL(`/v2/${tenancyId}/challenges/${challengeId}`, baseUrl)
       const response = yield* fetchNetwork(url, "get", undefined, {
         headers: authorizationHeaders(config.apiKey),
       })
@@ -475,7 +475,7 @@ export const verifyMailboxChallenge = (
       const { tenancyId } = config
       const { challengeId, secret, code } = options
 
-      const url = new URL(`/${tenancyId}/challenges/verify`, baseUrl)
+      const url = new URL(`/v2/${tenancyId}/challenges/verify`, baseUrl)
       const response = yield* fetchNetwork(
         url,
         "post",
@@ -560,7 +560,7 @@ export const deleteMailboxChallenge = (
       const { tenancyId } = config
       const { challengeId } = options
 
-      const url = new URL(`/${tenancyId}/challenges/${challengeId}`, baseUrl)
+      const url = new URL(`/v2/${tenancyId}/challenges/${challengeId}`, baseUrl)
       const response = yield* fetchNetwork(url, "delete", undefined, {
         headers: authorizationHeaders(config.apiKey),
       })

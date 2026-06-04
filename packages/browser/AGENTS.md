@@ -1,6 +1,6 @@
 ## Overview
 
-This library allows developers to interact with the Passlock API in frontend/browser code. It includes functions that interact with the Passlock API. As this library will be used in frontend code it **should not** require or expose API keys or other secrets. §
+This library allows developers to interact with the Passlock API in frontend/browser code. It includes functions that interact with the Passlock API. As this library will be used in frontend code it **should not** require or expose API keys or other secrets.
 
 ## Coding standards
 
@@ -17,55 +17,25 @@ This lets callers branch using either `if (result.success)` or `if (result.failu
 
 The entry point to the safe functions is `src/safe.ts`, this is exported via the package.json `exports` field.
 
-### "Unsafe" functions
-
-For developers who prefer the traditional try/catch style of coding, we offer "unsafe" variants of the functions. These are also exposed in the module's `index.ts` file e.g. `registerPasskeyUnsafe` in  `src/passkey/registration/index.ts`, returns a `Promise<A>` but potentially throws something of type `E`.
-
-The entry point for the unsafe functions is `src/index.ts`.
-
 ### Functional parity across entrypoints
 
 Wherever possible we aim for functional parity / alignment across the Safe, Unsafe and Effect APIs. `src/surface.test.ts` ensures this.
 
 ## Test suite location
 
-Wherever possible we try to co-locate module code and tests alongside each other e.g. `src/passkey/registration/registration.ts` and  `src/passkey/registration/registration.test.ts`. The exception is shared test fixtures and helpers that would sit in the `test/*` directory.
+Wherever possible we try to co-locate module code and tests alongside each other. The exception is shared test fixtures and helpers that would sit in the `test/*` directory.
 
 ## JSDoc / Typedoc
 
 We use JSDoc comments alogn with [Typedoc][typedoc] to document the codebase. This is especially important for classes, functions and types exported directly or indirectly from one of the entrypoints.
 
-## Build and test commands
+## Testing and validation
 
-We largely rely on pnpm scripts for build and test:
-
-* `pnpm run build` - Invoke TSC to compile the project
-
-* `pnpm run typecheck` - Invoke TSC to typecheck the project
-
-* `pnpm run test:unit` - Runs the unit tests
-
-* `pnpm run test:integration` - Runs the integration tests
-
-* `pnpm run test:all` - Runs the unit and integration tests
-
-* `pnpm run format` - Format using Biome.js
-
-* `pnpm run lint:fix` - Lint using Biome.js and attempt to fix any issues
-
-* `pnpm run typedoc` - Generate the JSDoc
-
-## Important
-
-Do this after all code changes:
-
-1. Run `pnpm run typecheck`
-2. Run `pnpm run format`
-3. Run `pnpm run lint:fix`
-4. Run `pnpm run test:all`
-5. Run `pnpm run typedoc`
-
-Address any warnings or errors.
+- Unit tests typically live alongside code as `*.test.ts`.
+- After code changes, run the smallest relevant validation first, then finish with `pnpm run typecheck`
+- Run `pnpm run format` and `pnpm run lint:fix` and ensure the code meets the standards
+- Run `pnpm run typedoc` to generate the developer docs
+- Finally run `pnpm run build`
 
 [effect]: https://effect.website
 [platform]: https://effect.website/docs/platform/introduction/

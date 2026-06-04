@@ -51,7 +51,7 @@ export const load = (async ({ locals, cookies }) => {
 }) satisfies PageServerLoad;
 
 export const actions = {
-	verify: async ({ request, cookies }) => {
+	default: async ({ request, cookies }) => {
 		const verifyForm = await validateVerifyCodeForm(request);
 
 		if (!verifyForm.valid) return fail(400, { verifyForm });
@@ -65,13 +65,13 @@ export const actions = {
 			redirect(303, resolve('/signup'));
 		}
 
-		const { challenge, pending } = pendingContext;
+		const { challenge, cookie } = pendingContext;
 
-		// The emailed code must be paired with the secret stored in the pending
-		// challenge cookie.
+		// The emailed code must be paired with the secret stored
+		// in the pending challenge cookie.
 		const result = await consumeSignupChallenge({
-			challengeId: pending.challengeId,
-			secret: pending.secret,
+			challengeId: cookie.challengeId,
+			secret: cookie.secret,
 			code: verifyForm.data.code
 		});
 

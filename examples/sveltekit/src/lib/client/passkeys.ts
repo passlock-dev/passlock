@@ -20,6 +20,8 @@ import {
 	DeleteUserPasskeysSuccess,
 	Error,
 	PasskeyStatusSuccess,
+	PreparedPasskeyAuthentication,
+	PreparedPasskeyRegistration,
 	UpdatePasskeysSuccess
 } from '$lib/shared/schemas';
 import { parse, variant } from 'valibot';
@@ -28,46 +30,46 @@ import { fetchData } from './network';
 
 export type PasslockClientConfig = {
 	tenancyId: string;
+	rpId: string;
 	endpoint?: string | undefined;
 };
 
-export type CreatePasskeyInput = {
-	email: string;
-	displayName: string;
-	existingPasskeys: Array<string>;
-};
-
 /**
- * Create a passkey on the current device and then hand the returned code to
- * the server so it can verify the registration and link the passkey to the
- * signed-in account.
+ * Ask the server to authorize passkey registration, create the passkey on the
+ * current device, then hand the returned code back to the server so it can
+ * verify the registration and store the local association.
  *
  * Registration is split across trust boundaries:
- * - `@passlock/browser` talks to the browser's WebAuthn APIs.
+ * - `POST /passkeys/registration` decides whether the signed-in account may
+ *   create a passkey and returns a one-time registration token.
+ * - `@passlock/browser` talks to the browser's WebAuthn APIs using that token.
  * - `POST /passkeys` verifies the Passlock code and stores the passkey
  *   association in server-side state.
  */
-export const registerPasskey = async (input: CreatePasskeyInput, config: PasslockClientConfig) => {
+export const registerPasskey = async (config: PasslockClientConfig) => {
 	const ERROR_TAG = '@error/CreatePasskeyError' as const;
 
-	// `excludeCredentials` prevents users from re-registering the same account
-	// on a device ecosystem that already has a matching passkey.
-	// see https://passlock.dev/passkeys/exclude-credentials/
-	const { email: username, existingPasskeys: excludeCredentials } = input;
+	const preparedRegistration = await fetchData({
+		url: resolve('/passkeys/registration'),
+		method: 'POST',
+		body: {},
+		on2xx: (jsonResponse) => parse(PreparedPasskeyRegistration, jsonResponse),
+		orElse: (jsonResponse) => {
+			const { message } = parse(Error, jsonResponse);
+			return { _tag: ERROR_TAG, message } as const;
+		}
+	});
+
+	if (preparedRegistration._tag === ERROR_TAG) return preparedRegistration;
 
 	// WebAuthn registration must happen in the browser.
 	const clientResult = await PasslockBrowser.registerPasskey(
-		{
-			...input,
-			username,
-			excludeCredentials,
-			userVerification: 'preferred'
-		},
+		{ registrationToken: preparedRegistration.registrationToken },
 		config
 	);
 
-	// The browser matched one of the supplied credentials to a passkey that is
-	// already present on this device.
+	// The browser matched one of the prepared excluded credentials to a passkey
+	// that is already present on this device.
 	if (clientResult._tag === '@error/DuplicatePasskey') {
 		const message = 'Passkey already available on this device';
 		return { _tag: ERROR_TAG, message } as const;
@@ -76,14 +78,12 @@ export const registerPasskey = async (input: CreatePasskeyInput, config: Passloc
 		return { _tag: ERROR_TAG, message: clientResult.message } as const;
 	}
 
-	const { code } = clientResult;
-
 	// Post to the /passkeys/+server.ts endpoint, which verifies
-	// the passkey and links it to the user account
+	// the passkey and links it to the user account.
 	return fetchData({
 		url: resolve('/passkeys'),
 		method: 'POST',
-		body: { code },
+		body: { code: clientResult.code },
 		on2xx: () => ({ _tag: 'CreatePasskeySuccess' }) as const,
 		orElse: (jsonResponse) => {
 			const { message } = parse(Error, jsonResponse);
@@ -93,6 +93,11 @@ export const registerPasskey = async (input: CreatePasskeyInput, config: Passloc
 };
 
 export type AuthenticatePasskeyInput = {
+	/**
+	 * Server-prepared authentication token. When present, the browser receives
+	 * only this token and Passlock resolves the account-scoped options server-side.
+	 */
+	authenticationToken?: string | undefined;
 	/**
 	 * Most passkey auth attempts end by posting the Passlock code to the login
 	 * endpoint. Sensitive account actions reuse the same browser prompt but send
@@ -114,6 +119,21 @@ export type AuthenticatePasskeyInput = {
 	allowCredentials?: Array<string> | undefined;
 };
 
+export const preparePasskeyAuthentication = async (input: { url: string; body?: object }) => {
+	const ERROR_TAG = '@error/PreparePasskeyAuthenticationError' as const;
+
+	return fetchData({
+		url: input.url,
+		method: 'POST',
+		body: input.body ?? {},
+		on2xx: (jsonResponse) => parse(PreparedPasskeyAuthentication, jsonResponse),
+		orElse: (jsonResponse) => {
+			const { message } = parse(Error, jsonResponse);
+			return { _tag: ERROR_TAG, message } as const;
+		}
+	});
+};
+
 /**
  * Ask the browser to authenticate with a passkey and then post the resulting
  * Passlock code to a server endpoint that can trust the outcome.
@@ -128,17 +148,23 @@ export const authenticatePasskey = async (
 ) => {
 	const ERROR_TAG = '@error/PasskeyLoginError';
 
-	// allowCredentials == known user passkey ids
-	const { allowCredentials, verificationRoute = '/login/passkey' } = input;
+	const { authenticationToken, allowCredentials, verificationRoute = '/login/passkey' } = input;
+
+	const authenticationOptions = authenticationToken
+		? {
+				authenticationToken,
+				onEvent: input.onEvent
+			}
+		: {
+				autofill: input.autofill,
+				onEvent: input.onEvent,
+				rpId: config.rpId,
+				userVerification: input.userVerification,
+				allowCredentials
+			};
 
 	// WebAuthn prompts can only run in the browser.
-	const clientResult = await PasslockBrowser.authenticatePasskey(
-		{
-			...input,
-			allowCredentials
-		},
-		config
-	);
+	const clientResult = await PasslockBrowser.authenticatePasskey(authenticationOptions, config);
 
 	// Authentication never left the device, so there is nothing to verify
 	// server-side.

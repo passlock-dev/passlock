@@ -51,6 +51,7 @@
 
 import { Effect, pipe } from "effect"
 import type {
+  BadRequestError,
   ChallengeAttemptsExceededError,
   ChallengeExpiredError,
   ChallengeRateLimitedError,
@@ -78,7 +79,6 @@ import {
   verifyMailboxChallenge as verifyMailboxChallengeE,
 } from "./mailbox/mailbox.js"
 import type {
-  AssignUserOptions,
   DeletedPasskey,
   DeletedPasskeys,
   DeletePasskeyOptions,
@@ -87,16 +87,21 @@ import type {
   GetPasskeyOptions,
   ListPasskeyOptions,
   Passkey,
+  PreparedPasskeyAuthentication,
+  PreparedPasskeyRegistration,
+  PreparePasskeyAuthenticationOptions,
+  PreparePasskeyRegistrationOptions,
   UpdatedCredentials,
   UpdatePasskeyOptions,
   UpdateUsernamesOptions,
 } from "./passkey/passkey.js"
 import {
-  assignUser as assignUserE,
   deletePasskey as deletePasskeyE,
   deleteUserPasskeys as deleteUserPasskeysE,
   getPasskey as getPasskeyE,
   listPasskeys as listPasskeysE,
+  preparePasskeyAuthentication as preparePasskeyAuthenticationE,
+  preparePasskeyRegistration as preparePasskeyRegistrationE,
   updatePasskey as updatePasskeyE,
   updatePasskeyUsernames as updatePasskeyUsernamesE,
 } from "./passkey/passkey.js"
@@ -160,8 +165,16 @@ export class Passlock {
     return deleteMailboxChallenge(options, this.#config)
   }
 
-  assignUser(options: Parameters<typeof assignUser>[0]): ReturnType<typeof assignUser> {
-    return assignUser(options, this.#config)
+  preparePasskeyRegistration(
+    options: Parameters<typeof preparePasskeyRegistration>[0]
+  ): ReturnType<typeof preparePasskeyRegistration> {
+    return preparePasskeyRegistration(options, this.#config)
+  }
+
+  preparePasskeyAuthentication(
+    options: Parameters<typeof preparePasskeyAuthentication>[0]
+  ): ReturnType<typeof preparePasskeyAuthentication> {
+    return preparePasskeyAuthentication(options, this.#config)
   }
 
   updatePasskey(request: Parameters<typeof updatePasskey>[0]): ReturnType<typeof updatePasskey> {
@@ -217,7 +230,7 @@ export class Passlock {
  * through your own email provider or use the raw `code` to render your own
  * email body.
  *
- * @param options
+ * @param options Mailbox challenge-specific request options.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * the created mailbox challenge payload and whose error branch contains an API error.
@@ -236,7 +249,7 @@ export const createMailboxChallenge = (
  * The returned readable challenge is tagged as `"Challenge"` and excludes the
  * secret and one-time code.
  *
- * @param options
+ * @param options Mailbox challenge-specific request options.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * the readable challenge and whose error branch contains an API error.
@@ -256,7 +269,8 @@ export const getMailboxChallenge = (
  * {@link createMailboxChallenge}, together with the one-time code supplied by
  * the end user.
  *
- * @param options
+ * @param options Mailbox challenge-specific request options including the
+ * challenge identifier, secret, and code.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * the verification payload, including the readable challenge, and whose error
@@ -282,7 +296,7 @@ export const verifyMailboxChallenge = (
 /**
  * Delete a mailbox one-time-code challenge.
  *
- * @param options
+ * @param options Mailbox challenge-specific request options.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * the tagged delete payload `{ _tag: "ChallengeDeleted" }` and whose error
@@ -297,29 +311,49 @@ export const deleteMailboxChallenge = (
   runSafe(deleteMailboxChallengeE(options, config))
 
 /**
- * Assign a custom user ID to a passkey.
+ * Prepare a server-authorized passkey registration.
  *
- * This updates Passlock's server-side mapping for the passkey. It does not
- * change the underlying WebAuthn credential's `userId`.
+ * Call this from your backend after deciding the user is allowed to create a
+ * passkey. Return the resulting `registrationToken` to the browser, then call
+ * `registerPasskey` from `@passlock/browser`.
  *
- * @see {@link Principal}
- * @see {@link ExtendedPrincipal}
- * @see [credential](https://passlock.dev/rest-api/credential/)
- *
- * @param request
+ * @param options Prepared registration options, including the relying party ID,
+ * application user ID, username, and optional WebAuthn ceremony settings.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
- * a passkey and whose error branch contains an API error.
+ * a one-time prepared registration token and whose error branch contains an API error.
  *
  * @category Passkeys
  */
-export const assignUser = (
-  request: AssignUserOptions,
+export const preparePasskeyRegistration = (
+  options: PreparePasskeyRegistrationOptions,
   config: AuthenticatedOptions
-): Promise<Result<Passkey, NotFoundError | ForbiddenError>> => runSafe(assignUserE(request, config))
+): Promise<Result<PreparedPasskeyRegistration, BadRequestError | ForbiddenError>> =>
+  runSafe(preparePasskeyRegistrationE(options, config))
 
 /**
- * Update a passkey's custom user ID and/or username metadata.
+ * Prepare a server-authorized passkey authentication.
+ *
+ * Call this from your backend after deciding which account or passkeys may
+ * authenticate. Return the resulting `authenticationToken` to the browser,
+ * then call `authenticatePasskey` from `@passlock/browser`.
+ *
+ * @param options Prepared authentication options, including the relying party ID
+ * and an optional application user ID, allow-list, or both.
+ * @param config Shared Passlock configuration for the request.
+ * @returns A promise resolving to a {@link Result} whose success branch contains
+ * a one-time prepared authentication token and whose error branch contains an API error.
+ *
+ * @category Passkeys
+ */
+export const preparePasskeyAuthentication = (
+  options: PreparePasskeyAuthenticationOptions,
+  config: AuthenticatedOptions
+): Promise<Result<PreparedPasskeyAuthentication, BadRequestError | ForbiddenError>> =>
+  runSafe(preparePasskeyAuthenticationE(options, config))
+
+/**
+ * Update a passkey's username metadata.
  *
  * **Important:** changing the username has no bearing on authentication, as
  * it's typically only used in the client-side component of the passkey
@@ -328,7 +362,7 @@ export const assignUser = (
  * However you might choose to align the username in your vault with the
  * client-side component to simplify end user support.
  *
- * @param request
+ * @param request Passkey-specific request options.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * a passkey and whose error branch contains an API error.
@@ -356,10 +390,10 @@ export const updatePasskey = (
  * **Note:** This can be used alongside `@passlock/browser`'s
  * `updatePasskeyUsernames` helper to update those details on the user's device.
  *
- * @param request
+ * @param request User-specific request options.
  * @param config Shared Passlock configuration for the request.
- * @returns A promise resolving to a {@link Result}.
- * The success branch contains a user-details update payload whose
+ * @returns A promise resolving to a {@link Result} whose success branch
+ * contains a user-details update payload whose
  * `credentials` array can be passed into the client's
  * `updatePasskeyUsernames` function. The error branch contains an API error.
  *
@@ -377,8 +411,8 @@ export const updatePasskeyUsernames = (
  * **Note:** The user will still retain the passkey on their device so
  * you will need to either:
  *
- * a) Use the `@passlock/browser` functions to delete the passkey from the user's device.
- * b) Remind the user to delete the passkey.
+ * - Use the `@passlock/browser` functions to delete the passkey from the user's device.
+ * - Remind the user to delete the passkey.
  *
  * See [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/) in the documentation.
  *
@@ -390,7 +424,7 @@ export const updatePasskeyUsernames = (
  * @see [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/)
  * @see [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/)
  *
- * @param options
+ * @param options Passkey-specific request options.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * the deleted credential identifiers and whose error branch contains an API
@@ -407,10 +441,10 @@ export const deletePasskey = (
 /**
  * Delete all passkeys associated with a user.
  *
- * @param request
+ * @param request User-specific request options.
  * @param config Shared Passlock configuration for the request.
- * @returns A promise resolving to a {@link Result}.
- * The success branch contains a {@link DeletedPasskeys} payload whose
+ * @returns A promise resolving to a {@link Result} whose success branch
+ * contains a {@link DeletedPasskeys} payload whose
  * `deleted` array can be passed directly into `@passlock/browser`'s
  * `deleteUserPasskeys` helper for follow-up client-side passkey removal.
  * The error branch contains an API error.
@@ -431,7 +465,7 @@ export const deleteUserPasskeys = (
  * specific authentication or registration operations.
  * Use this function for passkey management, not authentication.
  *
- * @param options
+ * @param options Passkey-specific request options.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * passkey details and whose error branch contains an API error.
@@ -447,7 +481,7 @@ export const getPasskey = (
  * List passkeys for the given tenancy. Note: This could return a cursor.
  * If so, call again, passing the cursor back in.
  *
- * @param options
+ * @param options List-specific request options, including an optional pagination cursor.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * a page of passkey summaries and whose error branch contains an API error.
@@ -466,16 +500,11 @@ export const listPasskeys = (
  * Use this function to exchange the code for details about
  * the registration or authentication operation.
  *
- * During code verification you can also assign a `userId`. This is useful
- * during passkey verification as you can register a passkey on the user's
- * device, verify the passkey is authentic and if so, assign your own `userId`
- * to it.
- *
  * **Note:** a code is valid for 5 minutes.
  *
  * @see {@link ExtendedPrincipal}
  *
- * @param options
+ * @param options Code exchange request options.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * an extended principal and whose error branch contains an API error.
@@ -492,14 +521,14 @@ export const exchangeCode = (
  * Decode and verify an id_token (JWT) locally.
  *
  * **Note:** This will make a network call to
- * `https://api.passlock.dev/.well-known/jwks.json` (or your configured `endpoint`)
+ * `https://api.passlock.dev/v2/.well-known/jwks.json` (or your configured `endpoint`)
  * to fetch the relevant public key. The response will be cached, however
  * bear in mind that for environments such as AWS Lambda it will make the call
  * on each cold start, so it might be slower than {@link exchangeCode}.
  *
  * @see {@link Principal}
  *
- * @param options
+ * @param options ID token verification request options.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * a verified principal and whose error branch contains a verification error.
@@ -568,7 +597,6 @@ export {
   isMailboxChallengeVerified,
 } from "./mailbox/mailbox.js"
 export type {
-  AssignUserOptions,
   Credential,
   DeletedPasskey,
   DeletedPasskeys,
@@ -581,6 +609,10 @@ export type {
   PasskeyCredential,
   PasskeySummary,
   Platform,
+  PreparedPasskeyAuthentication,
+  PreparedPasskeyRegistration,
+  PreparePasskeyAuthenticationOptions,
+  PreparePasskeyRegistrationOptions,
   UpdatedCredentials as UpdatedUserDetails,
   UpdatedPasskeys,
   UpdatePasskeyOptions,
@@ -590,6 +622,8 @@ export {
   isDeletedPasskeys,
   isPasskey,
   isPasskeySummary,
+  isPreparedPasskeyAuthentication,
+  isPreparedPasskeyRegistration,
   isUpdatedPasskeys,
   isUpdatedUserDetails,
 } from "./passkey/passkey.js"

@@ -69,7 +69,7 @@ export const actions = {
 			redirect(303, toAccountLocation({ emailError: 'expired' }));
 		}
 
-		const { challenge, pending } = pendingContext;
+		const { challenge, cookie: pending } = pendingContext;
 
 		const result = await verifyChangeEmailChallenge({
 			challengeId: pending.challengeId,

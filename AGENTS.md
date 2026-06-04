@@ -11,7 +11,6 @@ Key packages in this repo:
 - `packages/browser` — browser/device SDK
 - `packages/server` — server-side SDK
 - `packages/cli` — developer CLI
-- `packages/node` — deprecated
 - `examples/sveltekit` — reference example app
 
 Root config includes files such as `biome.json`.
@@ -32,7 +31,8 @@ Useful private packages include:
 
 - You may modify files only inside this repository.
 - You may read `../private` when necessary to verify API behaviour, endpoint names, and request/response shapes.
-- Do not modify, create, delete, or stage files outside this repository without permission.
+- You may write generated public API documentation to `../private/packages/public-api-docs`.
+- Do not modify, create, delete, or stage other files outside this repository without permission.
 - Do not copy private implementation details, secrets, credentials, or internal-only code into this public repository.
 - Use `../private` for verification, not for guessing product intent from incomplete internal implementation details.
 
@@ -49,7 +49,7 @@ Useful private packages include:
 ## Project references and dependencies
 
 - We use the PNPM workspace protocol to link packages within the monorepo.
-- We use TypeScript project references.
+- Some packages use composite TypeScript configs, but there is no root TypeScript project-reference graph. Check the target package's `tsconfig*.json` files before assuming cross-package build behaviour.
 - If a PNPM dependency is shared across multiple projects, prefer PNPM catalog entries in `pnpm-workspace.yaml` and use `"catalog:"` in `package.json`.
 
 ## Running commands
@@ -63,14 +63,17 @@ Useful private packages include:
 - Language of choice: TypeScript
 - Prefer a functional style where practical
 - Wherever possible, use the Effect framework
-- Prefer minimal, focused diffs
+- Aim for concise, but legible code
+- Adopt the DRY principle, refactor existing code if it makes sense
 - Preserve existing formatting and conventions
 - Do not invent filenames, directories, or package names
 - If unsure where a change belongs, ask before writing
 
 ## Validation
 
-Common scripts include:
+The root `package.json` is mainly release/readme tooling. Validation scripts usually live in the target package directory.
+
+Common package-level scripts include; check the target package's `package.json` before running them:
 
 - `pnpm run build`
 - `pnpm run typecheck`
@@ -82,6 +85,6 @@ Common scripts include:
 - `pnpm run format`
 - `pnpm run lint:fix`
 
-After making code changes, run `pnpm run build` or `pnpm run typecheck` in the affected project.
+After making code changes, run `pnpm run typecheck` in the affected project.
 
 [effect]: https://effect.website/docs

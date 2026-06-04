@@ -100,7 +100,7 @@ export const signup = (
 ): Effect.Effect<TenancyData, InvalidEmail | DuplicateEmail, NetworkFetch> =>
   pipe(
     Effect.gen(function* () {
-      const response = yield* fetchNetwork(new URL("/signup", endpoint), "post", payload)
+      const response = yield* fetchNetwork(new URL("/v2/signup", endpoint), "post", payload)
 
       const encoded: TenancyData | InvalidEmail | DuplicateEmail = yield* matchStatus(response, {
         "2xx": ({ json }) => pipe(json, Effect.flatMap(Schema.decodeUnknown(TenancyData))),

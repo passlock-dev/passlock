@@ -31,7 +31,7 @@
 		</p>
 		<p class="mt-2 text-center text-sm text-base-content/80">Codes remain valid for 10 minutes.</p>
 
-		<form method="post" action="?/verify" use:enhance class="mt-6">
+		<form method="post" use:enhance class="mt-6">
 			<fieldset class="fieldset">
 				<TextInput
 					{superform}

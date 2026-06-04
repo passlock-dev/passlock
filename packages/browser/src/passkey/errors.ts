@@ -127,9 +127,9 @@ export class OtherPasskeyError extends Error {
 }
 
 /**
- * Raised if excludeCredentials was provided and the device
- * recognises one of the excluded passkeys i.e. the user currently
- * has a passkey registered for a given userId.
+ * Raised when a prepared registration excludes a credential that the device
+ * recognises, meaning the user already has one of those passkeys on the
+ * current device.
  *
  * @category Passkeys (errors)
  */
@@ -140,9 +140,9 @@ export const isDuplicatePasskeyError = (payload: unknown): payload is DuplicateP
 }
 
 /**
- * Raised if excludeCredentials was provided and the device
- * recognises one of the excluded passkeys i.e. the user currently
- * has a passkey registered for a given userId.
+ * Raised when a prepared registration excludes a credential that the device
+ * recognises, meaning the user already has one of those passkeys on the
+ * current device.
  *
  * @category Passkeys (errors)
  */

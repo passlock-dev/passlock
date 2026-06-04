@@ -11,7 +11,7 @@ export type PendingChallengeContext<TChallenge> =
 	| { _tag: 'InvalidPendingChallenge' }
 	| {
 			_tag: 'PendingChallenge';
-			pending: PendingChallengeCookie;
+			cookie: PendingChallengeCookie;
 			challenge: TChallenge;
 	  };
 
@@ -37,7 +37,7 @@ export const getPendingChallengeContext = async <TChallenge>(options: {
 
 	return {
 		_tag: 'PendingChallenge',
-		pending,
+		cookie: pending,
 		challenge
 	};
 };

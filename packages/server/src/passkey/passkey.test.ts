@@ -4,15 +4,21 @@ import { Chunk, Effect, Layer, pipe, Schema, Stream } from "effect"
 import { expect } from "vitest"
 import { NetworkFetch } from "../network.js"
 import type { Passkey, PasskeyEncoded } from "../schemas/passkey.js"
-import type { DeletedPasskeys, FindAllPasskeys } from "./passkey.js"
+import type {
+  DeletedPasskeys,
+  FindAllPasskeys,
+  PreparedPasskeyAuthentication,
+  PreparedPasskeyRegistration,
+} from "./passkey.js"
 
 import {
-  assignUser,
   deletePasskey,
   deleteUserPasskeys,
   getPasskey,
   listPasskeys,
   listPasskeysStream,
+  preparePasskeyAuthentication,
+  preparePasskeyRegistration,
   updatePasskey,
 } from "./passkey.js"
 
@@ -114,6 +120,124 @@ const expectedDeletedPasskey = {
   },
 } as const
 
+const preparedPasskeyRegistrationResponse: PreparedPasskeyRegistration = {
+  _tag: "PreparedPasskeyRegistration",
+  expiresAt: 1_700_000_000_000,
+  registrationToken: "dummyRegistrationToken",
+}
+
+const preparedPasskeyAuthenticationResponse: PreparedPasskeyAuthentication = {
+  _tag: "PreparedPasskeyAuthentication",
+  authenticationToken: "dummyAuthenticationToken",
+  expiresAt: 1_700_000_000_000,
+}
+
+describe(preparePasskeyRegistration.name, () => {
+  it.effect("should prepare a registration using the v2 endpoint", () =>
+    Effect.gen(function* () {
+      let invokedUrl: string | undefined
+      let method: string | undefined
+      let authorization: string | null | undefined
+      let body: unknown
+
+      const TestLayer = Layer.succeed(NetworkFetch, (url, init) => {
+        invokedUrl = String(url)
+        method = init?.method
+        authorization = init?.headers ? getHeaderValue(init.headers, "authorization") : undefined
+        body = JSON.parse(String(init?.body))
+        return Promise.resolve(
+          new Response(JSON.stringify(preparedPasskeyRegistrationResponse), {
+            status: 200,
+          })
+        )
+      })
+
+      const result = yield* pipe(
+        preparePasskeyRegistration(
+          {
+            rpId: "localhost",
+            displayName: "Dummy User",
+            excludeCredentials: ["existingPasskeyId"],
+            timeout: 60_000,
+            userId: "dummyUserId",
+            username: "dummy@example.com",
+            userVerification: "preferred",
+          },
+          { apiKey, tenancyId },
+          TestLayer
+        )
+      )
+
+      expect(result).toStrictEqual(preparedPasskeyRegistrationResponse)
+      expect(invokedUrl).toEqual(
+        "https://api.passlock.dev/v2/dummyTenancyId/passkey/registration/prepare"
+      )
+      expect(method).toEqual("POST")
+      expect(authorization).toEqual("Bearer dummyApiKey")
+      expect(body).toStrictEqual({
+        rpId: "localhost",
+        displayName: "Dummy User",
+        excludeCredentials: ["existingPasskeyId"],
+        timeout: 60_000,
+        userId: "dummyUserId",
+        username: "dummy@example.com",
+        userVerification: "preferred",
+      })
+    })
+  )
+})
+
+describe(preparePasskeyAuthentication.name, () => {
+  it.effect("should prepare an authentication using the v2 endpoint", () =>
+    Effect.gen(function* () {
+      let invokedUrl: string | undefined
+      let method: string | undefined
+      let authorization: string | null | undefined
+      let body: unknown
+
+      const TestLayer = Layer.succeed(NetworkFetch, (url, init) => {
+        invokedUrl = String(url)
+        method = init?.method
+        authorization = init?.headers ? getHeaderValue(init.headers, "authorization") : undefined
+        body = JSON.parse(String(init?.body))
+        return Promise.resolve(
+          new Response(JSON.stringify(preparedPasskeyAuthenticationResponse), {
+            status: 200,
+          })
+        )
+      })
+
+      const result = yield* pipe(
+        preparePasskeyAuthentication(
+          {
+            rpId: "localhost",
+            allowCredentials: ["dummyPasskeyId"],
+            timeout: 60_000,
+            userId: "dummyUserId",
+            userVerification: "preferred",
+          },
+          { apiKey, tenancyId },
+          TestLayer
+        )
+      )
+
+      expect(result).toStrictEqual(preparedPasskeyAuthenticationResponse)
+      expect(invokedUrl).toEqual(
+        "https://api.passlock.dev/v2/dummyTenancyId/passkey/authentication/prepare"
+      )
+      expect(method).toEqual("POST")
+      expect(authorization).toEqual("Bearer dummyApiKey")
+      expect(body).toStrictEqual({
+        rpId: "localhost",
+        allowCredentials: ["dummyPasskeyId"],
+        timeout: 60_000,
+        userId: "dummyUserId",
+        userVerification: "preferred",
+      })
+    })
+  )
+})
+
 describe(listPasskeys.name, () => {
   describe("when no cursor is provided", () => {
     it.effect("should not send it", () =>
@@ -135,7 +259,7 @@ describe(listPasskeys.name, () => {
 
         expect(result).toStrictEqual(findAllPasskeysResponse)
 
-        expect(invokedUrl).toEqual("https://api.passlock.dev/dummyTenancyId/passkeys/")
+        expect(invokedUrl).toEqual("https://api.passlock.dev/v2/dummyTenancyId/passkeys/")
 
         expect(method).toEqual("GET")
       })
@@ -165,7 +289,7 @@ describe(listPasskeys.name, () => {
         expect(result).toStrictEqual(findAllPasskeysResponse)
 
         expect(invokedUrl).toEqual(
-          "https://api.passlock.dev/dummyTenancyId/passkeys/?cursor=dummyCursor"
+          "https://api.passlock.dev/v2/dummyTenancyId/passkeys/?cursor=dummyCursor"
         )
 
         expect(method).toEqual("GET")
@@ -234,7 +358,7 @@ describe(listPasskeysStream.name, () => {
         )
 
         expect(fetchCount).toEqual(1)
-        expect(invokedUrls).toEqual(["https://api.passlock.dev/dummyTenancyId/passkeys/"])
+        expect(invokedUrls).toEqual(["https://api.passlock.dev/v2/dummyTenancyId/passkeys/"])
         expect(summaries).toEqual(singlePageResponse.records)
       })
     )
@@ -302,8 +426,8 @@ describe(listPasskeysStream.name, () => {
 
         expect(fetchCount).toEqual(2)
         expect(invokedUrls).toEqual([
-          "https://api.passlock.dev/dummyTenancyId/passkeys/",
-          "https://api.passlock.dev/dummyTenancyId/passkeys/?cursor=page-two-cursor",
+          "https://api.passlock.dev/v2/dummyTenancyId/passkeys/",
+          "https://api.passlock.dev/v2/dummyTenancyId/passkeys/?cursor=page-two-cursor",
         ])
         expect(summaries).toEqual([...firstPageResponse.records, ...secondPageResponse.records])
       })
@@ -329,7 +453,7 @@ describe(getPasskey.name, () => {
         expect(passkey).toStrictEqual(expectedPasskey)
 
         expect(invokedUrl).toEqual(
-          "https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId"
+          "https://api.passlock.dev/v2/dummyTenancyId/passkeys/dummyPasskeyId"
         )
 
         expect(method).toEqual("GET")
@@ -370,7 +494,9 @@ describe(getPasskey.name, () => {
 
       yield* pipe(getPasskey({ passkeyId }, { apiKey, tenancyId }, TestLayer))
 
-      expect(invokedUrl).toEqual("https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId")
+      expect(invokedUrl).toEqual(
+        "https://api.passlock.dev/v2/dummyTenancyId/passkeys/dummyPasskeyId"
+      )
     })
   )
 
@@ -435,7 +561,7 @@ describe(deletePasskey.name, () => {
         expect(result).toStrictEqual(expectedDeletedPasskey)
 
         expect(invokedUrl).toEqual(
-          "https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId"
+          "https://api.passlock.dev/v2/dummyTenancyId/passkeys/dummyPasskeyId"
         )
 
         expect(method).toEqual("DELETE")
@@ -498,7 +624,7 @@ describe(deleteUserPasskeys.name, () => {
 
         expect(result).toStrictEqual(expectedDeletedPasskeys)
         expect(invokedUrl).toEqual(
-          "https://api.passlock.dev/dummyTenancyId/users/dummyUserId/passkeys/"
+          "https://api.passlock.dev/v2/dummyTenancyId/users/dummyUserId/passkeys/"
         )
         expect(method).toEqual("DELETE")
         expect(authorizationHeader).toEqual("Bearer dummyApiKey")
@@ -552,63 +678,6 @@ describe(deleteUserPasskeys.name, () => {
   })
 })
 
-describe(assignUser.name, () => {
-  describe("when the passkey exists", () => {
-    it.effect("should return the updated passkey", () =>
-      Effect.gen(function* () {
-        let invokedUrl: string | undefined
-        let method: string | undefined
-
-        const TestLayer = Layer.succeed(NetworkFetch, (url, init) => {
-          invokedUrl = String(url)
-          method = init?.method
-          return Promise.resolve(
-            new Response(JSON.stringify({ ...passkeyResponse, userId: "newUserId" }), {
-              status: 202,
-            })
-          )
-        })
-
-        const result = yield* assignUser(
-          { passkeyId, userId: "newUserId" },
-          { apiKey, tenancyId },
-          TestLayer
-        )
-
-        expect(result.userId).toEqual("newUserId")
-
-        expect(invokedUrl).toEqual(
-          "https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId"
-        )
-
-        expect(method).toEqual("PATCH")
-      })
-    )
-  })
-
-  describe("when the passkey does not exist", () => {
-    it.effect("should return an error", () =>
-      Effect.gen(function* () {
-        const errorResponse = {
-          _tag: "@error/NotFound",
-          message: "Passkey not found",
-        }
-
-        const TestLayer = Layer.succeed(NetworkFetch, () =>
-          Promise.resolve(new Response(JSON.stringify(errorResponse), { status: 404 }))
-        )
-
-        const error = yield* pipe(
-          assignUser({ passkeyId, userId: "newUserId" }, { apiKey, tenancyId }, TestLayer),
-          Effect.flip
-        )
-
-        expect(error._tag).toEqual("@error/NotFound")
-      })
-    )
-  })
-})
-
 describe(updatePasskey.name, () => {
   describe("when the passkey exists", () => {
     it.effect("should return the updated passkey", () =>
@@ -623,7 +692,6 @@ describe(updatePasskey.name, () => {
             new Response(
               JSON.stringify({
                 ...passkeyResponse,
-                userId: "newUserId",
                 credential: {
                   ...passkeyResponse.credential,
                   username: "newUsername",
@@ -639,18 +707,16 @@ describe(updatePasskey.name, () => {
         const result = yield* updatePasskey(
           {
             passkeyId,
-            userId: "newUserId",
             username: "newUsername",
           },
           { apiKey, tenancyId },
           TestLayer
         )
 
-        expect(result.userId).toEqual("newUserId")
         expect(result.credential.username).toEqual("newUsername")
 
         expect(invokedUrl).toEqual(
-          "https://api.passlock.dev/dummyTenancyId/passkeys/dummyPasskeyId"
+          "https://api.passlock.dev/v2/dummyTenancyId/passkeys/dummyPasskeyId"
         )
 
         expect(method).toEqual("PATCH")
@@ -671,7 +737,7 @@ describe(updatePasskey.name, () => {
         )
 
         const error = yield* pipe(
-          assignUser({ passkeyId, userId: "newUserId" }, { apiKey, tenancyId }, TestLayer),
+          updatePasskey({ passkeyId, username: "newUsername" }, { apiKey, tenancyId }, TestLayer),
           Effect.flip
         )
 

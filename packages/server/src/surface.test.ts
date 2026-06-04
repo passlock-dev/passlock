@@ -17,6 +17,10 @@ import type {
   Ok,
   Passkey,
   PasskeyCredential,
+  PreparedPasskeyAuthentication,
+  PreparedPasskeyRegistration,
+  PreparePasskeyAuthenticationOptions,
+  PreparePasskeyRegistrationOptions,
   Principal,
   Result,
   VerificationError,
@@ -53,6 +57,10 @@ import type {
   MailboxChallengeDetails as UnsafeMailboxChallengeDetails,
   Passkey as UnsafePasskey,
   PasskeyCredential as UnsafePasskeyCredential,
+  PreparedPasskeyAuthentication as UnsafePreparedPasskeyAuthentication,
+  PreparedPasskeyRegistration as UnsafePreparedPasskeyRegistration,
+  PreparePasskeyAuthenticationOptions as UnsafePreparePasskeyAuthenticationOptions,
+  PreparePasskeyRegistrationOptions as UnsafePreparePasskeyRegistrationOptions,
 } from "./unsafe.js"
 import { Passlock as PasslockUnsafe, Passlock as UnsafePasslock } from "./unsafe.js"
 
@@ -93,7 +101,8 @@ describe("public surface", () => {
       | "getMailboxChallenge"
       | "verifyMailboxChallenge"
       | "deleteMailboxChallenge"
-      | "assignUser"
+      | "preparePasskeyAuthentication"
+      | "preparePasskeyRegistration"
       | "updatePasskey"
       | "updatePasskeyUsernames"
       | "deletePasskey"
@@ -126,7 +135,8 @@ describe("public surface", () => {
       | "getMailboxChallenge"
       | "verifyMailboxChallenge"
       | "deleteMailboxChallenge"
-      | "assignUser"
+      | "preparePasskeyAuthentication"
+      | "preparePasskeyRegistration"
       | "updatePasskey"
       | "updatePasskeyUsernames"
       | "deletePasskey"
@@ -176,6 +186,14 @@ describe("public surface", () => {
     type _9 = Assert<IsEqual<CreateMailboxChallengeOptions, UnsafeCreateMailboxChallengeOptions>>
     type _10 = Assert<IsEqual<MailboxChallengeCreated, UnsafeMailboxChallengeCreated>>
     type _11 = Assert<IsEqual<MailboxChallengeDetails, UnsafeMailboxChallengeDetails>>
+    type _12 = Assert<IsEqual<PreparedPasskeyRegistration, UnsafePreparedPasskeyRegistration>>
+    type _13 = Assert<
+      IsEqual<PreparePasskeyRegistrationOptions, UnsafePreparePasskeyRegistrationOptions>
+    >
+    type _14 = Assert<IsEqual<PreparedPasskeyAuthentication, UnsafePreparedPasskeyAuthentication>>
+    type _15 = Assert<
+      IsEqual<PreparePasskeyAuthenticationOptions, UnsafePreparePasskeyAuthenticationOptions>
+    >
 
     expect(true).toBe(true)
   })

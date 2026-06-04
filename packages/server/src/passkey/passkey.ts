@@ -10,6 +10,7 @@ import {
   type NetworkResponseError,
 } from "../network.js"
 import {
+  BadRequestError,
   FindAllPasskeys as FindAllPasskeysSchema,
   ForbiddenError,
   NotFoundError,
@@ -326,6 +327,279 @@ const authorizationHeaders = (apiKey: string) => ({
 const decodeResponseJson = <A, I, R>(response: NetworkResponse, schema: Schema.Schema<A, I, R>) =>
   pipe(response.json, Effect.flatMap(Schema.decodeUnknown(schema)))
 
+/* PreparedPasskeyRegistration */
+
+/**
+ * Options used by your backend to authorize a passkey registration before the
+ * browser starts the WebAuthn ceremony.
+ *
+ * @category Passkeys
+ */
+export interface PreparePasskeyRegistrationOptions {
+  /**
+   * The relying party ID for this registration. Use `"localhost"` during
+   * development, or the domain configured in the Passlock console for staging
+   * and production (e.g. `"example.com"`).
+   */
+  rpId: string
+
+  /**
+   * Custom user ID from your application. This becomes the immutable Passlock
+   * user ID for the passkey created from the prepared registration.
+   */
+  userId: string
+
+  /**
+   * Username shown by the browser or authenticator for the new passkey.
+   */
+  username: string
+
+  /**
+   * Optional display name shown by the browser or authenticator.
+   */
+  displayName?: string | undefined
+
+  /**
+   * Existing Passlock passkey record IDs to exclude from registration.
+   */
+  excludeCredentials?: ReadonlyArray<string> | undefined
+
+  /**
+   * Whether the device should re-authenticate the user locally before registration.
+   */
+  userVerification?: PasskeySchemas.UserVerification | undefined
+
+  /**
+   * Abort the browser ceremony after N milliseconds.
+   */
+  timeout?: number | undefined
+}
+
+/**
+ * Prepared registration token returned to your backend.
+ *
+ * Send only the `registrationToken` to the browser. Treat it as bearer
+ * authorization to create one passkey for the prepared user, and discard it
+ * after the browser calls `@passlock/browser`'s `registerPasskey`.
+ *
+ * @category Passkeys
+ */
+export type PreparedPasskeyRegistration = {
+  readonly _tag: "PreparedPasskeyRegistration"
+  readonly expiresAt: number
+  readonly registrationToken: string
+}
+
+/**
+ * Type guard for {@link PreparedPasskeyRegistration}.
+ *
+ * @category Passkeys
+ */
+export const isPreparedPasskeyRegistration = (
+  payload: unknown
+): payload is PreparedPasskeyRegistration =>
+  Schema.is(PasskeySchemas.PreparedPasskeyRegistration)(payload)
+
+/**
+ * Ensures the public PreparedPasskeyRegistration type matches the runtime schema.
+ * @internal
+ */
+export type _PreparedPasskeyRegistration = satisfy<
+  typeof PasskeySchemas.PreparedPasskeyRegistration.Type,
+  PreparedPasskeyRegistration
+>
+
+/**
+ * Prepare a server-authorized passkey registration.
+ *
+ * Call this from your backend after deciding the user is allowed to create a
+ * passkey. Return the resulting `registrationToken` to the browser, then call
+ * `registerPasskey` from `@passlock/browser`.
+ *
+ * @param options Prepared registration options, including the relying party ID,
+ * application user ID, username, and optional WebAuthn ceremony settings.
+ * @param config Shared Passlock configuration for the request.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns An Effect that succeeds with a one-time prepared registration token.
+ *
+ * @category Passkeys
+ */
+export const preparePasskeyRegistration = (
+  options: PreparePasskeyRegistrationOptions,
+  config: AuthenticatedOptions,
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<PreparedPasskeyRegistration, BadRequestError | ForbiddenError> =>
+  pipe(
+    Effect.gen(function* () {
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId } = config
+
+      const url = new URL(`/v2/${tenancyId}/passkey/registration/prepare`, baseUrl)
+
+      const response = yield* fetchNetwork(url, "post", options, {
+        headers: authorizationHeaders(config.apiKey),
+      })
+
+      const encoded: PreparedPasskeyRegistration | BadRequestError | ForbiddenError =
+        yield* matchStatus(response, {
+          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.PreparedPasskeyRegistration),
+          orElse: (res) => decodeResponseJson(res, Schema.Union(BadRequestError, ForbiddenError)),
+        })
+
+      return yield* pipe(
+        Match.value(encoded),
+        Match.tag("PreparedPasskeyRegistration", (data) => Effect.succeed(data)),
+        Match.tag("@error/BadRequest", (err) => Effect.fail(err)),
+        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
+        Match.exhaustive
+      )
+    }),
+    Effect.catchTags({
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
+      ParseError: (err) => Effect.die(err),
+    }),
+    Effect.provide(fetchLayer)
+  )
+
+/* PreparedPasskeyAuthentication */
+
+/**
+ * Options used by your backend to authorize a passkey authentication before
+ * the browser starts the WebAuthn ceremony.
+ *
+ * Pass either `userId`, `allowCredentials`, or both. If neither value is
+ * available, use the browser-started authentication flow instead.
+ *
+ * @category Passkeys
+ */
+export interface PreparePasskeyAuthenticationOptions {
+  /**
+   * The relying party ID for this authentication. Use `"localhost"` during
+   * development, or the domain configured in the Passlock console for staging
+   * and production (e.g. `"example.com"`).
+   */
+  rpId: string
+
+  /**
+   * Optional custom user ID from your application.
+   */
+  userId?: string | undefined
+
+  /**
+   * Existing Passlock passkey record IDs allowed for this prepared authentication.
+   */
+  allowCredentials?: ReadonlyArray<string> | undefined
+
+  /**
+   * Whether the device should re-authenticate the user locally before authentication.
+   */
+  userVerification?: PasskeySchemas.UserVerification | undefined
+
+  /**
+   * Abort the browser ceremony after N milliseconds.
+   */
+  timeout?: number | undefined
+}
+
+/**
+ * Ensures the public PreparePasskeyAuthenticationOptions type matches the runtime schema.
+ * @internal
+ */
+export type _PreparePasskeyAuthenticationOptions = satisfy<
+  typeof PasskeySchemas.PreparePasskeyAuthenticationOptions.Type,
+  PreparePasskeyAuthenticationOptions
+>
+
+/**
+ * Prepared authentication token returned to your backend.
+ *
+ * Send only the `authenticationToken` to the browser. Treat it as bearer
+ * authorization to authenticate for the prepared account or credentials, and
+ * discard it after the browser calls `@passlock/browser`'s `authenticatePasskey`.
+ *
+ * @category Passkeys
+ */
+export type PreparedPasskeyAuthentication = {
+  readonly _tag: "PreparedPasskeyAuthentication"
+  readonly authenticationToken: string
+  readonly expiresAt: number
+}
+
+/**
+ * Type guard for {@link PreparedPasskeyAuthentication}.
+ *
+ * @category Passkeys
+ */
+export const isPreparedPasskeyAuthentication = (
+  payload: unknown
+): payload is PreparedPasskeyAuthentication =>
+  Schema.is(PasskeySchemas.PreparedPasskeyAuthentication)(payload)
+
+/**
+ * Ensures the public PreparedPasskeyAuthentication type matches the runtime schema.
+ * @internal
+ */
+export type _PreparedPasskeyAuthentication = satisfy<
+  typeof PasskeySchemas.PreparedPasskeyAuthentication.Type,
+  PreparedPasskeyAuthentication
+>
+
+/**
+ * Prepare a server-authorized passkey authentication.
+ *
+ * Call this from your backend after deciding which account or passkeys may
+ * authenticate. Return the resulting `authenticationToken` to the browser,
+ * then call `authenticatePasskey` from `@passlock/browser`.
+ *
+ * @param options Prepared authentication options, including the relying party ID
+ * and an optional application user ID, allow-list, or both.
+ * @param config Shared Passlock configuration for the request.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns An Effect that succeeds with a one-time prepared authentication token.
+ *
+ * @category Passkeys
+ */
+export const preparePasskeyAuthentication = (
+  options: PreparePasskeyAuthenticationOptions,
+  config: AuthenticatedOptions,
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<PreparedPasskeyAuthentication, BadRequestError | ForbiddenError> =>
+  pipe(
+    Effect.gen(function* () {
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId } = config
+
+      const url = new URL(`/v2/${tenancyId}/passkey/authentication/prepare`, baseUrl)
+
+      const response = yield* fetchNetwork(url, "post", options, {
+        headers: authorizationHeaders(config.apiKey),
+      })
+
+      const encoded: PreparedPasskeyAuthentication | BadRequestError | ForbiddenError =
+        yield* matchStatus(response, {
+          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.PreparedPasskeyAuthentication),
+          orElse: (res) => decodeResponseJson(res, Schema.Union(BadRequestError, ForbiddenError)),
+        })
+
+      return yield* pipe(
+        Match.value(encoded),
+        Match.tag("PreparedPasskeyAuthentication", (data) => Effect.succeed(data)),
+        Match.tag("@error/BadRequest", (err) => Effect.fail(err)),
+        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
+        Match.exhaustive
+      )
+    }),
+    Effect.catchTags({
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
+      ParseError: (err) => Effect.die(err),
+    }),
+    Effect.provide(fetchLayer)
+  )
+
 /* Get Passkey */
 
 /**
@@ -361,7 +635,7 @@ export const getPasskey = (
       const { tenancyId } = config
       const { passkeyId } = options
 
-      const url = new URL(`/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
+      const url = new URL(`/v2/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
 
       const response = yield* fetchNetwork(url, "get", undefined, {
         headers: authorizationHeaders(config.apiKey),
@@ -427,7 +701,7 @@ export const deletePasskey = (
       const { tenancyId } = config
       const { passkeyId } = options
 
-      const url = new URL(`/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
+      const url = new URL(`/v2/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
 
       const response = yield* fetchNetwork(url, "delete", undefined, {
         headers: authorizationHeaders(config.apiKey),
@@ -464,83 +738,6 @@ export const deletePasskey = (
     Effect.provide(fetchLayer)
   )
 
-/* Assign User */
-
-/**
- * Options for assigning a custom user ID to a single passkey.
- *
- * @category Passkeys
- */
-export interface AssignUserOptions {
-  /**
-   * Identifier of the passkey to update.
-   */
-  passkeyId: string
-
-  /**
-   * Custom user ID to align with your own systems.
-   */
-  userId: string
-}
-
-// TODO reuse updatePasskey
-/**
- * Assign a custom user ID to a single passkey.
- *
- * This updates Passlock's mapping for the passkey. It does not change the
- * underlying WebAuthn credential's `userId`.
- *
- * @param options Passkey-specific request options.
- * @param config Shared Passlock configuration for the request.
- * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds with the updated passkey.
- *
- * @category Passkeys
- */
-export const assignUser = (
-  options: AssignUserOptions,
-  config: AuthenticatedOptions,
-  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<Passkey, NotFoundError | ForbiddenError> =>
-  pipe(
-    Effect.gen(function* () {
-      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
-      const { userId, passkeyId } = options
-      const { tenancyId } = config
-
-      const url = new URL(`/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
-
-      const response = yield* fetchNetwork(
-        url,
-        "patch",
-        { userId },
-        {
-          headers: authorizationHeaders(config.apiKey),
-        }
-      )
-
-      const encoded: Passkey | NotFoundError | ForbiddenError = yield* matchStatus(response, {
-        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
-        orElse: (res) => decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
-      })
-
-      return yield* pipe(
-        Match.value(encoded),
-        Match.tag("Passkey", (passkey) => Effect.succeed(passkey)),
-        Match.tag("@error/NotFound", (err) => Effect.fail(err)),
-        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
-        Match.exhaustive
-      )
-    }),
-    Effect.catchTags({
-      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
-      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
-      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
-    }),
-    Effect.provide(fetchLayer)
-  )
-
 /* Update passkey */
 
 /**
@@ -554,17 +751,13 @@ export interface UpdatePasskeyOptions {
    */
   passkeyId: string
   /**
-   * Custom user ID to associate with the passkey.
-   */
-  userId?: string
-  /**
    * Username metadata stored alongside the passkey.
    */
   username?: string
 }
 
 /**
- * Update a single passkey's custom user ID and/or username metadata.
+ * Update a single passkey's username metadata.
  *
  * @param options Passkey-specific request options.
  * @param config Shared Passlock configuration for the request.
@@ -582,15 +775,15 @@ export const updatePasskey = (
     Effect.gen(function* () {
       const baseUrl = config.endpoint ?? "https://api.passlock.dev"
 
-      const { userId, passkeyId, username } = options
+      const { passkeyId, username } = options
       const { tenancyId } = config
 
-      const url = new URL(`/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
+      const url = new URL(`/v2/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
 
       const response = yield* fetchNetwork(
         url,
         "patch",
-        { userId, username },
+        { username },
         {
           headers: authorizationHeaders(config.apiKey),
         }
@@ -637,12 +830,12 @@ const updateUserPasskeys = (
       const { userId, username } = options
       const { tenancyId } = config
 
-      const url = new URL(`/${tenancyId}/users/${userId}/passkeys/`, baseUrl)
+      const url = new URL(`/v2/${tenancyId}/users/${userId}/passkeys/`, baseUrl)
 
       const response = yield* fetchNetwork(
         url,
         "patch",
-        { userId, username },
+        { username },
         {
           headers: authorizationHeaders(config.apiKey),
         }
@@ -713,7 +906,7 @@ export const deleteUserPasskeys = (
       const { tenancyId } = config
       const { userId } = options
 
-      const url = new URL(`/${tenancyId}/users/${userId}/passkeys/`, baseUrl)
+      const url = new URL(`/v2/${tenancyId}/users/${userId}/passkeys/`, baseUrl)
 
       const response = yield* fetchNetwork(
         url,
@@ -885,7 +1078,7 @@ export const listPasskeys = (
       const baseUrl = config.endpoint ?? "https://api.passlock.dev"
       const { tenancyId } = config
 
-      const url = new URL(`/${tenancyId}/passkeys/`, baseUrl)
+      const url = new URL(`/v2/${tenancyId}/passkeys/`, baseUrl)
       if (options.cursor) {
         url.searchParams.append("cursor", options.cursor)
       }

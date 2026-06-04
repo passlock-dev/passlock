@@ -16,6 +16,71 @@ import { Schema } from "effect"
  */
 export const UserVerification = Schema.Literal("required", "preferred", "discouraged")
 
+/**
+ * Type produced by {@link UserVerification}.
+ *
+ * @category Passkeys
+ */
+export type UserVerification = typeof UserVerification.Type
+
+/* PreparedPasskeyRegistration */
+
+/**
+ * Response returned after preparing a server-authorized passkey registration.
+ *
+ * @category Passkeys
+ */
+export const PreparedPasskeyRegistration = Schema.TaggedStruct("PreparedPasskeyRegistration", {
+  expiresAt: Schema.Number,
+  registrationToken: Schema.String,
+})
+
+/**
+ * Type produced by {@link PreparedPasskeyRegistration}.
+ *
+ * @category Passkeys
+ */
+export type PreparedPasskeyRegistration = typeof PreparedPasskeyRegistration.Type
+
+/* PreparedPasskeyAuthentication */
+
+/**
+ * Request body used to prepare a server-authorized passkey authentication.
+ *
+ * @category Passkeys
+ */
+export const PreparePasskeyAuthenticationOptions = Schema.Struct({
+  rpId: Schema.String,
+  userId: Schema.optional(Schema.String),
+  allowCredentials: Schema.optional(Schema.Array(Schema.String)),
+  userVerification: Schema.optional(UserVerification),
+  timeout: Schema.optional(Schema.Number),
+})
+
+/**
+ * Type produced by {@link PreparePasskeyAuthenticationOptions}.
+ *
+ * @category Passkeys
+ */
+export type PreparePasskeyAuthenticationOptions = typeof PreparePasskeyAuthenticationOptions.Type
+
+/**
+ * Response returned after preparing a server-authorized passkey authentication.
+ *
+ * @category Passkeys
+ */
+export const PreparedPasskeyAuthentication = Schema.TaggedStruct("PreparedPasskeyAuthentication", {
+  authenticationToken: Schema.String,
+  expiresAt: Schema.Number,
+})
+
+/**
+ * Type produced by {@link PreparedPasskeyAuthentication}.
+ *
+ * @category Passkeys
+ */
+export type PreparedPasskeyAuthentication = typeof PreparedPasskeyAuthentication.Type
+
 /* Passkey */
 
 /**

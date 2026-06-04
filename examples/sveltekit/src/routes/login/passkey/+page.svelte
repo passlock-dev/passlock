@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { authenticatePasskey } from '$lib/client/passkeys';
+	import { authenticatePasskey, preparePasskeyAuthentication } from '$lib/client/passkeys';
 	import DevNotes from '$lib/components/DevNotes.svelte';
 	import type { PageProps } from './$types';
 	import Link from '$lib/components/Link.svelte';
@@ -16,14 +16,28 @@
 		error = '';
 		loading = true;
 
-		const config = { tenancyId: data.tenancyId, endpoint: data.endpoint };
+		const config = { tenancyId: data.tenancyId, rpId: data.rpId, endpoint: data.endpoint };
+
+		const preparedAuthentication = data.username
+			? await preparePasskeyAuthentication({
+					url: resolve('/login/passkey/prepare'),
+					body: { username: data.username }
+				})
+			: undefined;
+
+		if (preparedAuthentication?._tag === '@error/PreparePasskeyAuthenticationError') {
+			error = preparedAuthentication.message;
+			loading = false;
+			return;
+		}
 
 		// The browser prompt happens here; the server verifies the returned code
-		// and creates the local session.
+		// and creates the local session. Known-user login uses a prepared token;
+		// direct passkey login stays browser-started because no account is known.
 		const result = await authenticatePasskey(
-			{
-				allowCredentials: data.allowCredentials
-			},
+			preparedAuthentication
+				? { authenticationToken: preparedAuthentication.authenticationToken }
+				: {},
 			config
 		);
 
@@ -69,16 +83,16 @@
 	</div>
 </div>
 
-{#if data.allowCredentials.length > 0}
+{#if data.username}
 	<DevNotes>
 		<p>
-			We know which account the user wants to authenticate against, so we tell the browser to use
-			passkeys linked to that account.
+			We know which account the user wants to authenticate against, so the server prepares the
+			passkey authentication and sends the browser only a one-time authentication token.
 		</p>
 
 		<p class="mt-2">
-			In most cases this doesn't add any real value, but it's useful when a user might have multiple
-			accounts.
+			That keeps account-specific passkey policy on the backend while still letting the browser run
+			the WebAuthn ceremony.
 		</p>
 
 		<p class="mt-2">

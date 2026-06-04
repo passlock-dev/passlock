@@ -8,7 +8,7 @@ in README.template.md and outputs to README.md
   </a>
 </div>
 
-<h1 align="center">Passkey Authentication for Typescript apps</h1>
+<h1 align="center">Passkey Authentication for TypeScript apps</h1>
 
 <div align="center">
   <picture align="center">
@@ -16,7 +16,7 @@ in README.template.md and outputs to README.md
     <img align="center" width=550 height=50 src="#{ASSETS}#/images/client-repo-banner.svg" />
   </picture>
   <p align="center">
-    Next generation passkey authentication for Astro, Sveltekit, Angular and other frameworks. 
+    Next generation passkey authentication for Astro, SvelteKit, Angular and other frameworks.
     <br />
     <a href="#{PASSLOCK_SITE}#"><strong>Project website »</strong></a>
     <br />
@@ -34,7 +34,7 @@ in README.template.md and outputs to README.md
 
 ## Key Features
 
-Powerful features including signals and related origin requests...
+Powerful passkey features for browser applications.
 
 1. **🔓 No lock-in**  
 Framework agnostic. Standards compliant.
@@ -50,6 +50,35 @@ Programmatically manage passkeys on end user devices
 
 5. **💪 Powerful**  
 User verification, autofill, roaming authenticators and more.
+
+## Register a passkey
+
+Passkey registration starts on your backend. Use
+`@passlock/server` to prepare a registration for the application user, return
+the resulting `registrationToken` to the browser, then pass that token to
+`registerPasskey`.
+
+```ts
+import { registerPasskey } from "@passlock/browser"
+
+const result = await registerPasskey(
+  { registrationToken },
+  { tenancyId: "your-tenancy-id" }
+)
+
+if (result.success) {
+  // Send this code to your backend and verify it there.
+  console.log(result.value.code)
+}
+
+if (result.failure) {
+  console.error(result.error.message)
+}
+```
+
+`registerPasskey` redeems the one-time registration token for WebAuthn
+creation options, asks the authenticator to create the passkey, and verifies
+the result with Passlock.
 
 ## More information
 

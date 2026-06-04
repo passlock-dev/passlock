@@ -1,5 +1,9 @@
 import { PASSLOCK_API_KEY } from '$env/static/private';
-import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public';
+import {
+	PUBLIC_PASSLOCK_ENDPOINT,
+	PUBLIC_PASSLOCK_RP_ID,
+	PUBLIC_PASSLOCK_TENANCY_ID
+} from '$env/static/public';
 import { error as kitError } from '@sveltejs/kit';
 
 /**
@@ -14,6 +18,7 @@ export const getPasslockConfig = () => {
 	const apiKey = PASSLOCK_API_KEY;
 	const tenancyId = PUBLIC_PASSLOCK_TENANCY_ID;
 	const endpoint = PUBLIC_PASSLOCK_ENDPOINT;
+	const rpId = PUBLIC_PASSLOCK_RP_ID || 'localhost';
 
 	if (!apiKey || !tenancyId) {
 		console.error('Passlock not configured');
@@ -23,6 +28,7 @@ export const getPasslockConfig = () => {
 	return {
 		tenancyId,
 		apiKey,
+		rpId,
 		endpoint: endpoint || undefined
 	} as const;
 };
@@ -30,7 +36,7 @@ export const getPasslockConfig = () => {
 /**
  * Read the subset of Passlock config that is safe to expose to the browser.
  *
- * Client code needs the tenancy and optional endpoint so it can talk to
+ * Client code needs the tenancy, rpId, and optional endpoint so it can talk to
  * Passlock via `@passlock/browser`, but it must never receive the API key.
  */
 export const getPasslockClientConfig = () => {

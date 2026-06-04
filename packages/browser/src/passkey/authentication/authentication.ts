@@ -16,11 +16,30 @@ import type { Millis, UserVerification } from "../shared.js"
 /**
  * Passkey authentication options.
  *
+ * Use {@link BrowserStartedAuthenticationOptions} when the browser should start
+ * the WebAuthn ceremony from an `rpId`. Use
+ * {@link PreparedAuthenticationOptions} when your backend has already prepared
+ * a one-time authentication token with `@passlock/server`.
+ *
  * @see {@link authenticatePasskey}
  *
  * @category Passkeys (core)
  */
-export interface AuthenticationOptions {
+export type AuthenticationOptions =
+  | BrowserStartedAuthenticationOptions
+  | PreparedAuthenticationOptions
+
+/**
+ * Browser-started passkey authentication options.
+ *
+ * This flow asks Passlock for WebAuthn options using the supplied relying party
+ * ID, then starts the credential request in the browser.
+ *
+ * @see {@link authenticatePasskey}
+ *
+ * @category Passkeys (core)
+ */
+export interface BrowserStartedAuthenticationOptions {
   /**
    * Restrict the passkeys the device can present to the user to this set.
    *
@@ -56,12 +75,48 @@ export interface AuthenticationOptions {
   timeout?: Millis | undefined
 
   /**
-   * Override the rpId. Use this when you want to accept passkeys from
-   * a different domain/rpId.
+   * The relying party ID for this authentication. Use `"localhost"` during
+   * development, or the domain configured in the Passlock console for staging
+   * and production (e.g. `"example.com"`). For related-origin flows, pass the
+   * rpId of the origin you want to accept passkeys from.
    *
    * @see {@link https://passlock.dev/passkeys/related-origin-requests/ related origin requests (main docs)}
    */
-  rpId?: string
+  rpId: string
+}
+
+/**
+ * Server-prepared passkey authentication options.
+ *
+ * Your backend should first call `preparePasskeyAuthentication` from
+ * `@passlock/server`, return the resulting `authenticationToken` to the
+ * browser, then pass that token to {@link authenticatePasskey}.
+ *
+ * Autofill is not supported for prepared authentication because autofill is a
+ * browser-started discoverable credential flow.
+ *
+ * @see {@link authenticatePasskey}
+ *
+ * @category Passkeys (core)
+ */
+export interface PreparedAuthenticationOptions {
+  /**
+   * One-time authentication token returned by `@passlock/server`'s
+   * `preparePasskeyAuthentication` function.
+   */
+  authenticationToken: string
+
+  /**
+   * Receive notifications about key stages in the authentication process.
+   * For example, you might use event notifications to toggle loading icons or
+   * to disable certain form fields.
+   */
+  onEvent?: OnAuthenticationEvent | undefined
+
+  /**
+   * Autofill cannot be used with server-prepared authentication.
+   */
+  autofill?: never
 }
 
 /**
@@ -144,24 +199,30 @@ export const isAuthenticationSuccess = (payload: unknown): payload is Authentica
   return payload._tag === AuthenticationSuccessTag
 }
 
+const isPreparedAuthenticationOptions = (
+  options: AuthenticationOptions
+): options is PreparedAuthenticationOptions => "authenticationToken" in options
+
 export const fetchOptions = (options: AuthenticationOptions) =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
     const { endpoint } = yield* Micro.service(Endpoint)
     const { tenancyId } = yield* Micro.service(TenancyId)
 
-    const { userVerification, allowCredentials, timeout, rpId, onEvent } = options
-    const url = new URL(`${tenancyId}/passkey/authentication/options`, endpoint)
+    const { onEvent } = options
+    const url = new URL(`v2/${tenancyId}/passkey/authentication/options`, endpoint)
 
     onEvent?.("optionsRequest")
     yield* logger.logInfo("Fetching passkey authentication options from Passlock")
 
-    const payload = {
-      allowCredentials,
-      userVerification,
-      rpId,
-      timeout,
-    }
+    const payload = isPreparedAuthenticationOptions(options)
+      ? { authenticationToken: options.authenticationToken }
+      : {
+          allowCredentials: options.allowCredentials,
+          userVerification: options.userVerification,
+          rpId: options.rpId,
+          timeout: options.timeout,
+        }
 
     return yield* makeRequest({
       label: "authentication options",
@@ -269,7 +330,7 @@ export const verifyCredential = (
     const { endpoint } = yield* Micro.service(Endpoint)
     const { tenancyId } = yield* Micro.service(TenancyId)
 
-    const url = new URL(`${tenancyId}/passkey/authentication/verification`, endpoint)
+    const url = new URL(`v2/${tenancyId}/passkey/authentication/verification`, endpoint)
 
     onEvent?.("verifyCredential")
     yield* logger.logInfo("Verifying passkey in Passlock vault")
@@ -309,8 +370,13 @@ export type AuthenticationError =
   | NetworkError
 
 /**
- * Trigger local passkey authentication then verify the passkey in your Passlock vault.
- * Returns a code and id_token that can be exchanged/decoded in your backend.
+ * Trigger local passkey authentication, then verify the passkey in your
+ * Passlock vault.
+ *
+ * Pass browser-started options with an `rpId`, or pass an
+ * `authenticationToken` created by `@passlock/server`'s
+ * `preparePasskeyAuthentication` function. On success, the returned code and
+ * id_token can be exchanged or verified in your backend.
  *
  * @param options Authentication ceremony options.
  * @param config Passlock tenancy and API endpoint options.
@@ -324,6 +390,19 @@ export const authenticatePasskey = (
   const endpoint = makeEndpoint(config)
 
   const micro = Micro.gen(function* () {
+    if (
+      isPreparedAuthenticationOptions(options) &&
+      "autofill" in options &&
+      options.autofill === true
+    ) {
+      return yield* Micro.fail(
+        new OtherPasskeyError({
+          error: options,
+          message: "Autofill cannot be used with prepared passkey authentication",
+        })
+      )
+    }
+
     const { sessionToken, optionsJSON } = yield* fetchOptions(options)
 
     const go = (useBrowserAutofill: boolean) =>
@@ -373,7 +452,7 @@ export type AuthenticationEvent = "optionsRequest" | "getCredential" | "verifyCr
  * Allows you to hook into key lifecycle events.
  *
  * Most commonly used when {@link authenticatePasskey}
- * is called with {@link AuthenticationOptions#autofill}.
+ * is called with {@link BrowserStartedAuthenticationOptions#autofill}.
  * When autofill is applied the browser will wait for user interaction. By listening
  * for the `verifyCredential` {@link AuthenticationEvent} you know the browser has
  * already returned a credential and Passlock verification is starting, so you can

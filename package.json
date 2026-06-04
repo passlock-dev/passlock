@@ -29,7 +29,7 @@
   "scripts": {
     "build:readme": "VERSION=${npm_package_version} tsx ./scripts/replace-readme-tokens.ts .",
     "changeset": "changeset",
-    "ncu": "pnpm update --recursive --latest --interactive \\!vitest",
+    "ncu": "pnpm exec ncu -c 25h -x vite -w -u --peer",
     "release": "changeset publish",
     "sort-package-json": "sort-package-json",
     "update-example-deps": "tsx scripts/update-example-deps.ts",
@@ -46,5 +46,5 @@
     "tsx": "catalog:",
     "typescript": "catalog:"
   },
-  "packageManager": "pnpm@11.5.0"
+  "packageManager": "pnpm@11.5.2"
 }

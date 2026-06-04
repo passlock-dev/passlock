@@ -40,6 +40,43 @@ Node 20+ (If running Node)
 
 ## Usage
 
-Please see the [Quick start guide](https://passlock.dev/getting-started/)
+### Prepare a passkey registration
+
+Create passkey registrations from your backend after you have authenticated the
+user and decided they are allowed to add a passkey. The server prepares a
+short-lived `registrationToken`; send only that token to the browser and use it
+with `registerPasskey` from `@passlock/browser`.
+
+```ts
+import { preparePasskeyRegistration } from "@passlock/server"
+
+const result = await preparePasskeyRegistration(
+  {
+    rpId: "example.com",
+    userId: "user_123",
+    username: "user@example.com",
+    displayName: "User Example",
+  },
+  {
+    apiKey: process.env.PASSLOCK_API_KEY!,
+    tenancyId: "your-tenancy-id",
+  }
+)
+
+if (result.success) {
+  return {
+    registrationToken: result.value.registrationToken,
+  }
+}
+
+throw new Error(result.error.message)
+```
+
+The prepared registration token authorizes one browser registration ceremony for
+the prepared user. Treat it as bearer authorization, do not log it, and discard
+it after it is sent to the browser.
+
+Please see the [Quick start guide](https://passlock.dev/getting-started/) for a
+complete registration and verification flow.
 
 [browser]: https://www.npmjs.com/package/@passlock/browser

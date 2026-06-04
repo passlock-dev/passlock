@@ -10,6 +10,18 @@ export const RegisterPasskeySuccess = v.object({
 	_tag: v.literal('RegisterPasskeySuccess')
 });
 
+export const PreparedPasskeyRegistration = v.object({
+	_tag: v.literal('PreparedPasskeyRegistration'),
+	expiresAt: v.number(),
+	registrationToken: v.string()
+});
+
+export const PreparedPasskeyAuthentication = v.object({
+	_tag: v.literal('PreparedPasskeyAuthentication'),
+	expiresAt: v.number(),
+	authenticationToken: v.string()
+});
+
 /**
  * Credential payload returned by the server when the browser should update the
  * username/display name shown for a passkey.
@@ -49,7 +61,7 @@ export const DeleteUserPasskeysSuccess = v.object({
 
 export const PasskeyStatusSuccess = v.object({
 	_tag: v.literal('PasskeyStatusSuccess'),
-	passkeyIds: v.pipe(v.array(v.string()), v.readonly()),
+	passkeyCount: v.number(),
 	reauthenticationRequired: v.boolean()
 });
 

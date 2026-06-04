@@ -85,7 +85,7 @@
     "@biomejs/biome": "catalog:",
     "@effect/language-service": "^0.86.2",
     "@fetch-mock/vitest": "^0.2.18",
-    "@typescript/lib-dom": "npm:@types/web@^0.0.349",
+    "@typescript/lib-dom": "npm:@types/web@^0.0.350",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
     "publint": "catalog:",
@@ -97,5 +97,5 @@
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
-  "packageManager": "pnpm@11.5.0"
+  "packageManager": "pnpm@11.5.2"
 }

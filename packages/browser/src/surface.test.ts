@@ -3,12 +3,14 @@ import type {
   AuthenticationError,
   AuthenticationOptions,
   AuthenticationSuccess,
+  BrowserStartedAuthenticationOptions,
   Credential,
   DeleteError,
   DeleteSuccess,
   Err,
   Ok,
   PasslockOptions,
+  PreparedAuthenticationOptions,
   PruningError,
   PruningSuccess,
   RegistrationError,
@@ -25,8 +27,10 @@ import type {
   AuthenticationError as UnsafeAuthenticationError,
   AuthenticationOptions as UnsafeAuthenticationOptions,
   AuthenticationSuccess as UnsafeAuthenticationSuccess,
+  BrowserStartedAuthenticationOptions as UnsafeBrowserStartedAuthenticationOptions,
   Credential as UnsafeCredential,
   PasslockOptions as UnsafePasslockOptions,
+  PreparedAuthenticationOptions as UnsafePreparedAuthenticationOptions,
   RegistrationError as UnsafeRegistrationError,
   RegistrationOptions as UnsafeRegistrationOptions,
   RegistrationSuccess as UnsafeRegistrationSuccess,
@@ -90,6 +94,10 @@ describe("public surface", () => {
     type _7 = Assert<IsEqual<AuthenticationError, UnsafeAuthenticationError>>
     type _8 = Assert<IsEqual<UpdatePasskeyOptions, UpdatePasskeyOptionsUnsafe>>
     type _9 = Assert<IsEqual<Credential, UnsafeCredential>>
+    type _10 = Assert<
+      IsEqual<BrowserStartedAuthenticationOptions, UnsafeBrowserStartedAuthenticationOptions>
+    >
+    type _11 = Assert<IsEqual<PreparedAuthenticationOptions, UnsafePreparedAuthenticationOptions>>
 
     expect(true).toBe(true)
   })

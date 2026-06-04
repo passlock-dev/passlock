@@ -7,7 +7,7 @@ import { Context, Micro, pipe } from "effect"
 import { afterAll, describe, expect, it, vi } from "vitest"
 import { Endpoint, TenancyId } from "../../internal/index.js"
 import { Logger } from "../../logger.js"
-import { OrphanedPasskeyError, PasskeyUnsupportedError } from "../errors.js"
+import { OrphanedPasskeyError, OtherPasskeyError, PasskeyUnsupportedError } from "../errors.js"
 import {
   AuthenticationHelper,
   authenticatePasskey,
@@ -33,18 +33,22 @@ describe(fetchOptions.name, () => {
     Context.add(TenancyId, { tenancyId })
   )
 
-  const expectedRoute = `${endpoint}/${tenancyId}/passkey/authentication/options`
+  const expectedRoute = `${endpoint}/v2/${tenancyId}/passkey/authentication/options`
 
   const mockResponse = {
     optionsJSON: {},
     sessionToken: "dummySessionToken",
   }
 
-  describe("given an empty set of options", () => {
+  describe("given a minimal set of options", () => {
     it("should fetch some PublicKeyCredentialCreationOptions", async () => {
       fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
 
-      const result = await pipe(fetchOptions({}), Micro.provideContext(ctx), Micro.runPromise)
+      const result = await pipe(
+        fetchOptions({ rpId: "localhost" }),
+        Micro.provideContext(ctx),
+        Micro.runPromise
+      )
 
       expect(result.sessionToken).toBeTruthy()
       expect(result.optionsJSON).toBeTruthy()
@@ -57,10 +61,14 @@ describe(fetchOptions.name, () => {
     it("should send them to the backend", async () => {
       fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
 
-      await pipe(fetchOptions({ allowCredentials }), Micro.provideContext(ctx), Micro.runPromise)
+      await pipe(
+        fetchOptions({ rpId: "localhost", allowCredentials }),
+        Micro.provideContext(ctx),
+        Micro.runPromise
+      )
 
       expect(fetchMock).toHavePosted(expectedRoute, {
-        body: { allowCredentials },
+        body: { allowCredentials, rpId: "localhost" },
       })
     })
   })
@@ -71,10 +79,28 @@ describe(fetchOptions.name, () => {
     it("should send it to the backend", async () => {
       fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
 
-      await pipe(fetchOptions({ userVerification }), Micro.provideContext(ctx), Micro.runPromise)
+      await pipe(
+        fetchOptions({ rpId: "localhost", userVerification }),
+        Micro.provideContext(ctx),
+        Micro.runPromise
+      )
 
       expect(fetchMock).toHavePosted(expectedRoute, {
-        body: { userVerification },
+        body: { rpId: "localhost", userVerification },
+      })
+    })
+  })
+
+  describe("given an authenticationToken", () => {
+    const authenticationToken = "dummyAuthenticationToken"
+
+    it("should send only the token to the backend", async () => {
+      fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
+
+      await pipe(fetchOptions({ authenticationToken }), Micro.provideContext(ctx), Micro.runPromise)
+
+      expect(fetchMock).toHavePosted(expectedRoute, {
+        body: { authenticationToken },
       })
     })
   })
@@ -84,7 +110,11 @@ describe(fetchOptions.name, () => {
 
     const onEvent = vi.fn()
 
-    await pipe(fetchOptions({ onEvent }), Micro.provideContext(ctx), Micro.runPromise)
+    await pipe(
+      fetchOptions({ rpId: "localhost", onEvent }),
+      Micro.provideContext(ctx),
+      Micro.runPromise
+    )
 
     expect(onEvent).toHaveBeenCalledWith("optionsRequest")
   })
@@ -141,7 +171,7 @@ describe(verifyCredential.name, () => {
     Context.add(TenancyId, { tenancyId })
   )
 
-  const expectedRoute = `${endpoint}/${tenancyId}/passkey/authentication/verification`
+  const expectedRoute = `${endpoint}/v2/${tenancyId}/passkey/authentication/verification`
 
   describe("when the passkey exists", () => {
     const mockResponse = {
@@ -205,14 +235,14 @@ describe(authenticatePasskey.name, () => {
     Context.add(AuthenticationHelper, authenticationHelperTest)
   )
 
-  const optionsRoute = `${endpoint}/${tenancyId}/passkey/authentication/options`
+  const optionsRoute = `${endpoint}/v2/${tenancyId}/passkey/authentication/options`
 
   const optionsResponse = {
     optionsJSON: {},
     sessionToken: "dummySessionToken",
   }
 
-  const verificationRoute = `${endpoint}/${tenancyId}/passkey/authentication/verification`
+  const verificationRoute = `${endpoint}/v2/${tenancyId}/passkey/authentication/verification`
 
   const verificationResponse = {
     _tag: "AuthenticationSuccess",
@@ -227,7 +257,40 @@ describe(authenticatePasskey.name, () => {
     fetchMock.mockGlobal().postOnce(optionsRoute, optionsResponse)
     fetchMock.mockGlobal().postOnce(verificationRoute, verificationResponse)
 
-    pipe(authenticatePasskey({}, { tenancyId }), Micro.provideContext(ctx), Micro.runPromise)
+    await pipe(
+      authenticatePasskey({ rpId: "localhost" }, { tenancyId }),
+      Micro.provideContext(ctx),
+      Micro.runPromise
+    )
+  })
+
+  it("should authenticate with a prepared authentication token", async () => {
+    fetchMock.mockGlobal().postOnce(optionsRoute, optionsResponse)
+    fetchMock.mockGlobal().postOnce(verificationRoute, verificationResponse)
+
+    await pipe(
+      authenticatePasskey({ authenticationToken: "dummyAuthenticationToken" }, { tenancyId }),
+      Micro.provideContext(ctx),
+      Micro.runPromise
+    )
+
+    expect(fetchMock).toHavePosted(optionsRoute, {
+      body: { authenticationToken: "dummyAuthenticationToken" },
+    })
+  })
+
+  it("should reject prepared authentication with autofill", async () => {
+    const error = await pipe(
+      authenticatePasskey(
+        { authenticationToken: "dummyAuthenticationToken", autofill: true } as never,
+        { tenancyId }
+      ),
+      Micro.flip,
+      Micro.provideContext(ctx),
+      Micro.runPromise
+    )
+
+    expect(error).toBeInstanceOf(OtherPasskeyError)
   })
 })
 

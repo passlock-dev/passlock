@@ -14,8 +14,8 @@ export type Principal = {
   /**
    * User identifier associated with the passkey.
    *
-   * By default this mirrors `authenticatorId`, but you can use the REST API
-   * or `@passlock/server` to assign your own internal user ID.
+   * For registration, this is the user ID supplied by your backend when it
+   * prepared the registration.
    */
   userId: string
 }

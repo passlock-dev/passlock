@@ -31,6 +31,7 @@
 
 			const config = {
 				tenancyId: data.tenancyId,
+				rpId: data.rpId,
 				endpoint: data.endpoint
 			};
 
@@ -51,7 +52,7 @@
 
 			// Accounts without passkeys can submit immediately once the form is
 			// valid.
-			if (authResult.passkeyIds.length === 0) return;
+			if (authResult.passkeyCount === 0) return;
 
 			// Clear trusted passkeys before the account record itself is deleted.
 			deletingPasskeys = true;

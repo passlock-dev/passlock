@@ -26,7 +26,7 @@ Given the intended audience, we want to include helpful JSDoc and comments where
 
 - `/login` - Login related routes
 
-- `/passkeys` - Registration and deletion of passkeys. Note: updates to passkey usernames/display names happen via the `/account` routes.
+- `/passkeys` - Registration and deletion of passkeys. The `/account` routes initiate account name/email changes, then client code calls `PATCH /passkeys` to keep passkey usernames/display names aligned.
 
 - `/signup` - Account creation/registration
 
@@ -52,11 +52,11 @@ Don't worry about supporting/migrating existing data in the database. This is a 
 
 We largely rely on pnpm scripts for build and test:
 
-- `pnpm run typecheck` - Invoke TSC to typecheck the project
+- `pnpm run typecheck` - Run SvelteKit sync and `svelte-check`
 
-- `pnpm run format` - Format using Biome.js
+- `pnpm run format` - Format using Prettier
 
-- `pnpm run lint:fix` - Lint using Biome.js and attempt to fix any issues
+- `pnpm run lint:fix` - Format with Prettier, then lint with ESLint and attempt to fix any issues
 
 - `pnpm run db:push` - Used to migrate the dev database.
 

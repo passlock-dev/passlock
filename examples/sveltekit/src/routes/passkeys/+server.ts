@@ -18,7 +18,7 @@ const errorResponse = (message: string, status: number) =>
 type PasskeyStatusResponse = v.InferOutput<typeof PasskeyStatusSchema>;
 
 /**
- * Return the current account's passkey ids plus whether sensitive actions need
+ * Return the current account's passkey count plus whether sensitive actions need
  * a fresh passkey confirmation.
  */
 export const GET: RequestHandler = async (event) => {
@@ -29,7 +29,7 @@ export const GET: RequestHandler = async (event) => {
 
 	const response: PasskeyStatusResponse = {
 		_tag: 'PasskeyStatusSuccess',
-		passkeyIds: context.passkeyIds,
+		passkeyCount: context.passkeyIds.length,
 		reauthenticationRequired: context.reauthenticationRequired
 	};
 
@@ -43,8 +43,8 @@ const CreatePasskeyPayload = v.object({
 type RegisterPasskeySuccess = v.InferOutput<typeof RegisterPasskeySuccess>;
 
 /**
- * Verify a browser-created passkey registration and link it to the current
- * local account.
+ * Verify a passkey registration and link it to the current local
+ * account.
  */
 export const POST: RequestHandler = async (event) => {
 	if (!event.locals.user) {
@@ -64,18 +64,17 @@ export const POST: RequestHandler = async (event) => {
 		return errorResponse('Unable to verify passkey', 500);
 	}
 
-	// Assigning the local user id to the Passlock credential makes later bulk
-	// updates and deletes much easier.
-	const passlockPasskey = await PasslockServer.assignUser(
-		{
-			passkeyId: principal.authenticatorId,
-			userId: String(event.locals.user.userId)
-		},
+	if (principal.userId !== String(event.locals.user.userId)) {
+		return errorResponse('Passkey registration was prepared for a different account.', 403);
+	}
+
+	const passlockPasskey = await PasslockServer.getPasskey(
+		{ passkeyId: principal.authenticatorId },
 		getPasslockConfig()
 	);
 
 	if (passlockPasskey.failure) {
-		const status = PasslockServer.isNotFoundError(passlockPasskey) ? 401 : 500;
+		const status = PasslockServer.isNotFoundError(passlockPasskey) ? 404 : 500;
 		return errorResponse(passlockPasskey.message, status);
 	}
 
@@ -85,7 +84,7 @@ export const POST: RequestHandler = async (event) => {
 		userId: event.locals.user.userId,
 		passkeyId: passlockPasskey.id,
 		username: passlockPasskey.credential.username,
-		platformName: passlockPasskey.platform?.name ?? null,
+		platformName: passlockPasskey.platform?.name ?? principal.passkey?.platformName ?? null,
 		platformIcon: passlockPasskey.platform?.icon ?? null
 	});
 

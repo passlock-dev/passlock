@@ -2,7 +2,7 @@
 
 ## Get Passkey
 
-GET {tenancyId}/passkeys/{authenticatorId}
+GET /v2/{tenancyId}/passkeys/{authenticatorId}
 Authorization: Bearer {apiKeyToken}
 
 Response status: 200, 404
@@ -11,21 +11,21 @@ Response type: Passkey
 
 ## Delete Passkey
 
-DELETE {tenancyId}/passkeys/{authenticatorId}
+DELETE /v2/{tenancyId}/passkeys/{authenticatorId}
 Authorization: Bearer {apiKeyToken}
 
 Response status 202, 404
 
-## Assign user
+## Update passkey
 
-PATCH {tenancyId}/passkeys/{authenticatorId}
+PATCH /v2/{tenancyId}/passkeys/{authenticatorId}
 Authorization: Bearer {apiKeyToken}
 
 Request body
 
 ```
 {
-  userId: "xxx"
+  username: "jdoe@example.com"
 }
 ```
 
