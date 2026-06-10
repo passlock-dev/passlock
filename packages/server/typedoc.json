@@ -1,4 +1,3 @@
-// typedoc.json
 {
   "$schema": "https://typedoc.org/schema.json",
   "name": "@passlock/server",
@@ -31,7 +30,7 @@
   "categorizeByGroup": false,
   "readme": "none",
   "cleanOutputDir": true,
-  "categoryOrder": ["Passkeys", "Principal", "Authentication", "*"],
+  "categoryOrder": ["Clients", "Passkeys", "Principal", "Mailbox", "Authentication", "*"],
   "groupOrder": ["Functions", "Interfaces", "Classes", "*"],
   "sort": ["kind", "instance-first", "source-order"],
   "navigationLinks": {

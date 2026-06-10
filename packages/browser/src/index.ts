@@ -1,14 +1,43 @@
 /**
- * Import from `@passlock/browser`;
- *
- * _safe_ functions, i.e. functions that return result envelopes over the original
- * tagged success and error payloads. Use `result.success` or `result.failure`
+ * These methods and functions are **_safe_** i.e. they return wrappers over
+ * success and error payloads. Use result.success or result.failure
  * to branch between success and error outcomes.
  *
- * Note: unexpected runtime failures may still throw.
+ * Choose the Passlock client is you prefer a class based API. Alternatively,
+ * import standalone tree-shakeable functions.
+ *
+ * **Note:** unexpected runtime failures may still throw.
  *
  * @example
- * const registrationToken = "registration-token-from-your-backend";
+ * ```ts
+ * // Using the Passlock class
+ * import { Passlock } from '@passlock/browser';
+ *
+ * // use preparePasskeyRegistration() in your backend to obtain a registration token
+ * const registrationToken = await fetchRegistrationToken();
+ *
+ * // pass the config to the constructor
+ * const passlock = new Passlock({ tenancyId });
+ * const result = await passlock.registerPasskey({ registrationToken });
+ *
+ * if (result.success) {
+ *   console.log(result.value.code);
+ * }
+ *
+ * if (result.failure) {
+ *   console.log(result.error.message);
+ * }
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Using the standalone tree-shakeable functions
+ * import { registerPasskey } from '@passlock/browser';
+ *
+ * // use preparePasskeyRegistration() in your backend to obtain a registration token
+ * const registrationToken = await fetchRegistrationToken();
+ *
+ * // pass the config as the second argument
  * const result = await registerPasskey({ registrationToken }, { tenancyId });
  *
  * if (result.success) {
@@ -18,6 +47,10 @@
  * if (result.failure) {
  *   console.log(result.error.message);
  * }
+ * ```
+ *
+ * @categoryDescription Clients
+ * Class based API. Pass the Passlock config to the constructor.
  *
  * @categoryDescription Passkeys (core)
  * Creating, authenticating, updating and deleting passkeys. {@link registerPasskey}
@@ -542,6 +575,26 @@ const deletePasskeySafe = deletePasskey as SafeDeletePasskey
  *
  * Methods return result envelopes over the original success and error payloads.
  * Use `result.success` or `result.failure` to branch between outcomes.
+ *
+ * @example
+ * ```ts
+ * import { Passlock } from '@passlock/browser';
+ *
+ * // use preparePasskeyRegistration() in your backend to obtain a registration token
+ * const registrationToken = await fetchRegistrationToken();
+ *
+ * // pass the config in the constructor
+ * const passlock = new Passlock({ tenancyId });
+ * const result = await passlock.registerPasskey({ registrationToken });
+ *
+ * if (result.success) {
+ *   console.log(result.value.code);
+ * }
+ *
+ * if (result.failure) {
+ *   console.log(result.error.message);
+ * }
+ * ```
  *
  * @category Clients
  */

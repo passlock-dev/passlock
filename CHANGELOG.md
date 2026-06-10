@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Changeset package as we now use Codex/Claude
+- `@passlock/browser/safe`, `@passlock/browser/unsafe`, `@passlock/server/safe` and `@passlock/server/unsafe`. Every client and function is now _safe_ by default.
 
 ## [2.6.0] - 2026-06-10
 

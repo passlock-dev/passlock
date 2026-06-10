@@ -28,6 +28,19 @@ export type Err<E extends object> = E & {
 
 /**
  * Result envelope used by the `@passlock/browser` entrypoint.
+ *
+ * @example
+ * ```ts
+ * const result = passlock.registerPasskey({ registrationToken });
+ *
+ * if (result.success) {
+ *   console.log(result.value);
+ * }
+ *
+ * if (result.failure) {
+ *   console.error(result.error);
+ * }
+ * ```*
  */
 export type Result<T extends object, E extends object> =
   | Ok<T>

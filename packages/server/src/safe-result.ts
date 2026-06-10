@@ -33,6 +33,19 @@ export type Err<E extends object> = E & {
 /**
  * Result envelope used by the `@passlock/server` entrypoint.
  *
+ * @example
+ * ```ts
+ * const result = passlock.exchangeCode({ code });
+ *
+ * if (result.success) {
+ *   console.log(result.value);
+ * }
+ *
+ * if (result.failure) {
+ *   console.error(result.error);
+ * }
+ * ```
+ *
  * @category Common
  */
 export type Result<T extends object, E extends object> =

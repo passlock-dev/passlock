@@ -1,16 +1,38 @@
 /**
- * Promise-based entrypoint for `@passlock/server`.
+ * These methods and functions are **_safe_** i.e. they return wrappers over
+ * success and error payloads. Use result.success or result.failure
+ * to branch between success and error outcomes.
  *
- * These functions return result envelopes over the original tagged success and
- * error payloads. The returned value keeps its original `_tag` shape and is
- * also augmented with a result envelope for `success`- or `failure`-style
- * branching.
+ * Choose the Passlock client is you prefer a class based API. Alternatively,
+ * import standalone tree-shakeable functions.
  *
- * Note: unexpected runtime failures may still throw.
+ * **Note:** unexpected runtime failures may still throw.
  *
+ * @example
  * ```ts
+ * // Using the Passlock class
+ * import { Passlock } from "@passlock/server";
+ *
+ * // pass the config to the constructor
+ * const passlock = new Passlock({ apiKey, tenancyId });
+ *
+ * const result = await passlock.exchangeCode({ code });
+ *
+ * if (result.success) {
+ *   console.log(result.value.id);
+ * }
+ *
+ * if (result.failure) {
+ *   console.log(result.error.message);
+ * }
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Using the standalone tree-shakeable functions
  * import { exchangeCode } from "@passlock/server";
  *
+ * // pass the config as the second argument
  * const result = await exchangeCode({ code }, { apiKey, tenancyId });
  *
  * if (result.success) {
@@ -21,6 +43,8 @@
  *   console.log(result.error.message);
  * }
  * ```
+ * @categoryDescription Clients
+ * Class based API. Pass the Passlock config to the constructor.
  *
  * @categoryDescription Authentication
  * Error payloads related to API keys, tenancy access, and token validation.
@@ -127,12 +151,29 @@ const runSafe = <A extends object, E extends object>(
   )
 
 /**
- * Configured safe Passlock server client.
+ * Safe Passlock server client.
  *
- * Methods wrap the functions from `@passlock/server` and supply the
- * constructor config as each operation's second argument.
+ * Methods return result envelopes over the original success and error payloads.
+ * Use `result.success` or `result.failure` to branch between outcomes.
  *
- * @category Classes
+ * @example
+ * ```ts
+ * import { Passlock } from "@passlock/server";
+ *
+ * const passlock = new Passlock({ apiKey, tenancyId });
+ *
+ * const result = await passlock.exchangeCode({ code });
+ *
+ * if (result.success) {
+ *   console.log(result.value.id);
+ * }
+ *
+ * if (result.failure) {
+ *   console.log(result.error.message);
+ * }
+ * ```
+ *
+ * @category Clients
  */
 export class Passlock {
   readonly #config: AuthenticatedOptions
