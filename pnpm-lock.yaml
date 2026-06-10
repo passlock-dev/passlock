@@ -105,10 +105,10 @@ importers:
         specifier: ^1.17.0
         version: 1.17.0(svelte@5.56.3(@typescript-eslint/types@8.61.0))
       '@passlock/browser':
-        specifier: workspace:^
+        specifier: workspace:^2.6.0
         version: link:../../packages/browser
       '@passlock/server':
-        specifier: workspace:^
+        specifier: workspace:^2.6.0
         version: link:../../packages/server
       '@sveltejs/adapter-auto':
         specifier: ^7.0.1

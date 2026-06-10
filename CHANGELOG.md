@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-06-10
+
 ### Changed
 
 - Server side passkey registration preparation. This prevents untrusted clients from registering passkeys without proper authorization.
