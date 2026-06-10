@@ -76,7 +76,7 @@ The prepared registration token authorizes one browser registration ceremony for
 the prepared user. Treat it as bearer authorization, do not log it, and discard
 it after it is sent to the browser.
 
-Please see the [Quick start guide](https://passlock.dev/getting-started/) for a
-complete registration and verification flow.
+Please see the [Quick start guide](https://passlock.dev/getting-started/) for a complete registration
+and verification flow.
 
 [browser]: https://www.npmjs.com/package/@passlock/browser

@@ -82,26 +82,33 @@ Take a note of your `Tenancy ID` and `API Key`.
 
 ### Register a passkey
 
-Passkey registration starts on your backend. Prepare a short-lived registration token for the signed-in user, send that token to the browser, then exchange the returned code after the browser ceremony completes:
+Passkey registration is a three-step process:
+
+1. **Prepare registration**: Your backend prepares a registration token for the user.
+2. **Browser ceremony**: The browser asks the user to register a passkey.
+3. **Exchange code**: Your backend exchanges the code returned by the browser for a registered passkey.
+
+> [!TIP]
+> You only need to pass tokens (strings) between your backend and the browser, avoiding the need to handle JSON and binary data.
 
 ```typescript
 // backend/prepare-registration.ts
-import { preparePasskeyRegistration } from "@passlock/server";
+import { Passlock } from "@passlock/server";
 
 const tenancyId = "myTenancyId";
 const apiKey = "myApiKey";
+const passlock = new Passlock({ tenancyId, apiKey });
 
-const result = await preparePasskeyRegistration(
+const result = await passlock.preparePasskeyRegistration(
   {
     rpId: "example.com",
     userId: "user_123",
     username: "jdoe@gmail.com",
     displayName: "Jane Doe",
-  },
-  { tenancyId, apiKey }
+  }
 );
 
-if (!result.success) {
+if (result.failure) {
   // handle the error
   throw new Error(result.error.message);
 }
@@ -112,15 +119,17 @@ console.log("registration token: %s", result.value.registrationToken);
 
 ```typescript
 // frontend/register.ts
-import { registerPasskey } from "@passlock/browser";
+import { Passlock } from "@passlock/browser";
 
 const tenancyId = "myTenancyId";
-const registrationToken = "..."; // returned by your backend
+const passlock = new Passlock({ tenancyId });
 
 // call this in a click handler or similar action
-const result = await registerPasskey({ registrationToken }, { tenancyId });
+// ask your backend for a registration token
+const registrationToken = await fetchRegistrationToken();
+const result = await passlock.registerPasskey({ registrationToken });
 
-if (!result.success) {
+if (result.failure) {
   // handle the error
   throw new Error(result.error.message);
 }
@@ -133,37 +142,41 @@ In your backend, exchange the code to obtain details about the completed registr
 
 ```typescript
 // backend/register.ts
-import { exchangeCode } from "@passlock/server";
+import { Passlock } from "@passlock/server";
 
 const tenancyId = "myTenancyId";
 const apiKey = "myApiKey";
+const passlock = new Passlock({ tenancyId, apiKey });
 
-const result = await exchangeCode({ code }, { tenancyId, apiKey });
+const result = await passlock.exchangeCode({ code });
 
-if (!result.success) {
+if (result.failure) {
   // handle the error
   throw new Error(result.error.message);
 }
 
 // includes details about the completed registration
 // store the authenticatorId (passkey ID) against the prepared local user
+console.log("user id: %s", result.value.userId);
 console.log("passkey id: %s", result.value.authenticatorId);
 ```
 
 ### Authenticate a passkey
 
-Very similar to the registration process, authenticate in your frontend and send either the returned code or `id_token` to your backend for verification.
+Very similar to the registration process, except you don't need to authorise the operation in your backend first.
+Kick off authentication in your frontend then send either the returned `code` or `id_token` to your backend for verification.
 
 ```typescript
 // frontend/authenticate.ts
-import { authenticatePasskey } from "@passlock/browser";
+import { Passlock } from "@passlock/browser";
 
 const tenancyId = "myTenancyId";
+const passlock = new Passlock({ tenancyId });
 
 // call this in a button click handler or similar action
-const result = await authenticatePasskey({}, { tenancyId });
+const result = await passlock.authenticatePasskey({ rpId: "example.com" });
 
-if (!result.success) {
+if (result.failure) {
   // handle the error
   throw new Error(result.error.message);
 }
@@ -172,23 +185,28 @@ if (!result.success) {
 console.log('code: %s', result.value.code); 
 ```
 
-In your backend, exchange the code and look up the user by `authenticatorId` ...
+> [!TIP]
+> You can also start the authentication process in your backend, passing an `authenticationToken` into the `authenticatePasskey` method.
+
+In your backend, exchange the code and look up the user by `userId` or `authenticatorId` ...
 
 ```typescript
 // backend/authenticate.ts
-import { exchangeCode } from "@passlock/server";
+import { Passlock } from "@passlock/server";
 
 const tenancyId = "myTenancyId";
 const apiKey = "myApiKey";
+const passlock = new Passlock({ tenancyId, apiKey });
 
-const result = await exchangeCode({ code }, { tenancyId, apiKey });
+const result = await passlock.exchangeCode({ code });
 
-if (!result.success) {
+if (result.failure) {
   // handle the error
   throw new Error(result.error.message);
 }
 
-// lookup the user based on their authenticatorId
+// lookup the user based on their userId or authenticatorId
+console.log('user id: %s', result.value.userId); 
 console.log('passkey id: %s', result.value.authenticatorId); 
 ```
 
