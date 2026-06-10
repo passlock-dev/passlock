@@ -3,7 +3,7 @@ node_modules
 **/dist/
 **/docs/api/
 .DS_Store
-.deploy
-.pnpm-store
 .vscode
+.pnpm-store
+.deploy
 local.db
