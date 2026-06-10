@@ -28,12 +28,8 @@
   "type": "module",
   "scripts": {
     "build:readme": "VERSION=${npm_package_version} tsx ./scripts/replace-readme-tokens.ts .",
-    "changeset": "changeset",
     "ncu": "pnpm exec ncu -c 25h -x vite -w -u --peer",
-    "release": "changeset publish",
     "sort-package-json": "sort-package-json",
-    "update-example-deps": "tsx scripts/update-example-deps.ts",
-    "version-packages": "changeset version"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
