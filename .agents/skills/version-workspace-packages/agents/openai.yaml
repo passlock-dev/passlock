@@ -1,0 +1,4 @@
+interface:
+  display_name: "Version Workspace Packages"
+  short_description: "Version workspace packages"
+  default_prompt: "Use $version-workspace-packages to prepare new Passlock package releases."
