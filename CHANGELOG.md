@@ -1,147 +1,110 @@
-# Passlock changelog
+# Changelog
 
-## 2.5.3
+All notable changes to this project will be documented in this file.
 
-### Patch Changes
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-- Upgrade dependencies
-- Packages affected:
-  - `@passlock/cli`
-  - `@passlock/browser`
-  - `@passlock/server`
-  - `@passlock/sveltekit-example`
+## [Unreleased]
 
-## 2.5.2
 
-### Patch Changes
 
-- Upgrade dependencies
-- Packages affected:
-  - `@passlock/cli`
-  - `@passlock/browser`
-  - `@passlock/server`
-  - `@passlock/sveltekit-example`
+## [2.5.3] - 2026-06-02
 
-## 2.5.1
+### Changed
 
-### Patch Changes
+- Upgrade dependencies.
+  Affected packages: `@passlock/cli`, `@passlock/browser`, `@passlock/server`, `@passlock/sveltekit-example`.
 
-- Upgrade dependencies including upgrade to PNPM v11
-- Packages affected:
-  - `@passlock/cli`
-  - `@passlock/browser`
-  - `@passlock/server`
-  - `@passlock/sveltekit-example`
+## [2.5.2] - 2026-05-21
 
-## 2.5.0
+### Changed
 
-### Minor Changes
+- Upgrade dependencies.
+  Affected packages: `@passlock/cli`, `@passlock/browser`, `@passlock/server`, `@passlock/sveltekit-example`.
 
-- Introduce class based variants in addition to the safe and unsafe functions
-- Packages affected:
-  - `@passlock/cli`
-  - `@passlock/browser`
-  - `@passlock/server`
-  - `@passlock/sveltekit-example`
+## [2.5.1] - 2026-05-15
 
-## 2.4.3
+### Changed
 
-### Patch Changes
+- Upgrade dependencies, including upgrading to PNPM v11.
+  Affected packages: `@passlock/cli`, `@passlock/browser`, `@passlock/server`, `@passlock/sveltekit-example`.
 
-- Upgrade dependencies
-- Packages affected:
-  - `@passlock/browser`
-  - `@passlock/server`
-  - `@passlock/sveltekit-example`
+## [2.5.0] - 2026-04-28
 
-- Renamed `@passlock/client` to `@passlock/browser` to reflect its intended usage and deployment
-- Packages affected:
-  - `@passlock/browser`
-  - `@passlock/server`
-  - `@passlock/sveltekit-example`
+### Changed
 
-## 2.4.2
+- Introduce class-based variants in addition to the safe and unsafe functions.
+  Affected packages: `@passlock/cli`, `@passlock/browser`, `@passlock/server`, `@passlock/sveltekit-example`.
 
-### Patch Changes
+## [2.4.3] - 2026-04-20
 
-- 503bf6d: Upgrade dependencies
-- Packages affected:
-  - `@passlock/browser`
-  - `@passlock/server`
-  - `@passlock/sveltekit-example`
+### Changed
 
-## 2.4.1
+- Upgrade dependencies.
+  Affected packages: `@passlock/browser`, `@passlock/server`, `@passlock/sveltekit-example`.
+- Rename `@passlock/client` to `@passlock/browser` to reflect its intended usage and deployment.
+  Affected packages: `@passlock/browser`, `@passlock/server`, `@passlock/sveltekit-example`.
 
-### Patch Changes
+## [2.4.2] - 2026-04-16
 
-- Upgrade dependencies
-- Packages affected:
-  - `@passlock/browser`
-  - `@passlock/server`
-  - `@passlock/sveltekit-example`
+### Changed
 
-## 2.4.0
+- Upgrade dependencies.
+  Affected packages: `@passlock/browser`, `@passlock/server`, `@passlock/sveltekit-example`.
 
-### Minor Changes
+## [2.4.1] - 2026-04-08
 
-- b60db89: Introduce one time codes, delivered via email. This feature can be used to verify mailbox ownership and is often used for signups, logins and pending account email changes. See the [blog post](https://passlock.dev/blog/mailboxchallenges/)
-- Packages affected:
-  - `@passlock/browser`
-  - `@passlock/server`
-  - `@passlock/sveltekit-example`
+### Changed
 
-## 2.3.1
+- Upgrade dependencies.
+  Affected packages: `@passlock/browser`, `@passlock/server`, `@passlock/sveltekit-example`.
 
-### Patch Changes
+## [2.4.0] - 2026-04-07
 
-- a5a2ecb: Update npm dependencies
-- Packages affected:
-  - `@passlock/browser`
-  - `@passlock/server`
-  - `@passlock/sveltekit-example`
+### Added
 
-## 2.3.0
+- Introduce one-time codes, delivered via email. This feature can be used to verify mailbox ownership and is often used for signups, logins, and pending account email changes. See the [blog post](https://passlock.dev/blog/mailboxchallenges/).
+  Affected packages: `@passlock/browser`, `@passlock/server`, `@passlock/sveltekit-example`.
 
-### Minor Changes
+## [2.3.1] - 2026-03-26
 
-- bf8fbeb: SvelteKit example app now supports:
+### Changed
 
-  1. Email based one time login codes
-  2. Mailbox verification emails
-  3. Step up authentication for account management
+- Update npm dependencies.
+  Affected packages: `@passlock/browser`, `@passlock/server`, `@passlock/sveltekit-example`.
 
-- Packages affected:
-  - `@passlock/browser`
-  - `@passlock/server`
-  - `@passlock/sveltekit-example`
+## [2.3.0] - 2026-03-26
 
-## 2.2.1
+### Added
 
-### Patch Changes
+- Add SvelteKit example app support for email-based one-time login codes, mailbox verification emails, and step-up authentication for account management.
+  Affected packages: `@passlock/browser`, `@passlock/server`, `@passlock/sveltekit-example`.
 
-- Upgrade dependencies including Vite 8
-- Packages affected:
-  - `@passlock/browser`
-  - `@passlock/server`
-  - `@passlock/sveltekit-example`
+## [2.2.1]
 
-## 2.2.0
+### Changed
 
-### Minor Changes
+- Upgrade dependencies, including Vite 8.
+  Affected packages: `@passlock/browser`, `@passlock/server`, `@passlock/sveltekit-example`.
 
-- 9490817: Add deleteUserPasskeys helper utilities
+## [2.2.0] - 2026-03-19
 
-  If you have assigned a `userId` to one or more passkeys you can now use the `deleteUserPasskeys` function to delete all passkeys associated with that `userId`. This is useful for account closure scenarios.
+### Added
+
+- Add `deleteUserPasskeys` helper utilities.
+
+  If you have assigned a `userId` to one or more passkeys, you can now use the `deleteUserPasskeys` function to delete all passkeys associated with that `userId`. This is useful for account closure scenarios.
 
   Note: `deleteUserPasskeys` is available in the `@passlock/browser` and `@passlock/server` packages and can be used to delete passkeys in your Passlock vault and also from local devices/browsers.
 
-- Packages affected:
-  - `@passlock/browser`
-  - `@passlock/server`
+  Affected packages: `@passlock/browser`, `@passlock/server`.
 
-- 9490817: Simplify typeguards
+### Changed
 
-  Developers no longer need to use a typeguard for the successful branch of a "safe" function i.e. instead of
+- Simplify typeguards.
+
+  Developers no longer need to use a typeguard for the successful branch of a "safe" function. Instead of:
 
   ```ts
   const result = doSomething()
@@ -150,7 +113,7 @@
   }
   ```
 
-  We can now do
+  You can now do:
 
   ```ts
   const result = doSomething()
@@ -159,83 +122,70 @@
   }
   ```
 
-  This should improve the developer experience as you don't need to know which typeguard to use.
+  This should improve the developer experience because you do not need to know which typeguard to use.
 
   Note: typeguards continue to work, as does discriminating based on the `_tag` property.
 
-- Packages affected:
-  - `@passlock/browser`
-  - `@passlock/server`
+  Affected packages: `@passlock/browser`, `@passlock/server`.
 
-## 2.1.5
+## [2.1.5]
 
-### Patch Changes
+### Changed
 
-- Upgrade dependencies
-- Packages affected:
-  - `@passlock/cli`
+- Upgrade dependencies.
+  Affected packages: `@passlock/cli`.
 
-## 2.1.4
+## [2.1.4]
 
-### Patch Changes
+### Changed
 
-- 503bf6d: Upgrade dependencies
-- Packages affected:
-  - `@passlock/cli`
+- Upgrade dependencies.
+  Affected packages: `@passlock/cli`.
 
-## 2.1.3
+## [2.1.3]
 
-### Patch Changes
+### Changed
 
-- Upgrade dependencies
-- Packages affected:
-  - `@passlock/cli`
+- Upgrade dependencies.
+  Affected packages: `@passlock/cli`.
 
-## 2.1.2
+## [2.1.2]
 
-### Patch Changes
+### Changed
 
-- a5a2ecb: Update npm dependencies
-- Packages affected:
-  - `@passlock/cli`
+- Update npm dependencies.
+  Affected packages: `@passlock/cli`.
+- Upgrade dependencies.
+  Affected packages: `@passlock/node`.
 
-- Upgrade dependencies
-- Packages affected:
-  - `@passlock/node`
+## [2.1.1] - 2026-03-19
 
-## 2.1.1
+### Changed
 
-### Patch Changes
+- Upgrade dependencies, including Vite 8.
+  Affected packages: `@passlock/cli`.
+- Upgrade dependencies.
+  Affected packages: `@passlock/node`.
 
-- Upgrade dependencies including Vite 8
-- Packages affected:
-  - `@passlock/cli`
+## [2.1.0] - 2026-03-07
 
-- 503bf6d: Upgrade dependencies
-- Packages affected:
-  - `@passlock/node`
+### Added
 
-## 2.1.0
+- Introduce a new `@passlock/server` package to replace the deprecated `@passlock/node` package. `@passlock/server` is largely backend agnostic because it uses the standardized fetch protocol instead of native Node.js libraries.
+  Affected packages: `@passlock/browser`, `@passlock/server`.
+- Add `deleteUserPasskeys` helper utilities.
 
-### Minor Changes
-
-- Introduce a new @passlock/server package, to replace the @passlock/node package which is deprecated. @passlock/server is largely backend agnostic as it uses the standardized fetch protocol instead of native node libraries.
-- Packages affected:
-  - `@passlock/browser`
-  - `@passlock/server`
-
-- 9490817: Add deleteUserPasskeys helper utilities
-
-  If you have assigned a `userId` to one or more passkeys you can now use the `deleteUserPasskeys` function to delete all passkeys associated with that `userId`. This is useful for account closure scenarios.
+  If you have assigned a `userId` to one or more passkeys, you can now use the `deleteUserPasskeys` function to delete all passkeys associated with that `userId`. This is useful for account closure scenarios.
 
   Note: `deleteUserPasskeys` is available in the `@passlock/browser` and `@passlock/server` packages and can be used to delete passkeys in your Passlock vault and also from local devices/browsers.
 
-- Packages affected:
-  - `@passlock/cli`
+  Affected packages: `@passlock/cli`.
 
-- 9490817: Simplify typeguards
+### Changed
 
-  Developers no longer need to use a typeguard for the successful branch of a "safe" function i.e. instead of
+- Simplify typeguards.
+
+  Developers no longer need to use a typeguard for the successful branch of a "safe" function. Instead of:
 
   ```ts
   const result = doSomething()
@@ -244,7 +194,7 @@
   }
   ```
 
-  We can now do
+  You can now do:
 
   ```ts
   const result = doSomething()
@@ -253,30 +203,27 @@
   }
   ```
 
-  This should improve the developer experience as you don't need to know which typeguard to use.
+  This should improve the developer experience because you do not need to know which typeguard to use.
 
   Note: typeguards continue to work, as does discriminating based on the `_tag` property.
 
-- Packages affected:
-  - `@passlock/cli`
+  Affected packages: `@passlock/cli`.
 
-## 2.0.9
+## [2.0.9]
 
-### Patch Changes
+### Changed
 
-- Upgrade dependencies including Vite 8
-- Packages affected:
-  - `@passlock/node`
+- Upgrade dependencies, including Vite 8.
+  Affected packages: `@passlock/node`.
 
-## 2.0.8
+## [2.0.8] - 2026-03-19
 
-### Patch Changes
+### Added
 
-- 9490817: Add deleteUserPasskeys helper utilities
+- Add `deleteUserPasskeys` helper utilities.
 
-  If you have assigned a `userId` to one or more passkeys you can now use the `deleteUserPasskeys` function to delete all passkeys associated with that `userId`. This is useful for account closure scenarios.
+  If you have assigned a `userId` to one or more passkeys, you can now use the `deleteUserPasskeys` function to delete all passkeys associated with that `userId`. This is useful for account closure scenarios.
 
   Note: `deleteUserPasskeys` is available in the `@passlock/client` and `@passlock/server` packages and can be used to delete passkeys in your Passlock vault and also from local devices/browsers.
 
-- Packages affected:
-  - `@passlock/node`
+  Affected packages: `@passlock/node`.
