@@ -8,18 +8,18 @@ We prefer a functional programming style, our preferred library is [Effect][effe
 
 ### "Safe" functions
 
-These safe entrypoints return result envelopes over the original payloads. For example, given the function `exchangeCode` in `src/principal/principal.ts` returning an `Effect<A, E>`, we expose an `exchangeCode` in `src/safe.ts` returning a `Promise<Result<A, E>>`, where:
+These safe entrypoints return result envelopes over the original payloads. For example, given the function `exchangeCode` in `src/principal/principal.ts` returning an `Effect<A, E>`, we expose an `exchangeCode` in `src/index.ts` returning a `Promise<Result<A, E>>`, where:
 
 * `Ok<A>` is `A & { readonly success: true; readonly failure: false; readonly value: A }`
 * `Err<E>` is `E & { readonly success: false; readonly failure: true; readonly error: E }`
 
 This lets callers branch using either `if (result.success)` or `if (result.failure)`, while preserving the original top-level tagged payload. Existing `_tag` checks and `isX(...)` type guards therefore continue to work unchanged.
 
-The entry point into the safe functions is `src/safe.ts`.
+The entry point into the safe functions is `src/index.ts`.
 
-### Functional parity across entrypoints
+### Public surface
 
-Wherever possible we aim for functional parity / alignment across the Safe and Unsafe public APIs. `src/surface.test.ts` ensures this.
+`src/surface.test.ts` ensures the root package exports the Promise-based safe API.
 
 ## Test suite location
 

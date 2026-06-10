@@ -8,18 +8,18 @@ Most functions are developed using a subset of the [Effect][effect] framework, s
 
 ### "Safe" functions
 
-Developers using the `@passlock/browser` library will most likely not be using the Effect framework, so we expose Promise-based variants of public functions. For tagged success/error APIs, the safe entrypoint returns result envelopes over the original payloads. For example, given a function like `registerPasskey` in `src/passkey/registration/registration.ts` returning a `Micro<A, E>`, the `src/safe.ts` entrypoint exposes a `registerPasskey` returning `Promise<Result<A, E>>`, where:
+Developers using the `@passlock/browser` library will most likely not be using the Effect framework, so we expose Promise-based variants of public functions. For tagged success/error APIs, the safe entrypoint returns result envelopes over the original payloads. For example, given a function like `registerPasskey` in `src/passkey/registration/registration.ts` returning a `Micro<A, E>`, the `src/index.ts` entrypoint exposes a `registerPasskey` returning `Promise<Result<A, E>>`, where:
 
 * `Ok<A>` is `A & { readonly success: true; readonly failure: false; readonly value: A }`
 * `Err<E>` is `E & { readonly success: false; readonly failure: true; readonly error: E }`
 
 This lets callers branch using either `if (result.success)` or `if (result.failure)`, while the original success and error objects remain the top-level values. Existing `_tag` checks and the current `isX(...)` type guards therefore continue to work.
 
-The entry point to the safe functions is `src/safe.ts`, this is exported via the package.json `exports` field.
+The entry point to the safe functions is `src/index.ts`.
 
-### Functional parity across entrypoints
+### Public surface
 
-Wherever possible we aim for functional parity / alignment across the Safe, Unsafe and Effect APIs. `src/surface.test.ts` ensures this.
+`src/surface.test.ts` ensures the root package exports the Promise-based safe API.
 
 ## Test suite location
 

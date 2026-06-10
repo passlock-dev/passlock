@@ -1,6 +1,6 @@
 /**
  * Result envelope applied to successful values returned from
- * `@passlock/server/safe`.
+ * `@passlock/server`.
  *
  * The top-level object still exposes its original `_tag`, so
  * existing `_tag` checks and type guards continue to work, while
@@ -16,7 +16,7 @@ export type Ok<T extends object> = T & {
 
 /**
  * Result envelope applied to expected error values returned from
- * `@passlock/server/safe`.
+ * `@passlock/server`.
  *
  * The top-level object still exposes its original `_tag`, so
  * existing `_tag` checks and type guards continue to work, while
@@ -31,7 +31,7 @@ export type Err<E extends object> = E & {
 }
 
 /**
- * Result envelope used by the `@passlock/server/safe` entrypoint.
+ * Result envelope used by the `@passlock/server` entrypoint.
  *
  * @category Common
  */

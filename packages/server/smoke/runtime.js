@@ -34,15 +34,8 @@ const assertServerSurface = (module, label) => {
 }
 
 const root = await import("../dist/index.js")
-const safe = await import("../dist/safe.js")
-const unsafe = await import("../dist/unsafe.js")
-
 assertServerSurface(root, "@passlock/server")
-assertServerSurface(safe, "@passlock/server/safe")
-assertServerSurface(unsafe, "@passlock/server/unsafe")
 
 new root.Passlock({ apiKey: "smoke-api-key", tenancyId: "smoke-tenancy-id" })
-new safe.Passlock({ apiKey: "smoke-api-key", tenancyId: "smoke-tenancy-id" })
-new unsafe.Passlock({ apiKey: "smoke-api-key", tenancyId: "smoke-tenancy-id" })
 
 console.log(`${runtimeName()} loaded @passlock/server entrypoints`)

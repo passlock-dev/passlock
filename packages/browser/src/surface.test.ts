@@ -1,58 +1,23 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type {
   AuthenticationError,
-  AuthenticationOptions,
   AuthenticationSuccess,
-  BrowserStartedAuthenticationOptions,
-  Credential,
   DeleteError,
   DeleteSuccess,
   Err,
   Ok,
-  PasslockOptions,
-  PreparedAuthenticationOptions,
   PruningError,
   PruningSuccess,
   RegistrationError,
-  RegistrationOptions,
   RegistrationSuccess,
   Result,
   UpdateError,
-  UpdatePasskeyOptions,
   UpdateSuccess,
-} from "../src/safe.js"
-import * as root from "../src/safe.js"
-import { Passlock as SafePasslock } from "../src/safe.js"
-import type {
-  AuthenticationError as UnsafeAuthenticationError,
-  AuthenticationOptions as UnsafeAuthenticationOptions,
-  AuthenticationSuccess as UnsafeAuthenticationSuccess,
-  BrowserStartedAuthenticationOptions as UnsafeBrowserStartedAuthenticationOptions,
-  Credential as UnsafeCredential,
-  PasslockOptions as UnsafePasslockOptions,
-  PreparedAuthenticationOptions as UnsafePreparedAuthenticationOptions,
-  RegistrationError as UnsafeRegistrationError,
-  RegistrationOptions as UnsafeRegistrationOptions,
-  RegistrationSuccess as UnsafeRegistrationSuccess,
-  UpdatePasskeyOptions as UpdatePasskeyOptionsUnsafe,
-} from "../src/unsafe.js"
-import * as unsafe from "../src/unsafe.js"
-import { Passlock as UnsafePasslock } from "../src/unsafe.js"
+} from "../src/index.js"
+import * as root from "../src/index.js"
+import { Passlock } from "../src/index.js"
 
 describe("public surface", () => {
-  it("exports identical keys for root and unsafe", () => {
-    type Root = typeof import("../src/safe.js")
-    type Unsafe = typeof import("../src/unsafe.js")
-    type RootKeys = keyof Root
-    type UnsafeKeys = keyof Unsafe
-    type Assert<T extends true> = T
-    type IsNever<T> = [T] extends [never] ? true : false
-    type _1 = Assert<IsNever<Exclude<RootKeys, UnsafeKeys>>>
-    type _2 = Assert<IsNever<Exclude<UnsafeKeys, RootKeys>>>
-
-    expect(true).toBe(true)
-  })
-
   it("exports shared guards and utilities", () => {
     expectTypeOf(root.isRegistrationSuccess).toBeFunction()
     expectTypeOf(root.isAuthenticationSuccess).toBeFunction()
@@ -66,43 +31,9 @@ describe("public surface", () => {
     expectTypeOf(root.isNetworkError).toBeFunction()
     expectTypeOf(root.isPasskeySupport).toBeFunction()
     expectTypeOf(root.isAutofillSupport).toBeFunction()
-
-    expectTypeOf(unsafe.isRegistrationSuccess).toBeFunction()
-    expectTypeOf(unsafe.isAuthenticationSuccess).toBeFunction()
-    expectTypeOf(unsafe.isOrphanedPasskeyError).toBeFunction()
-    expectTypeOf(unsafe.isDuplicatePasskeyError).toBeFunction()
-    expectTypeOf(unsafe.isPasskeyUnsupportedError).toBeFunction()
-    expectTypeOf(unsafe.isOtherPasskeyError).toBeFunction()
-    expectTypeOf(unsafe.isDeleteError).toBeFunction()
-    expectTypeOf(unsafe.isPruningError).toBeFunction()
-    expectTypeOf(unsafe.isUpdateError).toBeFunction()
-    expectTypeOf(unsafe.isNetworkError).toBeFunction()
-    expectTypeOf(unsafe.isPasskeySupport).toBeFunction()
-    expectTypeOf(unsafe.isAutofillSupport).toBeFunction()
   })
 
-  it("keeps shared types identical", () => {
-    type IsEqual<A, B> =
-      (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
-    type Assert<T extends true> = T
-    type _1 = Assert<IsEqual<PasslockOptions, UnsafePasslockOptions>>
-    type _2 = Assert<IsEqual<RegistrationOptions, UnsafeRegistrationOptions>>
-    type _3 = Assert<IsEqual<RegistrationSuccess, UnsafeRegistrationSuccess>>
-    type _4 = Assert<IsEqual<RegistrationError, UnsafeRegistrationError>>
-    type _5 = Assert<IsEqual<AuthenticationOptions, UnsafeAuthenticationOptions>>
-    type _6 = Assert<IsEqual<AuthenticationSuccess, UnsafeAuthenticationSuccess>>
-    type _7 = Assert<IsEqual<AuthenticationError, UnsafeAuthenticationError>>
-    type _8 = Assert<IsEqual<UpdatePasskeyOptions, UpdatePasskeyOptionsUnsafe>>
-    type _9 = Assert<IsEqual<Credential, UnsafeCredential>>
-    type _10 = Assert<
-      IsEqual<BrowserStartedAuthenticationOptions, UnsafeBrowserStartedAuthenticationOptions>
-    >
-    type _11 = Assert<IsEqual<PreparedAuthenticationOptions, UnsafePreparedAuthenticationOptions>>
-
-    expect(true).toBe(true)
-  })
-
-  it("returns Result envelopes from safe functions", () => {
+  it("returns Result envelopes from root functions", () => {
     type IsEqual<A, B> =
       (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
     type Assert<T extends true> = T
@@ -153,14 +84,11 @@ describe("public surface", () => {
     expect(true).toBe(true)
   })
 
-  it("exposes class clients from the safe and unsafe entrypoints", () => {
+  it("exposes the root class client", () => {
     const config = { tenancyId: "tenancy-id" }
-    const passlock = new SafePasslock(config)
-    const passlockUnsafe = new UnsafePasslock(config)
+    const passlock = new Passlock(config)
 
     expect(passlock.config).toEqual(config)
-    expect(passlockUnsafe.config).toEqual(config)
-
     expectTypeOf(passlock.registerPasskey).toBeFunction()
     expectTypeOf(passlock.authenticatePasskey).toBeFunction()
     expectTypeOf(passlock.updatePasskey).toBeFunction()
@@ -168,40 +96,25 @@ describe("public surface", () => {
     expectTypeOf(passlock.deletePasskey).toBeFunction()
     expectTypeOf(passlock.deleteUserPasskeys).toBeFunction()
     expectTypeOf(passlock.prunePasskeys).toBeFunction()
-
-    expectTypeOf(passlockUnsafe.registerPasskey).toBeFunction()
-    expectTypeOf(passlockUnsafe.authenticatePasskey).toBeFunction()
-    expectTypeOf(passlockUnsafe.updatePasskey).toBeFunction()
-    expectTypeOf(passlockUnsafe.updatePasskeyUsernames).toBeFunction()
-    expectTypeOf(passlockUnsafe.deletePasskey).toBeFunction()
-    expectTypeOf(passlockUnsafe.deleteUserPasskeys).toBeFunction()
-    expectTypeOf(passlockUnsafe.prunePasskeys).toBeFunction()
   })
 
-  it("returns safe and unsafe results from class clients", () => {
+  it("returns Result envelopes from class client methods", () => {
     type IsEqual<A, B> =
       (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
     type Assert<T extends true> = T
-    type SafeClient = InstanceType<typeof SafePasslock>
-    type UnsafeClient = InstanceType<typeof UnsafePasslock>
+    type Client = InstanceType<typeof Passlock>
 
     type _1 = Assert<
       IsEqual<
-        Awaited<ReturnType<SafeClient["registerPasskey"]>>,
+        Awaited<ReturnType<Client["registerPasskey"]>>,
         Result<RegistrationSuccess, RegistrationError>
       >
     >
     type _2 = Assert<
       IsEqual<
-        Awaited<ReturnType<SafeClient["authenticatePasskey"]>>,
+        Awaited<ReturnType<Client["authenticatePasskey"]>>,
         Result<AuthenticationSuccess, AuthenticationError>
       >
-    >
-    type _3 = Assert<
-      IsEqual<Awaited<ReturnType<UnsafeClient["registerPasskey"]>>, UnsafeRegistrationSuccess>
-    >
-    type _4 = Assert<
-      IsEqual<Awaited<ReturnType<UnsafeClient["authenticatePasskey"]>>, UnsafeAuthenticationSuccess>
     >
 
     expect(true).toBe(true)

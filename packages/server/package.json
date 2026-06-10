@@ -32,16 +32,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
-    },
-    "./unsafe": {
-      "types": "./dist/unsafe.d.ts",
-      "import": "./dist/unsafe.js",
-      "default": "./dist/unsafe.js"
-    },
-    "./safe": {
-      "types": "./dist/safe.d.ts",
-      "import": "./dist/safe.js",
-      "default": "./dist/safe.js"
     }
   },
   "module": "./dist/index.js",

@@ -1,6 +1,6 @@
 /**
  * Result envelope applied to successful values returned from
- * `@passlock/browser/safe`.
+ * `@passlock/browser`.
  *
  * The top-level object still exposes its original `_tag`, so
  * existing `_tag` checks and type guards continue to work, while
@@ -14,7 +14,7 @@ export type Ok<T extends object> = T & {
 
 /**
  * Result envelope applied to expected error values returned from
- * `@passlock/browser/safe`.
+ * `@passlock/browser`.
  *
  * The top-level object still exposes its original `_tag`, so
  * existing `_tag` checks and type guards continue to work, while
@@ -27,7 +27,7 @@ export type Err<E extends object> = E & {
 }
 
 /**
- * Result envelope used by the `@passlock/browser/safe` entrypoint.
+ * Result envelope used by the `@passlock/browser` entrypoint.
  */
 export type Result<T extends object, E extends object> =
   | Ok<T>

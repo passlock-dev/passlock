@@ -49,7 +49,7 @@ describe("safe result envelopes", () => {
       )
     )
 
-    const { exchangeCode, isExtendedPrincipal } = await import("./safe.js")
+    const { exchangeCode, isExtendedPrincipal } = await import("./index.js")
     const result = await exchangeCode({ code }, { apiKey, tenancyId })
 
     expect(result.success).toBe(true)
@@ -95,7 +95,7 @@ describe("safe result envelopes", () => {
       )
     )
 
-    const { createMailboxChallenge, isMailboxChallengeCreated } = await import("./safe.js")
+    const { createMailboxChallenge, isMailboxChallengeCreated } = await import("./index.js")
     const result = await createMailboxChallenge(
       {
         email: "user@example.com",
@@ -133,7 +133,7 @@ describe("safe result envelopes", () => {
       )
     )
 
-    const { createMailboxChallenge, isChallengeRateLimitedError } = await import("./safe.js")
+    const { createMailboxChallenge, isChallengeRateLimitedError } = await import("./index.js")
     const result = await createMailboxChallenge(
       {
         email: "user@example.com",
@@ -174,7 +174,7 @@ describe("safe result envelopes", () => {
       )
     )
 
-    const { exchangeCode, isInvalidCodeError } = await import("./safe.js")
+    const { exchangeCode, isInvalidCodeError } = await import("./index.js")
     const result = await exchangeCode({ code }, { apiKey, tenancyId })
 
     expect(result.success).toBe(false)
@@ -207,7 +207,7 @@ describe("safe result envelopes", () => {
       )
     )
 
-    const { isInvalidChallengeCodeError, verifyMailboxChallenge } = await import("./safe.js")
+    const { isInvalidChallengeCodeError, verifyMailboxChallenge } = await import("./index.js")
     const result = await verifyMailboxChallenge(
       {
         challengeId,
@@ -244,7 +244,7 @@ describe("safe result envelopes", () => {
       )
     )
 
-    const { verifyMailboxChallenge } = await import("./safe.js")
+    const { verifyMailboxChallenge } = await import("./index.js")
     const result = await verifyMailboxChallenge(
       {
         challengeId,
@@ -277,7 +277,7 @@ describe("safe result envelopes", () => {
       )
     )
 
-    const { getMailboxChallenge, isMailboxChallengeDetails } = await import("./safe.js")
+    const { getMailboxChallenge, isMailboxChallengeDetails } = await import("./index.js")
     const result = await getMailboxChallenge(
       {
         challengeId,
@@ -312,7 +312,7 @@ describe("safe result envelopes", () => {
       )
     )
 
-    const { getMailboxChallenge, isNotFoundError } = await import("./safe.js")
+    const { getMailboxChallenge, isNotFoundError } = await import("./index.js")
     const result = await getMailboxChallenge(
       {
         challengeId,

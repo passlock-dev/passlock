@@ -1,8 +1,7 @@
-// typedoc.json
 {
   "$schema": "https://typedoc.org/schema.json",
   "name": "@passlock/browser",
-  "entryPoints": ["src/safe.ts", "src/unsafe.ts"],
+  "entryPoints": ["src/index.ts"],
   "plugin": ["typedoc-plugin-markdown"],
   "outputs": [
     {

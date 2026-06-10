@@ -30,15 +30,8 @@ const assertSafeSurface = (module, label) => {
 }
 
 const root = await import("../dist/index.js")
-const safe = await import("../dist/safe.js")
-const unsafe = await import("../dist/unsafe.js")
-
 assertSafeSurface(root, "@passlock/browser")
-assertSafeSurface(safe, "@passlock/browser/safe")
-assertSafeSurface(unsafe, "@passlock/browser/unsafe")
 
 new root.Passlock({ tenancyId: "smoke-tenancy-id" })
-new safe.Passlock({ tenancyId: "smoke-tenancy-id" })
-new unsafe.Passlock({ tenancyId: "smoke-tenancy-id" })
 
 console.log(`${runtimeName()} loaded @passlock/browser entrypoints`)
