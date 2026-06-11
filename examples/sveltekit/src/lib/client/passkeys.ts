@@ -94,10 +94,11 @@ export const registerPasskey = async (config: PasslockClientConfig) => {
 
 export type AuthenticatePasskeyInput = {
 	/**
-	 * Server-prepared authentication token. When present, the browser receives
-	 * only this token and Passlock resolves the account-scoped options server-side.
+	 * Server-prepared authentication token. The browser receives only this token;
+	 * the backend decides whether the ceremony is account-scoped, discoverable,
+	 * or conditional/autofill.
 	 */
-	authenticationToken?: string | undefined;
+	authenticationToken: string;
 	/**
 	 * Most passkey auth attempts end by posting the Passlock code to the login
 	 * endpoint. Sensitive account actions reuse the same browser prompt but send
@@ -105,18 +106,11 @@ export type AuthenticatePasskeyInput = {
 	 * marked as recently passkey-verified.
 	 */
 	verificationRoute?: string | undefined;
-	userVerification?: 'preferred' | 'required';
-	autofill?: boolean;
 	/**
-	 * Used with autofill so the page can react to browser events such as the
-	 * user selecting a credential before the server round-trip completes.
+	 * Used with conditional mediation/autofill so the page can react to browser
+	 * events such as the user selecting a credential before verification starts.
 	 */
 	onEvent?: (event: PasslockBrowser.AuthenticationEvent) => void;
-	/**
-	 * Restrict the prompt to passkeys already linked to the account. This maps
-	 * to WebAuthn's `allowCredentials`.
-	 */
-	allowCredentials?: Array<string> | undefined;
 };
 
 export const preparePasskeyAuthentication = async (input: { url: string; body?: object }) => {
@@ -148,23 +142,16 @@ export const authenticatePasskey = async (
 ) => {
 	const ERROR_TAG = '@error/PasskeyLoginError';
 
-	const { authenticationToken, allowCredentials, verificationRoute = '/login/passkey' } = input;
-
-	const authenticationOptions = authenticationToken
-		? {
-				authenticationToken,
-				onEvent: input.onEvent
-			}
-		: {
-				autofill: input.autofill,
-				onEvent: input.onEvent,
-				rpId: config.rpId,
-				userVerification: input.userVerification,
-				allowCredentials
-			};
+	const { authenticationToken, verificationRoute = '/login/passkey' } = input;
 
 	// WebAuthn prompts can only run in the browser.
-	const clientResult = await PasslockBrowser.authenticatePasskey(authenticationOptions, config);
+	const clientResult = await PasslockBrowser.authenticatePasskey(
+		{
+			authenticationToken,
+			onEvent: input.onEvent
+		},
+		config
+	);
 
 	// Authentication never left the device, so there is nothing to verify
 	// server-side.

@@ -6,7 +6,7 @@ import * as PasslockServer from '@passlock/server';
 import * as v from 'valibot';
 
 const payloadSchema = v.object({
-	username: v.pipe(v.string(), v.trim(), v.email())
+	username: v.optional(v.pipe(v.string(), v.trim(), v.email()))
 });
 
 const errorResponse = (message: string, status: number) =>
@@ -25,26 +25,38 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	const rawPayload = await request.json().catch(() => null);
 	const payload = v.safeParse(payloadSchema, rawPayload);
 	if (payload.issues) {
-		return errorResponse('Invalid request. Expected account email.', 400);
-	}
-
-	const account = await getUserByEmail(payload.output.username);
-	if (!account) {
-		return errorResponse('No local user account was found for that email.', 404);
-	}
-
-	const passkeyCount = await countPasskeysByUserId(account.userId);
-	if (passkeyCount === 0) {
-		return errorResponse('No passkeys are linked to this account.', 400);
+		return errorResponse('Invalid request. Expected an optional account email.', 400);
 	}
 
 	const config = getPasslockConfig();
-	const preparedAuthentication = await PasslockServer.preparePasskeyAuthentication(
-		{
+	let prepareOptions: PasslockServer.PreparePasskeyAuthenticationOptions;
+
+	if (payload.output.username) {
+		const account = await getUserByEmail(payload.output.username);
+		if (!account) {
+			return errorResponse('No local user account was found for that email.', 404);
+		}
+
+		const passkeyCount = await countPasskeysByUserId(account.userId);
+		if (passkeyCount === 0) {
+			return errorResponse('No passkeys are linked to this account.', 400);
+		}
+
+		prepareOptions = {
 			rpId: config.rpId,
 			userId: String(account.userId),
 			userVerification: 'preferred'
-		},
+		};
+	} else {
+		prepareOptions = {
+			rpId: config.rpId,
+			discoverable: true,
+			userVerification: 'preferred'
+		};
+	}
+
+	const preparedAuthentication = await PasslockServer.preparePasskeyAuthentication(
+		prepareOptions,
 		config
 	);
 

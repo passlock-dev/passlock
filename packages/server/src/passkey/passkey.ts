@@ -469,8 +469,9 @@ export const preparePasskeyRegistration = (
  * Options used by your backend to authorize a passkey authentication before
  * the browser starts the WebAuthn ceremony.
  *
- * Pass either `userId`, `allowCredentials`, or both. If neither value is
- * available, use the browser-started authentication flow instead.
+ * For account-scoped authentication, pass `userId`, `allowCredentials`, or
+ * both. For discoverable "login with passkey" flows, set `discoverable: true`
+ * and omit account-scoped fields.
  *
  * @category Passkeys
  */
@@ -489,6 +490,8 @@ export interface PreparePasskeyAuthenticationOptions {
 
   /**
    * Existing Passlock passkey record IDs allowed for this prepared authentication.
+   *
+   * Omit this, or pass an empty array, for discoverable authentication.
    */
   allowCredentials?: ReadonlyArray<string> | undefined
 
@@ -501,6 +504,23 @@ export interface PreparePasskeyAuthenticationOptions {
    * Abort the browser ceremony after N milliseconds.
    */
   timeout?: number | undefined
+
+  /**
+   * Allow any suitable discoverable credential for the prepared relying party.
+   *
+   * Set this explicitly for "login with passkey" flows where your backend does
+   * not yet know the user. Leave it unset or `false` for account-scoped flows.
+   */
+  discoverable?: boolean | undefined
+
+  /**
+   * WebAuthn mediation mode for the prepared ceremony.
+   *
+   * Use `"required"` for normal authentication, or `"conditional"` for
+   * autofill/conditional mediation. Conditional mediation is valid only when
+   * `discoverable` is `true`.
+   */
+  mediation?: PasskeySchemas.PasskeyAuthenticationMediation | undefined
 }
 
 /**
@@ -516,8 +536,9 @@ export type _PreparePasskeyAuthenticationOptions = satisfy<
  * Prepared authentication token returned to your backend.
  *
  * Send only the `authenticationToken` to the browser. Treat it as bearer
- * authorization to authenticate for the prepared account or credentials, and
- * discard it after the browser calls `@passlock/browser`'s `authenticatePasskey`.
+ * authorization to start the prepared authentication ceremony, whether that
+ * ceremony is account-scoped or discoverable. Discard it after the browser
+ * calls `@passlock/browser`'s `authenticatePasskey`.
  *
  * @category Passkeys
  */
@@ -549,12 +570,16 @@ export type _PreparedPasskeyAuthentication = satisfy<
 /**
  * Prepare a server-authorized passkey authentication.
  *
- * Call this from your backend after deciding which account or passkeys may
- * authenticate. Return the resulting `authenticationToken` to the browser,
- * then call `authenticatePasskey` from `@passlock/browser`.
+ * Call this from your backend after deciding the authentication policy. For
+ * known-user or re-authentication flows, provide `userId`, `allowCredentials`,
+ * or both. For discoverable login, set `discoverable: true`; for autofill,
+ * also set `mediation: "conditional"`.
+ *
+ * Return the resulting `authenticationToken` to the browser, then call
+ * `authenticatePasskey` from `@passlock/browser`.
  *
  * @param options Prepared authentication options, including the relying party ID
- * and an optional application user ID, allow-list, or both.
+ * and either account-scoped fields or explicit discoverable authentication.
  * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
  * @returns An Effect that succeeds with a one-time prepared authentication token.

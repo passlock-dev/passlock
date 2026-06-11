@@ -194,9 +194,10 @@ export const registerPasskey = async (
  * Asks the device to present a passkey, then verifies it against the
  * server-side component in your vault.
  *
- * Pass browser-started options with an `rpId`, or pass an
- * `authenticationToken` created by `@passlock/server`'s
- * `preparePasskeyAuthentication` function. If successful, this function
+ * Pass an `authenticationToken` created by `@passlock/server`'s
+ * `preparePasskeyAuthentication` function. Relying party ID, allowed
+ * credentials, user verification, timeout, and autofill/mediation policy are
+ * all decided by your backend during preparation. If successful, this function
  * returns both a `code` and an `id_token` (JWT). Send either value to your
  * backend for verification.
  *
@@ -216,9 +217,9 @@ export const registerPasskey = async (
  * @example
  * // from your Passlock console settings
  * const tenancyId = "myTenancyId";
- * const rpId = "example.com";
+ * const authenticationToken = "authentication-token-from-your-backend";
  *
- * const result = await authenticatePasskey({ rpId }, { tenancyId });
+ * const result = await authenticatePasskey({ authenticationToken }, { tenancyId });
  *
  * if (result.success) {
  *   // send this to your backend for verification
@@ -662,7 +663,6 @@ export type {
   AuthenticationEvents,
   AuthenticationOptions,
   AuthenticationSuccess,
-  BrowserStartedAuthenticationOptions,
   OnAuthenticationEvent,
   PreparedAuthenticationOptions,
 } from "./passkey/authentication/authentication.js"

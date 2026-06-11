@@ -23,6 +23,20 @@ export const UserVerification = Schema.Literal("required", "preferred", "discour
  */
 export type UserVerification = typeof UserVerification.Type
 
+/**
+ * Valid mediation modes for prepared passkey authentication ceremonies.
+ *
+ * @category Passkeys
+ */
+export const PasskeyAuthenticationMediation = Schema.Literal("required", "conditional")
+
+/**
+ * Type produced by {@link PasskeyAuthenticationMediation}.
+ *
+ * @category Passkeys
+ */
+export type PasskeyAuthenticationMediation = typeof PasskeyAuthenticationMediation.Type
+
 /* PreparedPasskeyRegistration */
 
 /**
@@ -47,6 +61,10 @@ export type PreparedPasskeyRegistration = typeof PreparedPasskeyRegistration.Typ
 /**
  * Request body used to prepare a server-authorized passkey authentication.
  *
+ * Account-scoped requests provide `userId`, `allowCredentials`, or both.
+ * Discoverable requests set `discoverable: true`; autofill/conditional
+ * mediation additionally sets `mediation: "conditional"`.
+ *
  * @category Passkeys
  */
 export const PreparePasskeyAuthenticationOptions = Schema.Struct({
@@ -55,6 +73,8 @@ export const PreparePasskeyAuthenticationOptions = Schema.Struct({
   allowCredentials: Schema.optional(Schema.Array(Schema.String)),
   userVerification: Schema.optional(UserVerification),
   timeout: Schema.optional(Schema.Number),
+  discoverable: Schema.optional(Schema.Boolean),
+  mediation: Schema.optional(PasskeyAuthenticationMediation),
 })
 
 /**
@@ -66,6 +86,9 @@ export type PreparePasskeyAuthenticationOptions = typeof PreparePasskeyAuthentic
 
 /**
  * Response returned after preparing a server-authorized passkey authentication.
+ *
+ * Send the returned `authenticationToken` to the browser and keep all
+ * authentication policy on your backend.
  *
  * @category Passkeys
  */

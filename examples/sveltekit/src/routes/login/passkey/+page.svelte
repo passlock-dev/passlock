@@ -18,26 +18,23 @@
 
 		const config = { tenancyId: data.tenancyId, rpId: data.rpId, endpoint: data.endpoint };
 
-		const preparedAuthentication = data.username
-			? await preparePasskeyAuthentication({
-					url: resolve('/login/passkey/prepare'),
-					body: { username: data.username }
-				})
-			: undefined;
+		const preparedAuthentication = await preparePasskeyAuthentication({
+			url: resolve('/login/passkey/prepare'),
+			body: data.username ? { username: data.username } : {}
+		});
 
-		if (preparedAuthentication?._tag === '@error/PreparePasskeyAuthenticationError') {
+		if (preparedAuthentication._tag === '@error/PreparePasskeyAuthenticationError') {
 			error = preparedAuthentication.message;
 			loading = false;
 			return;
 		}
 
 		// The browser prompt happens here; the server verifies the returned code
-		// and creates the local session. Known-user login uses a prepared token;
-		// direct passkey login stays browser-started because no account is known.
+		// and creates the local session. Known-user login prepares an
+		// account-scoped token; direct passkey login prepares an explicit
+		// discoverable token because no account is known yet.
 		const result = await authenticatePasskey(
-			preparedAuthentication
-				? { authenticationToken: preparedAuthentication.authenticationToken }
-				: {},
+			{ authenticationToken: preparedAuthentication.authenticationToken },
 			config
 		);
 

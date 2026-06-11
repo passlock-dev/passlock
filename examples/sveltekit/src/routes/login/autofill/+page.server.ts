@@ -5,7 +5,8 @@ import { superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { getPasslockClientConfig } from '$lib/server/passkeys';
+import { getPasslockConfig } from '$lib/server/passkeys';
+import * as PasslockServer from '@passlock/server';
 import {
 	toLoginEmailLocation,
 	toLoginPasskeyLocation,
@@ -24,19 +25,43 @@ const schema = v.object({
 /**
  * Load the autofill login page.
  *
- * This route demonstrates the browser-first variant of passkey login where the
- * passkey prompt can appear from an autofill-capable username field.
+ * This route prepares an explicit discoverable authentication token with
+ * conditional mediation so the passkey prompt can appear from an
+ * autofill-capable username field.
  */
 export const load = (async ({ locals }) => {
 	if (locals.user) {
 		redirect(302, '/');
 	}
 
-	const config = getPasslockClientConfig();
+	const { apiKey: _apiKey, ...config } = getPasslockConfig();
+	const preparedAuthentication = await PasslockServer.preparePasskeyAuthentication(
+		{
+			rpId: config.rpId,
+			discoverable: true,
+			mediation: 'conditional'
+		},
+		{ ...config, apiKey: _apiKey }
+	);
 
 	const form = await superValidate(valibot(schema));
 
-	return { form, ...config };
+	return {
+		form,
+		...config,
+		preparedAuthentication:
+			preparedAuthentication._tag === 'PreparedPasskeyAuthentication'
+				? {
+						_tag: preparedAuthentication._tag,
+						expiresAt: preparedAuthentication.expiresAt,
+						authenticationToken: preparedAuthentication.authenticationToken
+					}
+				: undefined,
+		prepareError:
+			preparedAuthentication._tag === 'PreparedPasskeyAuthentication'
+				? undefined
+				: 'Unable to prepare passkey autofill.'
+	};
 }) satisfies PageServerLoad;
 
 export const actions = {

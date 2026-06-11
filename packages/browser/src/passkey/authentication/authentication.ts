@@ -11,79 +11,20 @@ import { Logger } from "../../logger.js"
 import type { PasslockOptions } from "../../options.js"
 import type { Principal } from "../../principal"
 import { OrphanedPasskeyError, OtherPasskeyError, PasskeyUnsupportedError } from "../errors.js"
-import type { Millis, UserVerification } from "../shared.js"
 
 /**
  * Passkey authentication options.
  *
- * Use {@link BrowserStartedAuthenticationOptions} when the browser should start
- * the WebAuthn ceremony from an `rpId`. Use
- * {@link PreparedAuthenticationOptions} when your backend has already prepared
- * a one-time authentication token with `@passlock/server`.
+ * Your backend should first prepare a one-time authentication token with
+ * `@passlock/server`, then pass that token to the browser. Relying party ID,
+ * allowed credentials, user verification, timeout, and autofill/mediation
+ * policy are all decided by the backend during preparation.
  *
  * @see {@link authenticatePasskey}
  *
  * @category Passkeys (core)
  */
-export type AuthenticationOptions =
-  | BrowserStartedAuthenticationOptions
-  | PreparedAuthenticationOptions
-
-/**
- * Browser-started passkey authentication options.
- *
- * This flow asks Passlock for WebAuthn options using the supplied relying party
- * ID, then starts the credential request in the browser.
- *
- * @see {@link authenticatePasskey}
- *
- * @category Passkeys (core)
- */
-export interface BrowserStartedAuthenticationOptions {
-  /**
-   * Restrict the passkeys the device can present to the user to this set.
-   *
-   * @see {@link https://passlock.dev/passkeys/allow-credentials/ allowCredentials (main docs)}
-   */
-  allowCredentials?: Array<string> | undefined
-
-  /**
-   * Whether the device should re-authenticate the user locally before
-   * authenticating with a passkey.
-   *
-   * @see {@link https://passlock.dev/passkeys/user-verification/ userVerification (main docs)}
-   */
-  userVerification?: UserVerification | undefined
-
-  /**
-   * Use browser autofill.
-   *
-   * @see {@link https://passlock.dev/passkeys/autofill/ autofill (main docs)}
-   */
-  autofill?: boolean | undefined
-
-  /**
-   * Receive notifications about key stages in the authentication process.
-   * For example, you might use event notifications to toggle loading icons or
-   * to disable certain form fields.
-   */
-  onEvent?: OnAuthenticationEvent | undefined
-
-  /**
-   * Abort the authentication ceremony after N milliseconds.
-   */
-  timeout?: Millis | undefined
-
-  /**
-   * The relying party ID for this authentication. Use `"localhost"` during
-   * development, or the domain configured in the Passlock console for staging
-   * and production (e.g. `"example.com"`). For related-origin flows, pass the
-   * rpId of the origin you want to accept passkeys from.
-   *
-   * @see {@link https://passlock.dev/passkeys/related-origin-requests/ related origin requests (main docs)}
-   */
-  rpId: string
-}
+export type AuthenticationOptions = PreparedAuthenticationOptions
 
 /**
  * Server-prepared passkey authentication options.
@@ -92,8 +33,8 @@ export interface BrowserStartedAuthenticationOptions {
  * `@passlock/server`, return the resulting `authenticationToken` to the
  * browser, then pass that token to {@link authenticatePasskey}.
  *
- * Autofill is not supported for prepared authentication because autofill is a
- * browser-started discoverable credential flow.
+ * For discoverable login and autofill, prepare the token with
+ * `discoverable: true` and, for autofill, `mediation: "conditional"`.
  *
  * @see {@link authenticatePasskey}
  *
@@ -112,11 +53,6 @@ export interface PreparedAuthenticationOptions {
    * to disable certain form fields.
    */
   onEvent?: OnAuthenticationEvent | undefined
-
-  /**
-   * Autofill cannot be used with server-prepared authentication.
-   */
-  autofill?: never
 }
 
 /**
@@ -199,30 +135,69 @@ export const isAuthenticationSuccess = (payload: unknown): payload is Authentica
   return payload._tag === AuthenticationSuccessTag
 }
 
-const isPreparedAuthenticationOptions = (
-  options: AuthenticationOptions
-): options is PreparedAuthenticationOptions => "authenticationToken" in options
+const removedAuthenticationOptionKeys = [
+  "rpId",
+  "allowCredentials",
+  "userId",
+  "userVerification",
+  "timeout",
+  "autofill",
+] as const
+
+const isAuthenticationOptions = (options: unknown): options is AuthenticationOptions => {
+  if (typeof options !== "object") return false
+  if (options === null) return false
+
+  if (!("authenticationToken" in options)) return false
+  if (typeof options.authenticationToken !== "string") return false
+
+  return true
+}
+
+const findRemovedAuthenticationOptionKey = (options: unknown): string | undefined => {
+  if (typeof options !== "object") return undefined
+  if (options === null) return undefined
+
+  return removedAuthenticationOptionKeys.find((key) => key in options)
+}
+
+const validateAuthenticationOptions = (options: unknown) => {
+  const removedKey = findRemovedAuthenticationOptionKey(options)
+  if (removedKey) {
+    return Micro.fail(
+      new OtherPasskeyError({
+        error: options,
+        message: `authenticatePasskey no longer accepts browser-started option "${removedKey}". Prepare authentication on your backend and pass only { authenticationToken, onEvent } to the browser.`,
+      })
+    )
+  }
+
+  if (!isAuthenticationOptions(options)) {
+    return Micro.fail(
+      new OtherPasskeyError({
+        error: options,
+        message: "authenticatePasskey requires an authenticationToken prepared by your backend.",
+      })
+    )
+  }
+
+  return Micro.succeed(options)
+}
 
 export const fetchOptions = (options: AuthenticationOptions) =>
   Micro.gen(function* () {
+    const authenticationOptions = yield* validateAuthenticationOptions(options)
     const logger = yield* Micro.service(Logger)
     const { endpoint } = yield* Micro.service(Endpoint)
     const { tenancyId } = yield* Micro.service(TenancyId)
 
-    const { onEvent } = options
+    const { onEvent } = authenticationOptions
     const url = new URL(`v2/${tenancyId}/passkey/authentication/options`, endpoint)
 
     onEvent?.("optionsRequest")
     yield* logger.logInfo("Fetching passkey authentication options from Passlock")
 
-    const payload = isPreparedAuthenticationOptions(options)
-      ? { authenticationToken: options.authenticationToken }
-      : {
-          allowCredentials: options.allowCredentials,
-          userVerification: options.userVerification,
-          rpId: options.rpId,
-          timeout: options.timeout,
-        }
+    const payload = { authenticationToken: authenticationOptions.authenticationToken }
 
     return yield* makeRequest({
       label: "authentication options",
@@ -232,9 +207,31 @@ export const fetchOptions = (options: AuthenticationOptions) =>
     })
   })
 
+/**
+ * Authentication ceremony options returned by Passlock after redeeming a
+ * prepared authentication token.
+ *
+ * The `mediation` field is server-prepared ceremony metadata. `"required"`
+ * starts a normal WebAuthn credential request; `"conditional"` starts
+ * WebAuthn using browser autofill/conditional mediation.
+ *
+ * @category Passkeys (core)
+ */
 export type OptionsResponse = {
+  /**
+   * One-time token tying the browser WebAuthn response to the prepared
+   * authentication challenge.
+   */
   sessionToken: string
+  /**
+   * WebAuthn credential request options passed to the browser.
+   */
   optionsJSON: PublicKeyCredentialRequestOptionsJSON
+  /**
+   * Whether the browser should start a normal or conditional/autofill
+   * authentication ceremony.
+   */
+  mediation: "required" | "conditional"
 }
 
 export const isOptionsResponse = (payload: unknown): payload is OptionsResponse => {
@@ -247,6 +244,9 @@ export const isOptionsResponse = (payload: unknown): payload is OptionsResponse 
 
   if (!("sessionToken" in payload)) return false
   if (typeof payload.sessionToken !== "string") return false
+
+  if (!("mediation" in payload)) return false
+  if (payload.mediation !== "required" && payload.mediation !== "conditional") return false
 
   return true
 }
@@ -373,8 +373,7 @@ export type AuthenticationError =
  * Trigger local passkey authentication, then verify the passkey in your
  * Passlock vault.
  *
- * Pass browser-started options with an `rpId`, or pass an
- * `authenticationToken` created by `@passlock/server`'s
+ * Pass an `authenticationToken` created by `@passlock/server`'s
  * `preparePasskeyAuthentication` function. On success, the returned code and
  * id_token can be exchanged or verified in your backend.
  *
@@ -390,41 +389,25 @@ export const authenticatePasskey = (
   const endpoint = makeEndpoint(config)
 
   const micro = Micro.gen(function* () {
-    if (
-      isPreparedAuthenticationOptions(options) &&
-      "autofill" in options &&
-      options.autofill === true
-    ) {
-      return yield* Micro.fail(
-        new OtherPasskeyError({
-          error: options,
-          message: "Autofill cannot be used with prepared passkey authentication",
-        })
-      )
-    }
-
-    const { sessionToken, optionsJSON } = yield* fetchOptions(options)
+    const authenticationOptions = yield* validateAuthenticationOptions(options)
+    const { sessionToken, optionsJSON, mediation } = yield* fetchOptions(authenticationOptions)
 
     const go = (useBrowserAutofill: boolean) =>
       Micro.gen(function* () {
         if (useBrowserAutofill) yield* Micro.sleep(100)
 
         const response = yield* startAuthentication(optionsJSON, {
-          onEvent: options.onEvent,
+          onEvent: authenticationOptions.onEvent,
           useBrowserAutofill,
         })
 
-        options.onEvent?.("verifyCredential")
+        authenticationOptions.onEvent?.("verifyCredential")
         return yield* verifyCredential(sessionToken, response, {
-          onEvent: options.onEvent,
+          onEvent: authenticationOptions.onEvent,
         })
       })
 
-    if (options.autofill === true) {
-      return yield* go(options.autofill)
-    } else {
-      return yield* go(false)
-    }
+    return yield* go(mediation === "conditional")
   })
 
   return pipe(
@@ -451,12 +434,11 @@ export type AuthenticationEvent = "optionsRequest" | "getCredential" | "verifyCr
 /**
  * Allows you to hook into key lifecycle events.
  *
- * Most commonly used when {@link authenticatePasskey}
- * is called with {@link BrowserStartedAuthenticationOptions#autofill}.
- * When autofill is applied the browser will wait for user interaction. By listening
- * for the `verifyCredential` {@link AuthenticationEvent} you know the browser has
- * already returned a credential and Passlock verification is starting, so you can
- * disable forms or toggle loading indicators.
+ * When your prepared authentication uses conditional mediation for autofill,
+ * the browser will wait for user interaction. By listening for the
+ * `verifyCredential` {@link AuthenticationEvent} you know the browser has
+ * already returned a credential and Passlock verification is starting, so you
+ * can disable forms or toggle loading indicators.
  *
  * @category Passkeys (other)
  */

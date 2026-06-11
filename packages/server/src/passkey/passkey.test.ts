@@ -236,6 +236,44 @@ describe(preparePasskeyAuthentication.name, () => {
       })
     })
   )
+
+  it.effect("should prepare a discoverable conditional authentication", () =>
+    Effect.gen(function* () {
+      let body: unknown
+
+      const TestLayer = Layer.succeed(NetworkFetch, (_url, init) => {
+        body = JSON.parse(String(init?.body))
+        return Promise.resolve(
+          new Response(JSON.stringify(preparedPasskeyAuthenticationResponse), {
+            status: 200,
+          })
+        )
+      })
+
+      const result = yield* pipe(
+        preparePasskeyAuthentication(
+          {
+            rpId: "localhost",
+            discoverable: true,
+            mediation: "conditional",
+            timeout: 60_000,
+            userVerification: "preferred",
+          },
+          { apiKey, tenancyId },
+          TestLayer
+        )
+      )
+
+      expect(result).toStrictEqual(preparedPasskeyAuthenticationResponse)
+      expect(body).toStrictEqual({
+        rpId: "localhost",
+        discoverable: true,
+        mediation: "conditional",
+        timeout: 60_000,
+        userVerification: "preferred",
+      })
+    })
+  )
 })
 
 describe(listPasskeys.name, () => {

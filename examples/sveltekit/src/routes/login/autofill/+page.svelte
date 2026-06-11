@@ -20,6 +20,11 @@
 	const { enhance, delayed } = superform;
 
 	onMount(async () => {
+		if (!data.preparedAuthentication) {
+			if (data.prepareError) console.log(data.prepareError);
+			return;
+		}
+
 		const config = {
 			tenancyId: data.tenancyId,
 			rpId: data.rpId,
@@ -30,7 +35,7 @@
 		// page mounts, avoiding the usual explicit "continue" click.
 		const result = await authenticatePasskey(
 			{
-				autofill: true,
+				authenticationToken: data.preparedAuthentication.authenticationToken,
 				onEvent: (event) => {
 					// Once the user picks a passkey, freeze the fallback form to avoid
 					// competing submissions during server verification.
@@ -96,4 +101,9 @@
 	</p>
 
 	<p class="mt-2">Browser support is also a little flaky.</p>
+
+	<p class="mt-2">
+		The backend prepares a discoverable authentication token with conditional mediation before the
+		browser starts autofill. The browser receives only the token.
+	</p>
 </DevNotes>

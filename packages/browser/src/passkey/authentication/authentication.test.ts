@@ -4,7 +4,7 @@ import type {
   PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/browser"
 import { Context, Micro, pipe } from "effect"
-import { afterAll, describe, expect, it, vi } from "vitest"
+import { afterAll, afterEach, describe, expect, it, vi } from "vitest"
 import { Endpoint, TenancyId } from "../../internal/index.js"
 import { Logger } from "../../logger.js"
 import { OrphanedPasskeyError, OtherPasskeyError, PasskeyUnsupportedError } from "../errors.js"
@@ -23,6 +23,11 @@ const loggerTest = {
   logWarn: () => Micro.void,
 } satisfies typeof Logger.Service
 
+afterEach(() => {
+  fetchMock.callHistory.clear()
+  fetchMock.removeRoutes()
+})
+
 describe(fetchOptions.name, () => {
   const endpoint = "https://api.passlock.dev"
   const tenancyId = "dummyTenancyId"
@@ -36,60 +41,10 @@ describe(fetchOptions.name, () => {
   const expectedRoute = `${endpoint}/v2/${tenancyId}/passkey/authentication/options`
 
   const mockResponse = {
+    mediation: "required",
     optionsJSON: {},
     sessionToken: "dummySessionToken",
-  }
-
-  describe("given a minimal set of options", () => {
-    it("should fetch some PublicKeyCredentialCreationOptions", async () => {
-      fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
-
-      const result = await pipe(
-        fetchOptions({ rpId: "localhost" }),
-        Micro.provideContext(ctx),
-        Micro.runPromise
-      )
-
-      expect(result.sessionToken).toBeTruthy()
-      expect(result.optionsJSON).toBeTruthy()
-    })
-  })
-
-  describe("given a list of allowCredentials", () => {
-    const allowCredentials = ["dummyCredential"]
-
-    it("should send them to the backend", async () => {
-      fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
-
-      await pipe(
-        fetchOptions({ rpId: "localhost", allowCredentials }),
-        Micro.provideContext(ctx),
-        Micro.runPromise
-      )
-
-      expect(fetchMock).toHavePosted(expectedRoute, {
-        body: { allowCredentials, rpId: "localhost" },
-      })
-    })
-  })
-
-  describe("given a userVerification", () => {
-    const userVerification = "required" as const
-
-    it("should send it to the backend", async () => {
-      fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
-
-      await pipe(
-        fetchOptions({ rpId: "localhost", userVerification }),
-        Micro.provideContext(ctx),
-        Micro.runPromise
-      )
-
-      expect(fetchMock).toHavePosted(expectedRoute, {
-        body: { rpId: "localhost", userVerification },
-      })
-    })
-  })
+  } as const
 
   describe("given an authenticationToken", () => {
     const authenticationToken = "dummyAuthenticationToken"
@@ -97,12 +52,31 @@ describe(fetchOptions.name, () => {
     it("should send only the token to the backend", async () => {
       fetchMock.mockGlobal().postOnce(expectedRoute, mockResponse)
 
-      await pipe(fetchOptions({ authenticationToken }), Micro.provideContext(ctx), Micro.runPromise)
+      const result = await pipe(
+        fetchOptions({ authenticationToken }),
+        Micro.provideContext(ctx),
+        Micro.runPromise
+      )
+
+      expect(result).toStrictEqual(mockResponse)
 
       expect(fetchMock).toHavePosted(expectedRoute, {
         body: { authenticationToken },
       })
     })
+  })
+
+  it("should reject browser-started options before making a request", async () => {
+    const error = await pipe(
+      fetchOptions({ rpId: "localhost" } as never),
+      Micro.flip,
+      Micro.provideContext(ctx),
+      Micro.runPromise
+    )
+
+    expect(error).toBeInstanceOf(OtherPasskeyError)
+    expect(error.message).toContain("browser-started option")
+    expect(fetchMock.callHistory.calls(expectedRoute)).toHaveLength(0)
   })
 
   it("should invoke the onEvent handler", async () => {
@@ -111,7 +85,7 @@ describe(fetchOptions.name, () => {
     const onEvent = vi.fn()
 
     await pipe(
-      fetchOptions({ rpId: "localhost", onEvent }),
+      fetchOptions({ authenticationToken: "dummyAuthenticationToken", onEvent }),
       Micro.provideContext(ctx),
       Micro.runPromise
     )
@@ -238,9 +212,10 @@ describe(authenticatePasskey.name, () => {
   const optionsRoute = `${endpoint}/v2/${tenancyId}/passkey/authentication/options`
 
   const optionsResponse = {
+    mediation: "required",
     optionsJSON: {},
     sessionToken: "dummySessionToken",
-  }
+  } as const
 
   const verificationRoute = `${endpoint}/v2/${tenancyId}/passkey/authentication/verification`
 
@@ -252,17 +227,6 @@ describe(authenticatePasskey.name, () => {
       authenticatorId: "dummyPasskeyId",
     },
   }
-
-  it("should fetch the options and kick off the authentication", async () => {
-    fetchMock.mockGlobal().postOnce(optionsRoute, optionsResponse)
-    fetchMock.mockGlobal().postOnce(verificationRoute, verificationResponse)
-
-    await pipe(
-      authenticatePasskey({ rpId: "localhost" }, { tenancyId }),
-      Micro.provideContext(ctx),
-      Micro.runPromise
-    )
-  })
 
   it("should authenticate with a prepared authentication token", async () => {
     fetchMock.mockGlobal().postOnce(optionsRoute, optionsResponse)
@@ -279,18 +243,43 @@ describe(authenticatePasskey.name, () => {
     })
   })
 
-  it("should reject prepared authentication with autofill", async () => {
+  it("should use browser autofill when the options response requests conditional mediation", async () => {
+    const startAuthentication = vi.fn(() => Promise.resolve({} as AuthenticationResponseJSON))
+    const conditionalAuthenticationHelperTest = {
+      browserSupportsWebAuthn: () => true,
+      startAuthentication,
+    } satisfies typeof AuthenticationHelper.Service
+
+    fetchMock.mockGlobal().postOnce(optionsRoute, {
+      ...optionsResponse,
+      mediation: "conditional",
+    })
+    fetchMock.mockGlobal().postOnce(verificationRoute, verificationResponse)
+
+    await pipe(
+      authenticatePasskey({ authenticationToken: "dummyAuthenticationToken" }, { tenancyId }),
+      Micro.provideService(AuthenticationHelper, conditionalAuthenticationHelperTest),
+      Micro.provideContext(ctx),
+      Micro.runPromise
+    )
+
+    expect(startAuthentication).toHaveBeenCalledWith({
+      optionsJSON: {},
+      useBrowserAutofill: true,
+    })
+  })
+
+  it("should reject browser-started options before making a request", async () => {
     const error = await pipe(
-      authenticatePasskey(
-        { authenticationToken: "dummyAuthenticationToken", autofill: true } as never,
-        { tenancyId }
-      ),
+      authenticatePasskey({ rpId: "localhost" } as never, { tenancyId }),
       Micro.flip,
       Micro.provideContext(ctx),
       Micro.runPromise
     )
 
     expect(error).toBeInstanceOf(OtherPasskeyError)
+    expect(error.message).toContain("browser-started option")
+    expect(fetchMock.callHistory.calls(optionsRoute)).toHaveLength(0)
   })
 })
 

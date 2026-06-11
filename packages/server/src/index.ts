@@ -375,12 +375,16 @@ export const preparePasskeyRegistration = (
 /**
  * Prepare a server-authorized passkey authentication.
  *
- * Call this from your backend after deciding which account or passkeys may
- * authenticate. Return the resulting `authenticationToken` to the browser,
- * then call `authenticatePasskey` from `@passlock/browser`.
+ * Call this from your backend after deciding the authentication policy. For
+ * known-user or re-authentication flows, provide `userId`, `allowCredentials`,
+ * or both. For discoverable login, set `discoverable: true`; for autofill,
+ * also set `mediation: "conditional"`.
+ *
+ * Return the resulting `authenticationToken` to the browser, then call
+ * `authenticatePasskey` from `@passlock/browser`.
  *
  * @param options Prepared authentication options, including the relying party ID
- * and an optional application user ID, allow-list, or both.
+ * and either account-scoped fields or explicit discoverable authentication.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
  * a one-time prepared authentication token and whose error branch contains an API error.
@@ -675,6 +679,7 @@ export type {
 export type { Err, Ok, Result } from "./safe-result.js"
 export type {
   CredentialDeviceType,
+  PasskeyAuthenticationMediation,
   Transports,
 } from "./schemas/passkey.js"
 export type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
