@@ -37,9 +37,10 @@ in README.template.md and outputs to README.md
 ## How Passlock works (in 60 seconds)
 
 1. Passlock handles WebAuthn complexity (browser quirks, ceremonies, encoding)
-2. Your frontend registers/authenticates passkeys using a simple JS API, resulting in a code and id_token (JWT)
-3. Your backend exchanges the code or verifies the JWT using our server library or REST API.
-4. You stay in control of users, sessions, and authorization
+2. Your backend authorizes each registration/authentication ceremony and sends a one-time token to the browser
+3. Your frontend completes the passkey ceremony using a simple JS API, resulting in a code and id_token (JWT)
+4. Your backend exchanges the code or verifies the JWT using our server library or REST API.
+5. You stay in control of users, sessions, and authorization
 
 No SDK lock-in. No backend coupling.
 
@@ -163,8 +164,33 @@ console.log("passkey id: %s", result.value.authenticatorId);
 
 ### Authenticate a passkey
 
-Very similar to the registration process, except you don't need to authorise the operation in your backend first.
-Kick off authentication in your frontend then send either the returned `code` or `id_token` to your backend for verification.
+Passkey authentication follows the same backend-authorized pattern as registration:
+
+1. **Authorize authentication**: Your backend decides the authentication policy and generates an authentication token.
+2. **Browser ceremony**: The browser asks the user to present a passkey.
+3. **Exchange code**: Your backend exchanges the code returned by the browser and looks up the user.
+
+```typescript
+// backend/authorize-authentication.ts
+import { Passlock } from "@passlock/server";
+
+const tenancyId = "myTenancyId";
+const apiKey = "myApiKey";
+const passlock = new Passlock({ tenancyId, apiKey });
+
+const result = await passlock.authorizePasskeyAuthentication({
+  rpId: "example.com",
+  discoverable: true,
+});
+
+if (result.failure) {
+  // handle the error
+  throw new Error(result.error.message);
+}
+
+// send only this token to your frontend
+console.log("authentication token: %s", result.value.authenticationToken);
+```
 
 ```typescript
 // frontend/authenticate.ts
@@ -174,7 +200,9 @@ const tenancyId = "myTenancyId";
 const passlock = new Passlock({ tenancyId });
 
 // call this in a button click handler or similar action
-const result = await passlock.authenticatePasskey({ rpId: "example.com" });
+// ask your backend for an authentication token
+const authenticationToken = await fetchAuthenticationToken();
+const result = await passlock.authenticatePasskey({ authenticationToken });
 
 if (result.failure) {
   // handle the error
@@ -182,11 +210,11 @@ if (result.failure) {
 }
 
 // send result.code or result.id_token to your backend for verification
-console.log('code: %s', result.value.code); 
+console.log("code: %s", result.value.code);
 ```
 
 > [!TIP]
-> You can also start the authentication process in your backend, passing an `authenticationToken` into the `authenticatePasskey` method.
+> To authenticate against a known account, authorize with `userId`, `allowCredentials`, or both. For discoverable login, set `discoverable: true`; for autofill, also set `mediation: "conditional"`.
 
 In your backend, exchange the code and look up the user by `userId` or `authenticatorId` ...
 
@@ -206,8 +234,8 @@ if (result.failure) {
 }
 
 // lookup the user based on their userId or authenticatorId
-console.log('user id: %s', result.value.userId); 
-console.log('passkey id: %s', result.value.authenticatorId); 
+console.log("user id: %s", result.value.userId);
+console.log("passkey id: %s", result.value.authenticatorId);
 ```
 
 > [!TIP]  
