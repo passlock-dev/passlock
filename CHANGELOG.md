@@ -16,6 +16,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changeset package as we now use Codex/Claude
 - `@passlock/browser/safe`, `@passlock/browser/unsafe`, `@passlock/server/safe` and `@passlock/server/unsafe`. Every client and function is now _safe_ by default.
 
+### Changed
+
+- Determine passkey RP ID during registration or authentication initiation/authorization instead of pulling it from the tenancy settings.
+  The RP ID must now be provided by the caller:
+
+  ```ts
+  import { Passlock } from "@passlock/server";
+
+  const passlock = new Passlock({
+    tenancyId,
+    apiKey
+  });
+
+  await passlock.authorizePasskeyRegistration({
+    rpId: 'example.com',
+    ...
+  });
+
+  await passlock.authorizePasskeyAuthentication({
+    rpId: 'example.com',
+    ...
+  });  
+  ```
+
 ## [2.6.0] - 2026-06-10
 
 ### Changed
