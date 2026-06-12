@@ -39,8 +39,8 @@ Powerful passkey features for browser applications.
 1. **🔓 No lock-in**  
 Framework agnostic. Standards compliant.
 
-2. **🔑 Related origins (domain migration)**  
-Accept passkeys from other domains on your site (subject to security constraints).
+2. **🔑 Domain migration**  
+Use backend-authorized RP IDs with WebAuthn related-origin support.
 
 3. **🚀 Zero config passkeys**  
 Works out of the box with sensible defaults.
@@ -54,7 +54,7 @@ User verification, autofill, roaming authenticators and more.
 ## Register a passkey
 
 Passkey registration starts on your backend. Use
-`@passlock/server` to prepare a registration for the application user, return
+`@passlock/server` to authorize a registration for the application user, return
 the resulting `registrationToken` to the browser, then pass that token to
 `registerPasskey`.
 
@@ -79,6 +79,12 @@ if (result.failure) {
 `registerPasskey` redeems the one-time registration token for WebAuthn
 creation options, asks the authenticator to create the passkey, and verifies
 the result with Passlock.
+
+Your backend chooses the RP ID when it authorizes registration or authentication.
+The browser library does not accept an RP ID directly; it uses the WebAuthn
+options returned by Passlock. During domain migration, configure WebAuthn
+related origins for the browser platform if the current origin needs to use
+passkeys for a different RP ID.
 
 ## More information
 

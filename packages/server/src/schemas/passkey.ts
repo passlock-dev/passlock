@@ -24,7 +24,7 @@ export const UserVerification = Schema.Literal("required", "preferred", "discour
 export type UserVerification = typeof UserVerification.Type
 
 /**
- * Valid mediation modes for prepared passkey authentication ceremonies.
+ * Valid mediation modes for authorized passkey authentication ceremonies.
  *
  * @category Passkeys
  */
@@ -37,29 +37,32 @@ export const PasskeyAuthenticationMediation = Schema.Literal("required", "condit
  */
 export type PasskeyAuthenticationMediation = typeof PasskeyAuthenticationMediation.Type
 
-/* PreparedPasskeyRegistration */
+/* AuthorizedPasskeyRegistration */
 
 /**
- * Response returned after preparing a server-authorized passkey registration.
+ * Response returned after authorizing a passkey registration.
  *
  * @category Passkeys
  */
-export const PreparedPasskeyRegistration = Schema.TaggedStruct("PreparedPasskeyRegistration", {
+export const AuthorizedPasskeyRegistration = Schema.TaggedStruct("AuthorizedPasskeyRegistration", {
   expiresAt: Schema.Number,
   registrationToken: Schema.String,
 })
 
 /**
- * Type produced by {@link PreparedPasskeyRegistration}.
+ * Type produced by {@link AuthorizedPasskeyRegistration}.
  *
  * @category Passkeys
  */
-export type PreparedPasskeyRegistration = typeof PreparedPasskeyRegistration.Type
+export type AuthorizedPasskeyRegistration = typeof AuthorizedPasskeyRegistration.Type
 
-/* PreparedPasskeyAuthentication */
+/* AuthorizedPasskeyAuthentication */
 
 /**
- * Request body used to prepare a server-authorized passkey authentication.
+ * Request body used to authorize a passkey authentication.
+ *
+ * The caller supplies the authorized ceremony `rpId`; Passlock validates it
+ * syntactically and uses it when generating WebAuthn options.
  *
  * Account-scoped requests provide `userId`, `allowCredentials`, or both.
  * Discoverable requests set `discoverable: true`; autofill/conditional
@@ -67,7 +70,7 @@ export type PreparedPasskeyRegistration = typeof PreparedPasskeyRegistration.Typ
  *
  * @category Passkeys
  */
-export const PreparePasskeyAuthenticationOptions = Schema.Struct({
+export const AuthorizePasskeyAuthenticationOptions = Schema.Struct({
   rpId: Schema.String,
   userId: Schema.optional(Schema.String),
   allowCredentials: Schema.optional(Schema.Array(Schema.String)),
@@ -78,31 +81,35 @@ export const PreparePasskeyAuthenticationOptions = Schema.Struct({
 })
 
 /**
- * Type produced by {@link PreparePasskeyAuthenticationOptions}.
+ * Type produced by {@link AuthorizePasskeyAuthenticationOptions}.
  *
  * @category Passkeys
  */
-export type PreparePasskeyAuthenticationOptions = typeof PreparePasskeyAuthenticationOptions.Type
+export type AuthorizePasskeyAuthenticationOptions =
+  typeof AuthorizePasskeyAuthenticationOptions.Type
 
 /**
- * Response returned after preparing a server-authorized passkey authentication.
+ * Response returned after authorizing a passkey authentication.
  *
  * Send the returned `authenticationToken` to the browser and keep all
  * authentication policy on your backend.
  *
  * @category Passkeys
  */
-export const PreparedPasskeyAuthentication = Schema.TaggedStruct("PreparedPasskeyAuthentication", {
-  authenticationToken: Schema.String,
-  expiresAt: Schema.Number,
-})
+export const AuthorizedPasskeyAuthentication = Schema.TaggedStruct(
+  "AuthorizedPasskeyAuthentication",
+  {
+    authenticationToken: Schema.String,
+    expiresAt: Schema.Number,
+  }
+)
 
 /**
- * Type produced by {@link PreparedPasskeyAuthentication}.
+ * Type produced by {@link AuthorizedPasskeyAuthentication}.
  *
  * @category Passkeys
  */
-export type PreparedPasskeyAuthentication = typeof PreparedPasskeyAuthentication.Type
+export type AuthorizedPasskeyAuthentication = typeof AuthorizedPasskeyAuthentication.Type
 
 /* Passkey */
 

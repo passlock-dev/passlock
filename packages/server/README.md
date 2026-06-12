@@ -40,17 +40,18 @@ Node 20+ (If running Node)
 
 ## Usage
 
-### Prepare a passkey registration
+### Authorize a passkey registration
 
 Create passkey registrations from your backend after you have authenticated the
-user and decided they are allowed to add a passkey. The server prepares a
-short-lived `registrationToken`; send only that token to the browser and use it
-with `registerPasskey` from `@passlock/browser`.
+user and decided they are allowed to add a passkey. The server authorizes a
+short-lived `registrationToken` for the `rpId` your backend supplies; send only
+that token to the browser and use it with `registerPasskey` from
+`@passlock/browser`.
 
 ```ts
-import { preparePasskeyRegistration } from "@passlock/server"
+import { authorizePasskeyRegistration } from "@passlock/server"
 
-const result = await preparePasskeyRegistration(
+const result = await authorizePasskeyRegistration(
   {
     rpId: "example.com",
     userId: "user_123",
@@ -72,8 +73,8 @@ if (result.success) {
 throw new Error(result.error.message)
 ```
 
-The prepared registration token authorizes one browser registration ceremony for
-the prepared user. Treat it as bearer authorization, do not log it, and discard
+The authorized registration token authorizes one browser registration ceremony for
+the authorized user. Treat it as bearer authorization, do not log it, and discard
 it after it is sent to the browser.
 
 Please see the [Quick start guide](https://passlock.dev/getting-started/) for a complete registration

@@ -20,11 +20,9 @@
 		error = '';
 		loading = true;
 
-		const config = { tenancyId: data.tenancyId, rpId: data.rpId, endpoint: data.endpoint };
-
-		// The server prepares registration for the signed-in account, the browser
+		// The server authorizes registration for the signed-in account, the browser
 		// creates the passkey, then the server verifies and stores the result.
-		const result = await registerPasskey(config);
+		const result = await registerPasskey(data);
 
 		if (result._tag === '@error/CreatePasskeyError') {
 			error = result.message;
@@ -47,11 +45,10 @@
 		// browser/device cleanup.
 		const result = await deletePasskey({ passkeyId });
 
-		if (result._tag === '@error/DeletePasskeyError') {
-			error = result.message;
-			deletingPasskeyId = null;
-			return;
-		} else if (result._tag === '@warning/PasskeyDeletePaused') {
+		if (
+			result._tag === '@error/DeletePasskeyError' ||
+			result._tag === '@warning/PasskeyDeletePaused'
+		) {
 			deletingPasskeyId = null;
 			error = result.message;
 			return;

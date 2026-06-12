@@ -355,7 +355,7 @@ export const countPasskeysByUserId = async (userId: number): Promise<number> => 
 /**
  * List the passkeys linked to a local user for account-management UI.
  */
-export const getPasskeysByUserId = async (userId: number): Promise<Passkey[]> => {
+export const findPasskeysByUserId = async (userId: number): Promise<Passkey[]> => {
 	return await db
 		.select({
 			userId: passkeysTable.userId,

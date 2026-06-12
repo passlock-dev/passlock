@@ -15,35 +15,45 @@ import { OrphanedPasskeyError, OtherPasskeyError, PasskeyUnsupportedError } from
 /**
  * Passkey authentication options.
  *
- * Your backend should first prepare a one-time authentication token with
+ * Your backend should first authorize a one-time authentication token with
  * `@passlock/server`, then pass that token to the browser. Relying party ID,
  * allowed credentials, user verification, timeout, and autofill/mediation
- * policy are all decided by the backend during preparation.
+ * policy are all decided by the backend during authorization. The browser
+ * redeems the token and uses the returned WebAuthn options as-is.
+ *
+ * If the current origin differs from the authorized RP ID, the browser's
+ * WebAuthn related-origin policy must allow the ceremony. The browser library
+ * does not accept or override the RP ID.
  *
  * @see {@link authenticatePasskey}
  *
  * @category Passkeys (core)
  */
-export type AuthenticationOptions = PreparedAuthenticationOptions
+export type AuthenticationOptions = AuthorizedAuthenticationOptions
 
 /**
- * Server-prepared passkey authentication options.
+ * Server-authorized passkey authentication options.
  *
- * Your backend should first call `preparePasskeyAuthentication` from
+ * Your backend should first call `authorizePasskeyAuthentication` from
  * `@passlock/server`, return the resulting `authenticationToken` to the
  * browser, then pass that token to {@link authenticatePasskey}.
  *
- * For discoverable login and autofill, prepare the token with
+ * The authorized token already carries the RP ID chosen by your backend. For
+ * domain migration, the browser/WebAuthn platform must still allow the current
+ * origin to use that RP ID. Passlock does not require this origin to match a
+ * separate tenancy related-origin setting when the token is redeemed.
+ *
+ * For discoverable login and autofill, authorize the token with
  * `discoverable: true` and, for autofill, `mediation: "conditional"`.
  *
  * @see {@link authenticatePasskey}
  *
  * @category Passkeys (core)
  */
-export interface PreparedAuthenticationOptions {
+export interface AuthorizedAuthenticationOptions {
   /**
    * One-time authentication token returned by `@passlock/server`'s
-   * `preparePasskeyAuthentication` function.
+   * `authorizePasskeyAuthentication` function.
    */
   authenticationToken: string
 
@@ -167,7 +177,7 @@ const validateAuthenticationOptions = (options: unknown) => {
     return Micro.fail(
       new OtherPasskeyError({
         error: options,
-        message: `authenticatePasskey no longer accepts browser-started option "${removedKey}". Prepare authentication on your backend and pass only { authenticationToken, onEvent } to the browser.`,
+        message: `authenticatePasskey no longer accepts browser-started option "${removedKey}". Authorize authentication on your backend and pass only { authenticationToken, onEvent } to the browser.`,
       })
     )
   }
@@ -176,7 +186,7 @@ const validateAuthenticationOptions = (options: unknown) => {
     return Micro.fail(
       new OtherPasskeyError({
         error: options,
-        message: "authenticatePasskey requires an authenticationToken prepared by your backend.",
+        message: "authenticatePasskey requires an authenticationToken authorized by your backend.",
       })
     )
   }
@@ -208,10 +218,10 @@ export const fetchOptions = (options: AuthenticationOptions) =>
   })
 
 /**
- * Authentication ceremony options returned by Passlock after redeeming a
- * prepared authentication token.
+ * Authentication ceremony options returned by Passlock after redeeming an
+ * authorized authentication token.
  *
- * The `mediation` field is server-prepared ceremony metadata. `"required"`
+ * The `mediation` field is server-authorized ceremony metadata. `"required"`
  * starts a normal WebAuthn credential request; `"conditional"` starts
  * WebAuthn using browser autofill/conditional mediation.
  *
@@ -219,7 +229,7 @@ export const fetchOptions = (options: AuthenticationOptions) =>
  */
 export type OptionsResponse = {
   /**
-   * One-time token tying the browser WebAuthn response to the prepared
+   * One-time token tying the browser WebAuthn response to the authorized
    * authentication challenge.
    */
   sessionToken: string
@@ -374,8 +384,11 @@ export type AuthenticationError =
  * Passlock vault.
  *
  * Pass an `authenticationToken` created by `@passlock/server`'s
- * `preparePasskeyAuthentication` function. On success, the returned code and
+ * `authorizePasskeyAuthentication` function. On success, the returned code and
  * id_token can be exchanged or verified in your backend.
+ *
+ * The browser uses the WebAuthn options returned by Passlock and does not send
+ * an RP ID of its own.
  *
  * @param options Authentication ceremony options.
  * @param config Passlock tenancy and API endpoint options.
@@ -434,7 +447,7 @@ export type AuthenticationEvent = "optionsRequest" | "getCredential" | "verifyCr
 /**
  * Allows you to hook into key lifecycle events.
  *
- * When your prepared authentication uses conditional mediation for autofill,
+ * When your authorized authentication uses conditional mediation for autofill,
  * the browser will wait for user interaction. By listening for the
  * `verifyCredential` {@link AuthenticationEvent} you know the browser has
  * already returned a credential and Passlock verification is starting, so you

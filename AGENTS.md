@@ -69,6 +69,14 @@ Useful private packages include:
 - Do not invent filenames, directories, or package names
 - If unsure where a change belongs, ask before writing
 
+## Design specifications
+
+- Large feature implementations or refactorings should first be documented as a design spec.
+- Specifications live in ../private/audit/design-specs/
+- The spec ID is a unique 4 digit identifier e.g. `0001`
+- Specification files are named `{id}-{title}.md`
+- When asked to implement a design specification, follow the relevant spec.
+ 
 ## Validation
 
 The root `package.json` is mainly release/readme tooling. Validation scripts usually live in the target package directory.

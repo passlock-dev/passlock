@@ -1,5 +1,5 @@
 import { getPasslockClientConfig } from '$lib/server/passkeys.js';
-import { getPasskeysByUserId } from '$lib/server/repository.js';
+import { findPasskeysByUserId } from '$lib/server/repository.js';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -14,7 +14,7 @@ export const load = (async ({ locals, depends }) => {
 	}
 
 	const passlockConfig = getPasslockClientConfig();
-	const existingPasskeys = await getPasskeysByUserId(locals.user.userId);
+	const existingPasskeys = await findPasskeysByUserId(locals.user.userId);
 
 	return {
 		existingPasskeys,

@@ -56,7 +56,8 @@ Follow the prompts and take note of your `Tenancy ID` and `API Key`.
 
 ### 4. Set environment variables
 
-Copy the `.env.example` to `.env` and set the `PUBLIC_PASSLOCK_TENANCY_ID` and `PASSLOCK_API_KEY` variables.
+Copy the `.env.example` to `.env` and set the `PUBLIC_PASSLOCK_TENANCY_ID`,
+`PASSLOCK_API_KEY`, and `PASSLOCK_RP_ID` variables.
 
 ### 5. Setup the database
 

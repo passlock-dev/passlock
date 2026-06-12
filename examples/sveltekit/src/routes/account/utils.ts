@@ -2,7 +2,7 @@ import type { SuperFormErrors } from 'sveltekit-superforms/client';
 import {
 	authenticatePasskey,
 	getPasskeyStatus,
-	preparePasskeyAuthentication,
+	authorizePasskeyAuthentication,
 	type PasslockClientConfig
 } from '$lib/client/passkeys';
 import { resolve } from '$app/paths';
@@ -21,8 +21,8 @@ const setFormError = (errors: FormErrors, message: string) => {
  * Ensure the current account action has a recent passkey confirmation.
  *
  * The server owns the real authorization check. This helper just performs the
- * client-side prompt when needed. The prompt uses a prepared token from
- * `/account/re-authenticate/prepare`, then posts the resulting Passlock code
+ * client-side prompt when needed. The prompt uses an authorized token from
+ * `/account/re-authenticate/authorize`, then posts the resulting Passlock code
  * to `/account/re-authenticate`, which refreshes the session's
  * `passkeyAuthenticatedAt` timestamp.
  *
@@ -57,20 +57,20 @@ export const reAuthenticateIfNecessary = async (
 		} as const;
 	}
 
-	const preparedAuthentication = await preparePasskeyAuthentication({
-		url: resolve('/account/re-authenticate/prepare')
+	const authorizedAuthentication = await authorizePasskeyAuthentication({
+		url: resolve('/account/re-authenticate/authorize')
 	});
 
-	if (preparedAuthentication._tag === '@error/PreparePasskeyAuthenticationError') {
-		setFormError(input.errors, preparedAuthentication.message);
+	if (authorizedAuthentication._tag === '@error/AuthorizePasskeyAuthenticationError') {
+		setFormError(input.errors, authorizedAuthentication.message);
 		return error;
 	}
 
-	// Let the browser authenticate with the prepared token, then let the server
+	// Let the browser authenticate with the authorized token, then let the server
 	// refresh the re-auth timestamp for the current session.
 	const result = await authenticatePasskey(
 		{
-			authenticationToken: preparedAuthentication.authenticationToken,
+			authenticationToken: authorizedAuthentication.authenticationToken,
 			verificationRoute: resolve('/account/re-authenticate')
 		},
 		config

@@ -84,7 +84,7 @@ Take a note of your `Tenancy ID` and `API Key`.
 
 Passkey registration is a three-step process:
 
-1. **Prepare registration**: Your backend prepares a registration token for the user.
+1. **Authorize registration**: Your backend generates a registration token for the user.
 2. **Browser ceremony**: The browser asks the user to register a passkey.
 3. **Exchange code**: Your backend exchanges the code returned by the browser for a registered passkey.
 
@@ -92,14 +92,14 @@ Passkey registration is a three-step process:
 > You only need to pass tokens (strings) between your backend and the browser, avoiding the need to handle JSON and binary data.
 
 ```typescript
-// backend/prepare-registration.ts
+// backend/registration.ts
 import { Passlock } from "@passlock/server";
 
 const tenancyId = "myTenancyId";
 const apiKey = "myApiKey";
 const passlock = new Passlock({ tenancyId, apiKey });
 
-const result = await passlock.preparePasskeyRegistration(
+const result = await passlock.authorizePasskeyRegistration(
   {
     rpId: "example.com",
     userId: "user_123",
@@ -156,7 +156,7 @@ if (result.failure) {
 }
 
 // includes details about the completed registration
-// store the authenticatorId (passkey ID) against the prepared local user
+// link the authenticatorId to a local user account
 console.log("user id: %s", result.value.userId);
 console.log("passkey id: %s", result.value.authenticatorId);
 ```

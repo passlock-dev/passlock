@@ -96,7 +96,6 @@
 		onSubmit: async ({ cancel }) => {
 			const config = {
 				tenancyId: data.tenancyId,
-				rpId: data.rpId,
 				endpoint: data.endpoint
 			};
 
@@ -163,7 +162,6 @@
 		onSubmit: async ({ cancel }) => {
 			const config = {
 				tenancyId: data.tenancyId,
-				rpId: data.rpId,
 				endpoint: data.endpoint
 			};
 

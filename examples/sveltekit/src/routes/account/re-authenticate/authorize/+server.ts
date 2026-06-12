@@ -10,7 +10,7 @@ const errorResponse = (message: string, status: number) =>
 /**
  * Authorize account-management re-authentication for the signed-in account.
  * The server pins the account and user-verification policy, then returns only
- * the prepared authentication token to the browser.
+ * the authorized authentication token to the browser.
  */
 export const POST: RequestHandler = async ({ locals }) => {
 	if (!locals.user || !locals.session) {
@@ -23,7 +23,7 @@ export const POST: RequestHandler = async ({ locals }) => {
 	}
 
 	const config = getPasslockConfig();
-	const preparedAuthentication = await PasslockServer.preparePasskeyAuthentication(
+	const authorizedAuthentication = await PasslockServer.authorizePasskeyAuthentication(
 		{
 			rpId: config.rpId,
 			userId: String(locals.user.userId),
@@ -32,17 +32,17 @@ export const POST: RequestHandler = async ({ locals }) => {
 		config
 	);
 
-	if (preparedAuthentication.failure) {
-		const status = PasslockServer.isBadRequestError(preparedAuthentication) ? 400 : 500;
-		const message = PasslockServer.isBadRequestError(preparedAuthentication)
-			? preparedAuthentication.message
-			: 'Unable to prepare passkey confirmation.';
+	if (authorizedAuthentication.failure) {
+		const status = PasslockServer.isBadRequestError(authorizedAuthentication) ? 400 : 500;
+		const message = PasslockServer.isBadRequestError(authorizedAuthentication)
+			? authorizedAuthentication.message
+			: 'Unable to authorize passkey confirmation.';
 		return errorResponse(message, status);
 	}
 
 	return json({
-		_tag: preparedAuthentication._tag,
-		expiresAt: preparedAuthentication.expiresAt,
-		authenticationToken: preparedAuthentication.authenticationToken
+		_tag: authorizedAuthentication._tag,
+		expiresAt: authorizedAuthentication.expiresAt,
+		authenticationToken: authorizedAuthentication.authenticationToken
 	});
 };

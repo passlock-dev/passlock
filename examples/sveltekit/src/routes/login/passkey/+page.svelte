@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { authenticatePasskey, preparePasskeyAuthentication } from '$lib/client/passkeys';
+	import { authenticatePasskey, authorizePasskeyAuthentication } from '$lib/client/passkeys';
 	import DevNotes from '$lib/components/DevNotes.svelte';
 	import type { PageProps } from './$types';
 	import Link from '$lib/components/Link.svelte';
@@ -16,25 +16,25 @@
 		error = '';
 		loading = true;
 
-		const config = { tenancyId: data.tenancyId, rpId: data.rpId, endpoint: data.endpoint };
+		const config = { tenancyId: data.tenancyId, endpoint: data.endpoint };
 
-		const preparedAuthentication = await preparePasskeyAuthentication({
-			url: resolve('/login/passkey/prepare'),
+		const authorizedAuthentication = await authorizePasskeyAuthentication({
+			url: resolve('/login/passkey/authorize'),
 			body: data.username ? { username: data.username } : {}
 		});
 
-		if (preparedAuthentication._tag === '@error/PreparePasskeyAuthenticationError') {
-			error = preparedAuthentication.message;
+		if (authorizedAuthentication._tag === '@error/AuthorizePasskeyAuthenticationError') {
+			error = authorizedAuthentication.message;
 			loading = false;
 			return;
 		}
 
 		// The browser prompt happens here; the server verifies the returned code
-		// and creates the local session. Known-user login prepares an
-		// account-scoped token; direct passkey login prepares an explicit
+		// and creates the local session. Known-user login authorizes an
+		// account-scoped token; direct passkey login authorizes an explicit
 		// discoverable token because no account is known yet.
 		const result = await authenticatePasskey(
-			{ authenticationToken: preparedAuthentication.authenticationToken },
+			{ authenticationToken: authorizedAuthentication.authenticationToken },
 			config
 		);
 
@@ -83,7 +83,7 @@
 {#if data.username}
 	<DevNotes>
 		<p>
-			We know which account the user wants to authenticate against, so the server prepares the
+			We know which account the user wants to authenticate against, so the server authorizes the
 			passkey authentication and sends the browser only a one-time authentication token.
 		</p>
 

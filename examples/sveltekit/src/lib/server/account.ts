@@ -4,7 +4,7 @@
 
 import { resolve } from '$app/paths';
 import { redirect } from '@sveltejs/kit';
-import { getPasskeysByUserId, type Session, type SessionUser } from './repository.js';
+import { findPasskeysByUserId, type Session, type SessionUser } from './repository.js';
 import { isRecentAuthentication } from './session.js';
 
 /**
@@ -33,7 +33,7 @@ export const getAccountContext = async (locals: App.Locals): Promise<AccountCont
 	const session = locals.session;
 	if (!user || !session) return null;
 
-	const passkeys = await getPasskeysByUserId(user.userId);
+	const passkeys = await findPasskeysByUserId(user.userId);
 	const passkeyIds = passkeys.map(({ passkeyId }) => passkeyId);
 	const hasPasskeys = passkeyIds.length > 0;
 	const reauthenticationRequired =

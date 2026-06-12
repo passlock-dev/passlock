@@ -327,7 +327,12 @@ const authorizationHeaders = (apiKey: string) => ({
 const decodeResponseJson = <A, I, R>(response: NetworkResponse, schema: Schema.Schema<A, I, R>) =>
   pipe(response.json, Effect.flatMap(Schema.decodeUnknown(schema)))
 
-/* PreparedPasskeyRegistration */
+const normalizeAuthorizedRpId = <Options extends { readonly rpId: string }>(options: Options) => ({
+  ...options,
+  rpId: options.rpId.toLowerCase(),
+})
+
+/* AuthorizedPasskeyRegistration */
 
 /**
  * Options used by your backend to authorize a passkey registration before the
@@ -335,17 +340,21 @@ const decodeResponseJson = <A, I, R>(response: NetworkResponse, schema: Schema.S
  *
  * @category Passkeys
  */
-export interface PreparePasskeyRegistrationOptions {
+export interface AuthorizePasskeyRegistrationOptions {
   /**
-   * The relying party ID for this registration. Use `"localhost"` during
-   * development, or the domain configured in the Passlock console for staging
-   * and production (e.g. `"example.com"`).
+   * The relying party ID for this registration. Your backend chooses this
+   * value for the authorized ceremony and Passlock validates it syntactically.
+   * The value is normalized to lowercase before it is sent to Passlock.
+   *
+   * Use `"localhost"` during development, or a syntactically valid domain such
+   * as `"example.com"` for staging and production. This field is independent
+   * of the browser origin that later redeems the registration token.
    */
   rpId: string
 
   /**
    * Custom user ID from your application. This becomes the immutable Passlock
-   * user ID for the passkey created from the prepared registration.
+   * user ID for the passkey created from the authorized registration.
    */
   userId: string
 
@@ -376,79 +385,87 @@ export interface PreparePasskeyRegistrationOptions {
 }
 
 /**
- * Prepared registration token returned to your backend.
+ * Authorized registration token returned to your backend.
  *
  * Send only the `registrationToken` to the browser. Treat it as bearer
- * authorization to create one passkey for the prepared user, and discard it
+ * authorization to create one passkey for the authorized user, and discard it
  * after the browser calls `@passlock/browser`'s `registerPasskey`.
  *
  * @category Passkeys
  */
-export type PreparedPasskeyRegistration = {
-  readonly _tag: "PreparedPasskeyRegistration"
+export type AuthorizedPasskeyRegistration = {
+  readonly _tag: "AuthorizedPasskeyRegistration"
   readonly expiresAt: number
   readonly registrationToken: string
 }
 
 /**
- * Type guard for {@link PreparedPasskeyRegistration}.
+ * Type guard for {@link AuthorizedPasskeyRegistration}.
  *
  * @category Passkeys
  */
-export const isPreparedPasskeyRegistration = (
+export const isAuthorizedPasskeyRegistration = (
   payload: unknown
-): payload is PreparedPasskeyRegistration =>
-  Schema.is(PasskeySchemas.PreparedPasskeyRegistration)(payload)
+): payload is AuthorizedPasskeyRegistration =>
+  Schema.is(PasskeySchemas.AuthorizedPasskeyRegistration)(payload)
 
 /**
- * Ensures the public PreparedPasskeyRegistration type matches the runtime schema.
+ * Ensures the public AuthorizedPasskeyRegistration type matches the runtime schema.
  * @internal
  */
-export type _PreparedPasskeyRegistration = satisfy<
-  typeof PasskeySchemas.PreparedPasskeyRegistration.Type,
-  PreparedPasskeyRegistration
+export type _AuthorizedPasskeyRegistration = satisfy<
+  typeof PasskeySchemas.AuthorizedPasskeyRegistration.Type,
+  AuthorizedPasskeyRegistration
 >
 
 /**
- * Prepare a server-authorized passkey registration.
+ * Authorize a passkey registration.
  *
  * Call this from your backend after deciding the user is allowed to create a
- * passkey. Return the resulting `registrationToken` to the browser, then call
- * `registerPasskey` from `@passlock/browser`.
+ * passkey and which relying party ID the WebAuthn ceremony should use. Return
+ * the resulting `registrationToken` to the browser, then call `registerPasskey`
+ * from `@passlock/browser`.
  *
- * @param options Prepared registration options, including the relying party ID,
- * application user ID, username, and optional WebAuthn ceremony settings.
+ * The `rpId` supplied by your backend is the RP ID for the authorized ceremony.
+ * It does not need to match a separate Passlock tenancy RP ID, but the
+ * browser/WebAuthn platform must still allow the current origin to use that RP
+ * ID.
+ *
+ * @param options Authorization options, including the relying party ID,
+ * application user ID, username, and optional WebAuthn ceremony settings. Do
+ * not include the browser origin; Passlock records the origin when the browser
+ * redeems the authorized token.
  * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds with a one-time prepared registration token.
+ * @returns An Effect that succeeds with a one-time authorized registration token.
  *
  * @category Passkeys
  */
-export const preparePasskeyRegistration = (
-  options: PreparePasskeyRegistrationOptions,
+export const authorizePasskeyRegistration = (
+  options: AuthorizePasskeyRegistrationOptions,
   config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<PreparedPasskeyRegistration, BadRequestError | ForbiddenError> =>
+): Effect.Effect<AuthorizedPasskeyRegistration, BadRequestError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
       const baseUrl = config.endpoint ?? "https://api.passlock.dev"
       const { tenancyId } = config
 
-      const url = new URL(`/v2/${tenancyId}/passkey/registration/prepare`, baseUrl)
+      const url = new URL(`/v2/${tenancyId}/passkey/registration/authorize`, baseUrl)
 
-      const response = yield* fetchNetwork(url, "post", options, {
+      const response = yield* fetchNetwork(url, "post", normalizeAuthorizedRpId(options), {
         headers: authorizationHeaders(config.apiKey),
       })
 
-      const encoded: PreparedPasskeyRegistration | BadRequestError | ForbiddenError =
+      const encoded: AuthorizedPasskeyRegistration | BadRequestError | ForbiddenError =
         yield* matchStatus(response, {
-          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.PreparedPasskeyRegistration),
+          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.AuthorizedPasskeyRegistration),
           orElse: (res) => decodeResponseJson(res, Schema.Union(BadRequestError, ForbiddenError)),
         })
 
       return yield* pipe(
         Match.value(encoded),
-        Match.tag("PreparedPasskeyRegistration", (data) => Effect.succeed(data)),
+        Match.tag("AuthorizedPasskeyRegistration", (data) => Effect.succeed(data)),
         Match.tag("@error/BadRequest", (err) => Effect.fail(err)),
         Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
         Match.exhaustive
@@ -463,7 +480,7 @@ export const preparePasskeyRegistration = (
     Effect.provide(fetchLayer)
   )
 
-/* PreparedPasskeyAuthentication */
+/* AuthorizedPasskeyAuthentication */
 
 /**
  * Options used by your backend to authorize a passkey authentication before
@@ -475,11 +492,16 @@ export const preparePasskeyRegistration = (
  *
  * @category Passkeys
  */
-export interface PreparePasskeyAuthenticationOptions {
+export interface AuthorizePasskeyAuthenticationOptions {
   /**
-   * The relying party ID for this authentication. Use `"localhost"` during
-   * development, or the domain configured in the Passlock console for staging
-   * and production (e.g. `"example.com"`).
+   * The relying party ID for this authentication. Your backend chooses this
+   * value for the authorized ceremony and Passlock validates it syntactically.
+   * The value is normalized to lowercase before it is sent to Passlock.
+   *
+   * Use `"localhost"` during development, or a syntactically valid domain such
+   * as `"example.com"` for staging and production. Passlock uses this RP ID
+   * when generating authentication options, including discoverable login
+   * options.
    */
   rpId: string
 
@@ -489,7 +511,7 @@ export interface PreparePasskeyAuthenticationOptions {
   userId?: string | undefined
 
   /**
-   * Existing Passlock passkey record IDs allowed for this prepared authentication.
+   * Existing Passlock passkey record IDs allowed for this authorized authentication.
    *
    * Omit this, or pass an empty array, for discoverable authentication.
    */
@@ -506,7 +528,7 @@ export interface PreparePasskeyAuthenticationOptions {
   timeout?: number | undefined
 
   /**
-   * Allow any suitable discoverable credential for the prepared relying party.
+   * Allow any suitable discoverable credential for the authorized relying party.
    *
    * Set this explicitly for "login with passkey" flows where your backend does
    * not yet know the user. Leave it unset or `false` for account-scoped flows.
@@ -514,7 +536,7 @@ export interface PreparePasskeyAuthenticationOptions {
   discoverable?: boolean | undefined
 
   /**
-   * WebAuthn mediation mode for the prepared ceremony.
+   * WebAuthn mediation mode for the authorized ceremony.
    *
    * Use `"required"` for normal authentication, or `"conditional"` for
    * autofill/conditional mediation. Conditional mediation is valid only when
@@ -524,93 +546,100 @@ export interface PreparePasskeyAuthenticationOptions {
 }
 
 /**
- * Ensures the public PreparePasskeyAuthenticationOptions type matches the runtime schema.
+ * Ensures the public AuthorizePasskeyAuthenticationOptions type matches the runtime schema.
  * @internal
  */
-export type _PreparePasskeyAuthenticationOptions = satisfy<
-  typeof PasskeySchemas.PreparePasskeyAuthenticationOptions.Type,
-  PreparePasskeyAuthenticationOptions
+export type _AuthorizePasskeyAuthenticationOptions = satisfy<
+  typeof PasskeySchemas.AuthorizePasskeyAuthenticationOptions.Type,
+  AuthorizePasskeyAuthenticationOptions
 >
 
 /**
- * Prepared authentication token returned to your backend.
+ * Authorized authentication token returned to your backend.
  *
  * Send only the `authenticationToken` to the browser. Treat it as bearer
- * authorization to start the prepared authentication ceremony, whether that
+ * authorization to start the authorized authentication ceremony, whether that
  * ceremony is account-scoped or discoverable. Discard it after the browser
  * calls `@passlock/browser`'s `authenticatePasskey`.
  *
  * @category Passkeys
  */
-export type PreparedPasskeyAuthentication = {
-  readonly _tag: "PreparedPasskeyAuthentication"
+export type AuthorizedPasskeyAuthentication = {
+  readonly _tag: "AuthorizedPasskeyAuthentication"
   readonly authenticationToken: string
   readonly expiresAt: number
 }
 
 /**
- * Type guard for {@link PreparedPasskeyAuthentication}.
+ * Type guard for {@link AuthorizedPasskeyAuthentication}.
  *
  * @category Passkeys
  */
-export const isPreparedPasskeyAuthentication = (
+export const isAuthorizedPasskeyAuthentication = (
   payload: unknown
-): payload is PreparedPasskeyAuthentication =>
-  Schema.is(PasskeySchemas.PreparedPasskeyAuthentication)(payload)
+): payload is AuthorizedPasskeyAuthentication =>
+  Schema.is(PasskeySchemas.AuthorizedPasskeyAuthentication)(payload)
 
 /**
- * Ensures the public PreparedPasskeyAuthentication type matches the runtime schema.
+ * Ensures the public AuthorizedPasskeyAuthentication type matches the runtime schema.
  * @internal
  */
-export type _PreparedPasskeyAuthentication = satisfy<
-  typeof PasskeySchemas.PreparedPasskeyAuthentication.Type,
-  PreparedPasskeyAuthentication
+export type _AuthorizedPasskeyAuthentication = satisfy<
+  typeof PasskeySchemas.AuthorizedPasskeyAuthentication.Type,
+  AuthorizedPasskeyAuthentication
 >
 
 /**
- * Prepare a server-authorized passkey authentication.
+ * Authorize a passkey authentication.
  *
  * Call this from your backend after deciding the authentication policy. For
  * known-user or re-authentication flows, provide `userId`, `allowCredentials`,
  * or both. For discoverable login, set `discoverable: true`; for autofill,
  * also set `mediation: "conditional"`.
  *
+ * The `rpId` supplied by your backend is the RP ID for the authorized ceremony.
+ * It does not need to match a separate Passlock tenancy RP ID or related-origin
+ * setting, but the browser/WebAuthn platform must still allow the current
+ * origin to use that RP ID.
+ *
  * Return the resulting `authenticationToken` to the browser, then call
  * `authenticatePasskey` from `@passlock/browser`.
  *
- * @param options Prepared authentication options, including the relying party ID
- * and either account-scoped fields or explicit discoverable authentication.
+ * @param options Authorization options, including the relying party ID
+ * and either account-scoped fields or explicit discoverable authentication. Do
+ * not include the browser origin; Passlock records the origin when the browser
+ * redeems the authorized token.
  * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds with a one-time prepared authentication token.
+ * @returns An Effect that succeeds with a one-time authorized authentication token.
  *
  * @category Passkeys
  */
-export const preparePasskeyAuthentication = (
-  options: PreparePasskeyAuthenticationOptions,
+export const authorizePasskeyAuthentication = (
+  options: AuthorizePasskeyAuthenticationOptions,
   config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<PreparedPasskeyAuthentication, BadRequestError | ForbiddenError> =>
+): Effect.Effect<AuthorizedPasskeyAuthentication, BadRequestError | ForbiddenError> =>
   pipe(
     Effect.gen(function* () {
       const baseUrl = config.endpoint ?? "https://api.passlock.dev"
       const { tenancyId } = config
 
-      const url = new URL(`/v2/${tenancyId}/passkey/authentication/prepare`, baseUrl)
+      const url = new URL(`/v2/${tenancyId}/passkey/authentication/authorize`, baseUrl)
 
-      const response = yield* fetchNetwork(url, "post", options, {
+      const response = yield* fetchNetwork(url, "post", normalizeAuthorizedRpId(options), {
         headers: authorizationHeaders(config.apiKey),
       })
 
-      const encoded: PreparedPasskeyAuthentication | BadRequestError | ForbiddenError =
+      const encoded: AuthorizedPasskeyAuthentication | BadRequestError | ForbiddenError =
         yield* matchStatus(response, {
-          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.PreparedPasskeyAuthentication),
+          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.AuthorizedPasskeyAuthentication),
           orElse: (res) => decodeResponseJson(res, Schema.Union(BadRequestError, ForbiddenError)),
         })
 
       return yield* pipe(
         Match.value(encoded),
-        Match.tag("PreparedPasskeyAuthentication", (data) => Effect.succeed(data)),
+        Match.tag("AuthorizedPasskeyAuthentication", (data) => Effect.succeed(data)),
         Match.tag("@error/BadRequest", (err) => Effect.fail(err)),
         Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
         Match.exhaustive

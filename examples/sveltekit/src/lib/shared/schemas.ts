@@ -10,14 +10,14 @@ export const RegisterPasskeySuccess = v.object({
 	_tag: v.literal('RegisterPasskeySuccess')
 });
 
-export const PreparedPasskeyRegistration = v.object({
-	_tag: v.literal('PreparedPasskeyRegistration'),
+export const AuthorizedPasskeyRegistration = v.object({
+	_tag: v.literal('AuthorizedPasskeyRegistration'),
 	expiresAt: v.number(),
 	registrationToken: v.string()
 });
 
-export const PreparedPasskeyAuthentication = v.object({
-	_tag: v.literal('PreparedPasskeyAuthentication'),
+export const AuthorizedPasskeyAuthentication = v.object({
+	_tag: v.literal('AuthorizedPasskeyAuthentication'),
 	expiresAt: v.number(),
 	authenticationToken: v.string()
 });

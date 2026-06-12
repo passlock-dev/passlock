@@ -11,9 +11,7 @@ import {
 	UpdatePasskeysSuccess
 } from '$lib/shared/schemas';
 import * as PasslockServer from '@passlock/server';
-
-const errorResponse = (message: string, status: number) =>
-	json({ _tag: '@error/Error' as const, message }, { status });
+import { errorResponse } from './shared';
 
 type PasskeyStatusResponse = v.InferOutput<typeof PasskeyStatusSchema>;
 
@@ -65,7 +63,7 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	if (principal.userId !== String(event.locals.user.userId)) {
-		return errorResponse('Passkey registration was prepared for a different account.', 403);
+		return errorResponse('Passkey registration was authorized for a different account.', 403);
 	}
 
 	const passlockPasskey = await PasslockServer.getPasskey(

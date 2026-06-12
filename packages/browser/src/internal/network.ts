@@ -109,8 +109,6 @@ export const makeRequest = <A extends object, E = never>({
   label,
 }: RequestOptions<A, E>): Micro.Micro<A, E | NetworkError> =>
   Micro.gen(function* () {
-    // when running the test in nodejs there is no browser therefore no
-    // origin header is set so we need to fake it
     const headers = {
       Accept: "application/json",
       "Content-Type": "application/json",

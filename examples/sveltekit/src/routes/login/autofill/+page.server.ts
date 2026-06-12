@@ -25,7 +25,7 @@ const schema = v.object({
 /**
  * Load the autofill login page.
  *
- * This route prepares an explicit discoverable authentication token with
+ * This route authorizes an explicit discoverable authentication token with
  * conditional mediation so the passkey prompt can appear from an
  * autofill-capable username field.
  */
@@ -35,7 +35,7 @@ export const load = (async ({ locals }) => {
 	}
 
 	const { apiKey: _apiKey, ...config } = getPasslockConfig();
-	const preparedAuthentication = await PasslockServer.preparePasskeyAuthentication(
+	const authorizedAuthentication = await PasslockServer.authorizePasskeyAuthentication(
 		{
 			rpId: config.rpId,
 			discoverable: true,
@@ -49,18 +49,18 @@ export const load = (async ({ locals }) => {
 	return {
 		form,
 		...config,
-		preparedAuthentication:
-			preparedAuthentication._tag === 'PreparedPasskeyAuthentication'
+		authorizedAuthentication:
+			authorizedAuthentication._tag === 'AuthorizedPasskeyAuthentication'
 				? {
-						_tag: preparedAuthentication._tag,
-						expiresAt: preparedAuthentication.expiresAt,
-						authenticationToken: preparedAuthentication.authenticationToken
+						_tag: authorizedAuthentication._tag,
+						expiresAt: authorizedAuthentication.expiresAt,
+						authenticationToken: authorizedAuthentication.authenticationToken
 					}
 				: undefined,
-		prepareError:
-			preparedAuthentication._tag === 'PreparedPasskeyAuthentication'
+		authorizeError:
+			authorizedAuthentication._tag === 'AuthorizedPasskeyAuthentication'
 				? undefined
-				: 'Unable to prepare passkey autofill.'
+				: 'Unable to authorize passkey autofill.'
 	};
 }) satisfies PageServerLoad;
 

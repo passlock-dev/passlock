@@ -72,6 +72,20 @@ describe(fetchOptions.name, () => {
 
 describe(startRegistration.name, () => {
   describe("given valid options", () => {
+    const optionsJSON = {
+      challenge: "dummyChallenge",
+      pubKeyCredParams: [],
+      rp: {
+        id: "old.example.com",
+        name: "Old Example",
+      },
+      user: {
+        displayName: "Test User",
+        id: "dummyUserId",
+        name: "test@example.com",
+      },
+    } satisfies PublicKeyCredentialCreationOptionsJSON
+
     const registrationHelperTest = {
       browserSupportsWebAuthn: () => true,
       startRegistration: () => Promise.resolve({} as RegistrationResponseJSON),
@@ -84,6 +98,23 @@ describe(startRegistration.name, () => {
         Micro.provideService(RegistrationHelper, registrationHelperTest),
         Micro.runPromise
       )
+    })
+
+    it("should pass the authorized RP ID through to WebAuthn", async () => {
+      const startRegistrationMock = vi.fn(() => Promise.resolve({} as RegistrationResponseJSON))
+      const registrationHelperTest = {
+        browserSupportsWebAuthn: () => true,
+        startRegistration: startRegistrationMock,
+      } satisfies typeof RegistrationHelper.Service
+
+      await pipe(
+        startRegistration(optionsJSON, {}),
+        Micro.provideService(Logger, loggerTest),
+        Micro.provideService(RegistrationHelper, registrationHelperTest),
+        Micro.runPromise
+      )
+
+      expect(startRegistrationMock).toHaveBeenCalledWith({ optionsJSON })
     })
   })
 

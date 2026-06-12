@@ -13,7 +13,13 @@ import type { Principal } from "../../principal"
 import { DuplicatePasskeyError, OtherPasskeyError, PasskeyUnsupportedError } from "../errors.js"
 
 /**
- * Options for registering a passkey from a server-prepared registration token.
+ * Options for registering a passkey from a server-authorized registration token.
+ * The backend chooses the WebAuthn RP ID when it authorizes the token; the
+ * browser redeems the token and uses the returned WebAuthn options as-is.
+ *
+ * If the current origin differs from the authorized RP ID, the browser's
+ * WebAuthn related-origin policy must allow the ceremony. The browser library
+ * does not accept or override the RP ID.
  *
  * @see {@link registerPasskey}
  *
@@ -22,7 +28,7 @@ import { DuplicatePasskeyError, OtherPasskeyError, PasskeyUnsupportedError } fro
 export interface RegistrationOptions {
   /**
    * One-time token created by your backend using `@passlock/server`'s
-   * `preparePasskeyRegistration` function.
+   * `authorizePasskeyRegistration` function.
    */
   registrationToken: string
 
@@ -230,12 +236,14 @@ export type RegistrationError =
   | NetworkError
 
 /**
- * Trigger local passkey registration from a server-prepared registration token,
+ * Trigger local passkey registration from a server-authorized registration token,
  * then save the passkey in your Passlock vault.
  *
- * Use this with `@passlock/server`'s `preparePasskeyRegistration` function so
- * your backend authorizes the passkey creation and supplies the final user ID
- * before the browser starts the WebAuthn ceremony.
+ * Use this with `@passlock/server`'s `authorizePasskeyRegistration` function so
+ * your backend authorizes the passkey creation, supplies the final user ID, and
+ * chooses the RP ID before the browser starts the WebAuthn ceremony. The
+ * browser uses the options returned by Passlock and does not send an RP ID of
+ * its own.
  *
  * @param options Registration token and optional lifecycle callback.
  * @param config Passlock tenancy and API endpoint options.

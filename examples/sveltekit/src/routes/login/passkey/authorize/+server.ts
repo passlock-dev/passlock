@@ -14,7 +14,7 @@ const errorResponse = (message: string, status: number) =>
 
 /**
  * Authorize a known-user passkey login before the browser starts the WebAuthn
- * ceremony. Only the opaque prepared authentication token is returned to the
+ * ceremony. Only the opaque authorized authentication token is returned to the
  * page.
  */
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -29,7 +29,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 
 	const config = getPasslockConfig();
-	let prepareOptions: PasslockServer.PreparePasskeyAuthenticationOptions;
+	let authorizeOptions: PasslockServer.AuthorizePasskeyAuthenticationOptions;
 
 	if (payload.output.username) {
 		const account = await getUserByEmail(payload.output.username);
@@ -42,35 +42,35 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			return errorResponse('No passkeys are linked to this account.', 400);
 		}
 
-		prepareOptions = {
+		authorizeOptions = {
 			rpId: config.rpId,
 			userId: String(account.userId),
 			userVerification: 'preferred'
 		};
 	} else {
-		prepareOptions = {
+		authorizeOptions = {
 			rpId: config.rpId,
 			discoverable: true,
 			userVerification: 'preferred'
 		};
 	}
 
-	const preparedAuthentication = await PasslockServer.preparePasskeyAuthentication(
-		prepareOptions,
+	const authorizedAuthentication = await PasslockServer.authorizePasskeyAuthentication(
+		authorizeOptions,
 		config
 	);
 
-	if (preparedAuthentication.failure) {
-		const status = PasslockServer.isBadRequestError(preparedAuthentication) ? 400 : 500;
-		const message = PasslockServer.isBadRequestError(preparedAuthentication)
-			? preparedAuthentication.message
-			: 'Unable to prepare passkey login.';
+	if (authorizedAuthentication.failure) {
+		const status = PasslockServer.isBadRequestError(authorizedAuthentication) ? 400 : 500;
+		const message = PasslockServer.isBadRequestError(authorizedAuthentication)
+			? authorizedAuthentication.message
+			: 'Unable to authorize passkey login.';
 		return errorResponse(message, status);
 	}
 
 	return json({
-		_tag: preparedAuthentication._tag,
-		expiresAt: preparedAuthentication.expiresAt,
-		authenticationToken: preparedAuthentication.authenticationToken
+		_tag: authorizedAuthentication._tag,
+		expiresAt: authorizedAuthentication.expiresAt,
+		authenticationToken: authorizedAuthentication.authenticationToken
 	});
 };

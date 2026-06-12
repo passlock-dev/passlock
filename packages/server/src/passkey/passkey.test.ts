@@ -5,20 +5,20 @@ import { expect } from "vitest"
 import { NetworkFetch } from "../network.js"
 import type { Passkey, PasskeyEncoded } from "../schemas/passkey.js"
 import type {
+  AuthorizedPasskeyAuthentication,
+  AuthorizedPasskeyRegistration,
   DeletedPasskeys,
   FindAllPasskeys,
-  PreparedPasskeyAuthentication,
-  PreparedPasskeyRegistration,
 } from "./passkey.js"
 
 import {
+  authorizePasskeyAuthentication,
+  authorizePasskeyRegistration,
   deletePasskey,
   deleteUserPasskeys,
   getPasskey,
   listPasskeys,
   listPasskeysStream,
-  preparePasskeyAuthentication,
-  preparePasskeyRegistration,
   updatePasskey,
 } from "./passkey.js"
 
@@ -120,20 +120,20 @@ const expectedDeletedPasskey = {
   },
 } as const
 
-const preparedPasskeyRegistrationResponse: PreparedPasskeyRegistration = {
-  _tag: "PreparedPasskeyRegistration",
+const authorizedPasskeyRegistrationResponse: AuthorizedPasskeyRegistration = {
+  _tag: "AuthorizedPasskeyRegistration",
   expiresAt: 1_700_000_000_000,
   registrationToken: "dummyRegistrationToken",
 }
 
-const preparedPasskeyAuthenticationResponse: PreparedPasskeyAuthentication = {
-  _tag: "PreparedPasskeyAuthentication",
+const authorizedPasskeyAuthenticationResponse: AuthorizedPasskeyAuthentication = {
+  _tag: "AuthorizedPasskeyAuthentication",
   authenticationToken: "dummyAuthenticationToken",
   expiresAt: 1_700_000_000_000,
 }
 
-describe(preparePasskeyRegistration.name, () => {
-  it.effect("should prepare a registration using the v2 endpoint", () =>
+describe(authorizePasskeyRegistration.name, () => {
+  it.effect("should authorize a registration using the v2 endpoint", () =>
     Effect.gen(function* () {
       let invokedUrl: string | undefined
       let method: string | undefined
@@ -146,16 +146,16 @@ describe(preparePasskeyRegistration.name, () => {
         authorization = init?.headers ? getHeaderValue(init.headers, "authorization") : undefined
         body = JSON.parse(String(init?.body))
         return Promise.resolve(
-          new Response(JSON.stringify(preparedPasskeyRegistrationResponse), {
+          new Response(JSON.stringify(authorizedPasskeyRegistrationResponse), {
             status: 200,
           })
         )
       })
 
       const result = yield* pipe(
-        preparePasskeyRegistration(
+        authorizePasskeyRegistration(
           {
-            rpId: "localhost",
+            rpId: "Example.COM",
             displayName: "Dummy User",
             excludeCredentials: ["existingPasskeyId"],
             timeout: 60_000,
@@ -168,14 +168,14 @@ describe(preparePasskeyRegistration.name, () => {
         )
       )
 
-      expect(result).toStrictEqual(preparedPasskeyRegistrationResponse)
+      expect(result).toStrictEqual(authorizedPasskeyRegistrationResponse)
       expect(invokedUrl).toEqual(
-        "https://api.passlock.dev/v2/dummyTenancyId/passkey/registration/prepare"
+        "https://api.passlock.dev/v2/dummyTenancyId/passkey/registration/authorize"
       )
       expect(method).toEqual("POST")
       expect(authorization).toEqual("Bearer dummyApiKey")
       expect(body).toStrictEqual({
-        rpId: "localhost",
+        rpId: "example.com",
         displayName: "Dummy User",
         excludeCredentials: ["existingPasskeyId"],
         timeout: 60_000,
@@ -187,8 +187,8 @@ describe(preparePasskeyRegistration.name, () => {
   )
 })
 
-describe(preparePasskeyAuthentication.name, () => {
-  it.effect("should prepare an authentication using the v2 endpoint", () =>
+describe(authorizePasskeyAuthentication.name, () => {
+  it.effect("should authorize an authentication using the v2 endpoint", () =>
     Effect.gen(function* () {
       let invokedUrl: string | undefined
       let method: string | undefined
@@ -201,16 +201,16 @@ describe(preparePasskeyAuthentication.name, () => {
         authorization = init?.headers ? getHeaderValue(init.headers, "authorization") : undefined
         body = JSON.parse(String(init?.body))
         return Promise.resolve(
-          new Response(JSON.stringify(preparedPasskeyAuthenticationResponse), {
+          new Response(JSON.stringify(authorizedPasskeyAuthenticationResponse), {
             status: 200,
           })
         )
       })
 
       const result = yield* pipe(
-        preparePasskeyAuthentication(
+        authorizePasskeyAuthentication(
           {
-            rpId: "localhost",
+            rpId: "Old.COM",
             allowCredentials: ["dummyPasskeyId"],
             timeout: 60_000,
             userId: "dummyUserId",
@@ -221,14 +221,14 @@ describe(preparePasskeyAuthentication.name, () => {
         )
       )
 
-      expect(result).toStrictEqual(preparedPasskeyAuthenticationResponse)
+      expect(result).toStrictEqual(authorizedPasskeyAuthenticationResponse)
       expect(invokedUrl).toEqual(
-        "https://api.passlock.dev/v2/dummyTenancyId/passkey/authentication/prepare"
+        "https://api.passlock.dev/v2/dummyTenancyId/passkey/authentication/authorize"
       )
       expect(method).toEqual("POST")
       expect(authorization).toEqual("Bearer dummyApiKey")
       expect(body).toStrictEqual({
-        rpId: "localhost",
+        rpId: "old.com",
         allowCredentials: ["dummyPasskeyId"],
         timeout: 60_000,
         userId: "dummyUserId",
@@ -237,21 +237,21 @@ describe(preparePasskeyAuthentication.name, () => {
     })
   )
 
-  it.effect("should prepare a discoverable conditional authentication", () =>
+  it.effect("should authorize a discoverable conditional authentication", () =>
     Effect.gen(function* () {
       let body: unknown
 
       const TestLayer = Layer.succeed(NetworkFetch, (_url, init) => {
         body = JSON.parse(String(init?.body))
         return Promise.resolve(
-          new Response(JSON.stringify(preparedPasskeyAuthenticationResponse), {
+          new Response(JSON.stringify(authorizedPasskeyAuthenticationResponse), {
             status: 200,
           })
         )
       })
 
       const result = yield* pipe(
-        preparePasskeyAuthentication(
+        authorizePasskeyAuthentication(
           {
             rpId: "localhost",
             discoverable: true,
@@ -264,7 +264,7 @@ describe(preparePasskeyAuthentication.name, () => {
         )
       )
 
-      expect(result).toStrictEqual(preparedPasskeyAuthenticationResponse)
+      expect(result).toStrictEqual(authorizedPasskeyAuthenticationResponse)
       expect(body).toStrictEqual({
         rpId: "localhost",
         discoverable: true,

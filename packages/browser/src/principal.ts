@@ -15,7 +15,7 @@ export type Principal = {
    * User identifier associated with the passkey.
    *
    * For registration, this is the user ID supplied by your backend when it
-   * prepared the registration.
+   * authorized the registration.
    */
   userId: string
 }

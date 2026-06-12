@@ -96,6 +96,11 @@ describe(fetchOptions.name, () => {
 
 describe(startAuthentication.name, () => {
   describe("given valid options", () => {
+    const optionsJSON = {
+      challenge: "dummyChallenge",
+      rpId: "old.example.com",
+    } satisfies PublicKeyCredentialRequestOptionsJSON
+
     const authenticationHelperTest = {
       browserSupportsWebAuthn: () => true,
       startAuthentication: () => Promise.resolve({} as AuthenticationResponseJSON),
@@ -110,6 +115,28 @@ describe(startAuthentication.name, () => {
         Micro.provideService(AuthenticationHelper, authenticationHelperTest),
         Micro.runPromise
       )
+    })
+
+    it("should pass the authorized RP ID through to WebAuthn", async () => {
+      const startAuthenticationMock = vi.fn(() => Promise.resolve({} as AuthenticationResponseJSON))
+      const authenticationHelperTest = {
+        browserSupportsWebAuthn: () => true,
+        startAuthentication: startAuthenticationMock,
+      } satisfies typeof AuthenticationHelper.Service
+
+      await pipe(
+        startAuthentication(optionsJSON, {
+          useBrowserAutofill: false,
+        }),
+        Micro.provideService(Logger, loggerTest),
+        Micro.provideService(AuthenticationHelper, authenticationHelperTest),
+        Micro.runPromise
+      )
+
+      expect(startAuthenticationMock).toHaveBeenCalledWith({
+        optionsJSON,
+        useBrowserAutofill: false,
+      })
     })
   })
 
@@ -228,7 +255,7 @@ describe(authenticatePasskey.name, () => {
     },
   }
 
-  it("should authenticate with a prepared authentication token", async () => {
+  it("should authenticate with a authorized authentication token", async () => {
     fetchMock.mockGlobal().postOnce(optionsRoute, optionsResponse)
     fetchMock.mockGlobal().postOnce(verificationRoute, verificationResponse)
 

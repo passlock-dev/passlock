@@ -5,7 +5,7 @@ import type { PageServerLoad } from './$types';
 
 /**
  * Load the passkey login page. A known email address lets the browser request
- * a prepared authentication token before starting the WebAuthn ceremony.
+ * an authorized authentication token before starting the WebAuthn ceremony.
  */
 export const load = (async ({ locals, url }) => {
 	if (locals.user) {

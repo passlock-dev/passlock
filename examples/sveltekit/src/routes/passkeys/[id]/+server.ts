@@ -5,9 +5,7 @@ import * as PassslockServer from '@passlock/server';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import * as v from 'valibot';
-
-const errorResponse = (message: string, status: number) =>
-	json({ _tag: '@error/Error' as const, message }, { status });
+import { errorResponse } from '../shared';
 
 const PasskeyIdParam = v.pipe(v.string(), v.trim(), v.minLength(8));
 

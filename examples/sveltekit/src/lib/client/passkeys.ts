@@ -20,8 +20,8 @@ import {
 	DeleteUserPasskeysSuccess,
 	Error,
 	PasskeyStatusSuccess,
-	PreparedPasskeyAuthentication,
-	PreparedPasskeyRegistration,
+	AuthorizedPasskeyAuthentication,
+	AuthorizedPasskeyRegistration,
 	UpdatePasskeysSuccess
 } from '$lib/shared/schemas';
 import { parse, variant } from 'valibot';
@@ -30,7 +30,6 @@ import { fetchData } from './network';
 
 export type PasslockClientConfig = {
 	tenancyId: string;
-	rpId: string;
 	endpoint?: string | undefined;
 };
 
@@ -49,26 +48,26 @@ export type PasslockClientConfig = {
 export const registerPasskey = async (config: PasslockClientConfig) => {
 	const ERROR_TAG = '@error/CreatePasskeyError' as const;
 
-	const preparedRegistration = await fetchData({
+	const authorizedRegistration = await fetchData({
 		url: resolve('/passkeys/registration'),
 		method: 'POST',
 		body: {},
-		on2xx: (jsonResponse) => parse(PreparedPasskeyRegistration, jsonResponse),
+		on2xx: (jsonResponse) => parse(AuthorizedPasskeyRegistration, jsonResponse),
 		orElse: (jsonResponse) => {
 			const { message } = parse(Error, jsonResponse);
 			return { _tag: ERROR_TAG, message } as const;
 		}
 	});
 
-	if (preparedRegistration._tag === ERROR_TAG) return preparedRegistration;
+	if (authorizedRegistration._tag === ERROR_TAG) return authorizedRegistration;
 
 	// WebAuthn registration must happen in the browser.
 	const clientResult = await PasslockBrowser.registerPasskey(
-		{ registrationToken: preparedRegistration.registrationToken },
+		{ registrationToken: authorizedRegistration.registrationToken },
 		config
 	);
 
-	// The browser matched one of the prepared excluded credentials to a passkey
+	// The browser matched one of the authorized excluded credentials to a passkey
 	// that is already present on this device.
 	if (clientResult._tag === '@error/DuplicatePasskey') {
 		const message = 'Passkey already available on this device';
@@ -94,7 +93,7 @@ export const registerPasskey = async (config: PasslockClientConfig) => {
 
 export type AuthenticatePasskeyInput = {
 	/**
-	 * Server-prepared authentication token. The browser receives only this token;
+	 * Server-authorized authentication token. The browser receives only this token;
 	 * the backend decides whether the ceremony is account-scoped, discoverable,
 	 * or conditional/autofill.
 	 */
@@ -113,14 +112,14 @@ export type AuthenticatePasskeyInput = {
 	onEvent?: (event: PasslockBrowser.AuthenticationEvent) => void;
 };
 
-export const preparePasskeyAuthentication = async (input: { url: string; body?: object }) => {
-	const ERROR_TAG = '@error/PreparePasskeyAuthenticationError' as const;
+export const authorizePasskeyAuthentication = async (input: { url: string; body?: object }) => {
+	const ERROR_TAG = '@error/AuthorizePasskeyAuthenticationError' as const;
 
 	return fetchData({
 		url: input.url,
 		method: 'POST',
 		body: input.body ?? {},
-		on2xx: (jsonResponse) => parse(PreparedPasskeyAuthentication, jsonResponse),
+		on2xx: (jsonResponse) => parse(AuthorizedPasskeyAuthentication, jsonResponse),
 		orElse: (jsonResponse) => {
 			const { message } = parse(Error, jsonResponse);
 			return { _tag: ERROR_TAG, message } as const;

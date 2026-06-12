@@ -127,7 +127,7 @@ export class OtherPasskeyError extends Error {
 }
 
 /**
- * Raised when a prepared registration excludes a credential that the device
+ * Raised when a authorized registration excludes a credential that the device
  * recognises, meaning the user already has one of those passkeys on the
  * current device.
  *
@@ -140,7 +140,7 @@ export const isDuplicatePasskeyError = (payload: unknown): payload is DuplicateP
 }
 
 /**
- * Raised when a prepared registration excludes a credential that the device
+ * Raised when a authorized registration excludes a credential that the device
  * recognises, meaning the user already has one of those passkeys on the
  * current device.
  *
@@ -156,8 +156,6 @@ export class DuplicatePasskeyError extends Error {
 }
 
 /**
- * Local passkey removal could not be prepared.
- *
  * This usually means deletion signalling is unsupported on the current device
  * or the required credential metadata could not be loaded.
  *
@@ -170,8 +168,6 @@ export const isDeleteError = (payload: unknown): payload is DeleteError => {
 }
 
 /**
- * Local passkey removal could not be prepared.
- *
  * This usually means deletion signalling is unsupported on the current device
  * or the required credential metadata could not be loaded.
  *
@@ -198,8 +194,6 @@ export class DeleteError extends Error {
 /* Pruning error */
 
 /**
- * Local passkey pruning could not be prepared.
- *
  * This usually means accepted-credentials signalling is unsupported on the
  * current device or the required credential metadata could not be loaded.
  *
@@ -212,8 +206,6 @@ export const isPruningError = (payload: unknown): payload is PruningError => {
 }
 
 /**
- * Local passkey pruning could not be prepared.
- *
  * This usually means accepted-credentials signalling is unsupported on the
  * current device or the required credential metadata could not be loaded.
  *
@@ -235,8 +227,6 @@ export class PruningError extends Error {
 }
 
 /**
- * Local passkey updates could not be prepared.
- *
  * This usually means update signalling is unsupported on the current device
  * or the required credential metadata could not be loaded.
  *
@@ -249,8 +239,6 @@ export const isUpdateError = (payload: unknown): payload is UpdateError => {
 }
 
 /**
- * Local passkey updates could not be prepared.
- *
  * This usually means update signalling is unsupported on the current device
  * or the required credential metadata could not be loaded.
  *
