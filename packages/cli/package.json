@@ -80,7 +80,7 @@
     "sort-package-json": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "^4.1.8"
   },
   "packageManager": "pnpm@11.6.0",
   "engines": {

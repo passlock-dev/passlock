@@ -18,13 +18,9 @@ catalog:
   vitest: ^4.1.8
 
 overrides:
-  qs: 6.15.0
-  esbuild@<=0.24.2: ">=0.25.0"
-  cookie@<0.7.0: ">=0.7.0"
-  minimatch@>=10.0.0 <10.2.3: ">=10.2.3"
-  postcss@<8.5.10: ">=8.5.10"
-  brace-expansion@>=5.0.0 <5.0.6: ^5.0.6
-  ws@>=8.0.0 <8.20.1: ^8.20.1
+  cookie@<0.7.0: ^0.7.0
+  esbuild@<=0.24.2: ^0.24.3
+  esbuild@>=0.17.0 <0.28.1: ^0.28.1
   vitest: "catalog:"
 
 linkWorkspacePackages: true
@@ -37,3 +33,9 @@ allowBuilds:
   msgpackr-extract: true
 
 minimumReleaseAge: 1440
+
+minimumReleaseAgeExclude:
+  - joi@17.13.4
+  - esbuild@0.28.1
+  - esbuild@0.24.3
+  - cookie@0.7.0
