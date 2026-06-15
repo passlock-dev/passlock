@@ -22,41 +22,37 @@ export const AuthorizedPasskeyAuthentication = v.object({
 	authenticationToken: v.string()
 });
 
-/**
- * Credential payload returned by the server when the browser should update the
- * username/display name shown for a passkey.
- */
-export const UpdatedCredential = v.object({
-	rpId: v.string(),
-	userId: v.string(),
-	username: v.string(),
-	displayName: v.string()
-});
-
-export const DeletedCredential = v.object({
-	credentialId: v.string(),
-	userId: v.string(),
-	rpId: v.string()
+export const PasskeyManagementWarning = v.object({
+	code: v.picklist([
+		'PASSKEY_NOT_FOUND',
+		'NO_PASSKEYS_FOUND',
+		'BROWSER_SIGNAL_UNSUPPORTED',
+		'BROWSER_SIGNAL_FAILED',
+		'EMPTY_SIGNAL_PAYLOAD'
+	]),
+	message: v.string(),
+	passkeyId: v.optional(v.string())
 });
 
 export const UpdatePasskeysSuccess = v.object({
-	_tag: v.literal('UpdatePasskeySuccess'),
-	credentials: v.pipe(v.array(UpdatedCredential), v.readonly())
-});
-
-export const DeletePasskeyWarning = v.object({
-	_tag: v.literal('@warning/PasskeyNotFound'),
-	message: v.string()
+	_tag: v.literal('PreparedPasskeyUpdate'),
+	updatePasskeysToken: v.string(),
+	expiresAt: v.number(),
+	warnings: v.pipe(v.array(PasskeyManagementWarning), v.readonly())
 });
 
 export const DeletePasskeySuccess = v.object({
-	_tag: v.literal('DeletePasskeySuccess'),
-	deleted: DeletedCredential
+	_tag: v.literal('PreparedPasskeyDeletion'),
+	deletePasskeysToken: v.string(),
+	expiresAt: v.number(),
+	warnings: v.pipe(v.array(PasskeyManagementWarning), v.readonly())
 });
 
 export const DeleteUserPasskeysSuccess = v.object({
-	_tag: v.literal('DeleteUserPasskeysSuccess'),
-	deleted: v.pipe(v.array(DeletedCredential), v.readonly())
+	_tag: v.literal('PreparedPasskeyDeletion'),
+	deletePasskeysToken: v.string(),
+	expiresAt: v.number(),
+	warnings: v.pipe(v.array(PasskeyManagementWarning), v.readonly())
 });
 
 export const PasskeyStatusSuccess = v.object({

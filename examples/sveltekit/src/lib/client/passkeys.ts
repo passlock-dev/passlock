@@ -16,7 +16,6 @@ import * as PasslockBrowser from '@passlock/browser';
 
 import {
 	DeletePasskeySuccess,
-	DeletePasskeyWarning,
 	DeleteUserPasskeysSuccess,
 	Error,
 	PasskeyStatusSuccess,
@@ -24,7 +23,7 @@ import {
 	AuthorizedPasskeyRegistration,
 	UpdatePasskeysSuccess
 } from '$lib/shared/schemas';
-import { parse, variant } from 'valibot';
+import { parse } from 'valibot';
 import { resolve } from '$app/paths';
 import { fetchData } from './network';
 
@@ -209,38 +208,36 @@ export type UpdatePasskeysInput = {
  * - the user's device or password manager, which shows the username and
  *   display name during sign-in
  *
- * The server updates the first two; the browser then uses the credential list
- * returned by the server to request the local update.
+ * The server updates the first two and returns a short-lived token. The browser
+ * exchanges that token to request the local update.
  */
-export const updateUserPasskeys = async (input: UpdatePasskeysInput) => {
+export const updateUserPasskeys = async (
+	input: UpdatePasskeysInput,
+	config: PasslockClientConfig
+) => {
 	const ERROR_TAG = '@error/UpdatePasskeyError';
 	const { username, givenName, familyName } = input;
 	const displayName = `${givenName} ${familyName}`.trim();
 
-	// `PATCH /passkeys` updates the Passlock vault and the local SQLite record.
+	// `PATCH /passkeys` updates the Passlock vault and the local SQLite record,
+	// then returns a prepared token for browser-side signal instructions.
 	const serverResult = await fetchData({
 		url: resolve('/passkeys'),
 		method: 'PATCH',
 		body: { username, displayName },
-		on2xx: (jsonResponse) => {
-			const { credentials } = parse(UpdatePasskeysSuccess, jsonResponse);
-			return credentials.length === 0
-				? ({ _tag: ERROR_TAG, message: 'No passkeys found' } as const)
-				: ({ _tag: 'Credentials', credentials } as const);
-		},
+		on2xx: (jsonResponse) => parse(UpdatePasskeysSuccess, jsonResponse),
 		orElse: (jsonResponse) => {
 			const { message } = parse(Error, jsonResponse);
 			return { _tag: ERROR_TAG, message } as const;
 		}
 	});
 
-	// Only the credential payload contains enough information for the browser to
-	// request a local device update.
-	if (serverResult._tag !== 'Credentials') return serverResult;
+	if (serverResult._tag === ERROR_TAG) return serverResult;
 
-	// This step is purely local to the browser/device, so no tenancy config is
-	// required.
-	const clientResult = await PasslockBrowser.updatePasskeyUsernames(serverResult.credentials);
+	const clientResult = await PasslockBrowser.updatePasskeys(
+		{ updatePasskeysToken: serverResult.updatePasskeysToken },
+		config
+	);
 
 	if (clientResult.success) return { _tag: 'UpdatePasskeySuccess' } as const;
 
@@ -258,20 +255,17 @@ export type DeletePasskeyInput = {
  * best-effort browser-side part. The account should stop trusting the passkey
  * even if the browser cannot remove it from the local password manager.
  */
-export const deletePasskey = async (input: DeletePasskeyInput) => {
+export const deletePasskey = async (input: DeletePasskeyInput, config: PasslockClientConfig) => {
 	const ERROR_TAG = '@error/DeletePasskeyError';
 	const PAUSED_TAG = '@warning/PasskeyDeletePaused';
 
-	// The endpoint can return either a successful deletion payload or a warning
-	// that the server-side record was already gone.
-	const EndpointResponse = variant('_tag', [DeletePasskeySuccess, DeletePasskeyWarning]);
-
-	// `DELETE /passkeys/[id]` removes the server-side association first.
+	// `DELETE /passkeys/[id]` removes the server-side association first and
+	// returns a prepared token for browser-side cleanup.
 	const serverResult = await fetchData({
 		url: resolve(`/passkeys/${encodeURIComponent(input.passkeyId)}`),
 		method: 'DELETE',
 		body: {},
-		on2xx: (jsonResponse) => parse(EndpointResponse, jsonResponse),
+		on2xx: (jsonResponse) => parse(DeletePasskeySuccess, jsonResponse),
 		orElse: (jsonResponse) => {
 			const { message } = parse(Error, jsonResponse);
 			return { _tag: ERROR_TAG, message } as const;
@@ -281,14 +275,23 @@ export const deletePasskey = async (input: DeletePasskeyInput) => {
 	// If the server still trusts the credential, we must stop here.
 	if (serverResult._tag === '@error/DeletePasskeyError') return serverResult;
 
-	// The local device is already in the desired state from the server's point
-	// of view, so the caller can treat this as a warning rather than a failure.
-	if (serverResult._tag === '@warning/PasskeyNotFound') return serverResult;
-
 	// Local device deletion is best-effort and browser-dependent.
-	const clientResult = await PasslockBrowser.deletePasskey(serverResult.deleted);
+	const clientResult = await PasslockBrowser.deletePasskeys(
+		{ deletePasskeysToken: serverResult.deletePasskeysToken },
+		config
+	);
 
-	if (clientResult.success) return { _tag: 'DeleteSuccess' } as const;
+	if (clientResult.success && clientResult.warnings.length === 0) {
+		return { _tag: 'DeleteSuccess' } as const;
+	}
+
+	if (clientResult.success) {
+		const message =
+			'The passkey was removed from your account, but browser cleanup returned a warning. ' +
+			'Check your device password manager if the passkey still appears.';
+
+		return { _tag: PAUSED_TAG, message } as const;
+	}
 
 	if (clientResult.code === 'PASSKEY_DELETION_UNSUPPORTED') {
 		const message =
@@ -306,12 +309,11 @@ export const deletePasskey = async (input: DeletePasskeyInput) => {
 /**
  * Delete every passkey associated with the current account.
  *
- * `DELETE /passkeys` removes the trusted server-side records and returns the
- * deleted credentials for the current user. The browser then tries to remove
- * those credentials from the device. Browser limitations are reported as
- * warnings so account deletion can continue.
+ * `DELETE /passkeys` removes the trusted server-side records and returns a
+ * short-lived token. The browser exchanges that token to request local cleanup.
+ * Browser limitations are reported as warnings so account deletion can continue.
  */
-export const deleteAccountPasskeys = async () => {
+export const deleteAccountPasskeys = async (config: PasslockClientConfig) => {
 	const ERROR_TAG = '@error/DeletePasskeyError';
 	const PAUSED_TAG = '@warning/PasskeyDeletePaused';
 
@@ -327,13 +329,28 @@ export const deleteAccountPasskeys = async () => {
 	});
 
 	// If this fails, the account would still trust one or more passkeys.
-	if (serverResult._tag !== 'DeleteUserPasskeysSuccess') {
+	if (serverResult._tag === ERROR_TAG) {
 		return serverResult;
 	}
 
-	const clientResult = await PasslockBrowser.deleteUserPasskeys(serverResult.deleted);
+	const clientResult = await PasslockBrowser.deletePasskeys(
+		{ deletePasskeysToken: serverResult.deletePasskeysToken },
+		config
+	);
 
-	if (clientResult.success) return { _tag: 'DeleteSuccess' } as const;
+	if (clientResult.success && clientResult.warnings.length === 0) {
+		return { _tag: 'DeleteSuccess' } as const;
+	}
+
+	if (clientResult.success) {
+		return {
+			_tag: PAUSED_TAG,
+			message:
+				'Passkeys were removed from your account, but browser cleanup returned warnings. ' +
+				'Remove any remaining passkeys manually from your device password manager after ' +
+				'the account is deleted.'
+		} as const;
+	}
 
 	if (clientResult.code === 'PASSKEY_DELETION_UNSUPPORTED') {
 		return {

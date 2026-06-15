@@ -50,19 +50,13 @@ describe("public surface", () => {
       >
     >
     type _3 = Assert<
-      IsEqual<Awaited<ReturnType<typeof root.updatePasskey>>, Result<UpdateSuccess, UpdateError>>
+      IsEqual<Awaited<ReturnType<typeof root.updatePasskeys>>, Result<UpdateSuccess, UpdateError>>
     >
     type _4 = Assert<
-      IsEqual<Awaited<ReturnType<typeof root.deletePasskey>>, Result<DeleteSuccess, DeleteError>>
+      IsEqual<Awaited<ReturnType<typeof root.deletePasskeys>>, Result<DeleteSuccess, DeleteError>>
     >
     type _5 = Assert<
       IsEqual<Awaited<ReturnType<typeof root.prunePasskeys>>, Result<PruningSuccess, PruningError>>
-    >
-    type _6 = Assert<
-      IsEqual<
-        Awaited<ReturnType<typeof root.deleteUserPasskeys>>,
-        Result<DeleteSuccess, DeleteError>
-      >
     >
 
     expect(true).toBe(true)
@@ -72,7 +66,7 @@ describe("public surface", () => {
     type IsEqual<A, B> =
       (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
     type Assert<T extends true> = T
-    type DeleteResult = Awaited<ReturnType<typeof root.deletePasskey>>
+    type DeleteResult = Awaited<ReturnType<typeof root.deletePasskeys>>
     type SuccessBranch = Extract<DeleteResult, { success: true }>
     type ErrorBranch = Extract<DeleteResult, { success: false }>
 
@@ -91,10 +85,8 @@ describe("public surface", () => {
     expect(passlock.config).toEqual(config)
     expectTypeOf(passlock.registerPasskey).toBeFunction()
     expectTypeOf(passlock.authenticatePasskey).toBeFunction()
-    expectTypeOf(passlock.updatePasskey).toBeFunction()
-    expectTypeOf(passlock.updatePasskeyUsernames).toBeFunction()
-    expectTypeOf(passlock.deletePasskey).toBeFunction()
-    expectTypeOf(passlock.deleteUserPasskeys).toBeFunction()
+    expectTypeOf(passlock.updatePasskeys).toBeFunction()
+    expectTypeOf(passlock.deletePasskeys).toBeFunction()
     expectTypeOf(passlock.prunePasskeys).toBeFunction()
   })
 

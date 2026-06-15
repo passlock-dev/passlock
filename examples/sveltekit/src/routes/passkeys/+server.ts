@@ -1,4 +1,4 @@
-import { getPasslockConfig, updatePasskeyUsernames } from '$lib/server/passkeys.js';
+import { getPasslockConfig, updatePasskeys } from '$lib/server/passkeys.js';
 import { getAccountContext } from '$lib/server/account.js';
 import { createPasskey } from '$lib/server/repository.js';
 import { json } from '@sveltejs/kit';
@@ -108,7 +108,7 @@ type UpdatePasskeysSuccess = v.InferOutput<typeof UpdatePasskeysSuccess>;
  * Update the account name shown for all passkeys linked to the current user.
  *
  * This handler updates the trusted server-side sources of truth. The browser
- * then uses the returned credential payload to request a local device update.
+ * then exchanges the returned token to request a local device update.
  */
 export const PATCH: RequestHandler = async (event) => {
 	if (!event.locals.user) {
@@ -122,7 +122,7 @@ export const PATCH: RequestHandler = async (event) => {
 	}
 
 	// Keep the Passlock vault and the local SQLite view of passkeys aligned.
-	const vaultResult = await updatePasskeyUsernames({
+	const vaultResult = await updatePasskeys({
 		userId: event.locals.user.userId,
 		...payload.output
 	});
@@ -131,11 +131,11 @@ export const PATCH: RequestHandler = async (event) => {
 		return errorResponse('Unable to update passkeys', 500);
 	}
 
-	// The client uses this payload to update passkey metadata on the user's
-	// device or password manager.
 	const response: UpdatePasskeysSuccess = {
-		_tag: 'UpdatePasskeySuccess',
-		credentials: vaultResult.credentials
+		_tag: 'PreparedPasskeyUpdate',
+		updatePasskeysToken: vaultResult.updatePasskeysToken,
+		expiresAt: vaultResult.expiresAt,
+		warnings: vaultResult.warnings
 	};
 
 	return json(response);
@@ -170,7 +170,7 @@ export const DELETE: RequestHandler = async (event) => {
 	}
 
 	// Account deletion reuses this endpoint to clear server-side passkeys first.
-	const vaultResult = await PasslockServer.deleteUserPasskeys(
+	const vaultResult = await PasslockServer.deletePasskeys(
 		{
 			userId: String(context.user.userId)
 		},
@@ -183,8 +183,10 @@ export const DELETE: RequestHandler = async (event) => {
 	}
 
 	const response: DeleteUserPasskeysSuccess = {
-		_tag: 'DeleteUserPasskeysSuccess',
-		deleted: vaultResult.deleted
+		_tag: 'PreparedPasskeyDeletion',
+		deletePasskeysToken: vaultResult.deletePasskeysToken,
+		expiresAt: vaultResult.expiresAt,
+		warnings: vaultResult.warnings
 	};
 
 	return json(response);

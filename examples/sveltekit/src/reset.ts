@@ -13,11 +13,18 @@ const findAllPasskeys = async () => {
 };
 
 const deletePasskeys = async (passkeyIds: Array<string>) => {
-	for (const passkeyId of passkeyIds) {
-		const result = await PasslockServer.deletePasskey({ passkeyId }, getPasslockConfig());
-		if (!result.success) {
-			log.warn('Warning: passkey no longer exists in Passlock vault');
+	if (passkeyIds.length === 0) return;
+
+	const result = await PasslockServer.deletePasskeys({ passkeyIds }, getPasslockConfig());
+	if (!result.success) {
+		log.warn('Warning: unable to delete passkeys from Passlock vault');
+	} else {
+		for (const warning of result.warnings) {
+			log.warn(warning.message);
 		}
+	}
+
+	for (const passkeyId of passkeyIds) {
 		await db.delete(passkeysTable).where(eq(passkeysTable.passkeyId, passkeyId));
 		console.log(`Deleted passkey ${passkeyId}`);
 	}

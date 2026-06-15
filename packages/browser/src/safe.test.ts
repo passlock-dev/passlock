@@ -1,13 +1,8 @@
 import { Micro } from "effect"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import {
-  deletePasskey,
-  deleteUserPasskeys,
-  isDeleteError,
-  isDeleteSuccess,
-  type Logger,
-} from "./index.js"
+import { deletePasskeys, isDeleteError, isDeleteSuccess, type Logger } from "./index.js"
 
+const originalFetch = globalThis.fetch
 const originalPublicKeyCredential = globalThis.PublicKeyCredential
 
 const loggerTest = {
@@ -17,27 +12,29 @@ const loggerTest = {
   logWarn: () => Micro.void,
 } satisfies typeof Logger.Service
 
-const deleteOptions = {
-  credentialId: "dummyCredentialId",
-  rpId: "localhost",
-  userId: "dummyUserId",
+const config = {
+  endpoint: "https://example.test",
+  tenancyId: "dummyTenancyId",
 } as const
 
-const deleteCredentials = [
-  {
-    credentialId: "dummyCredentialId",
-    rpId: "localhost",
-    userId: "dummyUserId",
-  },
-  {
-    credentialId: "dummyCredentialId2",
-    rpId: "localhost",
-    userId: "dummyUserId",
-  },
-] as const
+const jsonResponse = (payload: unknown, status = 200) =>
+  new Response(JSON.stringify(payload), {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    status,
+  })
 
 const setPublicKeyCredential = (value: unknown) => {
   Object.defineProperty(globalThis, "PublicKeyCredential", {
+    configurable: true,
+    value,
+    writable: true,
+  })
+}
+
+const setFetch = (value: typeof fetch) => {
+  Object.defineProperty(globalThis, "fetch", {
     configurable: true,
     value,
     writable: true,
@@ -51,18 +48,37 @@ afterEach(() => {
     setPublicKeyCredential(originalPublicKeyCredential)
   }
 
+  setFetch(originalFetch)
   vi.restoreAllMocks()
 })
 
 describe("safe result envelopes", () => {
   it("decorates successful delete results without breaking _tag narrowing", async () => {
     const signalUnknownCredential = vi.fn(() => Promise.resolve())
+    const fetchMock = vi.fn(() =>
+      Promise.resolve(
+        jsonResponse({
+          _tag: "PasskeyDeletionInstructions",
+          instructions: [
+            {
+              credentialId: "dummyCredentialId",
+              rpId: "localhost",
+              userId: "dummyUserId",
+            },
+          ],
+          warnings: [],
+        })
+      )
+    )
 
-    setPublicKeyCredential({
-      signalUnknownCredential,
-    })
+    setPublicKeyCredential({ signalUnknownCredential })
+    setFetch(fetchMock as typeof fetch)
 
-    const result = await deletePasskey(deleteOptions, undefined, loggerTest)
+    const result = await deletePasskeys(
+      { deletePasskeysToken: "dummyDeleteToken" },
+      config,
+      loggerTest
+    )
 
     expect(result.success).toBe(true)
     expect(result.failure).toBe(false)
@@ -72,16 +88,13 @@ describe("safe result envelopes", () => {
 
     expect(result.value).toBe(result)
     expect(result._tag).toEqual("DeleteSuccess")
+    expect(result.warnings).toEqual([])
     expect(isDeleteSuccess(result)).toBe(true)
-    await vi.waitFor(() =>
-      expect(signalUnknownCredential).toHaveBeenCalledWith(
-        expect.objectContaining({
-          credentialId: "dummyCredentialId",
-          rpId: "localhost",
-          userId: "dummyUserId",
-        })
-      )
-    )
+    expect(signalUnknownCredential).toHaveBeenCalledWith({
+      credentialId: "dummyCredentialId",
+      rpId: "localhost",
+      userId: "dummyUserId",
+    })
     expect(Object.keys(result)).not.toContain("success")
     expect(Object.keys(result)).not.toContain("failure")
     expect(Object.keys(result)).not.toContain("value")
@@ -91,9 +104,27 @@ describe("safe result envelopes", () => {
   })
 
   it("decorates delete errors without breaking _tag narrowing", async () => {
-    setPublicKeyCredential(undefined)
+    const signalUnknownCredential = vi.fn(() => Promise.resolve())
+    const fetchMock = vi.fn(() =>
+      Promise.resolve(
+        jsonResponse(
+          {
+            _tag: "@error/BadRequest",
+            message: "Invalid or expired delete token",
+          },
+          400
+        )
+      )
+    )
 
-    const result = await deletePasskey(deleteOptions, undefined, loggerTest)
+    setPublicKeyCredential({ signalUnknownCredential })
+    setFetch(fetchMock as typeof fetch)
+
+    const result = await deletePasskeys(
+      { deletePasskeysToken: "dummyDeleteToken" },
+      config,
+      loggerTest
+    )
 
     expect(result.success).toBe(false)
     expect(result.failure).toBe(true)
@@ -104,47 +135,14 @@ describe("safe result envelopes", () => {
     expect(result.error).toBe(result)
     expect(result._tag).toEqual("@error/Delete")
     expect(isDeleteError(result)).toBe(true)
-    expect(result.error.code).toEqual("PASSKEY_DELETION_UNSUPPORTED")
+    expect(result.error.code).toEqual("OTHER_ERROR")
+    expect(result.error.message).toEqual("Invalid or expired delete token")
+    expect(signalUnknownCredential).not.toHaveBeenCalled()
     expect(Object.keys(result)).not.toContain("success")
     expect(Object.keys(result)).not.toContain("failure")
     expect(Object.keys(result)).not.toContain("error")
     expect(JSON.stringify(result)).not.toContain('"success"')
     expect(JSON.stringify(result)).not.toContain('"failure"')
     expect(JSON.stringify(result)).not.toContain('"error"')
-  })
-
-  it("decorates successful bulk delete results without breaking _tag narrowing", async () => {
-    const signalUnknownCredential = vi.fn(() => Promise.resolve())
-
-    setPublicKeyCredential({
-      signalUnknownCredential,
-    })
-
-    const result = await deleteUserPasskeys(deleteCredentials, loggerTest)
-
-    expect(result.success).toBe(true)
-    expect(result.failure).toBe(false)
-    if (!result.success) {
-      throw new Error("Expected a successful result")
-    }
-
-    expect(result.value).toBe(result)
-    expect(result._tag).toEqual("DeleteSuccess")
-    expect(isDeleteSuccess(result)).toBe(true)
-    await vi.waitFor(() => expect(signalUnknownCredential).toHaveBeenCalledTimes(2))
-    expect(signalUnknownCredential).toHaveBeenNthCalledWith(
-      1,
-      expect.objectContaining(deleteCredentials[0])
-    )
-    expect(signalUnknownCredential).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining(deleteCredentials[1])
-    )
-    expect(Object.keys(result)).not.toContain("success")
-    expect(Object.keys(result)).not.toContain("failure")
-    expect(Object.keys(result)).not.toContain("value")
-    expect(JSON.stringify(result)).not.toContain('"success"')
-    expect(JSON.stringify(result)).not.toContain('"failure"')
-    expect(JSON.stringify(result)).not.toContain('"value"')
   })
 })

@@ -1,9 +1,9 @@
 /**
- * These methods and functions are **_safe_** i.e. they return wrappers over
- * success and error payloads. Use result.success or result.failure
+ * These methods and functions are **_safe_**; they return wrappers over
+ * success and error payloads. Use `result.success` or `result.failure`
  * to branch between success and error outcomes.
  *
- * Choose the Passlock client is you prefer a class based API. Alternatively,
+ * Choose the Passlock client if you prefer a class-based API. Alternatively,
  * import standalone tree-shakeable functions.
  *
  * **Note:** unexpected runtime failures may still throw.
@@ -107,27 +107,25 @@ import type {
   AuthorizedPasskeyRegistration,
   AuthorizePasskeyAuthenticationOptions,
   AuthorizePasskeyRegistrationOptions,
-  DeletedPasskey,
-  DeletedPasskeys,
-  DeletePasskeyOptions,
-  DeleteUserPasskeysOptions,
+  DeletePasskeysOptions,
   FindAllPasskeys,
   GetPasskeyOptions,
   ListPasskeyOptions,
   Passkey,
-  UpdatedCredentials,
-  UpdatePasskeyOptions,
-  UpdateUsernamesOptions,
+  PreparedPasskeyDeletion,
+  PreparedPasskeyPruning,
+  PreparedPasskeyUpdate,
+  PrunePasskeysOptions,
+  UpdatePasskeysOptions,
 } from "./passkey/passkey.js"
 import {
   authorizePasskeyAuthentication as authorizePasskeyAuthenticationE,
   authorizePasskeyRegistration as authorizePasskeyRegistrationE,
-  deletePasskey as deletePasskeyE,
-  deleteUserPasskeys as deleteUserPasskeysE,
+  deletePasskeys as deletePasskeysE,
   getPasskey as getPasskeyE,
   listPasskeys as listPasskeysE,
-  updatePasskey as updatePasskeyE,
-  updatePasskeyUsernames as updatePasskeyUsernamesE,
+  prunePasskeys as prunePasskeysE,
+  updatePasskeys as updatePasskeysE,
 } from "./passkey/passkey.js"
 import type { ExchangeCodeOptions, VerifyIdTokenOptions } from "./principal/principal.js"
 import {
@@ -326,100 +324,64 @@ export class Passlock {
   }
 
   /**
-   * Update a passkey's username metadata.
+   * Prepare passkey username and display-name update instructions for a user.
    *
-   * **Important:** changing the username has no bearing on authentication, as
-   * it's typically only used in the client-side component of the passkey
-   * (so the user knows which account the passkey relates to).
+   * This updates the stored username on the user's Passlock passkeys and returns
+   * a short-lived token for browser user-detail signalling. The optional display
+   * name is snapshotted into the token but is not stored as durable Passlock
+   * passkey metadata.
    *
-   * However you might choose to align the username in your vault with the
-   * client-side component to simplify end user support.
+   * Return the resulting `updatePasskeysToken` to the browser, then call
+   * `updatePasskeys` from `@passlock/browser`.
    *
-   * @param request Passkey-specific request options.
+   * @param request User-specific update request options.
    * @returns A promise resolving to a {@link Result} whose success branch contains
-   * a passkey and whose error branch contains an API error.
+   * a prepared passkey update token and whose error branch contains an API error.
    *
    * @category Passkeys
    */
-  updatePasskey(request: Parameters<typeof updatePasskey>[0]): ReturnType<typeof updatePasskey> {
-    return updatePasskey(request, this.#config)
+  updatePasskeys(request: Parameters<typeof updatePasskeys>[0]): ReturnType<typeof updatePasskeys> {
+    return updatePasskeys(request, this.#config)
   }
 
   /**
-   * Update the stored username metadata for all passkeys belonging to a given
-   * user, and begin client-side credential updates for those passkeys.
+   * Prepare passkey deletion instructions by passkey IDs or by user ID.
    *
-   * **Important:** changing these values has no bearing on authentication. The
-   * server-side operation updates the username stored in Passlock. The optional
-   * `displayName` is only included in the returned credential updates for
-   * follow-up use with `@passlock/browser`; it is not persisted in the vault.
+   * Pass exactly one selector: `passkeyIds` or `userId`. Passlock snapshots the
+   * browser signal data before deleting found vault records. Missing passkey IDs
+   * and user-scoped no-op deletes are reported as non-fatal warnings.
    *
-   * However you might choose to align the username in your vault with the
-   * client-side component to simplify end user support.
+   * Return the resulting `deletePasskeysToken` to the browser, then call
+   * `deletePasskeys` from `@passlock/browser`.
    *
-   * **Note:** This can be used alongside `@passlock/browser`'s
-   * `updatePasskeyUsernames` helper to update those details on the user's device.
-   *
-   * @param request User-specific request options.
-   * @returns A promise resolving to a {@link Result} whose success branch
-   * contains a user-details update payload whose
-   * `credentials` array can be passed into the client's
-   * `updatePasskeyUsernames` function. The error branch contains an API error.
-   *
-   * @category Passkeys
-   */
-  updatePasskeyUsernames(
-    request: Parameters<typeof updatePasskeyUsernames>[0]
-  ): ReturnType<typeof updatePasskeyUsernames> {
-    return updatePasskeyUsernames(request, this.#config)
-  }
-
-  /**
-   * Delete a passkey from your vault.
-   *
-   * **Note:** The user will still retain the passkey on their device so
-   * you will need to either:
-   *
-   * - Use the `@passlock/browser` functions to delete the passkey from the user's device.
-   * - Remind the user to delete the passkey.
-   *
-   * See [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/) in the documentation.
-   *
-   * In addition, during authentication you should handle a missing passkey scenario.
-   * This happens when a user tries to authenticate with a passkey that is missing from
-   * your vault. The `@passlock/browser` library can help with this. See
-   * [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/)
-   *
-   * @see [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/)
-   * @see [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/)
-   *
-   * @param options Passkey-specific request options.
+   * @param request Passkey deletion selector options.
    * @returns A promise resolving to a {@link Result} whose success branch contains
-   * the deleted credential identifiers and whose error branch contains an API
-   * error.
+   * a prepared passkey deletion token and whose error branch contains an API error.
    *
    * @category Passkeys
    */
-  deletePasskey(options: Parameters<typeof deletePasskey>[0]): ReturnType<typeof deletePasskey> {
-    return deletePasskey(options, this.#config)
+  deletePasskeys(request: Parameters<typeof deletePasskeys>[0]): ReturnType<typeof deletePasskeys> {
+    return deletePasskeys(request, this.#config)
   }
 
   /**
-   * Delete all passkeys associated with a user.
+   * Prepare passkey pruning instructions for a user.
    *
-   * @param request User-specific request options.
-   * @returns A promise resolving to a {@link Result} whose success branch
-   * contains a {@link DeletedPasskeys} payload whose
-   * `deleted` array can be passed directly into `@passlock/browser`'s
-   * `deleteUserPasskeys` helper for follow-up client-side passkey removal.
-   * The error branch contains an API error.
+   * This snapshots the user's currently accepted credentials into a short-lived
+   * token for browser accepted-credentials signalling. It does not delete
+   * Passlock vault records.
+   *
+   * Return the resulting `prunePasskeysToken` to the browser, then call
+   * `prunePasskeys` from `@passlock/browser`.
+   *
+   * @param request User-specific prune request options.
+   * @returns A promise resolving to a {@link Result} whose success branch contains
+   * a prepared passkey pruning token and whose error branch contains an API error.
    *
    * @category Passkeys
    */
-  deleteUserPasskeys(
-    request: Parameters<typeof deleteUserPasskeys>[0]
-  ): ReturnType<typeof deleteUserPasskeys> {
-    return deleteUserPasskeys(request, this.#config)
+  prunePasskeys(request: Parameters<typeof prunePasskeys>[0]): ReturnType<typeof prunePasskeys> {
+    return prunePasskeys(request, this.#config)
   }
 
   /**
@@ -655,109 +617,74 @@ export const authorizePasskeyAuthentication = (
   runSafe(authorizePasskeyAuthenticationE(options, config))
 
 /**
- * Update a passkey's username metadata.
+ * Prepare passkey username and display-name update instructions for a user.
  *
- * **Important:** changing the username has no bearing on authentication, as
- * it's typically only used in the client-side component of the passkey
- * (so the user knows which account the passkey relates to).
+ * This updates the stored username on the user's Passlock passkeys and returns
+ * a short-lived token for browser user-detail signalling. The optional display
+ * name is snapshotted into the token but is not stored as durable Passlock
+ * passkey metadata.
  *
- * However you might choose to align the username in your vault with the
- * client-side component to simplify end user support.
+ * Return the resulting `updatePasskeysToken` to the browser, then call
+ * `updatePasskeys` from `@passlock/browser`.
  *
- * @param request Passkey-specific request options.
+ * @param request User-specific update request options.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
- * a passkey and whose error branch contains an API error.
+ * a prepared passkey update token and whose error branch contains an API error.
  *
  * @category Passkeys
  */
-export const updatePasskey = (
-  request: UpdatePasskeyOptions,
+export const updatePasskeys = (
+  request: UpdatePasskeysOptions,
   config: AuthenticatedOptions
-): Promise<Result<Passkey, NotFoundError | ForbiddenError>> =>
-  runSafe(updatePasskeyE(request, config))
+): Promise<Result<PreparedPasskeyUpdate, BadRequestError | ForbiddenError>> =>
+  runSafe(updatePasskeysE(request, config))
 
 /**
- * Update the stored username metadata for all passkeys belonging to a given
- * user, and begin client-side credential updates for those passkeys.
+ * Prepare passkey deletion instructions by passkey IDs or by user ID.
  *
- * **Important:** changing these values has no bearing on authentication. The
- * server-side operation updates the username stored in Passlock. The optional
- * `displayName` is only included in the returned credential updates for
- * follow-up use with `@passlock/browser`; it is not persisted in the vault.
+ * Pass exactly one selector: `passkeyIds` or `userId`. Passlock snapshots the
+ * browser signal data before deleting found vault records. Missing passkey IDs
+ * and user-scoped no-op deletes are reported as non-fatal warnings.
  *
- * However you might choose to align the username in your vault with the
- * client-side component to simplify end user support.
+ * Return the resulting `deletePasskeysToken` to the browser, then call
+ * `deletePasskeys` from `@passlock/browser`.
  *
- * **Note:** This can be used alongside `@passlock/browser`'s
- * `updatePasskeyUsernames` helper to update those details on the user's device.
- *
- * @param request User-specific request options.
- * @param config Shared Passlock configuration for the request.
- * @returns A promise resolving to a {@link Result} whose success branch
- * contains a user-details update payload whose
- * `credentials` array can be passed into the client's
- * `updatePasskeyUsernames` function. The error branch contains an API error.
- *
- * @category Passkeys
- */
-export const updatePasskeyUsernames = (
-  request: UpdateUsernamesOptions,
-  config: AuthenticatedOptions
-): Promise<Result<UpdatedCredentials, NotFoundError | ForbiddenError>> =>
-  runSafe(updatePasskeyUsernamesE(request, config))
-
-/**
- * Delete a passkey from your vault.
- *
- * **Note:** The user will still retain the passkey on their device so
- * you will need to either:
- *
- * - Use the `@passlock/browser` functions to delete the passkey from the user's device.
- * - Remind the user to delete the passkey.
- *
- * See [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/) in the documentation.
- *
- * In addition, during authentication you should handle a missing passkey scenario.
- * This happens when a user tries to authenticate with a passkey that is missing from
- * your vault. The `@passlock/browser` library can help with this. See
- * [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/)
- *
- * @see [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/)
- * @see [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/)
- *
- * @param options Passkey-specific request options.
+ * @param request Passkey deletion selector options.
  * @param config Shared Passlock configuration for the request.
  * @returns A promise resolving to a {@link Result} whose success branch contains
- * the deleted credential identifiers and whose error branch contains an API
- * error.
+ * a prepared passkey deletion token and whose error branch contains an API error.
  *
  * @category Passkeys
  */
-export const deletePasskey = (
-  options: DeletePasskeyOptions,
+export const deletePasskeys = (
+  request: DeletePasskeysOptions,
   config: AuthenticatedOptions
-): Promise<Result<DeletedPasskey, ForbiddenError | NotFoundError>> =>
-  runSafe(deletePasskeyE(options, config))
+): Promise<Result<PreparedPasskeyDeletion, BadRequestError | ForbiddenError>> =>
+  runSafe(deletePasskeysE(request, config))
 
 /**
- * Delete all passkeys associated with a user.
+ * Prepare passkey pruning instructions for a user.
  *
- * @param request User-specific request options.
+ * This snapshots the user's currently accepted credentials into a short-lived
+ * token for browser accepted-credentials signalling. It does not delete
+ * Passlock vault records.
+ *
+ * Return the resulting `prunePasskeysToken` to the browser, then call
+ * `prunePasskeys` from `@passlock/browser`.
+ *
+ * @param request User-specific prune request options.
  * @param config Shared Passlock configuration for the request.
- * @returns A promise resolving to a {@link Result} whose success branch
- * contains a {@link DeletedPasskeys} payload whose
- * `deleted` array can be passed directly into `@passlock/browser`'s
- * `deleteUserPasskeys` helper for follow-up client-side passkey removal.
- * The error branch contains an API error.
+ * @returns A promise resolving to a {@link Result} whose success branch contains
+ * a prepared passkey pruning token and whose error branch contains an API error.
  *
  * @category Passkeys
  */
-export const deleteUserPasskeys = (
-  request: DeleteUserPasskeysOptions,
+export const prunePasskeys = (
+  request: PrunePasskeysOptions,
   config: AuthenticatedOptions
-): Promise<Result<DeletedPasskeys, ForbiddenError | NotFoundError>> =>
-  runSafe(deleteUserPasskeysE(request, config))
+): Promise<Result<PreparedPasskeyPruning, BadRequestError | ForbiddenError>> =>
+  runSafe(prunePasskeysE(request, config))
 
 /**
  * Fetch details about a passkey.
@@ -903,31 +830,29 @@ export type {
   AuthorizedPasskeyRegistration,
   AuthorizePasskeyAuthenticationOptions,
   AuthorizePasskeyRegistrationOptions,
-  Credential,
-  DeletedPasskey,
-  DeletedPasskeys,
-  DeletePasskeyOptions,
-  DeleteUserPasskeysOptions,
+  DeletePasskeysOptions,
   FindAllPasskeys,
   GetPasskeyOptions,
   ListPasskeyOptions,
   Passkey,
   PasskeyCredential,
+  PasskeyManagementWarning,
   PasskeySummary,
   Platform,
-  UpdatedCredentials as UpdatedUserDetails,
-  UpdatedPasskeys,
-  UpdatePasskeyOptions,
-  UpdateUsernamesOptions as UpdateUserDetailsOptions,
+  PreparedPasskeyDeletion,
+  PreparedPasskeyPruning,
+  PreparedPasskeyUpdate,
+  PrunePasskeysOptions,
+  UpdatePasskeysOptions,
 } from "./passkey/passkey.js"
 export {
   isAuthorizedPasskeyAuthentication,
   isAuthorizedPasskeyRegistration,
-  isDeletedPasskeys,
   isPasskey,
   isPasskeySummary,
-  isUpdatedPasskeys,
-  isUpdatedUserDetails,
+  isPreparedPasskeyDeletion,
+  isPreparedPasskeyPruning,
+  isPreparedPasskeyUpdate,
 } from "./passkey/passkey.js"
 export type {
   ExchangeCodeOptions,
@@ -937,6 +862,7 @@ export type { Err, Ok, Result } from "./safe-result.js"
 export type {
   CredentialDeviceType,
   PasskeyAuthenticationMediation,
+  PasskeyManagementWarningCode,
   Transports,
 } from "./schemas/passkey.js"
 export type { ExtendedPrincipal, Principal } from "./schemas/principal.js"

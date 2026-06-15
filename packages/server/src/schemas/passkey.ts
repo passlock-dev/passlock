@@ -249,58 +249,103 @@ export const FindAllPasskeys = Schema.TaggedStruct("FindAllPasskeys", {
 })
 
 /**
- * Schema for a bulk passkey update response.
+ * Non-fatal warning codes returned by passkey management prepare operations.
  *
  * @category Passkeys
  */
-export const UpdatedPasskeys = Schema.TaggedStruct("UpdatedPasskeys", {
-  updated: Schema.Array(Passkey),
+export const PasskeyManagementWarningCode = Schema.Literal(
+  "PASSKEY_NOT_FOUND",
+  "NO_PASSKEYS_FOUND",
+  "BROWSER_SIGNAL_UNSUPPORTED",
+  "BROWSER_SIGNAL_FAILED",
+  "EMPTY_SIGNAL_PAYLOAD"
+)
+
+/**
+ * Type produced by {@link PasskeyManagementWarningCode}.
+ *
+ * @category Passkeys
+ */
+export type PasskeyManagementWarningCode = typeof PasskeyManagementWarningCode.Type
+
+/**
+ * Non-fatal warning returned by passkey management prepare operations.
+ *
+ * Warnings describe no-op or partial cases, such as missing passkeys, that did
+ * not prevent the prepared-token flow from completing.
+ *
+ * @category Passkeys
+ */
+export const PasskeyManagementWarning = Schema.Struct({
+  code: PasskeyManagementWarningCode,
+  message: Schema.String,
+  passkeyId: Schema.optional(Schema.String),
 })
 
 /**
- * Schema for the credential identifiers returned after deleting passkeys.
+ * Type produced by {@link PasskeyManagementWarning}.
  *
  * @category Passkeys
  */
-export const Credential = Schema.Struct({
-  credentialId: Schema.String,
-  userId: Schema.String,
-  rpId: Schema.String,
+export type PasskeyManagementWarning = typeof PasskeyManagementWarning.Type
+
+/**
+ * Response returned after preparing passkey username and display-name update
+ * instructions.
+ *
+ * Send only `updatePasskeysToken` to the browser helper.
+ *
+ * @category Passkeys
+ */
+export const PreparedPasskeyUpdate = Schema.TaggedStruct("PreparedPasskeyUpdate", {
+  updatePasskeysToken: Schema.String,
+  expiresAt: Schema.Number,
+  warnings: Schema.Array(PasskeyManagementWarning),
 })
 
 /**
- * Type produced by {@link Credential}.
+ * Type produced by {@link PreparedPasskeyUpdate}.
  *
  * @category Passkeys
  */
-export type Credential = typeof Credential.Type
+export type PreparedPasskeyUpdate = typeof PreparedPasskeyUpdate.Type
 
 /**
- * Raw REST API schema returned when passkeys are deleted.
+ * Response returned after preparing passkey deletion instructions.
  *
- * The package maps this into {@link DeletedPasskeys} before exposing it from
- * the higher-level APIs.
+ * Send only `deletePasskeysToken` to the browser helper.
  *
  * @category Passkeys
  */
-export const DeletedPasskeysResponse = Schema.TaggedStruct("DeletedPasskeys", {
-  deleted: Schema.Array(Passkey),
+export const PreparedPasskeyDeletion = Schema.TaggedStruct("PreparedPasskeyDeletion", {
+  deletePasskeysToken: Schema.String,
+  expiresAt: Schema.Number,
+  warnings: Schema.Array(PasskeyManagementWarning),
 })
 
 /**
- * Public schema returned when passkeys are deleted by user ID.
+ * Type produced by {@link PreparedPasskeyDeletion}.
  *
  * @category Passkeys
  */
-export const DeletedPasskeys = Schema.TaggedStruct("DeletedPasskeys", {
-  deleted: Schema.Array(Credential),
+export type PreparedPasskeyDeletion = typeof PreparedPasskeyDeletion.Type
+
+/**
+ * Response returned after preparing passkey pruning instructions.
+ *
+ * Send only `prunePasskeysToken` to the browser helper.
+ *
+ * @category Passkeys
+ */
+export const PreparedPasskeyPruning = Schema.TaggedStruct("PreparedPasskeyPruning", {
+  prunePasskeysToken: Schema.String,
+  expiresAt: Schema.Number,
+  warnings: Schema.Array(PasskeyManagementWarning),
 })
 
 /**
- * Public schema returned when a single passkey is deleted.
+ * Type produced by {@link PreparedPasskeyPruning}.
  *
  * @category Passkeys
  */
-export const DeletedPasskey = Schema.TaggedStruct("DeletedPasskey", {
-  deleted: Credential,
-})
+export type PreparedPasskeyPruning = typeof PreparedPasskeyPruning.Type

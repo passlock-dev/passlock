@@ -55,7 +55,7 @@
 
 			// Clear trusted passkeys before the account record itself is deleted.
 			deletingPasskeys = true;
-			const result = await deleteAccountPasskeys();
+			const result = await deleteAccountPasskeys(config);
 			deletingPasskeys = false;
 
 			if (result._tag === '@error/DeletePasskeyError') {

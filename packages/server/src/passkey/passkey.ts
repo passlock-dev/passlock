@@ -1,4 +1,4 @@
-import { Array, Chunk, Effect, type Layer, Match, Option, pipe, Schema, Stream } from "effect"
+import { Chunk, Effect, type Layer, Match, Option, pipe, Schema, Stream } from "effect"
 import {
   fetchNetwork,
   matchStatus,
@@ -144,105 +144,136 @@ export const isPasskeySummary = (payload: unknown): payload is PasskeySummary =>
  */
 export type _PasskeySummary = satisfy<typeof PasskeySchemas.PasskeySummary.Type, PasskeySummary>
 
-/* UpdatedPasskeys */
+/* PasskeyManagementWarning */
 
 /**
- * Result payload returned when passkeys are updated in bulk for a user.
+ * Non-fatal warning returned by passkey management prepare operations.
+ *
+ * Warnings describe no-op or partial cases, such as missing passkeys, that did
+ * not prevent the prepared-token flow from completing.
  *
  * @category Passkeys
  */
-export type UpdatedPasskeys = {
-  _tag: "UpdatedPasskeys"
-  updated: ReadonlyArray<Passkey>
+export type PasskeyManagementWarning = {
+  readonly code: PasskeySchemas.PasskeyManagementWarningCode
+  readonly message: string
+  readonly passkeyId?: string | undefined
 }
 
 /**
- * Type guard for {@link UpdatedPasskeys}.
- *
- * @category Passkeys
- */
-export const isUpdatedPasskeys = (payload: unknown): payload is UpdatedPasskeys =>
-  Schema.is(PasskeySchemas.UpdatedPasskeys)(payload)
-
-/**
- * Ensures the public UpdatedPasskeys type matches the runtime schema.
+ * Ensures the public PasskeyManagementWarning type matches the runtime schema.
  * @internal
- * */
-export type _UpdatedPasskeys = satisfy<typeof PasskeySchemas.UpdatedPasskeys.Type, UpdatedPasskeys>
+ */
+export type _PasskeyManagementWarning = satisfy<
+  typeof PasskeySchemas.PasskeyManagementWarning.Type,
+  PasskeyManagementWarning
+>
 
-/* Credential */
+/* PreparedPasskeyUpdate */
 
 /**
- * Credential identifiers returned by passkey deletion operations.
+ * Result payload returned after preparing passkey username and display-name
+ * update instructions.
+ *
+ * Send only `updatePasskeysToken` to the browser helper. The token is
+ * short-lived bearer data that snapshots the WebAuthn signal payload chosen by
+ * your backend.
  *
  * @category Passkeys
  */
-export type Credential = {
-  credentialId: string
-  userId: string
-  rpId: string
+export type PreparedPasskeyUpdate = {
+  readonly _tag: "PreparedPasskeyUpdate"
+  readonly updatePasskeysToken: string
+  readonly expiresAt: number
+  readonly warnings: ReadonlyArray<PasskeyManagementWarning>
 }
 
 /**
- * Ensures the public Credential type matches the runtime schema.
- * @internal
- */
-export type _Credential = satisfy<typeof PasskeySchemas.Credential.Type, Credential>
-
-/* DeletedPasskey */
-
-/**
- * Result payload returned when a single passkey has been deleted.
- *
- * The nested `deleted` object contains the credential identifiers needed for
- * optional client-side cleanup.
+ * Type guard for {@link PreparedPasskeyUpdate}.
  *
  * @category Passkeys
  */
-export type DeletedPasskey = {
-  _tag: "DeletedPasskey"
-  deleted: Credential
+export const isPreparedPasskeyUpdate = (payload: unknown): payload is PreparedPasskeyUpdate =>
+  Schema.is(PasskeySchemas.PreparedPasskeyUpdate)(payload)
+
+/**
+ * Ensures the public PreparedPasskeyUpdate type matches the runtime schema.
+ * @internal
+ */
+export type _PreparedPasskeyUpdate = satisfy<
+  typeof PasskeySchemas.PreparedPasskeyUpdate.Type,
+  PreparedPasskeyUpdate
+>
+
+/* PreparedPasskeyDeletion */
+
+/**
+ * Result payload returned after preparing passkey deletion instructions.
+ *
+ * Send only `deletePasskeysToken` to the browser helper. The token is
+ * short-lived bearer data that snapshots browser signal data before any found
+ * vault records are deleted.
+ *
+ * @category Passkeys
+ */
+export type PreparedPasskeyDeletion = {
+  readonly _tag: "PreparedPasskeyDeletion"
+  readonly deletePasskeysToken: string
+  readonly expiresAt: number
+  readonly warnings: ReadonlyArray<PasskeyManagementWarning>
 }
 
 /**
- * Type guard for {@link DeletedPasskey}.
+ * Type guard for {@link PreparedPasskeyDeletion}.
  *
  * @category Passkeys
  */
-export const isDeletedPasskey = (payload: unknown): payload is DeletedPasskey =>
-  Schema.is(PasskeySchemas.DeletedPasskey)(payload)
+export const isPreparedPasskeyDeletion = (payload: unknown): payload is PreparedPasskeyDeletion =>
+  Schema.is(PasskeySchemas.PreparedPasskeyDeletion)(payload)
 
 /**
- * Ensures the public DeletedPasskey type matches the runtime schema.
+ * Ensures the public PreparedPasskeyDeletion type matches the runtime schema.
  * @internal
- * */
-export type _DeletedPasskey = satisfy<typeof PasskeySchemas.DeletedPasskey.Type, DeletedPasskey>
+ */
+export type _PreparedPasskeyDeletion = satisfy<
+  typeof PasskeySchemas.PreparedPasskeyDeletion.Type,
+  PreparedPasskeyDeletion
+>
 
-/* DeletedPasskeys */
+/* PreparedPasskeyPruning */
 
 /**
- * Result payload returned when all passkeys for a user have been deleted.
+ * Result payload returned after preparing passkey pruning instructions.
+ *
+ * Send only `prunePasskeysToken` to the browser helper. The token is
+ * short-lived bearer data that snapshots the currently accepted credential IDs
+ * for the selected user.
  *
  * @category Passkeys
  */
-export type DeletedPasskeys = {
-  _tag: "DeletedPasskeys"
-  deleted: ReadonlyArray<Credential>
+export type PreparedPasskeyPruning = {
+  readonly _tag: "PreparedPasskeyPruning"
+  readonly prunePasskeysToken: string
+  readonly expiresAt: number
+  readonly warnings: ReadonlyArray<PasskeyManagementWarning>
 }
 
 /**
- * Type guard for {@link DeletedPasskeys}.
+ * Type guard for {@link PreparedPasskeyPruning}.
  *
  * @category Passkeys
  */
-export const isDeletedPasskeys = (payload: unknown): payload is DeletedPasskeys =>
-  Schema.is(PasskeySchemas.DeletedPasskeys)(payload)
+export const isPreparedPasskeyPruning = (payload: unknown): payload is PreparedPasskeyPruning =>
+  Schema.is(PasskeySchemas.PreparedPasskeyPruning)(payload)
 
 /**
- * Ensures the public DeletedPasskeys type matches the runtime schema.
+ * Ensures the public PreparedPasskeyPruning type matches the runtime schema.
  * @internal
- * */
-export type _DeletedPasskeys = satisfy<typeof PasskeySchemas.DeletedPasskeys.Type, DeletedPasskeys>
+ */
+export type _PreparedPasskeyPruning = satisfy<
+  typeof PasskeySchemas.PreparedPasskeyPruning.Type,
+  PreparedPasskeyPruning
+>
 
 /* FindAllPasskeys */
 
@@ -270,55 +301,6 @@ export const isFindAllPasskeys = (payload: unknown): payload is FindAllPasskeys 
  * @internal
  */
 export type _FindAllPasskeys = satisfy<typeof FindAllPasskeysSchema.Type, FindAllPasskeys>
-
-/* UpdatedCredentials (publicly re-exported as UpdatedUserDetails) */
-
-/**
- * Client-facing user-details update payload returned by
- * {@link updatePasskeyUsernames}.
- *
- * The promise-based entrypoints re-export this shape as `UpdatedUserDetails`.
- * Its runtime `_tag` remains `"UpdatedCredentials"` for backwards
- * compatibility.
- *
- * Each entry describes one credential to update on the user's device. The
- * returned `displayName` is derived from
- * {@link UpdateUsernamesOptions#displayName} when provided, otherwise it falls
- * back to the stored username.
- *
- * @category Passkeys
- */
-export type UpdatedCredentials = {
-  _tag: "UpdatedCredentials"
-  credentials: ReadonlyArray<{
-    rpId: string
-    userId: string
-    username: string
-    displayName: string
-  }>
-}
-
-/**
- * Check whether an unknown value carries the runtime tag used by the public
- * `UpdatedUserDetails` payload.
- *
- * The exported type name is `UpdatedUserDetails`, but the runtime `_tag`
- * remains `"UpdatedCredentials"`. This lightweight guard only checks that
- * top-level tag.
- *
- * @category Passkeys
- */
-export const isUpdatedUserDetails = (payload: unknown): payload is UpdatedCredentials => {
-  if (typeof payload !== "object") return false
-  if (payload === null) return false
-  if (!("_tag" in payload)) return false
-  if (typeof payload._tag !== "string") return false
-  if (payload._tag !== "UpdatedCredentials") return false
-
-  return true
-}
-
-/* END UpdatedUserDetails */
 
 const authorizationHeaders = (apiKey: string) => ({
   authorization: `Bearer ${apiKey}`,
@@ -717,360 +699,241 @@ export const getPasskey = (
     Effect.provide(fetchLayer)
   )
 
-/* Delete Passkey */
+/* Update Passkeys */
 
 /**
- * Options for deleting a single passkey.
+ * Options for preparing username and display-name updates for all passkeys that
+ * share a custom user ID.
  *
  * @category Passkeys
  */
-export interface DeletePasskeyOptions {
-  /**
-   * Identifier of the passkey to delete.
-   */
-  passkeyId: string
-}
-
-/**
- * Delete a single passkey from the Passlock vault.
- *
- * This only removes the server-side record. It does not remove the passkey
- * from the user's device.
- *
- * @param options Passkey-specific request options.
- * @param config Shared Passlock configuration for the request.
- * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds with the deleted credential identifiers.
- *
- * @category Passkeys
- */
-export const deletePasskey = (
-  options: DeletePasskeyOptions,
-  config: AuthenticatedOptions,
-  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<DeletedPasskey, NotFoundError | ForbiddenError> =>
-  pipe(
-    Effect.gen(function* () {
-      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
-      const { tenancyId } = config
-      const { passkeyId } = options
-
-      const url = new URL(`/v2/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
-
-      const response = yield* fetchNetwork(url, "delete", undefined, {
-        headers: authorizationHeaders(config.apiKey),
-      })
-
-      const encoded: Passkey | ForbiddenError | NotFoundError = yield* matchStatus(response, {
-        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
-        orElse: (res) => decodeResponseJson(res, Schema.Union(ForbiddenError, NotFoundError)),
-      })
-
-      return yield* pipe(
-        Match.value(encoded),
-        Match.tag("Passkey", (passkey) =>
-          Effect.succeed({
-            _tag: "DeletedPasskey" as const,
-            deleted: {
-              credentialId: passkey.credential.id,
-              userId: passkey.credential.userId,
-              rpId: passkey.credential.rpId,
-            },
-          })
-        ),
-        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
-        Match.tag("@error/NotFound", (err) => Effect.fail(err)),
-        Match.exhaustive
-      )
-    }),
-    Effect.catchTags({
-      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
-      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
-      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
-    }),
-    Effect.provide(fetchLayer)
-  )
-
-/* Update passkey */
-
-/**
- * Options for updating a single passkey's metadata.
- *
- * @category Passkeys
- */
-export interface UpdatePasskeyOptions {
-  /**
-   * Identifier of the passkey to update.
-   */
-  passkeyId: string
-  /**
-   * Username metadata stored alongside the passkey.
-   */
-  username?: string
-}
-
-/**
- * Update a single passkey's username metadata.
- *
- * @param options Passkey-specific request options.
- * @param config Shared Passlock configuration for the request.
- * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds with the updated passkey.
- *
- * @category Passkeys
- */
-export const updatePasskey = (
-  options: UpdatePasskeyOptions,
-  config: AuthenticatedOptions,
-  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<Passkey, NotFoundError | ForbiddenError> =>
-  pipe(
-    Effect.gen(function* () {
-      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
-
-      const { passkeyId, username } = options
-      const { tenancyId } = config
-
-      const url = new URL(`/v2/${tenancyId}/passkeys/${passkeyId}`, baseUrl)
-
-      const response = yield* fetchNetwork(
-        url,
-        "patch",
-        { username },
-        {
-          headers: authorizationHeaders(config.apiKey),
-        }
-      )
-
-      const encoded: Passkey | NotFoundError | ForbiddenError = yield* matchStatus(response, {
-        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
-        orElse: (res) => decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
-      })
-
-      return yield* pipe(
-        Match.value(encoded),
-        Match.tag("Passkey", (passkey) => Effect.succeed(passkey)),
-        Match.tag("@error/NotFound", (err) => Effect.fail(err)),
-        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
-        Match.exhaustive
-      )
-    }),
-    Effect.catchTags({
-      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
-      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
-      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
-    }),
-    Effect.provide(fetchLayer)
-  )
-
-/* Update passkeys by userId (currently not exported) */
-
-interface UpdateUserPasskeyOptions {
-  userId: string
-  username?: string
-}
-
-const updateUserPasskeys = (
-  options: UpdateUserPasskeyOptions,
-  config: AuthenticatedOptions,
-  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<UpdatedPasskeys, NotFoundError | ForbiddenError> =>
-  pipe(
-    Effect.gen(function* () {
-      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
-
-      const { userId, username } = options
-      const { tenancyId } = config
-
-      const url = new URL(`/v2/${tenancyId}/users/${userId}/passkeys/`, baseUrl)
-
-      const response = yield* fetchNetwork(
-        url,
-        "patch",
-        { username },
-        {
-          headers: authorizationHeaders(config.apiKey),
-        }
-      )
-
-      const encoded: UpdatedPasskeys | NotFoundError | ForbiddenError = yield* matchStatus(
-        response,
-        {
-          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.UpdatedPasskeys),
-          orElse: (res) => decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
-        }
-      )
-
-      return yield* pipe(
-        Match.value(encoded),
-        Match.tag("UpdatedPasskeys", (result) => Effect.succeed(result)),
-        Match.tag("@error/NotFound", (err) => Effect.fail(err)),
-        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
-        Match.exhaustive
-      )
-    }),
-    Effect.catchTags({
-      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
-      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
-      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
-    }),
-    Effect.provide(fetchLayer)
-  )
-
-/* Delete passkeys by userId */
-
-/**
- * Options for deleting all passkeys belonging to a user.
- *
- * @category Passkeys
- */
-export interface DeleteUserPasskeysOptions {
-  /**
-   * Custom user ID whose passkeys should be deleted.
-   */
-  userId: string
-}
-
-/**
- * Delete all passkeys associated with a custom user ID.
- *
- * The resulting `deleted` credentials can be passed to
- * `@passlock/browser` to remove the corresponding passkeys from the user's
- * device.
- *
- * @param options User-specific request options.
- * @param config Shared Passlock configuration for the request.
- * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds with the deleted credential identifiers.
- *
- * @category Passkeys
- */
-export const deleteUserPasskeys = (
-  options: DeleteUserPasskeysOptions,
-  config: AuthenticatedOptions,
-  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<DeletedPasskeys, NotFoundError | ForbiddenError> =>
-  pipe(
-    Effect.gen(function* () {
-      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
-
-      const { tenancyId } = config
-      const { userId } = options
-
-      const url = new URL(`/v2/${tenancyId}/users/${userId}/passkeys/`, baseUrl)
-
-      const response = yield* fetchNetwork(
-        url,
-        "delete",
-        { userId },
-        {
-          headers: authorizationHeaders(config.apiKey),
-        }
-      )
-
-      const encoded:
-        | typeof PasskeySchemas.DeletedPasskeysResponse.Type
-        | NotFoundError
-        | ForbiddenError = yield* matchStatus(response, {
-        "2xx": (res) => decodeResponseJson(res, PasskeySchemas.DeletedPasskeysResponse),
-        orElse: (res) => decodeResponseJson(res, Schema.Union(NotFoundError, ForbiddenError)),
-      })
-
-      return yield* pipe(
-        Match.value(encoded),
-        Match.tag("DeletedPasskeys", (result) =>
-          Effect.succeed({
-            _tag: "DeletedPasskeys" as const,
-            deleted: result.deleted.map((passkey) => ({
-              credentialId: passkey.credential.id,
-              userId: passkey.credential.userId,
-              rpId: passkey.credential.rpId,
-            })),
-          })
-        ),
-        Match.tag("@error/NotFound", (err) => Effect.fail(err)),
-        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
-        Match.exhaustive
-      )
-    }),
-    Effect.catchTags({
-      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
-      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
-      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
-    }),
-    Effect.provide(fetchLayer)
-  )
-
-/* Update user details by userId */
-
-/**
- * Options for updating username metadata for all passkeys that share a custom
- * user ID, plus optional display-name data to return for client-side updates.
- *
- * The promise-based entrypoints re-export this interface as
- * `UpdateUserDetailsOptions`.
- *
- * @category Passkeys
- */
-export interface UpdateUsernamesOptions {
+export interface UpdatePasskeysOptions {
   /**
    * Custom user ID whose passkeys should be updated.
    */
   userId: string
   /**
-   * Username to write back to each stored passkey.
+   * Username to write back to each stored passkey and include in browser update
+   * instructions.
    */
   username: string
   /**
-   * Optional display name to return for client-side credential updates.
+   * Optional display name to include in the browser update instructions.
    *
-   * When omitted, the returned credentials use `username` as the display name.
+   * This value is snapshotted into the prepared token but is not persisted as
+   * durable passkey metadata.
    */
-  displayName?: string
+  displayName?: string | undefined
 }
 
 /**
- * Update the username metadata for all passkeys belonging to a custom user ID.
+ * Prepare passkey username and display-name update instructions for a user.
  *
- * The resulting payload is designed to be passed to
- * `@passlock/browser` so matching device credentials can be updated.
- * The optional `displayName` is not stored in Passlock; it is only copied into
- * the returned client payload.
+ * The server-side operation updates stored usernames for the user's Passlock
+ * vault records and returns a short-lived token. The optional display name is
+ * included in the token's browser instructions but is not persisted as durable
+ * passkey metadata. Send only `updatePasskeysToken` to the browser and call
+ * `@passlock/browser`'s `updatePasskeys` helper to signal local password
+ * managers.
  *
- * @param options User-specific request options.
+ * @param options User-specific update request options.
  * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds with a user-details update payload
- * containing one credential update per updated passkey.
+ * @returns An Effect that succeeds with a prepared passkey update token.
  *
  * @category Passkeys
  */
-export const updatePasskeyUsernames = (
-  options: UpdateUsernamesOptions,
+export const updatePasskeys = (
+  options: UpdatePasskeysOptions,
   config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<UpdatedCredentials, NotFoundError | ForbiddenError> =>
+): Effect.Effect<PreparedPasskeyUpdate, BadRequestError | ForbiddenError> =>
   pipe(
-    updateUserPasskeys(options, config, fetchLayer),
-    Effect.map((result) => result.updated),
-    Effect.map(
-      Array.map((passkey) => {
-        return {
-          rpId: passkey.credential.rpId,
-          userId: passkey.credential.userId,
-          username: passkey.credential.username,
-          displayName: options.displayName ?? passkey.credential.username,
-        }
+    Effect.gen(function* () {
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId } = config
+
+      const url = new URL(`/v2/${tenancyId}/passkeys/update`, baseUrl)
+
+      const response = yield* fetchNetwork(url, "post", options, {
+        headers: authorizationHeaders(config.apiKey),
       })
-    ),
-    Effect.map((credentials) => ({
-      _tag: "UpdatedCredentials",
-      credentials,
-    }))
+
+      const encoded: PreparedPasskeyUpdate | BadRequestError | ForbiddenError = yield* matchStatus(
+        response,
+        {
+          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.PreparedPasskeyUpdate),
+          orElse: (res) => decodeResponseJson(res, Schema.Union(BadRequestError, ForbiddenError)),
+        }
+      )
+
+      return yield* pipe(
+        Match.value(encoded),
+        Match.tag("PreparedPasskeyUpdate", (data) => Effect.succeed(data)),
+        Match.tag("@error/BadRequest", (err) => Effect.fail(err)),
+        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
+        Match.exhaustive
+      )
+    }),
+    Effect.catchTags({
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
+      ParseError: (err) => Effect.die(err),
+    }),
+    Effect.provide(fetchLayer)
+  )
+
+/* Delete Passkeys */
+
+/**
+ * Options for preparing passkey deletion instructions.
+ *
+ * Pass either `passkeyIds` or `userId`, never both.
+ * Empty `passkeyIds` arrays are invalid.
+ *
+ * @category Passkeys
+ */
+export type DeletePasskeysOptions =
+  | {
+      /**
+       * Passlock passkey record IDs to delete.
+       */
+      passkeyIds: ReadonlyArray<string>
+      userId?: never
+    }
+  | {
+      /**
+       * Custom user ID whose passkeys should be deleted.
+       */
+      userId: string
+      passkeyIds?: never
+    }
+
+/**
+ * Prepare passkey deletion instructions.
+ *
+ * The server-side operation removes matching Passlock vault records and returns
+ * a short-lived token containing snapshotted browser cleanup instructions. Send
+ * only `deletePasskeysToken` to the browser and call `@passlock/browser`'s
+ * `deletePasskeys` helper. Missing passkey IDs and user-scoped no-op deletes
+ * are reported as non-fatal warnings.
+ *
+ * @param options Passkey deletion selector options.
+ * @param config Shared Passlock configuration for the request.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns An Effect that succeeds with a prepared passkey deletion token.
+ *
+ * @category Passkeys
+ */
+export const deletePasskeys = (
+  options: DeletePasskeysOptions,
+  config: AuthenticatedOptions,
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<PreparedPasskeyDeletion, BadRequestError | ForbiddenError> =>
+  pipe(
+    Effect.gen(function* () {
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId } = config
+
+      const url = new URL(`/v2/${tenancyId}/passkeys/delete`, baseUrl)
+
+      const response = yield* fetchNetwork(url, "post", options, {
+        headers: authorizationHeaders(config.apiKey),
+      })
+
+      const encoded: PreparedPasskeyDeletion | BadRequestError | ForbiddenError =
+        yield* matchStatus(response, {
+          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.PreparedPasskeyDeletion),
+          orElse: (res) => decodeResponseJson(res, Schema.Union(BadRequestError, ForbiddenError)),
+        })
+
+      return yield* pipe(
+        Match.value(encoded),
+        Match.tag("PreparedPasskeyDeletion", (data) => Effect.succeed(data)),
+        Match.tag("@error/BadRequest", (err) => Effect.fail(err)),
+        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
+        Match.exhaustive
+      )
+    }),
+    Effect.catchTags({
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
+      ParseError: (err) => Effect.die(err),
+    }),
+    Effect.provide(fetchLayer)
+  )
+
+/* Prune Passkeys */
+
+/**
+ * Options for preparing accepted-passkey pruning instructions.
+ *
+ * @category Passkeys
+ */
+export interface PrunePasskeysOptions {
+  /**
+   * Custom user ID whose currently accepted passkeys should be snapshotted.
+   */
+  userId: string
+}
+
+/**
+ * Prepare passkey pruning instructions for a user.
+ *
+ * The server-side operation returns a short-lived token containing the
+ * currently accepted credential IDs for the user. It does not delete Passlock
+ * vault records. Send only
+ * `prunePasskeysToken` to the browser and call `@passlock/browser`'s
+ * `prunePasskeys` helper.
+ *
+ * @param options User-specific prune request options.
+ * @param config Shared Passlock configuration for the request.
+ * @param fetchLayer Optional fetch service override for testing or custom runtimes.
+ * @returns An Effect that succeeds with a prepared passkey pruning token.
+ *
+ * @category Passkeys
+ */
+export const prunePasskeys = (
+  options: PrunePasskeysOptions,
+  config: AuthenticatedOptions,
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<PreparedPasskeyPruning, BadRequestError | ForbiddenError> =>
+  pipe(
+    Effect.gen(function* () {
+      const baseUrl = config.endpoint ?? "https://api.passlock.dev"
+      const { tenancyId } = config
+
+      const url = new URL(`/v2/${tenancyId}/passkeys/prune`, baseUrl)
+
+      const response = yield* fetchNetwork(url, "post", options, {
+        headers: authorizationHeaders(config.apiKey),
+      })
+
+      const encoded: PreparedPasskeyPruning | BadRequestError | ForbiddenError = yield* matchStatus(
+        response,
+        {
+          "2xx": (res) => decodeResponseJson(res, PasskeySchemas.PreparedPasskeyPruning),
+          orElse: (res) => decodeResponseJson(res, Schema.Union(BadRequestError, ForbiddenError)),
+        }
+      )
+
+      return yield* pipe(
+        Match.value(encoded),
+        Match.tag("PreparedPasskeyPruning", (data) => Effect.succeed(data)),
+        Match.tag("@error/BadRequest", (err) => Effect.fail(err)),
+        Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
+        Match.exhaustive
+      )
+    }),
+    Effect.catchTags({
+      "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
+      "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
+      "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
+      ParseError: (err) => Effect.die(err),
+    }),
+    Effect.provide(fetchLayer)
   )
 
 /* List Passkeys */

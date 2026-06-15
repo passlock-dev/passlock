@@ -40,11 +40,17 @@
 		syncingUpdatedEmailPasskeys = true;
 		clearFormErrors(accountEmailErrors);
 
-		const result = await updateUserPasskeys({
-			username: data.currentEmail,
-			givenName: data.user?.givenName,
-			familyName: data.user?.familyName
-		});
+		const result = await updateUserPasskeys(
+			{
+				username: data.currentEmail,
+				givenName: data.user?.givenName,
+				familyName: data.user?.familyName
+			},
+			{
+				tenancyId: data.tenancyId,
+				endpoint: data.endpoint
+			}
+		);
 
 		if (result._tag === '@error/UpdatePasskeyError') {
 			setFormError(
@@ -121,11 +127,17 @@
 
 			// Once the server update succeeds, ask the browser to refresh the
 			// locally stored display name as well.
-			const result = await updateUserPasskeys({
-				username: data.currentEmail,
-				givenName: form.data.givenName,
-				familyName: form.data.familyName
-			});
+			const result = await updateUserPasskeys(
+				{
+					username: data.currentEmail,
+					givenName: form.data.givenName,
+					familyName: form.data.familyName
+				},
+				{
+					tenancyId: data.tenancyId,
+					endpoint: data.endpoint
+				}
+			);
 
 			if (result._tag === '@error/UpdatePasskeyError') {
 				setFormError(profileErrors, result.message);

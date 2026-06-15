@@ -1,7 +1,7 @@
 import { getPasslockConfig } from '$lib/server/passkeys.js';
 import { deletePasskeyByUserId, getUserByPasskeyId } from '$lib/server/repository.js';
-import { DeletePasskeySuccess, DeletePasskeyWarning } from '$lib/shared/schemas';
-import * as PassslockServer from '@passlock/server';
+import { DeletePasskeySuccess } from '$lib/shared/schemas';
+import * as PasslockServer from '@passlock/server';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import * as v from 'valibot';
@@ -10,14 +10,10 @@ import { errorResponse } from '../shared';
 const PasskeyIdParam = v.pipe(v.string(), v.trim(), v.minLength(8));
 
 type DeletePasskeySuccess = v.InferOutput<typeof DeletePasskeySuccess>;
-type DeletePasskeyWarning = v.InferOutput<typeof DeletePasskeyWarning>;
 
 /**
  * Remove a single passkey associated with the current user from the trusted
- * server-side stores.
- *
- * The browser deletes the local device copy separately after this endpoint
- * succeeds.
+ * server-side stores and prepare browser cleanup instructions.
  */
 export const DELETE: RequestHandler = async (event) => {
 	if (!event.locals.user) {
@@ -36,17 +32,15 @@ export const DELETE: RequestHandler = async (event) => {
 	}
 
 	// Remove the credential from the Passlock vault first so the account stops
-	// trusting it.
-	const vaultResult = await PassslockServer.deletePasskey(
+	// trusting it, and snapshot browser cleanup data into a prepared token.
+	const vaultResult = await PasslockServer.deletePasskeys(
 		{
-			passkeyId: passkeyId.output
+			passkeyIds: [passkeyId.output]
 		},
 		getPasslockConfig()
 	);
 
-	// Do not fail hard when Passlock says the credential is already gone. The
-	// local record may still need cleanup.
-	if (vaultResult._tag === '@error/Forbidden') {
+	if (vaultResult.failure) {
 		return errorResponse('Unable to delete passkey', 500);
 	}
 
@@ -57,18 +51,11 @@ export const DELETE: RequestHandler = async (event) => {
 		return errorResponse('Unable to delete passkey from local account.', 404);
 	}
 
-	if (PassslockServer.isNotFoundError(vaultResult)) {
-		const message = 'Passkey was already deleted from Passlock vault.';
-		const response: DeletePasskeyWarning = {
-			_tag: '@warning/PasskeyNotFound',
-			message
-		};
-		return json(response);
-	}
-
 	const response: DeletePasskeySuccess = {
-		_tag: 'DeletePasskeySuccess',
-		deleted: vaultResult.deleted
+		_tag: 'PreparedPasskeyDeletion',
+		deletePasskeysToken: vaultResult.deletePasskeysToken,
+		expiresAt: vaultResult.expiresAt,
+		warnings: vaultResult.warnings
 	};
 
 	return json(response);

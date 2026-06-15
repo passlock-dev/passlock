@@ -1,10 +1,10 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type * as Root from "./index.js"
 import type {
+  BadRequestError,
   ChallengeAttemptsExceededError,
   ChallengeExpiredError,
   ChallengeRateLimitedError,
-  DeletedPasskeys,
   Err,
   ExtendedPrincipal,
   ForbiddenError,
@@ -15,13 +15,14 @@ import type {
   MailboxChallengeDetails,
   NotFoundError,
   Ok,
+  PreparedPasskeyDeletion,
   Principal,
   Result,
   VerificationError,
 } from "./index.js"
 import {
   type createMailboxChallenge,
-  type deleteUserPasskeys,
+  type deletePasskeys,
   type exchangeCode,
   type getMailboxChallenge,
   isChallengeRateLimitedError,
@@ -52,10 +53,9 @@ describe("public surface", () => {
       | "deleteMailboxChallenge"
       | "authorizePasskeyAuthentication"
       | "authorizePasskeyRegistration"
-      | "updatePasskey"
-      | "updatePasskeyUsernames"
-      | "deletePasskey"
-      | "deleteUserPasskeys"
+      | "updatePasskeys"
+      | "deletePasskeys"
+      | "prunePasskeys"
       | "getPasskey"
       | "listPasskeys"
       | "exchangeCode"
@@ -98,8 +98,8 @@ describe("public surface", () => {
     >
     type _3 = Assert<
       IsEqual<
-        Awaited<ReturnType<typeof deleteUserPasskeys>>,
-        Result<DeletedPasskeys, ForbiddenError | NotFoundError>
+        Awaited<ReturnType<typeof deletePasskeys>>,
+        Result<PreparedPasskeyDeletion, BadRequestError | ForbiddenError>
       >
     >
     type _4 = Assert<

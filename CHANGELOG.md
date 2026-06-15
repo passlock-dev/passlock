@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Delete passkey now uses an exchangeable token to synchronize backend and frontend records. This process is similar to that used for passkey registration. The backend initiates the process, returning a token. The frontend uses this token to perform its client-side cleanup.
+
+- Update passkey now uses an exchangeable token to synchronize backend and frontend records. This process is similar to that used for passkey registration. The backend initiates the process, returning a token. The frontend uses this token to update the device passkeys.
+
+### Removed
+
+- Browser-initiated passkey updates and deletions are no longer possible
+
+### Changed
+
+- It is now only possible to update **all** passkeys for a given `userId`. Previous versions of `@passlock/browser` implied it was possible to update a specific passkey, however the WebAuthn specs don't actually permit this.
+
 ## [2.7.0] - 2026-06-12
 
 ### Added

@@ -1,9 +1,9 @@
 import { Micro, pipe } from "effect"
-import { encodeUriComponent } from "effect/Encoding"
-import { makeEndpoint } from "../../internal/index.js"
+import { makeEndpoint, makeRequest } from "../../internal/index.js"
+import { NetworkError } from "../../internal/network.js"
 import { Logger } from "../../logger.js"
 import type { PasslockOptions } from "../../options.js"
-import { DeleteError, type OrphanedPasskeyError, PruningError, UpdateError } from "../errors.js"
+import { DeleteError, PruningError, UpdateError } from "../errors.js"
 
 /**
  * Detect support for browser-driven local passkey removal via
@@ -39,298 +39,162 @@ export const isPasskeyUpdateSupport = Micro.sync(() => {
 })
 
 /**
- * Delete a local passkey by Passlock passkey ID (authenticator ID).
+ * Non-fatal warning codes returned by passkey management helpers.
  *
- * The library uses the tenancy information to look up the credential metadata
- * before signalling the browser.
- *
- * @see {@link deletePasskey}
- * @category Passkeys (core)
- */
-export interface DeletePasskeyOptions {
-  /**
-   * Passlock passkey ID (authenticator ID).
-   */
-  passkeyId: string
-}
-
-/**
- * Delete a local passkey using credential metadata you already have.
- *
- * This shape is typically produced by `@passlock/server`'s
- * `deleteUserPasskeys` helper, so the browser can be signalled without an
- * extra Passlock lookup.
- *
- * @see {@link deletePasskey}
- * @see {@link deleteUserPasskeys}
- * @category Passkeys (core)
- */
-export type DeleteCredentialOptions = {
-  /**
-   * WebAuthn credential ID.
-   */
-  credentialId: string
-
-  /**
-   * Credential user ID.
-   */
-  userId: string
-
-  /**
-   * Relying party ID.
-   */
-  rpId: string
-}
-
-/**
- * Instruct the browser to remove a local passkey, for example from a password
- * manager.
- *
- * If you pass a Passlock `passkeyId`, the library first fetches the associated
- * credential metadata from Passlock. If you pass a credential payload or
- * {@link OrphanedPasskeyError}, it can signal the browser directly.
- * Support and metadata lookup failures are surfaced as {@link DeleteError}.
- * Browser-side signalling failures are logged as warnings and do not fail the
- * effect.
- *
- * @param options Passkey identifier or credential details.
- * @param config Passlock tenancy and API endpoint options. Required when
- * passing a Passlock passkey ID.
- * @returns A Micro effect that resolves with a {@link DeleteSuccess} once the
- * local removal workflow has been started.
- */
-export function deletePasskey(
-  options: DeletePasskeyOptions,
-  config: PasslockOptions
-): Micro.Micro<DeleteSuccess, DeleteError, Logger>
-export function deletePasskey(
-  options: DeleteCredentialOptions | OrphanedPasskeyError,
-  config?: PasslockOptions
-): Micro.Micro<DeleteSuccess, DeleteError, Logger>
-export function deletePasskey(
-  options: DeletePasskeyOptions | DeleteCredentialOptions | OrphanedPasskeyError,
-  config?: PasslockOptions
-): Micro.Micro<DeleteSuccess, DeleteError, Logger> {
-  return Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger)
-
-    yield* logger.logInfo("Testing for local passkey removal support")
-    const canDelete = yield* isPasskeyDeleteSupport
-    if (!canDelete)
-      return yield* Micro.fail(
-        new DeleteError({
-          code: "PASSKEY_DELETION_UNSUPPORTED",
-          message: "Passkey deletion not supported on this device",
-        })
-      )
-
-    const credential = "rpId" in options ? options : yield* getCredential(options, config)
-
-    return yield* signalCredentialRemoval(credential)
-  })
-}
-
-const getCredential = (options: DeletePasskeyOptions, config: PasslockOptions | undefined) =>
-  Micro.gen(function* () {
-    if (!config)
-      return yield* Micro.fail(
-        new DeleteError({
-          code: "OTHER_ERROR",
-          message: "Passlock config is required when deleting by passkey ID",
-        })
-      )
-
-    const { tenancyId } = config
-    const logger = yield* Micro.service(Logger)
-    const { endpoint } = makeEndpoint(config)
-
-    yield* logger.logInfo("Fetching passkey credential and rp id")
-    const url = new URL(`v2/${tenancyId}/credential/${options.passkeyId}`, endpoint)
-    const response = yield* Micro.promise(() => fetch(url))
-    if (response.status === 404)
-      return yield* Micro.fail(
-        new DeleteError({
-          code: "OTHER_ERROR",
-          message: "Unable to find the metadata associated with this passkey",
-        })
-      )
-
-    const credential = yield* Micro.promise(() => response.json())
-    if (!isCredential(credential))
-      return yield* Micro.fail(
-        new DeleteError({
-          code: "OTHER_ERROR",
-          message: "Invalid metadata associated with this passkey",
-        })
-      )
-
-    return credential
-  })
-
-/**
- * Keep only the listed Passlock passkeys available for a user on the current device.
- *
- * The library resolves those passkey IDs to the accepted WebAuthn credential
- * list before signalling the browser.
- *
- * @see {@link prunePasskeys}
- * @category Passkeys (core)
- */
-export interface PrunePasskeyOptions {
-  /**
-   * Passlock passkey IDs that should remain available on this device.
-   */
-  allowablePasskeyIds: Array<string>
-}
-
-/**
- * Indicates the library finished the accepted-credentials signalling flow.
- * This does not guarantee the browser removed any local passkeys.
+ * Server-side warnings from the prepared token exchange and browser-side
+ * signalling warnings are both returned on the success payload.
  *
  * @category Passkeys (core)
  */
-export type PruningSuccess = {
-  _tag: "PruningSuccess"
-}
+export type PasskeyManagementWarningCode =
+  | "PASSKEY_NOT_FOUND"
+  | "NO_PASSKEYS_FOUND"
+  | "BROWSER_SIGNAL_UNSUPPORTED"
+  | "BROWSER_SIGNAL_FAILED"
+  | "EMPTY_SIGNAL_PAYLOAD"
 
 /**
- * Type guard for {@link PruningSuccess}.
+ * Non-fatal warning returned by passkey management helpers.
  *
- * @category Passkeys (other)
+ * Warnings describe partial, no-op, unsupported, or best-effort signalling
+ * outcomes that did not prevent the helper from completing.
+ *
+ * @category Passkeys (core)
  */
-export const isPruningSuccess = (payload: unknown): payload is PruningSuccess => {
+export type PasskeyManagementWarning = {
+  readonly code: PasskeyManagementWarningCode
+  readonly message: string
+  readonly passkeyId?: string | undefined
+}
+
+const isPasskeyManagementWarningCode = (
+  payload: unknown
+): payload is PasskeyManagementWarningCode => {
+  return (
+    payload === "PASSKEY_NOT_FOUND" ||
+    payload === "NO_PASSKEYS_FOUND" ||
+    payload === "BROWSER_SIGNAL_UNSUPPORTED" ||
+    payload === "BROWSER_SIGNAL_FAILED" ||
+    payload === "EMPTY_SIGNAL_PAYLOAD"
+  )
+}
+
+const isPasskeyManagementWarning = (payload: unknown): payload is PasskeyManagementWarning => {
   if (typeof payload !== "object") return false
   if (payload === null) return false
-  if (!("_tag" in payload)) return false
-  if (typeof payload._tag !== "string") return false
-  return payload._tag === "PruningSuccess"
+
+  if (!("code" in payload)) return false
+  if (!isPasskeyManagementWarningCode(payload.code)) return false
+
+  if (!("message" in payload)) return false
+  if (typeof payload.message !== "string") return false
+
+  if ("passkeyId" in payload && payload.passkeyId !== undefined) {
+    if (typeof payload.passkeyId !== "string") return false
+  }
+
+  return true
 }
 
-/**
- * Given a list of passkey IDs to keep, instruct the device to remove any
- * redundant passkeys for the same account on the same relying party.
- *
- * This only affects passkeys that share the same `userId` and `rpId`. For
- * example, if you keep one passkey for `jdoe@gmail.com`, the browser can prune
- * other passkeys for that same account on that same site, but it will retain
- * passkeys for a different account such as `jdoe@work.com`.
- *
- * Support and metadata lookup failures are surfaced as {@link PruningError}.
- * Browser-side signalling failures are logged as warnings and do not fail the
- * effect.
- *
- * @param options Passkey IDs that should remain available for the relevant
- * account on this device.
- * @param config Passlock tenancy and API endpoint options.
- * @returns A Micro effect that resolves with a {@link PruningSuccess} once the
- * accepted-credentials signalling attempt has completed.
- */
-export const prunePasskeys = (options: PrunePasskeyOptions, config: PasslockOptions) =>
-  Micro.gen(function* () {
-    const { tenancyId } = config
-    const logger = yield* Micro.service(Logger)
-    const { endpoint } = makeEndpoint(config)
+const isWarnings = (payload: unknown): payload is ReadonlyArray<PasskeyManagementWarning> => {
+  return Array.isArray(payload) && payload.every(isPasskeyManagementWarning)
+}
 
-    yield* logger.logInfo("Testing for local passkey pruning support")
-    const canSync = yield* isPasskeyPruningSupport
-    if (!canSync)
-      return yield* Micro.fail(
-        new PruningError({
-          code: "PASSKEY_PRUNING_UNSUPPORTED",
-          message: "Passkey pruning not supported on this device",
-        })
-      )
+const unsupportedWarning = (message: string): PasskeyManagementWarning => ({
+  code: "BROWSER_SIGNAL_UNSUPPORTED",
+  message,
+})
 
-    yield* logger.logInfo("Fetching passkey credentials and rp id")
-    const encodedPasskeyIds = encodeUriComponent(options.allowablePasskeyIds.join(","))
-    const url = new URL(`v2/${tenancyId}/credentials/${encodedPasskeyIds}`, endpoint)
-    const response = yield* Micro.promise(() => fetch(url))
-    if (response.status === 404)
-      return yield* Micro.fail(
-        new PruningError({
-          code: "OTHER_ERROR",
-          message: "Unable to find the metadata associated with these passkeys",
-        })
-      )
+const emptyWarning = (message: string): PasskeyManagementWarning => ({
+  code: "EMPTY_SIGNAL_PAYLOAD",
+  message,
+})
 
-    const credentials = yield* Micro.promise(() => response.json())
-    if (!isUserCredentials(credentials))
-      return yield* Micro.fail(
-        new PruningError({
-          code: "OTHER_ERROR",
-          message: "Invalid metadata associated with one or more passkeys",
-        })
-      )
+const failedWarning = (message: string): PasskeyManagementWarning => ({
+  code: "BROWSER_SIGNAL_FAILED",
+  message,
+})
 
-    return yield* signalAcceptedCredentials(credentials)
+const errorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback
+
+const requestErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof NetworkError ? error.message : errorMessage(error, fallback)
+
+const toUpdateError = (error: unknown) =>
+  new UpdateError({
+    code: "OTHER_ERROR",
+    message: requestErrorMessage(error, "Unable to exchange passkey update token"),
+  })
+
+const toDeleteError = (error: unknown) =>
+  new DeleteError({
+    code: "OTHER_ERROR",
+    message: requestErrorMessage(error, "Unable to exchange passkey deletion token"),
+  })
+
+const toPruningError = (error: unknown) =>
+  new PruningError({
+    code: "OTHER_ERROR",
+    message: requestErrorMessage(error, "Unable to exchange passkey pruning token"),
   })
 
 /**
- * Update a local device passkey by Passlock passkey ID (authenticator ID).
- *
- * @see {@link updatePasskey}
+ * Browser options for passkey user-detail update signalling.
  *
  * @category Passkeys (core)
  */
-export interface UpdatePasskeyOptions {
+export interface UpdatePasskeysOptions {
   /**
-   * The Passlock passkey ID (authenticator ID).
+   * Prepared update token returned by `@passlock/server`'s `updatePasskeys`.
+   *
+   * The browser helper accepts only this token; update policy and signal
+   * payloads are prepared by your backend.
    */
-  passkeyId: string
-
-  /**
-   * New username shown alongside the passkey.
-   */
-  username: string
-
-  /**
-   * New display name shown alongside the passkey.
-   */
-  displayName?: string | undefined
+  updatePasskeysToken: string
 }
 
 /**
- * Used when you want to update one or more passkeys by the credential user ID,
- * that is the immutable Base64Url-encoded binary ID.
- *
- * This shape is usually returned by `@passlock/server`'s
- * `updatePasskeyUsernames` helper and does not include tenancy or endpoint
- * configuration.
- *
- * @see {@link updatePasskey}
- * @see {@link https://passlock.dev/rest-api/credential/ The Credential property (main docs site)}
+ * Browser options for passkey deletion signalling.
  *
  * @category Passkeys (core)
  */
-export interface UpdateCredentialOptions {
+export interface DeletePasskeysOptions {
   /**
-   * Credential user ID.
+   * Prepared deletion token returned by `@passlock/server`'s `deletePasskeys`.
+   *
+   * The browser helper accepts only this token; passkey selection and deletion
+   * metadata are prepared by your backend.
    */
-  userId: string
+  deletePasskeysToken: string
+}
 
+/**
+ * Browser options for accepted-credentials pruning signalling.
+ *
+ * @category Passkeys (core)
+ */
+export interface PrunePasskeysOptions {
   /**
-   * Relying party identifier for the passkey.
+   * Prepared pruning token returned by `@passlock/server`'s `prunePasskeys`.
+   *
+   * The browser helper accepts only this token; accepted credential IDs are
+   * prepared by your backend.
    */
-  rpId: string
-
-  /**
-   * New username shown alongside the passkey.
-   */
-  username: string
-
-  /**
-   * New display name shown alongside the passkey.
-   */
-  displayName?: string | undefined
+  prunePasskeysToken: string
 }
 
 /**
  * Indicates the library finished the local passkey update signalling flow.
  *
+ * This does not guarantee the browser or password manager updated local
+ * passkey user details.
+ *
  * @category Passkeys (core)
  */
 export type UpdateSuccess = {
-  _tag: "UpdateSuccess"
+  readonly _tag: "UpdateSuccess"
+  readonly warnings: ReadonlyArray<PasskeyManagementWarning>
 }
 
 /**
@@ -347,245 +211,16 @@ export const isUpdateSuccess = (payload: unknown): payload is UpdateSuccess => {
 }
 
 /**
- * Update the username and/or display name for multiple local passkeys.
+ * Indicates the library finished the local passkey removal signalling flow.
  *
- * Note: this is purely informational. It does not change any passkey
- * identifiers.
- *
- * The typical use case is when a user changes their account email. You would
- * update the username in your backend system, then pass the returned
- * credential list into this function so the same account label is shown in the
- * user's password manager.
- *
- * Support failures are surfaced as {@link UpdateError}. Browser-side
- * signalling failures are logged as warnings and do not fail the effect.
- *
- * @param options Credential identifiers plus the updated username/display name,
- * typically taken from `@passlock/server`'s `updatePasskeyUsernames`
- * response.
- * @returns A Micro effect that resolves with a {@link UpdateSuccess} once the
- * local update workflows have been started.
- */
-export const updatePasskeyUsernames = (options: ReadonlyArray<UpdateCredentialOptions>) =>
-  Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger)
-
-    yield* logger.logInfo("Testing for local passkey update support")
-    const canUpdate = yield* isPasskeyUpdateSupport
-    if (!canUpdate)
-      return yield* Micro.fail(
-        new UpdateError({
-          code: "PASSKEY_UPDATE_UNSUPPORTED",
-          message: "Passkey update not supported on this device",
-        })
-      )
-
-    yield* Micro.forEach(options, (credential) => signalCurrentUserDetails(credential, credential))
-
-    return {
-      _tag: "UpdateSuccess",
-    } as const
-  })
-
-/**
- * Delete multiple local passkeys using credentials previously returned from
- * your backend.
- *
- * The typical flow is to delete the server-side passkeys first, then pass the
- * returned `deleted` array into this function so the user’s password manager is
- * updated too.
- *
- * Support failures are surfaced as {@link DeleteError}. Browser-side
- * signalling failures are logged as warnings and do not fail the effect.
- *
- * @param options Credentials derived from deleted server-side passkeys.
- * @returns A Micro effect that resolves with a {@link DeleteSuccess} once the
- * local removal workflows have been started.
- */
-export const deleteUserPasskeys = (options: ReadonlyArray<Credential>) =>
-  Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger)
-
-    yield* logger.logInfo("Testing for local passkey removal support")
-    const canDelete = yield* isPasskeyDeleteSupport
-    if (!canDelete)
-      return yield* Micro.fail(
-        new DeleteError({
-          code: "PASSKEY_DELETION_UNSUPPORTED",
-          message: "Passkey deletion not supported on this device",
-        })
-      )
-
-    yield* Micro.forEach(options, signalCredentialRemoval)
-
-    return {
-      _tag: "DeleteSuccess",
-    } as const
-  })
-
-/**
- * Update a passkey e.g. change the username and/or display name.
- * Note: this is purely informational. It does not change any identifiers.
- * The typical use case is when a user changes their account email. You would
- * update the username in your backend system and also on the user's device.
- * Otherwise, the passkey associated with `new-name@gmail.com` would still show
- * up in their password manager as `old-name@gmail.com`.
- *
- * Support and metadata lookup failures are surfaced as {@link UpdateError}.
- * Browser-side signalling failures are logged as warnings and do not fail the
- * effect.
- *
- * @param options Passkey update options.
- * @param config Passlock tenancy and API endpoint options. Required when
- * passing a Passlock passkey ID.
- * @returns A Micro effect that resolves with a {@link UpdateSuccess} once the
- * local update workflow has been started.
- */
-export function updatePasskey(
-  options: UpdatePasskeyOptions,
-  config: PasslockOptions
-): Micro.Micro<UpdateSuccess, UpdateError, Logger>
-export function updatePasskey(
-  options: UpdateCredentialOptions,
-  config?: PasslockOptions
-): Micro.Micro<UpdateSuccess, UpdateError, Logger>
-export function updatePasskey(
-  options: UpdatePasskeyOptions | UpdateCredentialOptions,
-  config?: PasslockOptions
-): Micro.Micro<UpdateSuccess, UpdateError, Logger> {
-  return Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger)
-
-    yield* logger.logInfo("Testing for local passkey update support")
-    const canUpdate = yield* isPasskeyUpdateSupport
-    if (!canUpdate)
-      return yield* Micro.fail(
-        new UpdateError({
-          code: "PASSKEY_UPDATE_UNSUPPORTED",
-          message: "Passkey update not supported on this device",
-        })
-      )
-
-    const credential = "rpId" in options ? options : yield* getUserCredential(options, config)
-
-    return yield* signalCurrentUserDetails(credential, options)
-  })
-}
-
-const getUserCredential = (options: UpdatePasskeyOptions, config: PasslockOptions | undefined) =>
-  Micro.gen(function* () {
-    if (!config)
-      return yield* Micro.fail(
-        new UpdateError({
-          code: "OTHER_ERROR",
-          message: "Passlock config is required when updating by passkey ID",
-        })
-      )
-
-    const { tenancyId } = config
-    const logger = yield* Micro.service(Logger)
-    const { endpoint } = makeEndpoint(config)
-
-    yield* logger.logInfo("Fetching passkey credential and rp id")
-    const url = new URL(`v2/${tenancyId}/credential/${options.passkeyId}`, endpoint)
-    const response = yield* Micro.promise(() => fetch(url))
-    if (response.status === 404)
-      return yield* Micro.fail(
-        new UpdateError({
-          code: "OTHER_ERROR",
-          message: "Unable to find the metadata associated with this passkey",
-        })
-      )
-
-    const credential = yield* Micro.promise(() => response.json())
-    if (!isCredential(credential))
-      return yield* Micro.fail(
-        new UpdateError({
-          code: "OTHER_ERROR",
-          message: "Invalid metadata associated with this passkey",
-        })
-      )
-
-    return credential
-  })
-
-/**
- * Credential metadata required to target a local passkey on the device.
- *
- * @category Passkeys (core)
- */
-export type Credential = {
-  /**
-   * WebAuthn credential ID.
-   */
-  credentialId: string
-
-  /**
-   * Credential user ID.
-   */
-  userId: string
-
-  /**
-   * Relying party ID.
-   */
-  rpId: string
-}
-
-const isCredential = (payload: unknown): payload is Credential => {
-  if (typeof payload !== "object") return false
-  if (payload === null) return false
-
-  if (!("credentialId" in payload)) return false
-  if (typeof payload.credentialId !== "string") return false
-
-  if (!("userId" in payload)) return false
-  if (typeof payload.userId !== "string") return false
-
-  if (!("rpId" in payload)) return false
-  if (typeof payload.rpId !== "string") return false
-
-  return true
-}
-
-/**
- * Accepted credential list for a single user on a relying party.
- */
-export type UserCredentials = {
-  rpId: string
-  userId: string
-  allAcceptedCredentialIds: string[]
-}
-
-const isUserCredentials = (payload: unknown): payload is UserCredentials => {
-  if (typeof payload !== "object") return false
-  if (payload === null) return false
-
-  if (!("rpId" in payload)) return false
-  if (typeof payload.rpId !== "string") return false
-
-  if (!("userId" in payload)) return false
-  if (typeof payload.userId !== "string") return false
-
-  if (!("allAcceptedCredentialIds" in payload)) return false
-  if (!Array.isArray(payload.allAcceptedCredentialIds)) return false
-
-  return true
-}
-
-type IPasskeyNotFound = {
-  message: string
-  credentialId: string
-  rpId: string
-}
-
-/**
- * Indicates the library finished preparing local passkey removal signalling.
- * This does not guarantee the browser removed the passkey.
+ * This does not guarantee the browser or password manager removed local
+ * passkeys.
  *
  * @category Passkeys (core)
  */
 export type DeleteSuccess = {
-  _tag: "DeleteSuccess"
+  readonly _tag: "DeleteSuccess"
+  readonly warnings: ReadonlyArray<PasskeyManagementWarning>
 }
 
 /**
@@ -602,161 +237,455 @@ export const isDeleteSuccess = (payload: unknown): payload is DeleteSuccess => {
 }
 
 /**
- * Attempt a browser removal signal for a credential.
+ * Indicates the library finished the accepted-credentials signalling flow.
  *
- * Support failures are surfaced as {@link DeleteError}. Browser-side
- * signalling failures are logged as warnings and do not fail the effect.
+ * This does not guarantee the browser or password manager removed local
+ * passkeys.
  *
- * @param credential Credential or missing-passkey payload.
- * @returns A Micro effect that resolves with a {@link DeleteSuccess} once the
- * local removal workflow has been started.
+ * @category Passkeys (core)
  */
-export const signalCredentialRemoval = (
-  credential: Credential | IPasskeyNotFound
+export type PruningSuccess = {
+  readonly _tag: "PruningSuccess"
+  readonly warnings: ReadonlyArray<PasskeyManagementWarning>
+}
+
+/**
+ * Type guard for {@link PruningSuccess}.
+ *
+ * @category Passkeys (other)
+ */
+export const isPruningSuccess = (payload: unknown): payload is PruningSuccess => {
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
+  if (!("_tag" in payload)) return false
+  if (typeof payload._tag !== "string") return false
+  return payload._tag === "PruningSuccess"
+}
+
+/**
+ * Instruction returned by passkey update token exchange.
+ *
+ * Applications normally receive this only indirectly: pass the prepared token
+ * to {@link updatePasskeys} and let the helper exchange it.
+ */
+export type PasskeyUpdateInstruction = {
+  readonly rpId: string
+  readonly userId: string
+  readonly username: string
+  readonly displayName: string
+}
+
+const isPasskeyUpdateInstruction = (payload: unknown): payload is PasskeyUpdateInstruction => {
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
+
+  if (!("rpId" in payload)) return false
+  if (typeof payload.rpId !== "string") return false
+
+  if (!("userId" in payload)) return false
+  if (typeof payload.userId !== "string") return false
+
+  if (!("username" in payload)) return false
+  if (typeof payload.username !== "string") return false
+
+  if (!("displayName" in payload)) return false
+  if (typeof payload.displayName !== "string") return false
+
+  return true
+}
+
+/**
+ * Instruction returned by passkey deletion token exchange.
+ *
+ * Applications normally receive this only indirectly: pass the prepared token
+ * to {@link deletePasskeys} and let the helper exchange it.
+ */
+export type PasskeyDeletionInstruction = {
+  readonly rpId: string
+  readonly userId: string
+  readonly credentialId: string
+}
+
+const isPasskeyDeletionInstruction = (payload: unknown): payload is PasskeyDeletionInstruction => {
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
+
+  if (!("rpId" in payload)) return false
+  if (typeof payload.rpId !== "string") return false
+
+  if (!("userId" in payload)) return false
+  if (typeof payload.userId !== "string") return false
+
+  if (!("credentialId" in payload)) return false
+  if (typeof payload.credentialId !== "string") return false
+
+  return true
+}
+
+/**
+ * Instruction returned by passkey pruning token exchange.
+ *
+ * Applications normally receive this only indirectly: pass the prepared token
+ * to {@link prunePasskeys} and let the helper exchange it.
+ */
+export type PasskeyPruningInstruction = {
+  readonly rpId: string
+  readonly userId: string
+  readonly allAcceptedCredentialIds: ReadonlyArray<string>
+}
+
+const isPasskeyPruningInstruction = (payload: unknown): payload is PasskeyPruningInstruction => {
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
+
+  if (!("rpId" in payload)) return false
+  if (typeof payload.rpId !== "string") return false
+
+  if (!("userId" in payload)) return false
+  if (typeof payload.userId !== "string") return false
+
+  if (!("allAcceptedCredentialIds" in payload)) return false
+  if (!Array.isArray(payload.allAcceptedCredentialIds)) return false
+  if (!payload.allAcceptedCredentialIds.every((item) => typeof item === "string")) return false
+
+  return true
+}
+
+type PasskeyUpdateInstructions = {
+  readonly _tag: "PasskeyUpdateInstructions"
+  readonly instructions: ReadonlyArray<PasskeyUpdateInstruction>
+  readonly warnings: ReadonlyArray<PasskeyManagementWarning>
+}
+
+const isPasskeyUpdateInstructions = (payload: unknown): payload is PasskeyUpdateInstructions => {
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
+
+  if (!("_tag" in payload)) return false
+  if (payload._tag !== "PasskeyUpdateInstructions") return false
+
+  if (!("instructions" in payload)) return false
+  if (!Array.isArray(payload.instructions)) return false
+  if (!payload.instructions.every(isPasskeyUpdateInstruction)) return false
+
+  if (!("warnings" in payload)) return false
+  if (!isWarnings(payload.warnings)) return false
+
+  return true
+}
+
+type PasskeyDeletionInstructions = {
+  readonly _tag: "PasskeyDeletionInstructions"
+  readonly instructions: ReadonlyArray<PasskeyDeletionInstruction>
+  readonly warnings: ReadonlyArray<PasskeyManagementWarning>
+}
+
+const isPasskeyDeletionInstructions = (
+  payload: unknown
+): payload is PasskeyDeletionInstructions => {
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
+
+  if (!("_tag" in payload)) return false
+  if (payload._tag !== "PasskeyDeletionInstructions") return false
+
+  if (!("instructions" in payload)) return false
+  if (!Array.isArray(payload.instructions)) return false
+  if (!payload.instructions.every(isPasskeyDeletionInstruction)) return false
+
+  if (!("warnings" in payload)) return false
+  if (!isWarnings(payload.warnings)) return false
+
+  return true
+}
+
+type PasskeyPruningInstructions = {
+  readonly _tag: "PasskeyPruningInstructions"
+  readonly instructions: ReadonlyArray<PasskeyPruningInstruction>
+  readonly warnings: ReadonlyArray<PasskeyManagementWarning>
+}
+
+const isPasskeyPruningInstructions = (payload: unknown): payload is PasskeyPruningInstructions => {
+  if (typeof payload !== "object") return false
+  if (payload === null) return false
+
+  if (!("_tag" in payload)) return false
+  if (payload._tag !== "PasskeyPruningInstructions") return false
+
+  if (!("instructions" in payload)) return false
+  if (!Array.isArray(payload.instructions)) return false
+  if (!payload.instructions.every(isPasskeyPruningInstruction)) return false
+
+  if (!("warnings" in payload)) return false
+  if (!isWarnings(payload.warnings)) return false
+
+  return true
+}
+
+const exchangeUpdateToken = (options: UpdatePasskeysOptions, config: PasslockOptions) =>
+  Micro.gen(function* () {
+    const { tenancyId } = config
+    const { endpoint } = makeEndpoint(config)
+    const url = new URL(`v2/${tenancyId}/passkeys/update/exchange`, endpoint)
+
+    return yield* makeRequest({
+      label: "passkey update instructions",
+      payload: { updatePasskeysToken: options.updatePasskeysToken },
+      responsePredicate: isPasskeyUpdateInstructions,
+      url,
+    })
+  })
+
+const exchangeDeleteToken = (options: DeletePasskeysOptions, config: PasslockOptions) =>
+  Micro.gen(function* () {
+    const { tenancyId } = config
+    const { endpoint } = makeEndpoint(config)
+    const url = new URL(`v2/${tenancyId}/passkeys/delete/exchange`, endpoint)
+
+    return yield* makeRequest({
+      label: "passkey deletion instructions",
+      payload: { deletePasskeysToken: options.deletePasskeysToken },
+      responsePredicate: isPasskeyDeletionInstructions,
+      url,
+    })
+  })
+
+const exchangePruneToken = (options: PrunePasskeysOptions, config: PasslockOptions) =>
+  Micro.gen(function* () {
+    const { tenancyId } = config
+    const { endpoint } = makeEndpoint(config)
+    const url = new URL(`v2/${tenancyId}/passkeys/prune/exchange`, endpoint)
+
+    return yield* makeRequest({
+      label: "passkey pruning instructions",
+      payload: { prunePasskeysToken: options.prunePasskeysToken },
+      responsePredicate: isPasskeyPruningInstructions,
+      url,
+    })
+  })
+
+const signalUpdateInstruction = (instruction: PasskeyUpdateInstruction) =>
+  Micro.gen(function* () {
+    const details = {
+      displayName: instruction.displayName,
+      name: instruction.username,
+      rpId: instruction.rpId,
+      userId: instruction.userId,
+    }
+
+    return yield* Micro.tryPromise({
+      try: () => PublicKeyCredential.signalCurrentUserDetails(details),
+      catch: (err) =>
+        err instanceof Error ? err : new Error("Unable to signal credential update"),
+    })
+  })
+
+const signalDeleteInstruction = (instruction: PasskeyDeletionInstruction) =>
+  Micro.gen(function* () {
+    return yield* Micro.tryPromise({
+      try: () => PublicKeyCredential.signalUnknownCredential(instruction),
+      catch: (err) =>
+        err instanceof Error ? err : new Error("Unable to signal credential removal"),
+    })
+  })
+
+const signalPruningInstruction = (instruction: PasskeyPruningInstruction) =>
+  Micro.gen(function* () {
+    const details = {
+      ...instruction,
+      allAcceptedCredentialIds: [...instruction.allAcceptedCredentialIds],
+    }
+
+    return yield* Micro.tryPromise({
+      try: () => PublicKeyCredential.signalAllAcceptedCredentials(details),
+      catch: (err) =>
+        err instanceof Error ? err : new Error("Unable to signal accepted credentials"),
+    })
+  })
+
+const collectSignalWarnings = <A>(
+  instructions: ReadonlyArray<A>,
+  signal: (instruction: A) => Micro.Micro<void, Error>,
+  fallback: string
+) =>
+  Micro.gen(function* () {
+    const warnings: PasskeyManagementWarning[] = []
+    const logger = yield* Micro.service(Logger)
+
+    for (const instruction of instructions) {
+      const result = yield* pipe(
+        signal(instruction),
+        Micro.as(undefined),
+        Micro.catchAll((error) => {
+          const message = errorMessage(error, fallback)
+          warnings.push(failedWarning(message))
+          return logger.logWarn(message)
+        }),
+        Micro.catchAllDefect((error) => {
+          const message = errorMessage(error, fallback)
+          warnings.push(failedWarning(message))
+          return logger.logWarn(message)
+        })
+      )
+
+      void result
+    }
+
+    return warnings
+  })
+
+/**
+ * Exchange a prepared update token and signal passkey user-detail updates.
+ *
+ * The helper checks for `PublicKeyCredential.signalCurrentUserDetails` support
+ * before exchanging the token when it can. Unsupported signalling is returned
+ * as a warning on the success payload.
+ *
+ * @param options Prepared update token returned by your backend.
+ * @param config Passlock tenancy and API endpoint options.
+ * @returns A Micro effect that resolves with an {@link UpdateSuccess}.
+ *
+ * @category Passkeys (core)
+ */
+export const updatePasskeys = (
+  options: UpdatePasskeysOptions,
+  config: PasslockOptions
+): Micro.Micro<UpdateSuccess, UpdateError, Logger> =>
+  Micro.gen(function* () {
+    const logger = yield* Micro.service(Logger)
+
+    yield* logger.logInfo("Testing for local passkey update support")
+    const canUpdate = yield* isPasskeyUpdateSupport
+    if (!canUpdate) {
+      return {
+        _tag: "UpdateSuccess",
+        warnings: [unsupportedWarning("Passkey update not supported on this device")],
+      } as const
+    }
+
+    yield* logger.logInfo("Exchanging passkey update token")
+    const exchange = yield* pipe(
+      exchangeUpdateToken(options, config),
+      Micro.mapError((error) => toUpdateError(error))
+    )
+
+    const warnings = [...exchange.warnings]
+    if (exchange.instructions.length === 0) {
+      warnings.push(emptyWarning("No passkey update instructions were returned"))
+    }
+
+    const signalWarnings = yield* collectSignalWarnings(
+      exchange.instructions,
+      signalUpdateInstruction,
+      "Unable to signal credential update"
+    )
+
+    return {
+      _tag: "UpdateSuccess",
+      warnings: [...warnings, ...signalWarnings],
+    } as const
+  })
+
+/**
+ * Exchange a prepared deletion token and signal passkey removals.
+ *
+ * The helper checks for `PublicKeyCredential.signalUnknownCredential` support
+ * before exchanging the token when it can. Unsupported signalling is returned
+ * as a warning on the success payload.
+ *
+ * @param options Prepared deletion token returned by your backend.
+ * @param config Passlock tenancy and API endpoint options.
+ * @returns A Micro effect that resolves with a {@link DeleteSuccess}.
+ *
+ * @category Passkeys (core)
+ */
+export const deletePasskeys = (
+  options: DeletePasskeysOptions,
+  config: PasslockOptions
 ): Micro.Micro<DeleteSuccess, DeleteError, Logger> =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
 
     yield* logger.logInfo("Testing for local passkey removal support")
     const canDelete = yield* isPasskeyDeleteSupport
-    if (!canDelete)
-      return yield* Micro.fail(
-        new DeleteError({
-          code: "PASSKEY_DELETION_UNSUPPORTED",
-          message: "Passkey deletion not supported on this device",
-        })
-      )
+    if (!canDelete) {
+      return {
+        _tag: "DeleteSuccess",
+        warnings: [unsupportedWarning("Passkey deletion not supported on this device")],
+      } as const
+    }
 
-    // might not be defined in older browsers
-    yield* logger.logInfo("Signalling browser to remove passkey")
-
-    yield* pipe(
-      Micro.tryPromise({
-        try: () => PublicKeyCredential.signalUnknownCredential(credential),
-        catch: (err) =>
-          err instanceof Error ? err : new Error("Unable to signal credential removal"),
-      }),
-      Micro.catchAllDefect((err) =>
-        err instanceof Error
-          ? logger.logWarn(err.message)
-          : logger.logWarn("Unable to signal credential removal")
-      ),
-      Micro.catchAll((err) => logger.logWarn(err.message)),
-      Micro.forkDaemon
+    yield* logger.logInfo("Exchanging passkey deletion token")
+    const exchange = yield* pipe(
+      exchangeDeleteToken(options, config),
+      Micro.mapError((error) => toDeleteError(error))
     )
 
-    yield* logger.logInfo("Passkey removed")
+    const warnings = [...exchange.warnings]
+    if (exchange.instructions.length === 0) {
+      warnings.push(emptyWarning("No passkey deletion instructions were returned"))
+    }
 
-    return { _tag: "DeleteSuccess" } as const
+    const signalWarnings = yield* collectSignalWarnings(
+      exchange.instructions,
+      signalDeleteInstruction,
+      "Unable to signal credential removal"
+    )
+
+    return {
+      _tag: "DeleteSuccess",
+      warnings: [...warnings, ...signalWarnings],
+    } as const
   })
 
 /**
- * Tell the browser which credentials are still accepted for a user.
+ * Exchange a prepared pruning token and signal currently accepted credentials.
  *
- * Support failures are surfaced as {@link PruningError}. Browser-side
- * signalling failures are logged as warnings and do not fail the effect.
+ * The helper checks for `PublicKeyCredential.signalAllAcceptedCredentials`
+ * support before exchanging the token when it can. Unsupported signalling is
+ * returned as a warning on the success payload.
  *
- * @param credentials Accepted credentials for the user.
- * @returns A Micro effect that resolves with a {@link PruningSuccess} once the
- * accepted-credentials signalling attempt has completed.
+ * @param options Prepared pruning token returned by your backend.
+ * @param config Passlock tenancy and API endpoint options.
+ * @returns A Micro effect that resolves with a {@link PruningSuccess}.
+ *
+ * @category Passkeys (core)
  */
-export const signalAcceptedCredentials = (
-  credentials: UserCredentials
+export const prunePasskeys = (
+  options: PrunePasskeysOptions,
+  config: PasslockOptions
 ): Micro.Micro<PruningSuccess, PruningError, Logger> =>
   Micro.gen(function* () {
     const logger = yield* Micro.service(Logger)
 
-    yield* logger.logInfo("Testing for accepted credential signalling support")
-    const canSync = yield* isPasskeyPruningSupport
-    if (!canSync)
-      return yield* Micro.fail(
-        new PruningError({
-          code: "PASSKEY_PRUNING_UNSUPPORTED",
-          message: "Passkey pruning not supported on this device",
-        })
-      )
+    yield* logger.logInfo("Testing for local passkey pruning support")
+    const canPrune = yield* isPasskeyPruningSupport
+    if (!canPrune) {
+      return {
+        _tag: "PruningSuccess",
+        warnings: [unsupportedWarning("Passkey pruning not supported on this device")],
+      } as const
+    }
 
-    yield* logger.logInfo("Signalling browser of accepted credentials")
-
-    yield* pipe(
-      Micro.tryPromise({
-        try: () => PublicKeyCredential.signalAllAcceptedCredentials(credentials),
-        catch: (err) =>
-          err instanceof Error ? err : new Error("Unable to signal accepted credentials"),
-      }),
-      Micro.timeout(1000),
-      Micro.catchAllDefect((err) =>
-        err instanceof Error
-          ? logger.logWarn(err.message)
-          : logger.logWarn("Unable to signal accepted credentials")
-      ),
-      Micro.catchAll((err) => logger.logWarn(err.message))
+    yield* logger.logInfo("Exchanging passkey pruning token")
+    const exchange = yield* pipe(
+      exchangePruneToken(options, config),
+      Micro.mapError((error) => toPruningError(error))
     )
 
-    yield* logger.logInfo("Accepted credentials signalled")
+    const warnings = [...exchange.warnings]
+    if (exchange.instructions.length === 0) {
+      warnings.push(emptyWarning("No passkey pruning instructions were returned"))
+    }
 
-    return { _tag: "PruningSuccess" } as const
-  })
-
-/**
- * Credential identity needed to update the user-visible details for a local
- * passkey.
- */
-export type CredentialUserId = {
-  userId: string
-  rpId: string
-}
-
-/**
- * Tell the browser to refresh the username and display name shown for a local
- * passkey.
- *
- * Support failures are surfaced as {@link UpdateError}. Browser-side
- * signalling failures are logged as warnings and do not fail the effect.
- *
- * @param credential Credential identity used to find the passkey.
- * @param updates Updated username/display-name values.
- * @returns A Micro effect that resolves with an {@link UpdateSuccess} once the
- * local update workflow has been started.
- */
-export const signalCurrentUserDetails = (
-  credential: CredentialUserId,
-  updates: Pick<UpdatePasskeyOptions, "username" | "displayName">
-) =>
-  Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger)
-
-    yield* logger.logInfo("Testing for local passkey update support")
-    const canUpdate = yield* isPasskeyUpdateSupport
-    if (!canUpdate)
-      return yield* Micro.fail(
-        new UpdateError({
-          code: "PASSKEY_UPDATE_UNSUPPORTED",
-          message: "Passkey update not supported on this device",
-        })
-      )
-
-    yield* logger.logInfo("Signalling browser to update passkey")
-
-    const { username: name, displayName = updates.username } = updates
-    const credentialUpdates = { ...credential, name, displayName }
-
-    yield* pipe(
-      Micro.tryPromise({
-        try: () => PublicKeyCredential.signalCurrentUserDetails(credentialUpdates),
-        catch: (err) =>
-          err instanceof Error ? err : new Error("Unable to signal credential update"),
-      }),
-      Micro.catchAllDefect((err) =>
-        err instanceof Error
-          ? logger.logWarn(err.message)
-          : logger.logWarn("Unable to signal credential update")
-      ),
-      Micro.catchAll((err) => logger.logWarn(err.message)),
-      Micro.forkDaemon
+    const signalWarnings = yield* collectSignalWarnings(
+      exchange.instructions,
+      signalPruningInstruction,
+      "Unable to signal accepted credentials"
     )
 
-    yield* logger.logInfo("Passkey updated")
-
-    return { _tag: "UpdateSuccess" } as const
+    return {
+      _tag: "PruningSuccess",
+      warnings: [...warnings, ...signalWarnings],
+    } as const
   })

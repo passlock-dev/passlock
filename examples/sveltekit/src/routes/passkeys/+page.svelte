@@ -43,18 +43,15 @@
 
 		// Deletion is split across server-side trust removal and best-effort
 		// browser/device cleanup.
-		const result = await deletePasskey({ passkeyId });
+		const result = await deletePasskey({ passkeyId }, data);
 
-		if (
-			result._tag === '@error/DeletePasskeyError' ||
-			result._tag === '@warning/PasskeyDeletePaused'
-		) {
+		if (result._tag === '@error/DeletePasskeyError') {
 			deletingPasskeyId = null;
 			error = result.message;
 			return;
 		}
 
-		if (result._tag === '@warning/PasskeyNotFound') {
+		if (result._tag === '@warning/PasskeyDeletePaused') {
 			warning = result.message;
 		} else {
 			info = 'Passkey deleted from your account';
@@ -90,7 +87,7 @@
 			{/if}
 
 			{#if warning}
-				<p class="mt-4 text-sm text-warning">{info}</p>
+				<p class="mt-4 text-sm text-warning">{warning}</p>
 			{/if}
 
 			{#if error}

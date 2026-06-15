@@ -1,9 +1,9 @@
 /**
- * These methods and functions are **_safe_** i.e. they return wrappers over
- * success and error payloads. Use result.success or result.failure
+ * These methods and functions are **_safe_**; they return wrappers over
+ * success and error payloads. Use `result.success` or `result.failure`
  * to branch between success and error outcomes.
  *
- * Choose the Passlock client is you prefer a class based API. Alternatively,
+ * Choose the Passlock client if you prefer a class-based API. Alternatively,
  * import standalone tree-shakeable functions.
  *
  * **Note:** unexpected runtime failures may still throw.
@@ -53,8 +53,9 @@
  * Class based API. Pass the Passlock config to the constructor.
  *
  * @categoryDescription Passkeys (core)
- * Creating, authenticating, updating and deleting passkeys. {@link registerPasskey}
- * and {@link authenticatePasskey} are the key functions.
+ * Creating, authenticating, updating, deleting, and pruning passkeys. Management
+ * helpers use short-lived tokens prepared by `@passlock/server`, then signal
+ * local password managers on a best-effort basis.
  *
  * @categoryDescription Passkeys (other)
  * Testing for browser capabilities related to passkeys, type guards and other utilities.
@@ -80,12 +81,7 @@ import {
   AuthenticationHelper,
   authenticatePasskey as authenticatePasskeyM,
 } from "./passkey/authentication/authentication.js"
-import type {
-  DeleteError,
-  OrphanedPasskeyError,
-  PruningError,
-  UpdateError,
-} from "./passkey/errors.js"
+import type { DeleteError, PruningError, UpdateError } from "./passkey/errors.js"
 
 import type {
   RegistrationError,
@@ -98,19 +94,15 @@ import {
 } from "./passkey/registration/registration.js"
 
 import type {
-  Credential,
-  DeleteCredentialOptions,
-  DeletePasskeyOptions,
+  DeletePasskeysOptions,
   DeleteSuccess,
-  PrunePasskeyOptions,
+  PrunePasskeysOptions,
   PruningSuccess,
-  UpdateCredentialOptions,
-  UpdatePasskeyOptions,
+  UpdatePasskeysOptions,
   UpdateSuccess,
 } from "./passkey/signals/signals.js"
 import {
-  deletePasskey as deletePasskeyM,
-  deleteUserPasskeys as deleteUserPasskeysM,
+  deletePasskeys as deletePasskeysM,
   isDeleteSuccess,
   isPasskeyDeleteSupport as isPasskeyDeleteSupportM,
   isPasskeyPruningSupport as isPasskeyPruningSupportM,
@@ -118,19 +110,8 @@ import {
   isPruningSuccess,
   isUpdateSuccess,
   prunePasskeys as prunePasskeysM,
-  updatePasskey as updatePasskeyM,
-  updatePasskeyUsernames as updatePasskeyUsernamesM,
+  updatePasskeys as updatePasskeysM,
 } from "./passkey/signals/signals.js"
-
-type SafeUpdatePasskey = (
-  options: UpdatePasskeyOptions | UpdateCredentialOptions,
-  config: PasslockOptions
-) => Promise<Result<UpdateSuccess, UpdateError>>
-
-type SafeDeletePasskey = (
-  options: DeletePasskeyOptions | DeleteCredentialOptions | OrphanedPasskeyError,
-  config: PasslockOptions
-) => Promise<Result<DeleteSuccess, DeleteError>>
 
 /* Registration */
 
@@ -256,276 +237,127 @@ export const authenticatePasskey = (
 /* Signals */
 
 /**
- * Attempt to update the username or display name for a passkey on the local device.
+ * Exchange a prepared update token and signal local passkey user-detail updates.
  *
- * Useful if the user has changed their account identifier. For example, they register
- * using jdoe@gmail.com but later change their account username to jdoe@yahoo.com.
- * Even after you update their account details in your backend, their local password
- * manager will continue to display jdoe@gmail.com.
+ * Your backend should first call `updatePasskeys` from `@passlock/server`,
+ * return the resulting `updatePasskeysToken` to the browser, then pass that
+ * token to this function. The browser exchanges the token for exact
+ * WebAuthn signal instructions chosen by your backend.
  *
- * By calling this function and supplying a new username/display name, their local
- * password manager will align with their updated account identifier.
- * Support and metadata lookup failures populate the error branch as
- * {@link UpdateError}. Browser-side signalling failures are logged as warnings
- * and do not populate the error branch.
+ * Unsupported signal APIs and browser-side signal failures are returned as
+ * warnings on the success branch. A successful result means the signalling
+ * workflow completed or no-op'd; it does not guarantee that a browser or
+ * password manager changed local passkey state.
  *
- * @param options You will typically supply a target `passkeyId` via
- * {@link UpdatePasskeyOptions}. {@link UpdateCredentialOptions} is intended
- * for credential-scoped updates, for example when replaying data returned by
- * `@passlock/server`.
- * @param config Passlock tenancy and API endpoint options. Required when
- * passing a Passlock passkey ID.
+ * @param options Prepared update token.
+ * @param config Passlock tenancy and API endpoint options.
  * @returns A {@link Result} whose success branch contains an
- * {@link UpdateSuccess} after the local update workflow has been started, and
- * whose error branch contains an {@link UpdateError}.
- * Existing {@link isUpdateSuccess}, {@link isUpdateError}, and `_tag` checks
- * still work.
+ * {@link UpdateSuccess} with warnings and whose error branch contains an
+ * {@link UpdateError}.
  *
  * @see {@link isUpdateSuccess}
  * @see {@link isUpdateError}
  *
  * @example
- * // from your Passlock console settings
  * const tenancyId = "myTenancyId";
- * const passkeyId = "myPasskeyId";
- * const username = "newUsername@gmail.com";
- * const displayName = "New Account Name";
+ * const updatePasskeysToken = "token-from-your-backend";
  *
- * const result = await updatePasskey({ passkeyId, username, displayName }, { tenancyId });
+ * const result = await updatePasskeys({ updatePasskeysToken }, { tenancyId });
  *
  * if (result.success) {
- *   console.log("passkey update requested");
+ *   console.log(result.value.warnings);
  * } else {
  *   console.log(result.error.code);
  * }
  *
  * @category Passkeys (core)
  */
-export function updatePasskey(
-  options: UpdatePasskeyOptions,
+export const updatePasskeys = (
+  options: UpdatePasskeysOptions,
   config: PasslockOptions,
-  /** @hidden */
-  logger?: typeof Logger.Service
-): Promise<Result<UpdateSuccess, UpdateError>>
-export function updatePasskey(
-  options: UpdateCredentialOptions,
-  config?: PasslockOptions,
-  /** @hidden */
-  logger?: typeof Logger.Service
-): Promise<Result<UpdateSuccess, UpdateError>>
-export function updatePasskey(
-  options: UpdatePasskeyOptions | UpdateCredentialOptions,
-  config?: PasslockOptions,
-  /** @hidden */
-  logger: typeof Logger.Service = eventLogger
-): Promise<Result<UpdateSuccess, UpdateError>> {
-  const micro =
-    "rpId" in options ? updatePasskeyM(options) : updatePasskeyM(options, config as PasslockOptions)
-  return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
-}
-
-/**
- * Attempt to update the username and/or display name for multiple passkeys on the local device.
- *
- * Useful if the user has changed their account identifier. For example, they register
- * using jdoe@gmail.com but later change their account username to jdoe@yahoo.com.
- * Even after you update their account details in your backend, their local password
- * manager will continue to display jdoe@gmail.com.
- *
- * By calling this function and supplying a new username/display name, their local
- * password manager will align with their updated account identifier.
- * Support failures populate the error branch as {@link UpdateError}.
- * Browser-side signalling failures are logged as warnings and do not populate
- * the error branch.
- *
- * @param options The `credentials` array returned by
- * `@passlock/server`'s `updatePasskeyUsernames` success branch.
- * @returns A {@link Result} whose success branch contains an
- * {@link UpdateSuccess} after the local update workflows have been started,
- * and whose error branch contains an {@link UpdateError}.
- * Existing {@link isUpdateSuccess}, {@link isUpdateError}, and `_tag` checks
- * still work.
- *
- * @see {@link isUpdateSuccess}
- * @see {@link isUpdateError}
- *
- * @example
- * // server code
- * import { updatePasskeyUsernames as updatePasskeyUsernamesOnServer } from "@passlock/server";
- *
- * const backendResult = await updatePasskeyUsernamesOnServer({
- *   tenancyId,
- *   userId,
- *   username,
- *   displayName,
- * });
- * // send backendResult.value.credentials to your frontend when backendResult.success
- *
- * // browser code
- * import { updatePasskeyUsernames } from "@passlock/browser";
- *
- * const credentialsFromBackend = backendResult.value.credentials;
- * const result = await updatePasskeyUsernames(credentialsFromBackend);
- * console.log(result);
- *
- * @category Passkeys (core)
- */
-export const updatePasskeyUsernames = (
-  options: ReadonlyArray<UpdateCredentialOptions>,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<Result<UpdateSuccess, UpdateError>> => {
-  const micro = updatePasskeyUsernamesM(options)
+  const micro = updatePasskeysM(options, config)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
 
 /**
- * Attempt to signal removal of multiple passkeys from a local device.
+ * Exchange a prepared deletion token and signal local passkey removals.
  *
- * Use this after deleting the server-side passkeys. The `deleted` array returned
- * by `@passlock/server` already has the right shape, so you can pass it
- * straight into this function.
- * Support failures populate the error branch as {@link DeleteError}.
- * Browser-side signalling failures are logged as warnings and do not populate
- * the error branch.
+ * Your backend should first call `deletePasskeys` from `@passlock/server`,
+ * return the resulting `deletePasskeysToken` to the browser, then pass that
+ * token to this function. The browser exchanges the token for exact
+ * WebAuthn signal instructions chosen by your backend.
  *
- * @param options Credentials derived from deleted backend passkeys.
- * @returns A {@link Result} whose success branch contains a
- * {@link DeleteSuccess} once the local removal workflows have been started,
- * and whose error branch contains a {@link DeleteError}. Existing
- * {@link isDeleteSuccess}, {@link isDeleteError}, and `_tag` checks still work.
+ * Unsupported signal APIs and browser-side signal failures are returned as
+ * warnings on the success branch. A successful result means the signalling
+ * workflow completed or no-op'd; it does not guarantee that a browser or
+ * password manager removed local passkeys.
+ *
+ * @param options Prepared deletion token.
+ * @param config Passlock tenancy and API endpoint options.
+ * @returns A {@link Result} whose success branch contains an
+ * {@link DeleteSuccess} with warnings and whose error branch contains a
+ * {@link DeleteError}.
+ *
  * @see {@link isDeleteSuccess}
  * @see {@link isDeleteError}
  *
  * @example
- * // server code
- * import { deleteUserPasskeys as deleteUserPasskeysOnServer } from "@passlock/server";
- *
- * const backendResult = await deleteUserPasskeysOnServer({
- *   tenancyId,
- *   userId,
- *   apiKey,
- * });
- *
- * // send backendResult.value.deleted to your frontend when backendResult.success
- *
- * // browser code
- * import { deleteUserPasskeys } from "@passlock/browser";
- *
- * const deletedCredentials = backendResult.value.deleted;
- * const result = await deleteUserPasskeys(deletedCredentials);
- * console.log(result);
- *
- * @category Passkeys (core)
- */
-export const deleteUserPasskeys = (
-  options: ReadonlyArray<Credential>,
-  /** @hidden */
-  logger: typeof Logger.Service = eventLogger
-): Promise<Result<DeleteSuccess, DeleteError>> => {
-  const micro = deleteUserPasskeysM(options)
-  return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
-}
-
-/**
- * Attempts to signal removal of a passkey from a local device. There are two
- * scenarios in which this function is useful:
- *
- * 1. **Deleting a passkey** - Use the `@passlock/server` package or make vanilla REST calls from your
- * backend to delete the server-side component, then use this function to delete the passkey from the user's local device.
- *
- * 2. **Missing passkey** - When a user presented a passkey but the server-side component could not be found.
- * Remove the passkey from the user's local device to prevent it happening again.
- *
- * See [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/) and
- * [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/) in the documentation.
- * Support and metadata lookup failures populate the error branch as
- * {@link DeleteError}. Browser-side signalling failures are logged as warnings
- * and do not populate the error branch.
- *
- * @param options You will typically pass {@link DeletePasskeyOptions}. Use
- * {@link DeleteCredentialOptions} or {@link OrphanedPasskeyError} when you
- * already have the credential metadata.
- * @param config Passlock tenancy and API endpoint options. Required when
- * passing a Passlock passkey ID.
- * @returns A {@link Result} whose success branch contains a
- * {@link DeleteSuccess} once the local removal workflow has been started, and
- * whose error branch contains a {@link DeleteError}. Existing
- * {@link isDeleteSuccess}, {@link isDeleteError}, and `_tag` checks still work.
- * @see {@link isDeleteSuccess}
- * @see {@link isDeleteError}
- *
- * @example
- * // from your Passlock console settings
  * const tenancyId = "myTenancyId";
- * const passkeyId = "myPasskeyId";
+ * const deletePasskeysToken = "token-from-your-backend";
  *
- * const result = await deletePasskey({ passkeyId }, { tenancyId });
+ * const result = await deletePasskeys({ deletePasskeysToken }, { tenancyId });
  *
  * if (result.success) {
- *   console.log("passkey removal requested");
+ *   console.log(result.value.warnings);
  * } else {
  *   console.log(result.error.code);
  * }
  *
  * @category Passkeys (core)
  */
-export function deletePasskey(
-  options: DeletePasskeyOptions,
+export const deletePasskeys = (
+  options: DeletePasskeysOptions,
   config: PasslockOptions,
   /** @hidden */
-  logger?: typeof Logger.Service
-): Promise<Result<DeleteSuccess, DeleteError>>
-export function deletePasskey(
-  options: DeleteCredentialOptions | OrphanedPasskeyError,
-  config?: PasslockOptions,
-  /** @hidden */
-  logger?: typeof Logger.Service
-): Promise<Result<DeleteSuccess, DeleteError>>
-export function deletePasskey(
-  options: DeletePasskeyOptions | DeleteCredentialOptions | OrphanedPasskeyError,
-  config?: PasslockOptions,
-  /** @hidden */
   logger: typeof Logger.Service = eventLogger
-): Promise<Result<DeleteSuccess, DeleteError>> {
-  const micro =
-    "rpId" in options ? deletePasskeyM(options) : deletePasskeyM(options, config as PasslockOptions)
+): Promise<Result<DeleteSuccess, DeleteError>> => {
+  const micro = deletePasskeysM(options, config)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
 
 /**
- * Attempt to prune redundant local passkeys by keeping only the passkey IDs
- * you trust.
+ * Exchange a prepared pruning token and signal the currently accepted passkeys.
  *
- * This is useful when your backend is the source of truth for which passkeys
- * should still exist for a given account on this device. Only passkeys for the
- * same account on the same relying party can be pruned; passkeys for different
- * accounts are retained.
- * Support and metadata lookup failures populate the error branch as
- * {@link PruningError}. Browser-side signalling failures are logged as
- * warnings and do not populate the error branch.
+ * Your backend should first call `prunePasskeys` from `@passlock/server`,
+ * return the resulting `prunePasskeysToken` to the browser, then pass that
+ * token to this function. The browser exchanges the token for exact
+ * WebAuthn signal instructions chosen by your backend.
  *
- * @param options Pass the passkey IDs you **want to retain** for that account
- * on this device.
+ * Unsupported signal APIs and browser-side signal failures are returned as
+ * warnings on the success branch. A successful result means the signalling
+ * workflow completed or no-op'd; it does not guarantee that a browser or
+ * password manager removed local passkeys.
+ *
+ * @param options Prepared pruning token.
  * @param config Passlock tenancy and API endpoint options.
  * @returns A {@link Result} whose success branch contains a
- * {@link PruningSuccess} once the accepted-credentials signalling attempt has
- * completed, and whose error branch contains a
- * {@link PruningError}. Existing {@link isPruningSuccess},
- * {@link isPruningError}, and `_tag` checks still work.
+ * {@link PruningSuccess} with warnings and whose error branch contains a
+ * {@link PruningError}.
  *
  * @see {@link isPruningSuccess}
  * @see {@link isPruningError}
  *
  * @example
- * // from your Passlock console settings
  * const tenancyId = "myTenancyId";
- * const allowablePasskeyIds = ["passkey-1", "passkey-2"];
+ * const prunePasskeysToken = "token-from-your-backend";
  *
- * const result = await prunePasskeys({ allowablePasskeyIds }, { tenancyId });
+ * const result = await prunePasskeys({ prunePasskeysToken }, { tenancyId });
  *
  * if (result.success) {
- *   console.log("accepted credentials sync completed");
+ *   console.log(result.value.warnings);
  * } else {
  *   console.log(result.error.code);
  * }
@@ -533,7 +365,7 @@ export function deletePasskey(
  * @category Passkeys (core)
  */
 export const prunePasskeys = (
-  options: PrunePasskeyOptions,
+  options: PrunePasskeysOptions,
   config: PasslockOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
@@ -545,37 +377,34 @@ export const prunePasskeys = (
 /* Support */
 
 /**
- * Does the local device support programmatic passkey deletion?
+ * Does the local device support passkey deletion signalling?
  *
- * @returns `true` if local passkey deletion is supported.
+ * @returns `true` if local passkey deletion signalling is supported.
  *
  * @category Passkeys (other)
  */
 export const isPasskeyDeleteSupport = () => pipe(isPasskeyDeleteSupportM, Micro.runSync)
 
 /**
- * Does the local device support programmatic passkey pruning via accepted
- * credentials signalling?
+ * Does the local device support passkey pruning via accepted-credentials
+ * signalling?
  *
- * @returns `true` if local passkey pruning is supported.
+ * @returns `true` if local passkey pruning signalling is supported.
  *
  * @category Passkeys (other)
  */
 export const isPasskeyPruningSupport = () => pipe(isPasskeyPruningSupportM, Micro.runSync)
 
 /**
- * Does the local device support programmatic passkey updates?
+ * Does the local device support passkey user-detail update signalling?
  *
- * @returns `true` if local passkey updates are supported.
+ * @returns `true` if local passkey update signalling is supported.
  *
  * @category Passkeys (other)
  */
 export const isPasskeyUpdateSupport = () => pipe(isPasskeyUpdateSupportM, Micro.runSync)
 
 /* Client */
-
-const updatePasskeySafe = updatePasskey as SafeUpdatePasskey
-const deletePasskeySafe = deletePasskey as SafeDeletePasskey
 
 /**
  * Safe Passlock browser client.
@@ -716,243 +545,56 @@ export class Passlock {
   }
 
   /**
-   * Attempt to update the username or display name for a passkey on the local device.
+   * Exchange a prepared update token and signal local passkey user-detail updates.
    *
-   * Useful if the user has changed their account identifier. For example, they register
-   * using jdoe@gmail.com but later change their account username to jdoe@yahoo.com.
-   * Even after you update their account details in your backend, their local password
-   * manager will continue to display jdoe@gmail.com.
+   * The token is prepared by `@passlock/server` after your backend chooses the
+   * user, username, and optional display name. Unsupported signal APIs and
+   * signal failures are returned as warnings on the success branch.
    *
-   * By calling this method and supplying a new username/display name, their local
-   * password manager will align with their updated account identifier.
-   * Support and metadata lookup failures populate the error branch as
-   * {@link UpdateError}. Browser-side signalling failures are logged as warnings
-   * and do not populate the error branch.
-   *
-   * @param options You will typically supply a target `passkeyId` via
-   * {@link UpdatePasskeyOptions}. {@link UpdateCredentialOptions} is intended
-   * for credential-scoped updates, for example when replaying data returned by
-   * `@passlock/server`.
+   * @param options Prepared update token.
    * @returns A {@link Result} whose success branch contains an
-   * {@link UpdateSuccess} after the local update workflow has been started, and
-   * whose error branch contains an {@link UpdateError}.
-   * Existing {@link isUpdateSuccess}, {@link isUpdateError}, and `_tag` checks
-   * still work.
-   *
-   * @see {@link isUpdateSuccess}
-   * @see {@link isUpdateError}
-   *
-   * @example
-   * // from your Passlock console settings
-   * const tenancyId = "myTenancyId";
-   * const passkeyId = "myPasskeyId";
-   * const username = "newUsername@gmail.com";
-   * const displayName = "New Account Name";
-   *
-   * const passlock = new Passlock({ tenancyId });
-   * const result = await passlock.updatePasskey({ passkeyId, username, displayName });
-   *
-   * if (result.success) {
-   *   console.log("passkey update requested");
-   * } else {
-   *   console.log(result.error.code);
-   * }
+   * {@link UpdateSuccess} with warnings and whose error branch contains an
+   * {@link UpdateError}.
    *
    * @category Passkeys (core)
    */
-  updatePasskey(
-    options: UpdatePasskeyOptions | UpdateCredentialOptions
-  ): Promise<Result<UpdateSuccess, UpdateError>> {
-    return updatePasskeySafe(options, this.config)
+  updatePasskeys(options: UpdatePasskeysOptions): Promise<Result<UpdateSuccess, UpdateError>> {
+    return updatePasskeys(options, this.config)
   }
 
   /**
-   * Attempt to update the username and/or display name for multiple passkeys on the local device.
+   * Exchange a prepared deletion token and signal local passkey removals.
    *
-   * Useful if the user has changed their account identifier. For example, they register
-   * using jdoe@gmail.com but later change their account username to jdoe@yahoo.com.
-   * Even after you update their account details in your backend, their local password
-   * manager will continue to display jdoe@gmail.com.
+   * The token is prepared by `@passlock/server` after your backend chooses
+   * passkey IDs or a user ID. A successful result means the browser signalling
+   * flow completed or no-op'd, not that local passkeys were definitely removed.
    *
-   * By calling this method and supplying a new username/display name, their local
-   * password manager will align with their updated account identifier.
-   * Support failures populate the error branch as {@link UpdateError}.
-   * Browser-side signalling failures are logged as warnings and do not populate
-   * the error branch.
-   *
-   * @param options The `credentials` array returned by
-   * `@passlock/server`'s `updatePasskeyUsernames` success branch.
-   * @returns A {@link Result} whose success branch contains an
-   * {@link UpdateSuccess} after the local update workflows have been started,
-   * and whose error branch contains an {@link UpdateError}.
-   * Existing {@link isUpdateSuccess}, {@link isUpdateError}, and `_tag` checks
-   * still work.
-   *
-   * @see {@link isUpdateSuccess}
-   * @see {@link isUpdateError}
-   *
-   * @example
-   * // server code
-   * import { updatePasskeyUsernames as updatePasskeyUsernamesOnServer } from "@passlock/server";
-   *
-   * const backendResult = await updatePasskeyUsernamesOnServer({
-   *   tenancyId,
-   *   userId,
-   *   username,
-   *   displayName,
-   * });
-   * // send backendResult.value.credentials to your frontend when backendResult.success
-   *
-   * // browser code
-   * import { Passlock } from "@passlock/browser";
-   *
-   * const passlock = new Passlock({ tenancyId });
-   * const credentialsFromBackend = backendResult.value.credentials;
-   * const result = await passlock.updatePasskeyUsernames(credentialsFromBackend);
-   * console.log(result);
-   *
-   * @category Passkeys (core)
-   */
-  updatePasskeyUsernames(
-    options: ReadonlyArray<UpdateCredentialOptions>
-  ): Promise<Result<UpdateSuccess, UpdateError>> {
-    return updatePasskeyUsernames(options)
-  }
-
-  /**
-   * Attempts to signal removal of a passkey from a local device. There are two
-   * scenarios in which this method is useful:
-   *
-   * 1. **Deleting a passkey** - Use the `@passlock/server` package or make vanilla REST calls from your
-   * backend to delete the server-side component, then use this method to delete the passkey from the user's local device.
-   *
-   * 2. **Missing passkey** - When a user presented a passkey but the server-side component could not be found.
-   * Remove the passkey from the user's local device to prevent it happening again.
-   *
-   * See [deleting passkeys](https://passlock.dev/passkeys/passkey-removal/) and
-   * [handling missing passkeys](https://passlock.dev/handling-missing-passkeys/) in the documentation.
-   * Support and metadata lookup failures populate the error branch as
-   * {@link DeleteError}. Browser-side signalling failures are logged as warnings
-   * and do not populate the error branch.
-   *
-   * @param options You will typically pass {@link DeletePasskeyOptions}. Use
-   * {@link DeleteCredentialOptions} or {@link OrphanedPasskeyError} when you
-   * already have the credential metadata.
+   * @param options Prepared deletion token.
    * @returns A {@link Result} whose success branch contains a
-   * {@link DeleteSuccess} once the local removal workflow has been started, and
-   * whose error branch contains a {@link DeleteError}. Existing
-   * {@link isDeleteSuccess}, {@link isDeleteError}, and `_tag` checks still work.
-   * @see {@link isDeleteSuccess}
-   * @see {@link isDeleteError}
-   *
-   * @example
-   * // from your Passlock console settings
-   * const tenancyId = "myTenancyId";
-   * const passkeyId = "myPasskeyId";
-   *
-   * const passlock = new Passlock({ tenancyId });
-   * const result = await passlock.deletePasskey({ passkeyId });
-   *
-   * if (result.success) {
-   *   console.log("passkey removal requested");
-   * } else {
-   *   console.log(result.error.code);
-   * }
+   * {@link DeleteSuccess} with warnings and whose error branch contains a
+   * {@link DeleteError}.
    *
    * @category Passkeys (core)
    */
-  deletePasskey(
-    options: DeletePasskeyOptions | DeleteCredentialOptions | OrphanedPasskeyError
-  ): Promise<Result<DeleteSuccess, DeleteError>> {
-    return deletePasskeySafe(options, this.config)
+  deletePasskeys(options: DeletePasskeysOptions): Promise<Result<DeleteSuccess, DeleteError>> {
+    return deletePasskeys(options, this.config)
   }
 
   /**
-   * Attempt to signal removal of multiple passkeys from a local device.
+   * Exchange a prepared pruning token and signal the currently accepted passkeys.
    *
-   * Use this after deleting the server-side passkeys. The `deleted` array returned
-   * by `@passlock/server` already has the right shape, so you can pass it
-   * straight into this method.
-   * Support failures populate the error branch as {@link DeleteError}.
-   * Browser-side signalling failures are logged as warnings and do not populate
-   * the error branch.
+   * The token is prepared by `@passlock/server` after your backend chooses a
+   * user ID. A successful result means the accepted-credentials signal was
+   * attempted or no-op'd, not that local passkeys were definitely removed.
    *
-   * @param options Credentials derived from deleted backend passkeys.
+   * @param options Prepared pruning token.
    * @returns A {@link Result} whose success branch contains a
-   * {@link DeleteSuccess} once the local removal workflows have been started,
-   * and whose error branch contains a {@link DeleteError}. Existing
-   * {@link isDeleteSuccess}, {@link isDeleteError}, and `_tag` checks still work.
-   * @see {@link isDeleteSuccess}
-   * @see {@link isDeleteError}
-   *
-   * @example
-   * // server code
-   * import { deleteUserPasskeys as deleteUserPasskeysOnServer } from "@passlock/server";
-   *
-   * const backendResult = await deleteUserPasskeysOnServer({
-   *   tenancyId,
-   *   userId,
-   *   apiKey,
-   * });
-   *
-   * // send backendResult.value.deleted to your frontend when backendResult.success
-   *
-   * // browser code
-   * import { Passlock } from "@passlock/browser";
-   *
-   * const passlock = new Passlock({ tenancyId });
-   * const deletedCredentials = backendResult.value.deleted;
-   * const result = await passlock.deleteUserPasskeys(deletedCredentials);
-   * console.log(result);
+   * {@link PruningSuccess} with warnings and whose error branch contains a
+   * {@link PruningError}.
    *
    * @category Passkeys (core)
    */
-  deleteUserPasskeys(
-    options: ReadonlyArray<Credential>
-  ): Promise<Result<DeleteSuccess, DeleteError>> {
-    return deleteUserPasskeys(options)
-  }
-
-  /**
-   * Attempt to prune redundant local passkeys by keeping only the passkey IDs
-   * you trust.
-   *
-   * This is useful when your backend is the source of truth for which passkeys
-   * should still exist for a given account on this device. Only passkeys for the
-   * same account on the same relying party can be pruned; passkeys for different
-   * accounts are retained.
-   * Support and metadata lookup failures populate the error branch as
-   * {@link PruningError}. Browser-side signalling failures are logged as
-   * warnings and do not populate the error branch.
-   *
-   * @param options Pass the passkey IDs you **want to retain** for that account
-   * on this device.
-   * @returns A {@link Result} whose success branch contains a
-   * {@link PruningSuccess} once the accepted-credentials signalling attempt has
-   * completed, and whose error branch contains a
-   * {@link PruningError}. Existing {@link isPruningSuccess},
-   * {@link isPruningError}, and `_tag` checks still work.
-   *
-   * @see {@link isPruningSuccess}
-   * @see {@link isPruningError}
-   *
-   * @example
-   * // from your Passlock console settings
-   * const tenancyId = "myTenancyId";
-   * const allowablePasskeyIds = ["passkey-1", "passkey-2"];
-   *
-   * const passlock = new Passlock({ tenancyId });
-   * const result = await passlock.prunePasskeys({ allowablePasskeyIds });
-   *
-   * if (result.success) {
-   *   console.log("accepted credentials sync completed");
-   * } else {
-   *   console.log(result.error.code);
-   * }
-   *
-   * @category Passkeys (core)
-   */
-  prunePasskeys(options: PrunePasskeyOptions): Promise<Result<PruningSuccess, PruningError>> {
+  prunePasskeys(options: PrunePasskeysOptions): Promise<Result<PruningSuccess, PruningError>> {
     return prunePasskeys(options, this.config)
   }
 }
@@ -1010,14 +652,16 @@ export {
 } from "./passkey/registration/registration.js"
 export type { UserVerification } from "./passkey/shared.js"
 export type {
-  Credential,
-  DeleteCredentialOptions,
-  DeletePasskeyOptions,
+  DeletePasskeysOptions,
   DeleteSuccess,
-  PrunePasskeyOptions,
+  PasskeyDeletionInstruction,
+  PasskeyManagementWarning,
+  PasskeyManagementWarningCode,
+  PasskeyPruningInstruction,
+  PasskeyUpdateInstruction,
+  PrunePasskeysOptions,
   PruningSuccess,
-  UpdateCredentialOptions,
-  UpdatePasskeyOptions,
+  UpdatePasskeysOptions,
   UpdateSuccess,
 } from "./passkey/signals/signals.js"
 export {

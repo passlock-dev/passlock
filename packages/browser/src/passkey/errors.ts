@@ -28,10 +28,8 @@ export class PasskeyUnsupportedError extends Error {
 
 /**
  * The device tried to authenticate with a passkey that was not found in the vault.
- * Note: this error can be passed to the {@link deletePasskey} function. This is
- * useful when the user has an orphaned passkey on their device with no server-side
- * component. Just pass this error into deletePasskey and the library will attempt
- * to remove the orphaned passkey from the local device.
+ * Your backend can prepare a deletion token for local cleanup, then pass that
+ * token to the browser's `deletePasskeys` helper.
  *
  * @category Passkeys (errors)
  */
@@ -43,10 +41,8 @@ export const isOrphanedPasskeyError = (payload: unknown): payload is OrphanedPas
 
 /**
  * The device tried to authenticate with a passkey that was not found in the vault.
- * Note: this error can be passed to the {@link deletePasskey} function. This is
- * useful when the user has an orphaned passkey on their device with no server-side
- * component. Just pass this error into deletePasskey and the library will attempt
- * to remove the orphaned passkey from the local device.
+ * Your backend can prepare a deletion token for local cleanup, then pass that
+ * token to the browser's `deletePasskeys` helper.
  *
  * @category Passkeys (errors)
  */
@@ -127,7 +123,7 @@ export class OtherPasskeyError extends Error {
 }
 
 /**
- * Raised when a authorized registration excludes a credential that the device
+ * Raised when an authorized registration excludes a credential that the device
  * recognises, meaning the user already has one of those passkeys on the
  * current device.
  *
@@ -140,7 +136,7 @@ export const isDuplicatePasskeyError = (payload: unknown): payload is DuplicateP
 }
 
 /**
- * Raised when a authorized registration excludes a credential that the device
+ * Raised when an authorized registration excludes a credential that the device
  * recognises, meaning the user already has one of those passkeys on the
  * current device.
  *
@@ -156,8 +152,9 @@ export class DuplicatePasskeyError extends Error {
 }
 
 /**
- * This usually means deletion signalling is unsupported on the current device
- * or the required credential metadata could not be loaded.
+ * Raised when the prepared deletion token exchange fails or returns an
+ * unexpected payload. Unsupported browser signalling and browser-side signal
+ * failures are returned as warnings when the helper can otherwise complete.
  *
  * @category Passkeys (errors)
  */
@@ -168,8 +165,9 @@ export const isDeleteError = (payload: unknown): payload is DeleteError => {
 }
 
 /**
- * This usually means deletion signalling is unsupported on the current device
- * or the required credential metadata could not be loaded.
+ * Raised when the prepared deletion token exchange fails or returns an
+ * unexpected payload. Unsupported browser signalling and browser-side signal
+ * failures are returned as warnings when the helper can otherwise complete.
  *
  * @category Passkeys (errors)
  */
@@ -194,8 +192,9 @@ export class DeleteError extends Error {
 /* Pruning error */
 
 /**
- * This usually means accepted-credentials signalling is unsupported on the
- * current device or the required credential metadata could not be loaded.
+ * Raised when the prepared pruning token exchange fails or returns an
+ * unexpected payload. Unsupported browser signalling and browser-side signal
+ * failures are returned as warnings when the helper can otherwise complete.
  *
  * @category Passkeys (errors)
  */
@@ -206,8 +205,9 @@ export const isPruningError = (payload: unknown): payload is PruningError => {
 }
 
 /**
- * This usually means accepted-credentials signalling is unsupported on the
- * current device or the required credential metadata could not be loaded.
+ * Raised when the prepared pruning token exchange fails or returns an
+ * unexpected payload. Unsupported browser signalling and browser-side signal
+ * failures are returned as warnings when the helper can otherwise complete.
  *
  * @category Passkeys (errors)
  */
@@ -227,8 +227,9 @@ export class PruningError extends Error {
 }
 
 /**
- * This usually means update signalling is unsupported on the current device
- * or the required credential metadata could not be loaded.
+ * Raised when the prepared update token exchange fails or returns an
+ * unexpected payload. Unsupported browser signalling and browser-side signal
+ * failures are returned as warnings when the helper can otherwise complete.
  *
  * @category Passkeys (errors)
  */
@@ -239,8 +240,9 @@ export const isUpdateError = (payload: unknown): payload is UpdateError => {
 }
 
 /**
- * This usually means update signalling is unsupported on the current device
- * or the required credential metadata could not be loaded.
+ * Raised when the prepared update token exchange fails or returns an
+ * unexpected payload. Unsupported browser signalling and browser-side signal
+ * failures are returned as warnings when the helper can otherwise complete.
  *
  * @category Passkeys (errors)
  */
