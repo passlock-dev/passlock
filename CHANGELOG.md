@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-06-15
+
 ### Added
 
 - Delete passkey now uses an exchangeable token to synchronize backend and frontend records. This process is similar to that used for passkey registration. The backend initiates the process, returning a token. The frontend uses this token to perform its client-side cleanup.
