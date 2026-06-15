@@ -3,8 +3,8 @@ packages:
   - examples/*
 
 catalog:
-  "@biomejs/biome": ^2.4.16
-  "@types/node": ^25.9.2
+  "@biomejs/biome": ^2.5.0
+  "@types/node": ^25.9.3
   effect: ^3.21.3
   globals: ^17.6.0
   npm-check-updates: ^22.2.3
