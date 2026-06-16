@@ -1,7 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { createChallengeRateLimitView } from '$lib/server/mailbox/mailboxChallenge.js';
 import { createOrRefreshSignupChallenge } from '$lib/server/mailbox/signupChallenge.js';
-import { sendMailboxVerificationEmail } from '$lib/server/email/index.js';
 import { setSignupLoginCookie } from '$lib/server/cookies.js';
 import { getSignupQueryState, toLoginLocation } from '$lib/shared/queryState.js';
 import type { SignupFormMessage } from '$lib/shared/challengeRateLimit.js';
@@ -74,14 +73,8 @@ export const actions = {
 			);
 		}
 
-		// The cookie carries the challenge id + secret;
-		// the emailed code provides the second factor needed to finish signup.
-		await sendMailboxVerificationEmail({
-			subject: 'Your signup code',
-			recipientEmail: result.challenge.email,
-			body: result.message,
-			code: result.code
-		});
+		// The cookie carries the challenge id + secret. Passlock sends the code
+		// in production and logs it locally in development.
 		setSignupLoginCookie(cookies, {
 			challengeId: result.challenge.id,
 			secret: result.secret

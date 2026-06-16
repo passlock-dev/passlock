@@ -55,14 +55,9 @@
 </div>
 
 <DevNotes>
-	<p>This sample app doesn't actually send emails.</p>
-	<p class="mt-2">You'll need to plug your own email sending mechanism into:</p>
+	<p>In production, Passlock sends this login email.</p>
 	<p class="mt-2">
-		<span class="font-mono">src/lib/server/email.ts</span>
+		In development, <span class="font-semibold">check the dev server logs</span>
+		where the sample app logs the code to the console instead.
 	</p>
-	<p class="mt-2">
-		In the meantime <span class="font-semibold">check the dev server logs</span>
-		where we have logged the code to the console.
-	</p>
-	<p class="mt-2 font-semibold text-error">Be sure to remove this before going into production!</p>
 </DevNotes>

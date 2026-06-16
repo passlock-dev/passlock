@@ -38,11 +38,6 @@ export type CreatedEmailChangeChallenge = {
 	_tag: 'CreatedChallenge';
 	challenge: EmailChangeChallenge;
 	secret: string;
-	code: string;
-	message: {
-		html: string;
-		text: string;
-	};
 };
 
 /**
@@ -51,7 +46,6 @@ export type CreatedEmailChangeChallenge = {
 export type EmailChangeSuccess = {
 	_tag: 'EmailChangeSuccess';
 	user: SessionUser;
-	oldEmail: string;
 };
 
 type EmailChangeMetadata = v.InferOutput<typeof BaseMetadataSchema>;
@@ -119,9 +113,7 @@ export const createOrRefreshEmailChallenge = async (input: {
 			userId: account.userId,
 			processExpiresAt
 		},
-		secret: challenge.secret,
-		code: challenge.code,
-		message: challenge.message
+		secret: challenge.secret
 	};
 };
 
@@ -158,12 +150,6 @@ export const consumeEmailChallenge = async (input: {
 		return createInvalidChallengeError('Challenge does not belong to the signed-in user');
 	}
 
-	const currentAccount = await getUserById(input.userId);
-	if (!currentAccount) {
-		console.error('Unable to load signed-in account', { userId: input.userId });
-		kitError(500, 'Unable to load signed-in account');
-	}
-
 	const existingAccount = await getUserByEmail(challenge.email);
 	if (existingAccount && existingAccount.userId !== input.userId) {
 		return { _tag: '@error/DuplicateUser', email: challenge.email };
@@ -180,7 +166,6 @@ export const consumeEmailChallenge = async (input: {
 
 	return {
 		_tag: 'EmailChangeSuccess',
-		user: updatedUser,
-		oldEmail: currentAccount.email
+		user: updatedUser
 	};
 };

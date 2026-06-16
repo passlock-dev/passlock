@@ -67,8 +67,8 @@ export const actions = {
 
 		const { challenge, cookie } = pendingContext;
 
-		// The emailed code must be paired with the secret stored
-		// in the pending challenge cookie.
+		// The user-entered code must be paired with the secret stored in the
+		// pending challenge cookie.
 		const result = await consumeSignupChallenge({
 			challengeId: cookie.challengeId,
 			secret: cookie.secret,

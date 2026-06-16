@@ -110,6 +110,40 @@ describe(createMailboxChallenge.name, () => {
     })
   )
 
+  it.effect("posts recipient name and sendEmail opt-in", () =>
+    Effect.gen(function* () {
+      let body: string | undefined
+
+      const testFetch = vi.fn<typeof fetch>((_, init) => {
+        body = init?.body as string | undefined
+        return Promise.resolve(
+          new Response(JSON.stringify(createdChallengeResponse), {
+            status: 201,
+          })
+        )
+      })
+
+      const result = yield* createMailboxChallenge(
+        {
+          email: "user@example.com",
+          name: "Jane Example",
+          purpose: "LOGIN_CODE",
+          sendEmail: true,
+        },
+        { apiKey, tenancyId },
+        Layer.succeed(NetworkFetch, testFetch)
+      )
+
+      expect(result).toStrictEqual(createdChallengeResponse)
+      expect(JSON.parse(body ?? "{}")).toStrictEqual({
+        email: "user@example.com",
+        name: "Jane Example",
+        purpose: "LOGIN_CODE",
+        sendEmail: true,
+      })
+    })
+  )
+
   it.effect("decodes responses when userId is omitted and metadata is null", () =>
     Effect.gen(function* () {
       const responseWithoutUserId = {
@@ -159,6 +193,40 @@ describe(createMailboxChallenge.name, () => {
       )
       expect(result.challenge.userId).toBeUndefined()
       expect(result.challenge.metadata).toBeNull()
+    })
+  )
+
+  it.effect("posts an explicit sendEmail false value", () =>
+    Effect.gen(function* () {
+      let body: string | undefined
+
+      const testFetch = vi.fn<typeof fetch>((_, init) => {
+        body = init?.body as string | undefined
+        return Promise.resolve(
+          new Response(JSON.stringify(createdChallengeResponse), {
+            status: 201,
+          })
+        )
+      })
+
+      const result = yield* createMailboxChallenge(
+        {
+          email: "user@example.com",
+          purpose: "LOGIN_CODE",
+          sendEmail: false,
+        },
+        { apiKey, tenancyId },
+        Layer.succeed(NetworkFetch, testFetch)
+      )
+
+      expect(result).toStrictEqual(createdChallengeResponse)
+      expect(body).toEqual(
+        JSON.stringify({
+          email: "user@example.com",
+          purpose: "LOGIN_CODE",
+          sendEmail: false,
+        })
+      )
     })
   )
 
@@ -227,6 +295,37 @@ describe(createMailboxChallenge.name, () => {
       }
       expect(error.message).toEqual("Too many challenges requested")
       expect(error.retryAfterSeconds).toEqual(60)
+    })
+  )
+
+  it.effect("returns BadRequest errors", () =>
+    Effect.gen(function* () {
+      const error = yield* pipe(
+        createMailboxChallenge(
+          {
+            email: "user@example.com",
+            name: "Invalid\nName",
+            purpose: "LOGIN_CODE",
+            sendEmail: true,
+          },
+          { apiKey, tenancyId },
+          Layer.succeed(NetworkFetch, () =>
+            Promise.resolve(
+              new Response(
+                JSON.stringify({
+                  _tag: "@error/BadRequest",
+                  message: "Invalid recipient name",
+                }),
+                { status: 400 }
+              )
+            )
+          )
+        ),
+        Effect.flip
+      )
+
+      expect(error._tag).toEqual("@error/BadRequest")
+      expect(error.message).toEqual("Invalid recipient name")
     })
   )
 })

@@ -1,5 +1,6 @@
 import * as PasslockServer from '@passlock/server';
 import type { MailboxChallengeDetails, MailboxChallengeMetadata } from '@passlock/server';
+import { dev } from '$app/environment';
 import { error as kitError } from '@sveltejs/kit';
 import {
 	CHALLENGE_RATE_LIMIT_READY_MESSAGE,
@@ -12,6 +13,17 @@ import type { SessionUser } from '../repository.js';
 // ============================================================================
 // Passlock SDK wrappers
 // ============================================================================
+
+const isTestMode = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
+const sendEmail = !dev && !isTestMode;
+
+const logChallengeCode = (challenge: PasslockServer.MailboxChallenge) => {
+	if (dev) {
+		console.log(
+			`*** Passlock ${challenge.purpose} code for ${challenge.email}: ${challenge.code} [DEV ONLY] ***`
+		);
+	}
+};
 
 /**
  * Tagged rate-limited error surfaced to callers when Passlock refuses a
@@ -62,7 +74,10 @@ export const createPasslockMailboxChallenge = async (input: {
 	invalidateOthers?: boolean;
 	skipRateLimit?: boolean;
 }): Promise<PasslockServer.MailboxChallengeCreated | ChallengeRateLimitedError> => {
-	const result = await PasslockServer.createMailboxChallenge(input, getPasslockConfig());
+	const result = await PasslockServer.createMailboxChallenge(
+		{ ...input, sendEmail },
+		getPasslockConfig()
+	);
 
 	if (result.failure) {
 		if (PasslockServer.isChallengeRateLimitedError(result)) {
@@ -71,6 +86,8 @@ export const createPasslockMailboxChallenge = async (input: {
 
 		kitError(500, 'Unable to create one-time code challenge');
 	}
+
+	logChallengeCode(result.value.challenge);
 
 	return result.value;
 };
@@ -151,7 +168,7 @@ const isInvalidChallengeError = (value: unknown): value is InvalidChallengeError
  * timestamp bounds the local process flow (e.g. how long the user has from
  * first submitting their signup details to finishing verification) and is
  * distinct from Passlock's native `expiresAt`, which bounds the validity of
- * the emailed code.
+ * the one-time code.
  */
 export const BaseMetadataSchema = v.object({
 	processExpiresAt: v.number()

@@ -160,8 +160,8 @@
 	 * 2. If not, kick off passkey-based re-authentication
 	 * 3. Submit the form so the server can start the email verification flow
 	 *
-	 * This sends a verification email to the replacement address and redirects
-	 * the user to `/account/verify-email`.
+	 * This creates a verification challenge for the replacement address and
+	 * redirects the user to `/account/verify-email`.
 	 *
 	 * Note: the local account email does not change until the code is verified.
 	 *
@@ -319,18 +319,14 @@
 	<h2 class="mt-2 text-lg font-semibold">Changing the email</h2>
 
 	<p class="mt-2">
-		Changing the email will first result in a verification code being sent to the new address. When
-		the code is entered we:
+		Changing the email will first create a verification code for the new address. When the code is
+		entered we:
 	</p>
 
 	<ol class="mt-2 ml-2 list-inside list-decimal space-y-2">
 		<li>Update the local account</li>
 		<li>Update any associated passkeys in the Passlock vault</li>
 		<li>Update the passkeys in the user's local passkey manager</li>
-		<li>
-			Send a notification email to the <span class="font-semibold">old address</span>
-			informing the user of the change
-		</li>
 	</ol>
 
 	<h2 class="mt-2 text-lg font-semibold">Changing a name</h2>

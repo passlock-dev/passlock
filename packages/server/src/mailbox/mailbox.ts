@@ -11,6 +11,7 @@ import {
 } from "../network.js"
 import * as ChallengeSchemas from "../schemas/challenge.js"
 import {
+  BadRequestError,
   ChallengeAttemptsExceededError,
   ChallengeExpiredError,
   ChallengeRateLimitedError,
@@ -254,6 +255,15 @@ export interface CreateMailboxChallengeOptions {
   email: string
 
   /**
+   * Optional recipient display name for Passlock-managed email delivery.
+   *
+   * Passlock uses this only for the email envelope when `sendEmail` is `true`.
+   * It does not affect challenge identity, scope, lookup, or verification.
+   * Invalid display names are rejected as bad request errors.
+   */
+  name?: string | undefined
+
+  /**
    * Application-defined purpose for the challenge.
    *
    * Passlock validates this as a 1-64 character string containing only
@@ -285,6 +295,15 @@ export interface CreateMailboxChallengeOptions {
    * When omitted or `false`, the default mailbox rate limit still applies.
    */
   skipRateLimit?: boolean | undefined
+
+  /**
+   * Ask Passlock to send the generated one-time-code email.
+   *
+   * When omitted or `false`, challenge creation keeps the generate-only
+   * behavior and no email is sent by Passlock. The returned `code` and
+   * `message` remain available for custom delivery in either mode.
+   */
+  sendEmail?: boolean | undefined
 }
 
 /**
@@ -298,10 +317,15 @@ export interface CreateMailboxChallengeOptions {
  * {@link verifyMailboxChallenge}. Use the raw `code` if you want to render
  * your own email content instead of sending the provided message body.
  *
+ * Pass `sendEmail: true` to ask Passlock to send the generated email. Omitting
+ * `sendEmail`, or passing `false`, preserves the generate-only behavior.
+ *
  * @param options Mailbox challenge-specific request options.
  * @param config Shared Passlock configuration for the request.
  * @param fetchLayer Optional fetch service override for testing or custom runtimes.
- * @returns An Effect that succeeds with the created mailbox challenge payload.
+ * @returns An Effect that succeeds with the created mailbox challenge payload,
+ * or fails with an API error such as a forbidden, rate limited, or bad request
+ * response.
  *
  * @category Mailbox
  */
@@ -309,35 +333,46 @@ export const createMailboxChallenge = (
   options: CreateMailboxChallengeOptions,
   config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
-): Effect.Effect<MailboxChallengeCreated, ForbiddenError | ChallengeRateLimitedError> =>
+): Effect.Effect<
+  MailboxChallengeCreated,
+  ForbiddenError | ChallengeRateLimitedError | BadRequestError
+> =>
   pipe(
     Effect.gen(function* () {
       const baseUrl = config.endpoint ?? "https://api.passlock.dev"
       const { tenancyId } = config
-      const { email, purpose, userId, metadata, invalidateOthers, skipRateLimit } = options
+      const { email, name, purpose, userId, metadata, invalidateOthers, skipRateLimit, sendEmail } =
+        options
 
       const url = new URL(`/v2/${tenancyId}/challenges`, baseUrl)
       const response = yield* fetchNetwork(
         url,
         "post",
-        { email, purpose, userId, metadata, invalidateOthers, skipRateLimit },
+        { email, name, purpose, userId, metadata, invalidateOthers, skipRateLimit, sendEmail },
         {
           headers: authorizationHeaders(config.apiKey),
         }
       )
 
-      const encoded: MailboxChallengeCreated | ForbiddenError | ChallengeRateLimitedError =
-        yield* matchStatus(response, {
-          "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.ChallengeCreated),
-          orElse: (res) =>
-            decodeResponseJson(res, Schema.Union(ForbiddenError, ChallengeRateLimitedError)),
-        })
+      const encoded:
+        | MailboxChallengeCreated
+        | ForbiddenError
+        | ChallengeRateLimitedError
+        | BadRequestError = yield* matchStatus(response, {
+        "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.ChallengeCreated),
+        orElse: (res) =>
+          decodeResponseJson(
+            res,
+            Schema.Union(ForbiddenError, ChallengeRateLimitedError, BadRequestError)
+          ),
+      })
 
       return yield* pipe(
         Match.value(encoded),
         Match.tag("ChallengeCreated", (result) => Effect.succeed(result)),
         Match.tag("@error/Forbidden", (err) => Effect.fail(err)),
         Match.tag("@error/ChallengeRateLimited", (err) => Effect.fail(err)),
+        Match.tag("@error/BadRequest", (err) => Effect.fail(err)),
         Match.exhaustive
       )
     }),

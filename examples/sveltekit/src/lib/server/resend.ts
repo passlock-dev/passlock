@@ -1,6 +1,5 @@
 import { json } from '@sveltejs/kit';
 import { createChallengeRateLimitView } from './mailbox/mailboxChallenge';
-import { sendMailboxVerificationEmail } from './email/index.js';
 import type { PendingChallengeCookie } from './cookies.js';
 import type { ResendRedirectLocation } from '$lib/shared/routes.js';
 
@@ -11,11 +10,6 @@ type CreatedChallengeLike = {
 		email: string;
 	};
 	secret: string;
-	code: string;
-	message: {
-		html: string;
-		text: string;
-	};
 };
 
 type ChallengeRateLimitedLike = {
@@ -68,13 +62,6 @@ export const resendMailboxChallenge = async <TError extends { _tag: string }>(op
 	}
 
 	const created = result as CreatedChallengeLike;
-
-	await sendMailboxVerificationEmail({
-		subject: 'Your verification code',
-		recipientEmail: created.challenge.email,
-		body: created.message,
-		code: created.code
-	});
 
 	options.setPendingCookie({
 		challengeId: created.challenge.id,

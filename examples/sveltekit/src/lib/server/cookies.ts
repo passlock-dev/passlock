@@ -7,8 +7,7 @@ import { SESSION_MAX_INACTIVE_MS } from './session';
  * specific browser session.
  *
  * The cookie stores the Passlock challenge id and secret. The user receives
- * the code separately by email, so both pieces are required to complete the
- * flow.
+ * the code separately, so both pieces are required to complete the flow.
  */
 
 // Signup and login share the same cookie because they are mutually exclusive

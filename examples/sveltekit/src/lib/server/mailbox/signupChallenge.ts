@@ -37,11 +37,6 @@ export type CreatedSignupChallenge = {
 	_tag: 'CreatedChallenge';
 	challenge: SignupChallenge;
 	secret: string;
-	code: string;
-	message: {
-		html: string;
-		text: string;
-	};
 };
 
 const toSignupChallenge = (
@@ -104,9 +99,7 @@ export const createOrRefreshSignupChallenge = async (
 			familyName,
 			processExpiresAt
 		},
-		secret: challenge.secret,
-		code: challenge.code,
-		message: challenge.message
+		secret: challenge.secret
 	};
 };
 

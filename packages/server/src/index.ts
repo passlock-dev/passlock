@@ -192,9 +192,11 @@ export class Passlock {
    * `message.text`.
    *
    * Persist `challengeId` and `secret` so you can call
-   * {@link verifyMailboxChallenge} later. Send the provided message content
-   * through your own email provider or use the raw `code` to render your own
-   * email body.
+   * {@link verifyMailboxChallenge} later. Pass `sendEmail: true` to ask
+   * Passlock to send the generated email, or omit it to keep the generate-only
+   * behavior and deliver the returned `code` or `message` yourself.
+   * Invalid request bodies, including invalid recipient display names, are
+   * returned as bad request errors.
    *
    * @param options Mailbox challenge-specific request options.
    * @returns A promise resolving to a {@link Result} whose success branch contains
@@ -471,9 +473,11 @@ export class Passlock {
  * `message.text`.
  *
  * Persist `challengeId` and `secret` so you can call
- * {@link verifyMailboxChallenge} later. Send the provided message content
- * through your own email provider or use the raw `code` to render your own
- * email body.
+ * {@link verifyMailboxChallenge} later. Pass `sendEmail: true` to ask Passlock
+ * to send the generated email, or omit it to keep the generate-only behavior
+ * and deliver the returned `code` or `message` yourself.
+ * Invalid request bodies, including invalid recipient display names, are
+ * returned as bad request errors.
  *
  * @param options Mailbox challenge-specific request options.
  * @param config Shared Passlock configuration for the request.
@@ -485,8 +489,9 @@ export class Passlock {
 export const createMailboxChallenge = (
   options: CreateMailboxChallengeOptions,
   config: AuthenticatedOptions
-): Promise<Result<MailboxChallengeCreated, ForbiddenError | ChallengeRateLimitedError>> =>
-  runSafe(createMailboxChallengeE(options, config))
+): Promise<
+  Result<MailboxChallengeCreated, ForbiddenError | ChallengeRateLimitedError | BadRequestError>
+> => runSafe(createMailboxChallengeE(options, config))
 
 /**
  * Fetch a mailbox one-time-code challenge.

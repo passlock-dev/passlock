@@ -28,11 +28,6 @@ export type CreatedLoginChallenge = {
 	_tag: 'CreatedChallenge';
 	challenge: LoginChallenge;
 	secret: string;
-	code: string;
-	message: {
-		html: string;
-		text: string;
-	};
 };
 
 type LoginMetadata = v.InferOutput<typeof BaseMetadataSchema>;
@@ -86,9 +81,7 @@ export const createOrRefreshLoginChallenge = async (
 			email: challenge.email,
 			processExpiresAt
 		},
-		secret: challenge.secret,
-		code: challenge.code,
-		message: challenge.message
+		secret: challenge.secret
 	};
 };
 

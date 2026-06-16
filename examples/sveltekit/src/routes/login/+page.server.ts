@@ -3,7 +3,6 @@ import type { Actions, PageServerLoad } from './$types';
 import { createChallengeRateLimitView } from '$lib/server/mailbox/mailboxChallenge.js';
 import { createOrRefreshLoginChallenge } from '$lib/server/mailbox/loginChallenge.js';
 import { getUserByEmail, countPasskeysByUserId } from '$lib/server/repository.js';
-import { sendMailboxVerificationEmail } from '$lib/server/email';
 import { setSignupLoginCookie } from '$lib/server/cookies.js';
 import {
 	getLoginQueryState,
@@ -92,14 +91,8 @@ export const actions = {
 				);
 			}
 
-			// The cookie stores the challenge id + secret; the email contains the
-			// code, so both are required to finish the flow.
-			await sendMailboxVerificationEmail({
-				subject: 'Your login code',
-				recipientEmail: result.challenge.email,
-				body: result.message,
-				code: result.code
-			});
+			// The cookie stores the challenge id + secret; Passlock sends the
+			// code in production and logs it locally in development.
 			setSignupLoginCookie(cookies, {
 				challengeId: result.challenge.id,
 				secret: result.secret

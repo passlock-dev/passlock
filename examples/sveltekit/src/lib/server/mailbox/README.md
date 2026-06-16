@@ -8,9 +8,10 @@ email one-time-code flows:
 - email-change verification
 
 All three flows use Passlock mailbox challenges. The app creates a challenge,
-emails the one-time code to the user, stores the challenge id and secret in an
-HTTP-only cookie, and then verifies the submitted code against Passlock before
-applying the local state change.
+asks Passlock to send the one-time code in production, stores the challenge id
+and secret in an HTTP-only cookie, and then verifies the submitted code against
+Passlock before applying the local state change. In development, the app does
+not ask Passlock to send email and logs the code to the dev server console.
 
 ## End-to-end flow
 
@@ -20,8 +21,9 @@ The overall flow is the same for signup, login, and email change:
    directory.
 2. The helper creates a Passlock mailbox challenge with a `purpose`, optional
    `userId`, and flow-specific `metadata`.
-3. The route sends the returned `code` by email and stores `{ challengeId,
-secret }` in a short-lived HTTP-only cookie.
+3. The shared creation helper passes `sendEmail: true` only in production, logs
+   the returned `code` only in development, and the route stores
+   `{ challengeId, secret }` in a short-lived HTTP-only cookie.
 4. The verify-code page reloads the pending challenge from that cookie using
    `getPendingChallengeContext(...)`.
 5. When the user submits the 6-digit code, the action combines:
@@ -46,7 +48,8 @@ Key responsibilities:
 
 - `getPasslockMailboxChallenge(...)` loads an existing challenge from Passlock.
 - `createPasslockMailboxChallenge(...)` creates a challenge and normalises the
-  rate-limit result.
+  rate-limit result. It opts in to Passlock email delivery in production, while
+  keeping development and tests generate-only.
 - `verifyPasslockMailboxChallenge(...)` verifies a challenge and returns either
   `MailboxChallengeVerified` or a typed verification error.
 - `validateMailboxChallenge(...)` applies app-level checks after loading or
@@ -109,8 +112,7 @@ Login uses only the shared base metadata:
 Important types:
 
 - `LoginChallenge`: the validated local view of a login challenge
-- `CreatedLoginChallenge`: creation result used to send the email and set the
-  pending cookie
+- `CreatedLoginChallenge`: creation result used to set the pending cookie
 - `ConsumedChallenge`: shared success result with the resolved local
   `SessionUser`
 
@@ -125,8 +127,7 @@ Important types:
 
 - `EmailChangeChallenge`: validated local challenge including the bound numeric
   `userId`
-- `CreatedEmailChangeChallenge`: creation result used to send the email and set
-  the pending cookie
+- `CreatedEmailChangeChallenge`: creation result used to set the pending cookie
 - `EmailChangeSuccess`: success result after the local email address has been
   updated
 
@@ -164,7 +165,7 @@ Passlock already gives each challenge its own expiration window, but this sample
 adds a separate `processExpiresAt` value inside challenge metadata.
 
 That extra timestamp lets the app expire the whole local flow, not just the
-emailed code. In practice that means:
+one-time code. In practice that means:
 
 - signup details can expire even if the Passlock code itself still exists
 - login/email-change routes can reject stale pending flows consistently after a
@@ -180,7 +181,7 @@ The resend endpoints reuse the same primitives:
   `getPendingChallengeContext(...)`
 - they create a fresh challenge with the relevant `createOrRefresh*Challenge`
   helper
-- they send a new email and replace the pending cookie using
+- they create a fresh challenge and replace the pending cookie using
   `resendMailboxChallenge(...)`
 
 This keeps the resend routes thin while leaving all mailbox-specific validation

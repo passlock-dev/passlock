@@ -105,7 +105,10 @@ describe("public surface", () => {
     type _4 = Assert<
       IsEqual<
         Awaited<ReturnType<typeof createMailboxChallenge>>,
-        Result<MailboxChallengeCreated, ForbiddenError | ChallengeRateLimitedError>
+        Result<
+          MailboxChallengeCreated,
+          BadRequestError | ForbiddenError | ChallengeRateLimitedError
+        >
       >
     >
     type _5 = Assert<

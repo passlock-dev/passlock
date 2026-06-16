@@ -5,7 +5,6 @@ import {
 	getPendingLoginChallenge
 } from '$lib/server/mailbox/loginChallenge.js';
 import { getUserByEmail } from '$lib/server/repository.js';
-import { sendMailboxVerificationEmail } from '$lib/server/email';
 import { getSignupLoginCookie, setSignupLoginCookie } from '$lib/server/cookies.js';
 import {
 	getLoginEmailQueryState,
@@ -29,9 +28,9 @@ const redirectToLoginRateLimited = (email: string, retryAfterSeconds: number): n
 /**
  * Start the email-code login path for a known account.
  *
- * This route exists so other routes can redirect straight to "send the email
- * code for this username" without forcing the user to re-enter their email on
- * `/login`.
+ * This route exists so other routes can redirect straight to "start an email
+ * code challenge for this username" without forcing the user to re-enter their
+ * email on `/login`.
  */
 const sendLoginCode = async (username: string | null, cookies: import('@sveltejs/kit').Cookies) => {
 	if (!username) redirect(302, resolve('/login'));
@@ -61,13 +60,8 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 		throw new Error('Unexpected login challenge result');
 	}
 
-	// Store the secret server-side in a cookie; send the code via email.
-	await sendMailboxVerificationEmail({
-		subject: 'Your login code',
-		recipientEmail: result.challenge.email,
-		body: result.message,
-		code: result.code
-	});
+	// Store the secret server-side in a cookie. Passlock sends the code in
+	// production and logs it locally in development.
 	setSignupLoginCookie(cookies, {
 		challengeId: result.challenge.id,
 		secret: result.secret

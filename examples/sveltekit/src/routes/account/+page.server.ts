@@ -3,7 +3,6 @@ import { createChallengeRateLimitView } from '$lib/server/mailbox/mailboxChallen
 import { createOrRefreshEmailChallenge } from '$lib/server/mailbox/emailChange.js';
 import { updateUserNames } from '$lib/server/repository.js';
 import { requireAccountContext } from '$lib/server/account.js';
-import { sendMailboxVerificationEmail } from '$lib/server/email';
 import { setEmailChangeCookie } from '$lib/server/cookies.js';
 import { getPasslockClientConfig } from '$lib/server/passkeys.js';
 import { getAccountQueryState, type AccountEmailErrorReason } from '$lib/shared/queryState.js';
@@ -235,15 +234,9 @@ export const actions = {
 			);
 		}
 
-		// The email contains the user-facing code; the cookie stores the secret.
-		await sendMailboxVerificationEmail({
-			subject: 'Verify your email address',
-			recipientEmail: result.challenge.email,
-			body: result.message,
-			code: result.code
-		});
-
 		// Verification requires both the code and this secret-bearing cookie.
+		// Passlock sends the code in production and logs it locally in
+		// development.
 		setEmailChangeCookie(cookies, {
 			challengeId: result.challenge.id,
 			secret: result.secret
