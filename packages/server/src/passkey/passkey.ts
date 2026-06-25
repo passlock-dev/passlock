@@ -335,6 +335,13 @@ export interface AuthorizePasskeyRegistrationOptions {
   rpId: string
 
   /**
+   * Human-readable relying party name shown by the browser or authenticator
+   * during registration. Passlock rejects missing, empty, or whitespace-only
+   * values and stores the trimmed value for this authorized ceremony.
+   */
+  rpName: string
+
+  /**
    * Custom user ID from your application. This becomes the immutable Passlock
    * user ID for the passkey created from the authorized registration.
    */
@@ -365,6 +372,15 @@ export interface AuthorizePasskeyRegistrationOptions {
    */
   timeout?: number | undefined
 }
+
+/**
+ * Ensures the public AuthorizePasskeyRegistrationOptions type matches the runtime schema.
+ * @internal
+ */
+export type _AuthorizePasskeyRegistrationOptions = satisfy<
+  typeof PasskeySchemas.AuthorizePasskeyRegistrationOptions.Type,
+  AuthorizePasskeyRegistrationOptions
+>
 
 /**
  * Authorized registration token returned to your backend.
@@ -404,16 +420,16 @@ export type _AuthorizedPasskeyRegistration = satisfy<
  * Authorize a passkey registration.
  *
  * Call this from your backend after deciding the user is allowed to create a
- * passkey and which relying party ID the WebAuthn ceremony should use. Return
- * the resulting `registrationToken` to the browser, then call `registerPasskey`
- * from `@passlock/browser`.
+ * passkey and which relying party ID and name the WebAuthn ceremony should
+ * use. Return the resulting `registrationToken` to the browser, then call
+ * `registerPasskey` from `@passlock/browser`.
  *
- * The `rpId` supplied by your backend is the RP ID for the authorized ceremony.
- * It does not need to match a separate Passlock tenancy RP ID, but the
- * browser/WebAuthn platform must still allow the current origin to use that RP
- * ID.
+ * The `rpId` and `rpName` supplied by your backend are used for the authorized
+ * ceremony. Choose the RP ID at the call site; Passlock does not read it from
+ * tenancy passkey settings. If the browser origin differs from the RP ID, the
+ * RP ID domain's `/.well-known/webauthn` file must allow the ceremony.
  *
- * @param options Authorization options, including the relying party ID,
+ * @param options Authorization options, including the relying party ID and name,
  * application user ID, username, and optional WebAuthn ceremony settings. Do
  * not include the browser origin; Passlock records the origin when the browser
  * redeems the authorized token.
@@ -580,9 +596,9 @@ export type _AuthorizedPasskeyAuthentication = satisfy<
  * also set `mediation: "conditional"`.
  *
  * The `rpId` supplied by your backend is the RP ID for the authorized ceremony.
- * It does not need to match a separate Passlock tenancy RP ID or related-origin
- * setting, but the browser/WebAuthn platform must still allow the current
- * origin to use that RP ID.
+ * Choose it at the call site; Passlock does not read it from tenancy passkey
+ * settings. If the browser origin differs from the RP ID, the RP ID domain's
+ * `/.well-known/webauthn` file must allow the ceremony.
  *
  * Return the resulting `authenticationToken` to the browser, then call
  * `authenticatePasskey` from `@passlock/browser`.

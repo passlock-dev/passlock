@@ -61,7 +61,7 @@ Framework agnostic. Standards compliant.
 Works out of the box with sensible defaults.
 
 **:arrow_right: Related origins**  
-Migrate user passkeys to a new domain.
+Migrate passkeys with backend-selected RP IDs and WebAuthn related-origin files.
 
 **:iphone: Credential management**  
 Manage passkeys on end-user devices.
@@ -103,6 +103,7 @@ const passlock = new Passlock({ tenancyId, apiKey });
 const result = await passlock.authorizePasskeyRegistration(
   {
     rpId: "example.com",
+    rpName: "Example App",
     userId: "user_123",
     username: "jdoe@gmail.com",
     displayName: "Jane Doe",
@@ -117,6 +118,9 @@ if (result.failure) {
 // send only this token to your frontend
 console.log("registration token: %s", result.value.registrationToken);
 ```
+
+Choose `rpId` in your backend for each prepared passkey ceremony. Passlock no
+longer uses a separate tenancy-level passkey settings RP ID.
 
 ```typescript
 // frontend/register.ts

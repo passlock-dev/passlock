@@ -44,9 +44,12 @@ Node 20+ (If running Node)
 
 Create passkey registrations from your backend after you have authenticated the
 user and decided they are allowed to add a passkey. The server authorizes a
-short-lived `registrationToken` for the `rpId` your backend supplies; send only
-that token to the browser and use it with `registerPasskey` from
-`@passlock/browser`.
+short-lived `registrationToken` for the `rpId` and `rpName` your backend
+supplies; send only that token to the browser and use it with `registerPasskey`
+from `@passlock/browser`.
+
+Choose `rpId` in your backend for each prepared ceremony. It is not configured
+through tenancy passkey settings.
 
 ```ts
 import { authorizePasskeyRegistration } from "@passlock/server"
@@ -54,6 +57,7 @@ import { authorizePasskeyRegistration } from "@passlock/server"
 const result = await authorizePasskeyRegistration(
   {
     rpId: "example.com",
+    rpName: "Example App",
     userId: "user_123",
     username: "user@example.com",
     displayName: "User Example",

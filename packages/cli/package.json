@@ -1,6 +1,6 @@
 {
   "name": "@passlock/cli",
-  "version": "2.9.1",
+  "version": "2.9.2",
   "description": "CLI tooling support for the Passlock authentication framework",
   "keywords": [
     "passkey",
@@ -71,7 +71,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/vitest": "^0.29.0",
+    "@effect/vitest": "catalog:",
     "@types/node": "catalog:",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
@@ -80,7 +80,7 @@
     "sort-package-json": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "vitest": "^4.1.8"
+    "vitest": "catalog:"
   },
   "packageManager": "pnpm@11.9.0",
   "engines": {

@@ -22,6 +22,7 @@ export const POST: RequestHandler = async (event) => {
 	const authorizedRegistration = await PasslockServer.authorizePasskeyRegistration(
 		{
 			rpId: config.rpId,
+			rpName: config.rpName,
 			userId: String(event.locals.user.userId),
 			username: event.locals.user.email,
 			displayName: displayName || undefined,

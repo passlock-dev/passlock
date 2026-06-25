@@ -4,6 +4,7 @@ import { Chunk, Effect, Layer, pipe, Schema, Stream } from "effect"
 import { expect } from "vitest"
 import { NetworkFetch } from "../network.js"
 import type { Passkey, PasskeyEncoded } from "../schemas/passkey.js"
+import * as PasskeySchemas from "../schemas/passkey.js"
 import type {
   AuthorizedPasskeyAuthentication,
   AuthorizedPasskeyRegistration,
@@ -137,6 +138,17 @@ const preparedPasskeyPruningResponse: PreparedPasskeyPruning = {
 }
 
 describe(authorizePasskeyRegistration.name, () => {
+  it("requires an RP ID in the authorization schema", () => {
+    expect(
+      Schema.is(PasskeySchemas.AuthorizePasskeyRegistrationOptions)({
+        rpName: "Example App",
+        displayName: "Dummy User",
+        userId: "dummyUserId",
+        username: "dummy@example.com",
+      })
+    ).toBe(false)
+  })
+
   it.effect("should authorize a registration using the v2 endpoint", () =>
     Effect.gen(function* () {
       let invokedUrl: string | undefined
@@ -160,6 +172,7 @@ describe(authorizePasskeyRegistration.name, () => {
         authorizePasskeyRegistration(
           {
             rpId: "Example.COM",
+            rpName: "Example App",
             displayName: "Dummy User",
             excludeCredentials: ["existingPasskeyId"],
             timeout: 60_000,
@@ -180,6 +193,7 @@ describe(authorizePasskeyRegistration.name, () => {
       expect(authorization).toEqual("Bearer dummyApiKey")
       expect(body).toStrictEqual({
         rpId: "example.com",
+        rpName: "Example App",
         displayName: "Dummy User",
         excludeCredentials: ["existingPasskeyId"],
         timeout: 60_000,
@@ -192,6 +206,15 @@ describe(authorizePasskeyRegistration.name, () => {
 })
 
 describe(authorizePasskeyAuthentication.name, () => {
+  it("requires an RP ID in the authorization schema", () => {
+    expect(
+      Schema.is(PasskeySchemas.AuthorizePasskeyAuthenticationOptions)({
+        discoverable: true,
+        userVerification: "preferred",
+      })
+    ).toBe(false)
+  })
+
   it.effect("should authorize an authentication using the v2 endpoint", () =>
     Effect.gen(function* () {
       let invokedUrl: string | undefined

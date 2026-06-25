@@ -14,7 +14,9 @@ export const getPasslockConfig = () => {
 	const apiKey = PASSLOCK_API_KEY;
 	const tenancyId = PUBLIC_PASSLOCK_TENANCY_ID;
 	const endpoint = PUBLIC_PASSLOCK_ENDPOINT;
+	// Backend-selected RP ID for prepared passkey ceremonies.
 	const rpId = PASSLOCK_RP_ID || 'localhost';
+	const rpName = 'Passlock SvelteKit Example';
 
 	if (!apiKey || !tenancyId) {
 		console.error('Passlock not configured');
@@ -25,6 +27,7 @@ export const getPasslockConfig = () => {
 		tenancyId,
 		apiKey,
 		rpId,
+		rpName,
 		endpoint: endpoint || undefined
 	} as const;
 };
@@ -34,9 +37,9 @@ export const getPasslockConfig = () => {
  *
  * Client code needs the tenancy and optional endpoint so it can talk to
  * Passlock via `@passlock/browser`. It MUST NOT receive the API key.
- * It SHOULD NOT receive the RP ID, as this is selected by server-side authorization calls.
+ * It SHOULD NOT receive RP metadata, as this is selected by server-side authorization calls.
  */
 export const getPasslockClientConfig = () => {
-	const { apiKey: _apiKey, rpId: _rpId, ...rest } = getPasslockConfig();
+	const { apiKey: _apiKey, rpId: _rpId, rpName: _rpName, ...rest } = getPasslockConfig();
 	return rest;
 };

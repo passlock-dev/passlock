@@ -57,7 +57,9 @@ Follow the prompts and take note of your `Tenancy ID` and `API Key`.
 ### 4. Set environment variables
 
 Copy the `.env.example` to `.env` and set the `PUBLIC_PASSLOCK_TENANCY_ID`,
-`PASSLOCK_API_KEY`, and `PASSLOCK_RP_ID` variables.
+`PASSLOCK_API_KEY`, and `PASSLOCK_RP_ID` variables. `PASSLOCK_RP_ID` is the
+backend-selected relying party ID sent when the example authorizes passkey
+registration and authentication.
 
 ### 5. Setup the database
 
