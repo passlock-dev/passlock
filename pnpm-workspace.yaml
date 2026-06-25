@@ -5,7 +5,7 @@ packages:
 catalog:
   "@biomejs/biome": ^2.5.1
   "@effect/vitest": ^0.29.0
-  "@types/node": ^24.1.0
+  "@types/node": ^26.0.1
   effect: ^3.21.4
   globals: ^17.7.0
   npm-check-updates: ^22.2.7
@@ -36,3 +36,7 @@ allowBuilds:
   msgpackr-extract: true
 
 minimumReleaseAge: 1440
+
+minimumReleaseAgeExclude:
+  - '@types/node@26.0.1'
+  - '@sveltejs/kit@2.68.0'
