@@ -40,6 +40,33 @@ export type PasskeyAuthenticationMediation = typeof PasskeyAuthenticationMediati
 /* AuthorizedPasskeyRegistration */
 
 /**
+ * Request body used to authorize a passkey registration.
+ *
+ * The caller supplies the authorized ceremony `rpId` and human-readable
+ * `rpName`; Passlock validates them and uses them when generating WebAuthn
+ * registration options.
+ *
+ * @category Passkeys
+ */
+export const AuthorizePasskeyRegistrationOptions = Schema.Struct({
+  rpId: Schema.String,
+  rpName: Schema.String,
+  userId: Schema.String,
+  username: Schema.String,
+  displayName: Schema.optional(Schema.String),
+  excludeCredentials: Schema.optional(Schema.Array(Schema.String)),
+  userVerification: Schema.optional(UserVerification),
+  timeout: Schema.optional(Schema.Number),
+})
+
+/**
+ * Type produced by {@link AuthorizePasskeyRegistrationOptions}.
+ *
+ * @category Passkeys
+ */
+export type AuthorizePasskeyRegistrationOptions = typeof AuthorizePasskeyRegistrationOptions.Type
+
+/**
  * Response returned after authorizing a passkey registration.
  *
  * @category Passkeys

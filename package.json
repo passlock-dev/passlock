@@ -1,6 +1,6 @@
 {
   "name": "passlock",
-  "version": "2.9.1",
+  "version": "2.9.2",
   "private": true,
   "description": "Passlock monorepo root",
   "keywords": [
@@ -28,7 +28,7 @@
   "type": "module",
   "scripts": {
     "build:readme": "VERSION=${npm_package_version} tsx ./scripts/replace-readme-tokens.ts .",
-    "ncu": "pnpm exec ncu -c 25h -x vite -w -u --peer",
+    "ncu": "pnpm exec ncu -c 25h -x vite -x @types/node -w -u --peer",
     "sort-package-json": "sort-package-json"
   },
   "devDependencies": {

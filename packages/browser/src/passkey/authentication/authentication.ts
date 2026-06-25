@@ -21,9 +21,10 @@ import { OrphanedPasskeyError, OtherPasskeyError, PasskeyUnsupportedError } from
  * policy are all decided by the backend during authorization. The browser
  * redeems the token and uses the returned WebAuthn options as-is.
  *
- * If the current origin differs from the authorized RP ID, the browser's
- * WebAuthn related-origin policy must allow the ceremony. The browser library
- * does not accept or override the RP ID.
+ * If the current origin differs from the authorized RP ID, the RP ID domain's
+ * `/.well-known/webauthn` file must allow the ceremony. Browsers and
+ * authenticators enforce that related-origin policy; the browser library does
+ * not accept or override the RP ID.
  *
  * @see {@link authenticatePasskey}
  *
@@ -39,9 +40,9 @@ export type AuthenticationOptions = AuthorizedAuthenticationOptions
  * browser, then pass that token to {@link authenticatePasskey}.
  *
  * The authorized token already carries the RP ID chosen by your backend. For
- * domain migration, the browser/WebAuthn platform must still allow the current
- * origin to use that RP ID. Passlock does not require this origin to match a
- * separate tenancy related-origin setting when the token is redeemed.
+ * domain migration, the RP ID domain's `/.well-known/webauthn` file must allow
+ * the current origin to use that RP ID. The browser library never reads or
+ * supplies tenancy-level RP ID or related-origin settings.
  *
  * For discoverable login and autofill, authorize the token with
  * `discoverable: true` and, for autofill, `mediation: "conditional"`.

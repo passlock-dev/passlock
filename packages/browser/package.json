@@ -1,6 +1,6 @@
 {
   "name": "@passlock/browser",
-  "version": "2.9.1",
+  "version": "2.9.2",
   "description": "Flexible passkey authentication for Astro, SvelteKit, NextJS and other frameworks",
   "keywords": [
     "passkey",
@@ -85,7 +85,7 @@
     "typedoc": "catalog:",
     "typedoc-plugin-markdown": "catalog:",
     "typescript": "catalog:",
-    "vitest": "^4.1.9"
+    "vitest": "catalog:"
   },
   "packageManager": "pnpm@11.9.0"
 }

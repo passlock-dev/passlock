@@ -17,9 +17,10 @@ import { DuplicatePasskeyError, OtherPasskeyError, PasskeyUnsupportedError } fro
  * The backend chooses the WebAuthn RP ID when it authorizes the token; the
  * browser redeems the token and uses the returned WebAuthn options as-is.
  *
- * If the current origin differs from the authorized RP ID, the browser's
- * WebAuthn related-origin policy must allow the ceremony. The browser library
- * does not accept or override the RP ID.
+ * If the current origin differs from the authorized RP ID, the RP ID domain's
+ * `/.well-known/webauthn` file must allow the ceremony. Browsers and
+ * authenticators enforce that related-origin policy; the browser library does
+ * not accept or override the RP ID.
  *
  * @see {@link registerPasskey}
  *

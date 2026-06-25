@@ -40,7 +40,7 @@ Powerful passkey features for browser applications.
 Framework agnostic. Standards compliant.
 
 2. **🔑 Domain migration**  
-Use backend-authorized RP IDs with WebAuthn related-origin support.
+Use backend-authorized RP IDs with WebAuthn `/.well-known/webauthn` support.
 
 3. **🚀 Zero config passkeys**  
 Works out of the box with sensible defaults.
@@ -82,9 +82,9 @@ the result with Passlock.
 
 Your backend chooses the RP ID when it authorizes registration or authentication.
 The browser library does not accept an RP ID directly; it uses the WebAuthn
-options returned by Passlock. During domain migration, configure WebAuthn
-related origins for the browser platform if the current origin needs to use
-passkeys for a different RP ID.
+options returned by Passlock. During domain migration, publish the RP ID
+domain's `/.well-known/webauthn` file so browsers and authenticators can enforce
+related-origin eligibility.
 
 ## More information
 

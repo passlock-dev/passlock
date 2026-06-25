@@ -4,7 +4,8 @@ packages:
 
 catalog:
   "@biomejs/biome": ^2.5.1
-  "@types/node": ^26.0.0
+  "@effect/vitest": ^0.29.0
+  "@types/node": ^24.1.0
   effect: ^3.21.4
   globals: ^17.7.0
   npm-check-updates: ^22.2.7
@@ -22,6 +23,7 @@ overrides:
   esbuild@<=0.24.2: ^0.24.3
   esbuild@>=0.17.0 <0.28.1: ^0.28.1
   ts-deepmerge@<8.0.0: ^8.0.0
+  typebox: 1.2.19
   vitest: "catalog:"
 
 linkWorkspacePackages: true
@@ -34,10 +36,3 @@ allowBuilds:
   msgpackr-extract: true
 
 minimumReleaseAge: 1440
-
-minimumReleaseAgeExclude:
-  - joi@17.13.4
-  - esbuild@0.28.1
-  - esbuild@0.24.3
-  - cookie@0.7.0
-  - ts-deepmerge@8.0.0
