@@ -22,21 +22,21 @@
 		"typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
 	},
 	"dependencies": {
-		"@libsql/client": "^0.17.3"
+		"@libsql/client": "^0.17.4"
 	},
 	"devDependencies": {
-		"@clack/prompts": "^1.5.1",
+		"@clack/prompts": "^1.6.0",
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
-		"@lucide/svelte": "^1.18.0",
+		"@lucide/svelte": "^1.21.0",
 		"@passlock/browser": "workspace:^",
 		"@passlock/server": "workspace:^",
 		"@sveltejs/adapter-auto": "^7.0.1",
-		"@sveltejs/adapter-node": "^5.5.4",
-		"@sveltejs/kit": "^2.65.1",
+		"@sveltejs/adapter-node": "^5.5.6",
+		"@sveltejs/kit": "^2.67.0",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
 		"@tailwindcss/vite": "4.3.1",
-		"@types/node": "^25.9.3",
+		"@types/node": "^26.0.0",
 		"daisyui": "^5.5.23",
 		"dotenv": "^17.4.2",
 		"drizzle-kit": "^0.31.10",
@@ -44,20 +44,20 @@
 		"eslint": "^10.5.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.19.0",
-		"globals": "^17.6.0",
+		"globals": "^17.7.0",
 		"prettier": "^3.8.4",
-		"prettier-plugin-svelte": "^4.1.0",
+		"prettier-plugin-svelte": "^4.1.1",
 		"prettier-plugin-tailwindcss": "^0.8.0",
 		"sort-package-json": "catalog:",
-		"svelte": "^5.56.3",
-		"svelte-check": "^4.6.0",
+		"svelte": "^5.56.4",
+		"svelte-check": "^4.7.0",
 		"sveltekit-superforms": "^2.30.1",
 		"tailwindcss": "^4.3.1",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.61.0",
+		"typescript-eslint": "^8.62.0",
 		"valibot": "^1.4.1",
 		"vite": "^8.0.16",
 		"vite-node": "^6.0.0"
 	},
-	"packageManager": "pnpm@11.6.0"
+	"packageManager": "pnpm@11.9.0"
 }

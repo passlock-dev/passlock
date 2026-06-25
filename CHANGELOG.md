@@ -7,12 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Upgrade dependencies
+
 ## [2.9.0] - 2026-06-16
 
 ### Added
 
 - `@passlock/server` mailbox challenge creation now accepts `sendEmail: true` to request Passlock-managed delivery for one-time-code emails. Omitting `sendEmail`, or passing `sendEmail: false`, preserves the existing generate-only behavior and keeps returning the generated `code` and rendered `message` for custom delivery.
-- 
+
 - `@passlock/server` and the `POST /v2/:tenancyId/challenges` REST API now accept an optional recipient `name` when creating mailbox challenges. The name is used for email delivery only and does not affect challenge scope, lookup, invalidation, or verification.
 
 ## [2.8.0] - 2026-06-15
