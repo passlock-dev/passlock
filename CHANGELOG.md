@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `@passlock/server` `createMailboxChallenge` will now send the challenge email unless `sendEmail: false` is set explicitly.
+- Upgraded npm dependencies
+
 ## [2.9.2] - 2026-06-25
 
 ### Removed

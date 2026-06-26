@@ -299,7 +299,9 @@ export interface CreateMailboxChallengeOptions {
   /**
    * Ask Passlock to send the generated one-time-code email.
    *
-   * When omitted or `false`, challenge creation keeps the generate-only
+   * When omitted or `true` emails will be sent via the Passlock infrastructure
+   *
+   * When set to false challenge creation keeps the generate-only
    * behavior and no email is sent by Passlock. The returned `code` and
    * `message` remain available for custom delivery in either mode.
    */
