@@ -1,6 +1,6 @@
 {
   "name": "passlock",
-  "version": "2.9.2",
+  "version": "2.9.3",
   "private": true,
   "description": "Passlock monorepo root",
   "keywords": [

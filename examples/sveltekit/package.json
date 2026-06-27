@@ -1,6 +1,6 @@
 {
 	"name": "@passlock/sveltekit-example",
-	"version": "2.9.2",
+	"version": "2.9.3",
 	"private": true,
 	"description": "SvelteKit app making full use of passkeys along with email based one time login codes",
 	"type": "module",
@@ -29,8 +29,8 @@
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
 		"@lucide/svelte": "^1.21.0",
-		"@passlock/browser": "^2.9.2",
-		"@passlock/server": "^2.9.2",
+		"@passlock/browser": "^2.9.3",
+		"@passlock/server": "^2.9.3",
 		"@sveltejs/adapter-node": "^5.5.7",
 		"@sveltejs/kit": "^2.68.0",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
