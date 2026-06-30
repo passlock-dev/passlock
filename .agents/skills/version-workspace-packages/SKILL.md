@@ -1,6 +1,9 @@
 ---
 name: version-workspace-packages
 description: Prepare a new version release for a PNPM workspace that keeps packages and demos on one shared version. Use when Codex needs to inspect CHANGELOG.md, ask whether the next release is major, minor, or patch, create a versioned changelog entry from the Unreleased section, recreate an empty Unreleased section, and update workspace package.json versions and workspace dependency ranges.
+metadata:
+  short-description: Bump the package versions
+  internal: true
 ---
 
 # Version Workspace Packages
