@@ -1,8 +1,8 @@
 import { Micro, pipe } from "effect"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { Logger } from "../../logger.js"
-import { DeleteError } from "../errors.js"
-import { deletePasskeys, prunePasskeys, updatePasskeys } from "./signals.js"
+import { DeleteError, OrphanedPasskeyError } from "../errors.js"
+import { deleteOrphanedPasskey, deletePasskeys, prunePasskeys, updatePasskeys } from "./signals.js"
 
 const originalFetch = globalThis.fetch
 const originalPublicKeyCredential = globalThis.PublicKeyCredential
@@ -281,6 +281,154 @@ describe(deletePasskeys.name, () => {
     expect(error.code).toEqual("OTHER_ERROR")
     expect(error.message).toEqual("Invalid or expired delete token")
     expect(signalUnknownCredential).not.toHaveBeenCalled()
+  })
+})
+
+describe(deleteOrphanedPasskey.name, () => {
+  const orphanedError = () =>
+    new OrphanedPasskeyError({
+      credentialId: "orphanedCredentialId",
+      message: "Passkey not found",
+      rpId: "example.test",
+    })
+
+  const run = (error: OrphanedPasskeyError, logger: typeof Logger.Service = loggerTest) =>
+    pipe(deleteOrphanedPasskey(error), Micro.provideService(Logger, logger), Micro.runPromise)
+
+  it("signals exactly the RP ID and credential ID without making a request", async () => {
+    const signalUnknownCredential = vi.fn((_options: unknown) => Promise.resolve())
+    const fetchMock = vi.fn()
+
+    setPublicKeyCredential({ signalUnknownCredential })
+    setFetch(fetchMock as typeof fetch)
+
+    const result = await run(orphanedError())
+
+    expect(result).toEqual({ _tag: "DeleteSuccess", warnings: [] })
+    expect(signalUnknownCredential).toHaveBeenCalledOnce()
+    expect(signalUnknownCredential).toHaveBeenCalledWith({
+      credentialId: "orphanedCredentialId",
+      rpId: "example.test",
+    })
+    expect(Object.keys(signalUnknownCredential.mock.calls[0]?.[0] ?? {})).toEqual([
+      "credentialId",
+      "rpId",
+    ])
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it("returns an unsupported warning without signalling or making a request", async () => {
+    const fetchMock = vi.fn()
+
+    setPublicKeyCredential(undefined)
+    setFetch(fetchMock as typeof fetch)
+
+    const result = await run(orphanedError())
+
+    expect(result).toEqual({
+      _tag: "DeleteSuccess",
+      warnings: [
+        {
+          code: "BROWSER_SIGNAL_UNSUPPORTED",
+          message: "Passkey deletion not supported on this device",
+        },
+      ],
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    [
+      "a synchronous throw",
+      () => {
+        throw new Error("orphanedCredentialId at example.test")
+      },
+    ],
+    ["a rejected promise", () => Promise.reject(new Error("orphanedCredentialId at example.test"))],
+    [
+      "a non-Error defect",
+      () => {
+        throw "orphanedCredentialId at example.test"
+      },
+    ],
+  ])("turns %s into a generic warning", async (_label, signalUnknownCredential) => {
+    const fetchMock = vi.fn()
+    const signalMock = vi.fn(signalUnknownCredential)
+    const logWarn = vi.fn()
+    const logger = {
+      ...loggerTest,
+      logWarn: (message: string) => {
+        logWarn(message)
+        return Micro.void
+      },
+    } satisfies typeof Logger.Service
+
+    setPublicKeyCredential({ signalUnknownCredential: signalMock })
+    setFetch(fetchMock as typeof fetch)
+
+    const result = await run(orphanedError(), logger)
+
+    expect(result).toEqual({
+      _tag: "DeleteSuccess",
+      warnings: [
+        {
+          code: "BROWSER_SIGNAL_FAILED",
+          message: "Unable to signal orphaned credential removal",
+        },
+      ],
+    })
+    expect(signalMock).toHaveBeenCalledOnce()
+    expect(logWarn).toHaveBeenCalledOnce()
+    expect(logWarn).toHaveBeenCalledWith("Unable to signal orphaned credential removal")
+    expect(JSON.stringify(result)).not.toContain("orphanedCredentialId")
+    expect(JSON.stringify(result)).not.toContain("example.test")
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it("turns a signal timeout into a generic warning", async () => {
+    const signalUnknownCredential = vi.fn(() => new Promise<void>(() => {}))
+    const fetchMock = vi.fn()
+
+    setPublicKeyCredential({ signalUnknownCredential })
+    setFetch(fetchMock as typeof fetch)
+
+    const result = await run(orphanedError())
+
+    expect(result).toEqual({
+      _tag: "DeleteSuccess",
+      warnings: [
+        {
+          code: "BROWSER_SIGNAL_FAILED",
+          message: "Unable to signal orphaned credential removal",
+        },
+      ],
+    })
+    expect(signalUnknownCredential).toHaveBeenCalledOnce()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it("rejects invalid runtime input without a side effect", async () => {
+    const signalUnknownCredential = vi.fn(() => Promise.resolve())
+    const fetchMock = vi.fn()
+
+    setPublicKeyCredential({ signalUnknownCredential })
+    setFetch(fetchMock as typeof fetch)
+
+    const error = await pipe(
+      deleteOrphanedPasskey({
+        credentialId: "orphanedCredentialId",
+        message: "Passkey not found",
+        rpId: "example.test",
+      } as OrphanedPasskeyError),
+      Micro.flip,
+      Micro.provideService(Logger, loggerTest),
+      Micro.runPromise
+    )
+
+    expect(error).toBeInstanceOf(DeleteError)
+    expect(error.code).toBe("OTHER_ERROR")
+    expect(signalUnknownCredential).not.toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })
 

@@ -6,6 +6,7 @@ import type {
   DeleteSuccess,
   Err,
   Ok,
+  OrphanedPasskeyError,
   PruningError,
   PruningSuccess,
   RegistrationError,
@@ -58,6 +59,15 @@ describe("public surface", () => {
     type _5 = Assert<
       IsEqual<Awaited<ReturnType<typeof root.prunePasskeys>>, Result<PruningSuccess, PruningError>>
     >
+    type _6 = Assert<
+      IsEqual<
+        Awaited<ReturnType<typeof root.deleteOrphanedPasskey>>,
+        Result<DeleteSuccess, DeleteError>
+      >
+    >
+    type _7 = Assert<
+      IsEqual<Parameters<typeof root.deleteOrphanedPasskey>[0], OrphanedPasskeyError>
+    >
 
     expect(true).toBe(true)
   })
@@ -87,6 +97,7 @@ describe("public surface", () => {
     expectTypeOf(passlock.authenticatePasskey).toBeFunction()
     expectTypeOf(passlock.updatePasskeys).toBeFunction()
     expectTypeOf(passlock.deletePasskeys).toBeFunction()
+    expectTypeOf(passlock.deleteOrphanedPasskey).toBeFunction()
     expectTypeOf(passlock.prunePasskeys).toBeFunction()
   })
 
@@ -108,6 +119,13 @@ describe("public surface", () => {
         Result<AuthenticationSuccess, AuthenticationError>
       >
     >
+    type _3 = Assert<
+      IsEqual<
+        Awaited<ReturnType<Client["deleteOrphanedPasskey"]>>,
+        Result<DeleteSuccess, DeleteError>
+      >
+    >
+    type _4 = Assert<IsEqual<Parameters<Client["deleteOrphanedPasskey"]>[0], OrphanedPasskeyError>>
 
     expect(true).toBe(true)
   })

@@ -1,6 +1,13 @@
 import { Micro } from "effect"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { deletePasskeys, isDeleteError, isDeleteSuccess, type Logger } from "./index.js"
+import {
+  deleteOrphanedPasskey,
+  deletePasskeys,
+  isDeleteError,
+  isDeleteSuccess,
+  type Logger,
+  OrphanedPasskeyError,
+} from "./index.js"
 
 const originalFetch = globalThis.fetch
 const originalPublicKeyCredential = globalThis.PublicKeyCredential
@@ -144,5 +151,64 @@ describe("safe result envelopes", () => {
     expect(JSON.stringify(result)).not.toContain('"success"')
     expect(JSON.stringify(result)).not.toContain('"failure"')
     expect(JSON.stringify(result)).not.toContain('"error"')
+  })
+
+  it("decorates successful orphan cleanup without breaking _tag narrowing", async () => {
+    const signalUnknownCredential = vi.fn(() => Promise.resolve())
+    const fetchMock = vi.fn()
+
+    setPublicKeyCredential({ signalUnknownCredential })
+    setFetch(fetchMock as typeof fetch)
+
+    const result = await deleteOrphanedPasskey(
+      new OrphanedPasskeyError({
+        credentialId: "dummyCredentialId",
+        message: "Passkey not found",
+        rpId: "localhost",
+      }),
+      loggerTest
+    )
+
+    expect(result.success).toBe(true)
+    expect(result.failure).toBe(false)
+    if (!result.success) {
+      throw new Error("Expected a successful result")
+    }
+
+    expect(result.value).toBe(result)
+    expect(result._tag).toBe("DeleteSuccess")
+    expect(result.warnings).toEqual([])
+    expect(isDeleteSuccess(result)).toBe(true)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it("decorates invalid orphan cleanup input without breaking _tag narrowing", async () => {
+    const signalUnknownCredential = vi.fn(() => Promise.resolve())
+    const fetchMock = vi.fn()
+
+    setPublicKeyCredential({ signalUnknownCredential })
+    setFetch(fetchMock as typeof fetch)
+
+    const result = await deleteOrphanedPasskey(
+      {
+        credentialId: "dummyCredentialId",
+        message: "Passkey not found",
+        rpId: "localhost",
+      } as OrphanedPasskeyError,
+      loggerTest
+    )
+
+    expect(result.success).toBe(false)
+    expect(result.failure).toBe(true)
+    if (result.success) {
+      throw new Error("Expected an error result")
+    }
+
+    expect(result.error).toBe(result)
+    expect(result._tag).toBe("@error/Delete")
+    expect(result.code).toBe("OTHER_ERROR")
+    expect(isDeleteError(result)).toBe(true)
+    expect(signalUnknownCredential).not.toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

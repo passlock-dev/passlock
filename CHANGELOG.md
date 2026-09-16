@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `@passlock/browser` now provides `deleteOrphanedPasskey` as a standalone
+  function and `Passlock` method for best-effort local cleanup after
+  authentication returns an `OrphanedPasskeyError`. Passkeys that still have a
+  vault record continue to use the prepared-token `deletePasskeys` flow.
+
 ## [2.9.3] - 2026-06-27
 
 ### Changed

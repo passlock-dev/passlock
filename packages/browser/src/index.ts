@@ -54,8 +54,10 @@
  *
  * @categoryDescription Passkeys (core)
  * Creating, authenticating, updating, deleting, and pruning passkeys. Management
- * helpers use short-lived tokens prepared by `@passlock/server`, then signal
- * local password managers on a best-effort basis.
+ * helpers for known vault records use short-lived tokens prepared by
+ * `@passlock/server`, then signal local password managers on a best-effort
+ * basis. Orphan cleanup instead accepts the live authentication error and is
+ * entirely local.
  *
  * @categoryDescription Passkeys (other)
  * Testing for browser capabilities related to passkeys, type guards and other utilities.
@@ -81,7 +83,12 @@ import {
   AuthenticationHelper,
   authenticatePasskey as authenticatePasskeyM,
 } from "./passkey/authentication/authentication.js"
-import type { DeleteError, PruningError, UpdateError } from "./passkey/errors.js"
+import type {
+  DeleteError,
+  OrphanedPasskeyError,
+  PruningError,
+  UpdateError,
+} from "./passkey/errors.js"
 
 import type {
   RegistrationError,
@@ -102,6 +109,7 @@ import type {
   UpdateSuccess,
 } from "./passkey/signals/signals.js"
 import {
+  deleteOrphanedPasskey as deleteOrphanedPasskeyM,
   deletePasskeys as deletePasskeysM,
   isDeleteSuccess,
   isPasskeyDeleteSupport as isPasskeyDeleteSupportM,
@@ -325,6 +333,59 @@ export const deletePasskeys = (
   logger: typeof Logger.Service = eventLogger
 ): Promise<Result<DeleteSuccess, DeleteError>> => {
   const micro = deletePasskeysM(options, config)
+  return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
+}
+
+/**
+ * Signal best-effort local cleanup for a passkey presented by the device but
+ * absent from the Passlock vault.
+ *
+ * Pass the live {@link OrphanedPasskeyError} returned by
+ * {@link authenticatePasskey} after narrowing it with
+ * {@link isOrphanedPasskeyError}. This helper makes no Passlock network
+ * request. It sends only the error's RP ID and credential ID to the browser's
+ * native unknown-credential signal.
+ *
+ * Unsupported signal APIs and browser-side failures are returned as warnings
+ * on the success branch. A successful result means the signalling workflow
+ * completed or no-op'd; it does not guarantee that a browser or password
+ * manager removed the credential.
+ *
+ * @param error Live orphan error returned by {@link authenticatePasskey}.
+ * @returns A {@link Result} whose success branch contains a
+ * {@link DeleteSuccess} with warnings and whose error branch contains a
+ * {@link DeleteError}.
+ *
+ * @see {@link isOrphanedPasskeyError}
+ * @see {@link deletePasskeys} for deleting passkeys that still have vault records.
+ * @see {@link isDeleteSuccess}
+ * @see {@link isDeleteError}
+ *
+ * @example
+ * const authentication = await authenticatePasskey(
+ *   { authenticationToken },
+ *   { tenancyId }
+ * );
+ *
+ * if (
+ *   authentication.failure &&
+ *   isOrphanedPasskeyError(authentication.error)
+ * ) {
+ *   const deletion = await deleteOrphanedPasskey(authentication.error);
+ *
+ *   if (deletion.success && deletion.warnings.length === 0) {
+ *     // The browser accepted the best-effort signal.
+ *   }
+ * }
+ *
+ * @category Passkeys (core)
+ */
+export const deleteOrphanedPasskey = (
+  error: OrphanedPasskeyError,
+  /** @hidden */
+  logger: typeof Logger.Service = eventLogger
+): Promise<Result<DeleteSuccess, DeleteError>> => {
+  const micro = deleteOrphanedPasskeyM(error)
   return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
 }
 
@@ -578,6 +639,33 @@ export class Passlock {
    */
   deletePasskeys(options: DeletePasskeysOptions): Promise<Result<DeleteSuccess, DeleteError>> {
     return deletePasskeys(options, this.config)
+  }
+
+  /**
+   * Signal best-effort local cleanup for a passkey presented by the device but
+   * absent from the Passlock vault.
+   *
+   * Pass the live {@link OrphanedPasskeyError} returned by
+   * {@link authenticatePasskey} after narrowing it with
+   * {@link isOrphanedPasskeyError}. This method makes no Passlock network
+   * request. Unsupported signal APIs and browser-side failures are returned as
+   * warnings on the success branch.
+   *
+   * A successful result does not guarantee that the browser or password
+   * manager removed the credential.
+   *
+   * @param error Live orphan error returned by {@link authenticatePasskey}.
+   * @returns A {@link Result} whose success branch contains a
+   * {@link DeleteSuccess} with warnings and whose error branch contains a
+   * {@link DeleteError}.
+   *
+   * @see {@link isOrphanedPasskeyError}
+   * @see {@link deletePasskeys} for deleting passkeys that still have vault records.
+   *
+   * @category Passkeys (core)
+   */
+  deleteOrphanedPasskey(error: OrphanedPasskeyError): Promise<Result<DeleteSuccess, DeleteError>> {
+    return deleteOrphanedPasskey(error)
   }
 
   /**

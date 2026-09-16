@@ -18,6 +18,7 @@ const assertSafeSurface = (module, label) => {
     "authenticatePasskey",
     "updatePasskeys",
     "deletePasskeys",
+    "deleteOrphanedPasskey",
     "prunePasskeys",
     "isPasskeySupport",
     "isAutofillSupport",

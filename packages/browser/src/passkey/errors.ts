@@ -28,8 +28,8 @@ export class PasskeyUnsupportedError extends Error {
 
 /**
  * The device tried to authenticate with a passkey that was not found in the vault.
- * Your backend can prepare a deletion token for local cleanup, then pass that
- * token to the browser's `deletePasskeys` helper.
+ * Pass the live narrowed error to {@link deleteOrphanedPasskey} to request
+ * best-effort local cleanup from the browser or password manager.
  *
  * @category Passkeys (errors)
  */
@@ -41,8 +41,8 @@ export const isOrphanedPasskeyError = (payload: unknown): payload is OrphanedPas
 
 /**
  * The device tried to authenticate with a passkey that was not found in the vault.
- * Your backend can prepare a deletion token for local cleanup, then pass that
- * token to the browser's `deletePasskeys` helper.
+ * Pass the live narrowed error to {@link deleteOrphanedPasskey} to request
+ * best-effort local cleanup from the browser or password manager.
  *
  * @category Passkeys (errors)
  */
@@ -82,6 +82,7 @@ export type ErrorCode =
   | "ERROR_AUTHENTICATOR_NO_SUPPORTED_PUBKEYCREDPARAMS_ALG"
   | "ERROR_AUTO_REGISTER_USER_VERIFICATION_FAILURE"
   | "ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY"
+  | "ERROR_SIGNAL_INVALID_ARGUMENT"
 
 /**
  * An unexpected passkey specific error occurred.
@@ -152,9 +153,10 @@ export class DuplicatePasskeyError extends Error {
 }
 
 /**
- * Raised when the prepared deletion token exchange fails or returns an
- * unexpected payload. Unsupported browser signalling and browser-side signal
- * failures are returned as warnings when the helper can otherwise complete.
+ * Raised when deletion input is invalid, or when the prepared deletion token
+ * exchange fails or returns an unexpected payload. Unsupported browser
+ * signalling and browser-side signal failures are returned as warnings when
+ * the helper can otherwise complete.
  *
  * @category Passkeys (errors)
  */
@@ -165,9 +167,10 @@ export const isDeleteError = (payload: unknown): payload is DeleteError => {
 }
 
 /**
- * Raised when the prepared deletion token exchange fails or returns an
- * unexpected payload. Unsupported browser signalling and browser-side signal
- * failures are returned as warnings when the helper can otherwise complete.
+ * Raised when deletion input is invalid, or when the prepared deletion token
+ * exchange fails or returns an unexpected payload. Unsupported browser
+ * signalling and browser-side signal failures are returned as warnings when
+ * the helper can otherwise complete.
  *
  * @category Passkeys (errors)
  */

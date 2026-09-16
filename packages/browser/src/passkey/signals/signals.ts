@@ -3,7 +3,13 @@ import { makeEndpoint, makeRequest } from "../../internal/index.js"
 import { NetworkError } from "../../internal/network.js"
 import { Logger } from "../../logger.js"
 import type { PasslockOptions } from "../../options.js"
-import { DeleteError, PruningError, UpdateError } from "../errors.js"
+import {
+  DeleteError,
+  isOrphanedPasskeyError,
+  type OrphanedPasskeyError,
+  PruningError,
+  UpdateError,
+} from "../errors.js"
 
 /**
  * Detect support for browser-driven local passkey removal via
@@ -480,7 +486,13 @@ const signalUpdateInstruction = (instruction: PasskeyUpdateInstruction) =>
     })
   })
 
-const signalDeleteInstruction = (instruction: PasskeyDeletionInstruction) =>
+type PasskeyDeletionSignalInstruction = {
+  readonly rpId: string
+  readonly credentialId: string
+  readonly userId?: string
+}
+
+const signalDeleteInstruction = (instruction: PasskeyDeletionSignalInstruction) =>
   Micro.gen(function* () {
     return yield* Micro.tryPromise({
       try: () => PublicKeyCredential.signalUnknownCredential(instruction),
@@ -503,10 +515,13 @@ const signalPruningInstruction = (instruction: PasskeyPruningInstruction) =>
     })
   })
 
+const SIGNAL_TIMEOUT_MS = 1_000
+
 const collectSignalWarnings = <A>(
   instructions: ReadonlyArray<A>,
   signal: (instruction: A) => Micro.Micro<void, Error>,
-  fallback: string
+  fallback: string,
+  includeErrorMessage = true
 ) =>
   Micro.gen(function* () {
     const warnings: PasskeyManagementWarning[] = []
@@ -515,14 +530,17 @@ const collectSignalWarnings = <A>(
     for (const instruction of instructions) {
       const result = yield* pipe(
         signal(instruction),
-        Micro.as(undefined),
+        Micro.timeoutOrElse({
+          duration: SIGNAL_TIMEOUT_MS,
+          onTimeout: () => Micro.fail(new Error(`${fallback}: browser signal timed out`)),
+        }),
         Micro.catchAll((error) => {
-          const message = errorMessage(error, fallback)
+          const message = includeErrorMessage ? errorMessage(error, fallback) : fallback
           warnings.push(failedWarning(message))
           return logger.logWarn(message)
         }),
         Micro.catchAllDefect((error) => {
-          const message = errorMessage(error, fallback)
+          const message = includeErrorMessage ? errorMessage(error, fallback) : fallback
           warnings.push(failedWarning(message))
           return logger.logWarn(message)
         })
@@ -635,6 +653,69 @@ export const deletePasskeys = (
     return {
       _tag: "DeleteSuccess",
       warnings: [...warnings, ...signalWarnings],
+    } as const
+  })
+
+/**
+ * Signal that a passkey presented during authentication is absent from the
+ * Passlock vault.
+ *
+ * Pass the live {@link OrphanedPasskeyError} returned by
+ * `authenticatePasskey` after narrowing it with `isOrphanedPasskeyError`.
+ * This helper performs no Passlock network request. Unsupported browser APIs
+ * and signal failures are returned as warnings because native credential
+ * removal is best-effort.
+ *
+ * A successful result means only that the signalling workflow completed or
+ * no-op'd; it does not guarantee that the browser or password manager removed
+ * the credential.
+ *
+ * @param error Live orphan error returned by `authenticatePasskey`.
+ * @returns A Micro effect that resolves with a {@link DeleteSuccess}, or fails
+ * with a {@link DeleteError} when the runtime input is invalid.
+ *
+ * @see {@link deletePasskeys} for deleting passkeys that still have vault records.
+ *
+ * @category Passkeys (core)
+ */
+export const deleteOrphanedPasskey = (
+  error: OrphanedPasskeyError
+): Micro.Micro<DeleteSuccess, DeleteError, Logger> =>
+  Micro.gen(function* () {
+    if (!isOrphanedPasskeyError(error)) {
+      return yield* Micro.fail(
+        new DeleteError({
+          code: "OTHER_ERROR",
+          message: "A live OrphanedPasskeyError is required",
+        })
+      )
+    }
+
+    const logger = yield* Micro.service(Logger)
+
+    yield* logger.logInfo("Testing for orphaned passkey removal support")
+    const canDelete = yield* isPasskeyDeleteSupport
+    if (!canDelete) {
+      return {
+        _tag: "DeleteSuccess",
+        warnings: [unsupportedWarning("Passkey deletion not supported on this device")],
+      } as const
+    }
+
+    const instruction = {
+      credentialId: error.credentialId,
+      rpId: error.rpId,
+    }
+    const warnings = yield* collectSignalWarnings(
+      [instruction],
+      signalDeleteInstruction,
+      "Unable to signal orphaned credential removal",
+      false
+    )
+
+    return {
+      _tag: "DeleteSuccess",
+      warnings,
     } as const
   })
 

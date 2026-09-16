@@ -68,14 +68,14 @@
     "typedoc": "typedoc"
   },
   "dependencies": {
-    "@simplewebauthn/browser": "^13.3.0",
+    "@simplewebauthn/browser": "^14.0.0",
     "effect": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/language-service": "^0.86.2",
+    "@effect/language-service": "^0.87.2",
     "@fetch-mock/vitest": "^0.2.18",
-    "@typescript/lib-dom": "npm:@types/web@^0.0.350",
+    "@typescript/lib-dom": "npm:@types/web@^0.0.356",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
     "publint": "catalog:",
@@ -87,5 +87,5 @@
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
-  "packageManager": "pnpm@11.9.0"
+  "packageManager": "pnpm@12.4.2"
 }
