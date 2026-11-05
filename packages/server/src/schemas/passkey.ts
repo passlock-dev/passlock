@@ -14,7 +14,7 @@ import { Schema } from "effect"
  *
  * @category Passkeys
  */
-export const UserVerification = Schema.Literal("required", "preferred", "discouraged")
+export const UserVerification = Schema.Literals(["required", "preferred", "discouraged"])
 
 /**
  * Type produced by {@link UserVerification}.
@@ -28,7 +28,7 @@ export type UserVerification = typeof UserVerification.Type
  *
  * @category Passkeys
  */
-export const PasskeyAuthenticationMediation = Schema.Literal("required", "conditional")
+export const PasskeyAuthenticationMediation = Schema.Literals(["required", "conditional"])
 
 /**
  * Type produced by {@link PasskeyAuthenticationMediation}.
@@ -190,8 +190,8 @@ export const PasskeyCredential = Schema.Struct({
   aaguid: Schema.String,
   backedUp: Schema.Boolean,
   counter: Schema.Number,
-  deviceType: Schema.Literal(...CredentialDeviceType),
-  transports: Schema.Array(Schema.Literal(...Transports)),
+  deviceType: Schema.Literals(CredentialDeviceType),
+  transports: Schema.Array(Schema.Literals(Transports)),
   publicKey: Schema.Uint8ArrayFromBase64Url,
   rpId: Schema.String,
 })
@@ -280,13 +280,13 @@ export const FindAllPasskeys = Schema.TaggedStruct("FindAllPasskeys", {
  *
  * @category Passkeys
  */
-export const PasskeyManagementWarningCode = Schema.Literal(
+export const PasskeyManagementWarningCode = Schema.Literals([
   "PASSKEY_NOT_FOUND",
   "NO_PASSKEYS_FOUND",
   "BROWSER_SIGNAL_UNSUPPORTED",
   "BROWSER_SIGNAL_FAILED",
-  "EMPTY_SIGNAL_PAYLOAD"
-)
+  "EMPTY_SIGNAL_PAYLOAD",
+])
 
 /**
  * Type produced by {@link PasskeyManagementWarningCode}.

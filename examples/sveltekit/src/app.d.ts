@@ -1,4 +1,4 @@
-import type { Session, SessionUser } from '$lib/server/repository';
+import type { Session, SessionUser } from '#lib/server/repository.js';
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces

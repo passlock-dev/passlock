@@ -1,6 +1,6 @@
-import { getPasslockConfig, updatePasskeys } from '$lib/server/passkeys.js';
-import { getAccountContext } from '$lib/server/account.js';
-import { createPasskey } from '$lib/server/repository.js';
+import { getPasslockConfig, updatePasskeys } from '#lib/server/passkeys.js';
+import { getAccountContext } from '#lib/server/account.js';
+import { createPasskey } from '#lib/server/repository.js';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import * as v from 'valibot';
@@ -9,7 +9,7 @@ import {
 	PasskeyStatusSuccess as PasskeyStatusSchema,
 	RegisterPasskeySuccess,
 	UpdatePasskeysSuccess
-} from '$lib/shared/schemas';
+} from '#lib/shared/schemas.js';
 import * as PasslockServer from '@passlock/server';
 import { errorResponse } from './shared';
 

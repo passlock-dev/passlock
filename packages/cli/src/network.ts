@@ -39,7 +39,7 @@ export interface FetchNetworkOptions {
  * Supply this service with `Effect.provide` / layers to swap fetch behavior
  * in tests or alternate runtimes.
  */
-export class NetworkFetch extends Context.Tag("NetworkFetch")<NetworkFetch, typeof fetch>() {}
+export class NetworkFetch extends Context.Service<NetworkFetch, typeof fetch>()("NetworkFetch") {}
 
 /**
  * Default live fetch layer backed by `globalThis.fetch`.

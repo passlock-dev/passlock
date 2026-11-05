@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SubmitButton from '$lib/components/SubmitButton.svelte';
+	import SubmitButton from '#lib/components/SubmitButton.svelte';
 </script>
 
 <svelte:head>

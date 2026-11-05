@@ -1,4 +1,4 @@
-import { Context, Micro } from "effect"
+import { Context, Effect } from "effect"
 
 /**
  * Type guard for {@link NetworkError}.
@@ -42,7 +42,9 @@ const DEFAULT_ENDPOINT = "https://api.passlock.dev"
 /**
  * Effect service that provides the Passlock API base URL.
  */
-export class Endpoint extends Context.Tag("Endpoint")<Endpoint, { readonly endpoint: string }>() {}
+export class Endpoint extends Context.Service<Endpoint, { readonly endpoint: string }>()(
+  "Endpoint"
+) {}
 
 /**
  * Create an {@link Endpoint} service from an optional base URL override.
@@ -51,7 +53,7 @@ export const makeEndpoint = ({
   endpoint = DEFAULT_ENDPOINT,
 }: {
   endpoint?: string
-}): Endpoint["Type"] => Endpoint.of({ endpoint })
+}): typeof Endpoint.Service => Endpoint.of({ endpoint })
 
 /**
  * Indicates the type we received from the API can be considered
@@ -99,7 +101,7 @@ export type RequestOptions<A extends object, E = never> = {
  * responsePredicate function.
  *
  * @param options Request options.
- * @returns A Micro effect that resolves with the typed response payload.
+ * @returns An Effect that resolves with the typed response payload.
  */
 export const makeRequest = <A extends object, E = never>({
   url,
@@ -107,8 +109,8 @@ export const makeRequest = <A extends object, E = never>({
   responsePredicate,
   errorPredicate = (res): res is E => false,
   label,
-}: RequestOptions<A, E>): Micro.Micro<A, E | NetworkError> =>
-  Micro.gen(function* () {
+}: RequestOptions<A, E>): Effect.Effect<A, E | NetworkError> =>
+  Effect.gen(function* () {
     const headers = {
       Accept: "application/json",
       "Content-Type": "application/json",
@@ -131,7 +133,7 @@ export const makeRequest = <A extends object, E = never>({
       url: String(url),
     })
 
-    const fetchResponse = yield* Micro.tryPromise({
+    const fetchResponse = yield* Effect.tryPromise({
       try: () => fetch(url, { body, headers, method: "post" }),
       catch: () => networkError,
     })
@@ -140,26 +142,26 @@ export const makeRequest = <A extends object, E = never>({
     const isJsonResponse = contentType === "application/json"
 
     if (!fetchResponse.ok && isJsonResponse) {
-      const apiError = yield* Micro.tryPromise({
+      const apiError = yield* Effect.tryPromise({
         try: () => fetchResponse.json() as Promise<unknown>,
         catch: () => parseError,
       })
 
       if (errorPredicate(apiError, fetchResponse.status)) {
-        return yield* Micro.fail(apiError)
+        return yield* Effect.fail(apiError)
       } else if (isErrorResponse(apiError)) {
-        return yield* Micro.fail(
+        return yield* Effect.fail(
           new NetworkError({
             ...apiError,
             url: String(url),
           })
         )
       } else {
-        return yield* Micro.fail(parseError)
+        return yield* Effect.fail(parseError)
       }
     } else if (!fetchResponse.ok) {
-      const message = yield* Micro.promise(() => fetchResponse.text())
-      return yield* Micro.fail(
+      const message = yield* Effect.promise(() => fetchResponse.text())
+      return yield* Effect.fail(
         new NetworkError({
           message,
           url: String(url),
@@ -167,10 +169,10 @@ export const makeRequest = <A extends object, E = never>({
       )
     }
 
-    const json = yield* Micro.tryPromise({
+    const json = yield* Effect.tryPromise({
       try: () => fetchResponse.json() as Promise<unknown>,
       catch: () => parseError,
     })
 
-    return responsePredicate(json) ? json : yield* Micro.fail(invalidResponsePayload)
+    return responsePredicate(json) ? json : yield* Effect.fail(invalidResponsePayload)
   })

@@ -1,13 +1,13 @@
 import type { Actions, PageServerLoad } from './$types';
-import { createChallengeRateLimitView } from '$lib/server/mailbox/mailboxChallenge.js';
-import { createOrRefreshEmailChallenge } from '$lib/server/mailbox/emailChange.js';
-import { updateUserNames } from '$lib/server/repository.js';
-import { requireAccountContext } from '$lib/server/account.js';
-import { setEmailChangeCookie } from '$lib/server/cookies.js';
-import { getPasslockClientConfig } from '$lib/server/passkeys.js';
-import { getAccountQueryState, type AccountEmailErrorReason } from '$lib/shared/queryState.js';
-import type { AccountEmailFormMessage } from '$lib/shared/challengeRateLimit.js';
-import { EmailSchema, ProfileSchema } from '$lib/shared/schemas.js';
+import { createChallengeRateLimitView } from '#lib/server/mailbox/mailboxChallenge.js';
+import { createOrRefreshEmailChallenge } from '#lib/server/mailbox/emailChange.js';
+import { updateUserNames } from '#lib/server/repository.js';
+import { requireAccountContext } from '#lib/server/account.js';
+import { setEmailChangeCookie } from '#lib/server/cookies.js';
+import { getPasslockClientConfig } from '#lib/server/passkeys.js';
+import { getAccountQueryState, type AccountEmailErrorReason } from '#lib/shared/queryState.js';
+import type { AccountEmailFormMessage } from '#lib/shared/challengeRateLimit.js';
+import { EmailSchema, ProfileSchema } from '#lib/shared/schemas.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
@@ -18,22 +18,15 @@ type AccountEmailFormData = v.InferOutput<typeof EmailSchema>;
 
 const createProfileForm = (input?: { givenName?: string; familyName?: string }) =>
 	superValidate(
-		{
-			givenName: input?.givenName,
-			familyName: input?.familyName
-		},
+		{ givenName: input?.givenName, familyName: input?.familyName },
 		valibot(ProfileSchema),
 		{ id: 'profile-form' }
 	);
-
 const createAccountEmailForm = (input?: { email?: string }, options?: { errors?: boolean }) =>
 	superValidate<AccountEmailFormData, AccountEmailFormMessage>(
 		{ email: input?.email },
 		valibot(EmailSchema),
-		{
-			id: 'email-form',
-			errors: options?.errors
-		}
+		{ id: 'email-form', errors: options?.errors }
 	);
 
 /**
@@ -211,7 +204,7 @@ export const actions = {
 		// if the user has two tabs/windows open and decided
 		// to close their account then submit the change email form
 		if (result._tag === '@error/AccountNotFound') {
-			redirect(303, resolve('/login'));
+			redirect(303, resolve('login'));
 		}
 
 		if (result._tag === '@error/DuplicateUser') {
@@ -242,6 +235,6 @@ export const actions = {
 			secret: result.secret
 		});
 
-		redirect(303, resolve('/account/verify-email'));
+		redirect(303, resolve('account/verify-email'));
 	}
 } satisfies Actions;

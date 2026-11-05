@@ -4,7 +4,7 @@
 	import {
 		formatChallengeRateLimitCountdown,
 		type ChallengeRateLimitView
-	} from '$lib/shared/challengeRateLimit.js';
+	} from '#lib/shared/challengeRateLimit.js';
 
 	let {
 		rateLimit,

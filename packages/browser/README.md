@@ -37,19 +37,19 @@ in README.template.md and outputs to README.md
 Powerful passkey features for browser applications.
 
 1. **🔓 No lock-in**  
-Framework agnostic. Standards compliant.
+   Framework agnostic. Standards compliant.
 
 2. **🔑 Domain migration**  
-Use backend-authorized RP IDs with WebAuthn `/.well-known/webauthn` support.
+   Use backend-authorized RP IDs with WebAuthn `/.well-known/webauthn` support.
 
 3. **🚀 Zero config passkeys**  
-Works out of the box with sensible defaults.
+   Works out of the box with sensible defaults.
 
 4. **📱 Credential management**  
-Programmatically manage passkeys on end user devices
+   Programmatically manage passkeys on end user devices
 
 5. **💪 Powerful**  
-User verification, autofill, roaming authenticators and more.
+   User verification, autofill, roaming authenticators and more.
 
 ## Register a passkey
 
@@ -61,10 +61,7 @@ the resulting `registrationToken` to the browser, then pass that token to
 ```ts
 import { registerPasskey } from "@passlock/browser"
 
-const result = await registerPasskey(
-  { registrationToken },
-  { tenancyId: "your-tenancy-id" }
-)
+const result = await registerPasskey({ registrationToken }, { tenancyId: "your-tenancy-id" })
 
 if (result.success) {
   // Send this code to your backend and verify it there.

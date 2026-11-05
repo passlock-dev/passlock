@@ -2,12 +2,12 @@
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
 	import { resolve } from '$app/paths';
-	import ChallengeRateLimitNotice from '$lib/components/ChallengeRateLimitNotice.svelte';
-	import DevNotes from '$lib/components/DevNotes.svelte';
-	import EmailInput from '$lib/components/EmailInput.svelte';
-	import SubmitButton from '$lib/components/SubmitButton.svelte';
-	import Link from '$lib/components/Link.svelte';
-	import FormErrors from '$lib/components/FormErrors.svelte';
+	import ChallengeRateLimitNotice from '#lib/components/ChallengeRateLimitNotice.svelte';
+	import DevNotes from '#lib/components/DevNotes.svelte';
+	import EmailInput from '#lib/components/EmailInput.svelte';
+	import SubmitButton from '#lib/components/SubmitButton.svelte';
+	import Link from '#lib/components/Link.svelte';
+	import FormErrors from '#lib/components/FormErrors.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -42,16 +42,17 @@
 
 		<fieldset class="mt-3 fieldset w-xs">
 			<EmailInput {superform} field="email" label="Account email" autocomplete="email" required />
+
 			<SubmitButton loading={$delayed} disabled={rateLimitActive}>Continue</SubmitButton>
 		</fieldset>
 
 		<p class="mt-4 text-center text-sm">
 			Prefer passkeys?
-			<Link href={resolve('/login/passkey')} class="ml-1">Login using your passkey</Link>
+			<Link href={resolve('login/passkey')} class="ml-1">Login using your passkey</Link>
 		</p>
 		<p class="mt-1 text-center text-sm">
 			Not yet a member?
-			<Link href={resolve('/signup')} class="ml-1">Sign up</Link>
+			<Link href={resolve('signup')} class="ml-1">Sign up</Link>
 		</p>
 	</form>
 </div>
@@ -66,7 +67,10 @@
 		</li>
 	</ol>
 	<p class="mt-2">
-		Check out the <a class="link link-primary" href={resolve('/login/autofill')}>Autofill</a>
+		Check out the
+
+		<a class="link link-primary" href={resolve('login/autofill')}>Autofill</a>
+
 		login page, which supports progressive enhancement using a single-step login.
 	</p>
 </DevNotes>

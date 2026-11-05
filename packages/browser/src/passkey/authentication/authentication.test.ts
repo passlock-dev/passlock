@@ -3,7 +3,7 @@ import type {
   AuthenticationResponseJSON,
   PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/browser"
-import { Context, Micro, pipe } from "effect"
+import { Context, Effect, pipe } from "effect"
 import { afterAll, afterEach, describe, expect, it, vi } from "vitest"
 import { Endpoint, TenancyId } from "../../internal/index.js"
 import { Logger } from "../../logger.js"
@@ -17,10 +17,10 @@ import {
 } from "./authentication.js"
 
 const loggerTest = {
-  logDebug: () => Micro.void,
-  logError: () => Micro.void,
-  logInfo: () => Micro.void,
-  logWarn: () => Micro.void,
+  logDebug: () => Effect.void,
+  logError: () => Effect.void,
+  logInfo: () => Effect.void,
+  logWarn: () => Effect.void,
 } satisfies typeof Logger.Service
 
 afterEach(() => {
@@ -54,8 +54,8 @@ describe(fetchOptions.name, () => {
 
       const result = await pipe(
         fetchOptions({ authenticationToken }),
-        Micro.provideContext(ctx),
-        Micro.runPromise
+        Effect.provideContext(ctx),
+        Effect.runPromise
       )
 
       expect(result).toStrictEqual(mockResponse)
@@ -69,9 +69,9 @@ describe(fetchOptions.name, () => {
   it("should reject browser-started options before making a request", async () => {
     const error = await pipe(
       fetchOptions({ rpId: "localhost" } as never),
-      Micro.flip,
-      Micro.provideContext(ctx),
-      Micro.runPromise
+      Effect.flip,
+      Effect.provideContext(ctx),
+      Effect.runPromise
     )
 
     expect(error).toBeInstanceOf(OtherPasskeyError)
@@ -85,9 +85,12 @@ describe(fetchOptions.name, () => {
     const onEvent = vi.fn()
 
     await pipe(
-      fetchOptions({ authenticationToken: "dummyAuthenticationToken", onEvent }),
-      Micro.provideContext(ctx),
-      Micro.runPromise
+      fetchOptions({
+        authenticationToken: "dummyAuthenticationToken",
+        onEvent,
+      }),
+      Effect.provideContext(ctx),
+      Effect.runPromise
     )
 
     expect(onEvent).toHaveBeenCalledWith("optionsRequest")
@@ -111,9 +114,9 @@ describe(startAuthentication.name, () => {
         startAuthentication({} as PublicKeyCredentialRequestOptionsJSON, {
           useBrowserAutofill: false,
         }),
-        Micro.provideService(Logger, loggerTest),
-        Micro.provideService(AuthenticationHelper, authenticationHelperTest),
-        Micro.runPromise
+        Effect.provideService(Logger, loggerTest),
+        Effect.provideService(AuthenticationHelper, authenticationHelperTest),
+        Effect.runPromise
       )
     })
 
@@ -128,9 +131,9 @@ describe(startAuthentication.name, () => {
         startAuthentication(optionsJSON, {
           useBrowserAutofill: false,
         }),
-        Micro.provideService(Logger, loggerTest),
-        Micro.provideService(AuthenticationHelper, authenticationHelperTest),
-        Micro.runPromise
+        Effect.provideService(Logger, loggerTest),
+        Effect.provideService(AuthenticationHelper, authenticationHelperTest),
+        Effect.runPromise
       )
 
       expect(startAuthenticationMock).toHaveBeenCalledWith({
@@ -151,10 +154,10 @@ describe(startAuthentication.name, () => {
         startAuthentication({} as PublicKeyCredentialRequestOptionsJSON, {
           useBrowserAutofill: false,
         }),
-        Micro.flip,
-        Micro.provideService(Logger, loggerTest),
-        Micro.provideService(AuthenticationHelper, authenticationHelperTest),
-        Micro.runPromise
+        Effect.flip,
+        Effect.provideService(Logger, loggerTest),
+        Effect.provideService(AuthenticationHelper, authenticationHelperTest),
+        Effect.runPromise
       )
 
       expect(result).toBeInstanceOf(PasskeyUnsupportedError)
@@ -189,8 +192,8 @@ describe(verifyCredential.name, () => {
 
       const result = await pipe(
         verifyCredential("dummySessionToken", {} as AuthenticationResponseJSON, {}),
-        Micro.provideContext(ctx),
-        Micro.runPromise
+        Effect.provideContext(ctx),
+        Effect.runPromise
       )
 
       expect(result).toStrictEqual(mockResponse)
@@ -210,9 +213,9 @@ describe(verifyCredential.name, () => {
 
       const error = await pipe(
         verifyCredential("dummySessionToken", {} as AuthenticationResponseJSON, {}),
-        Micro.flip,
-        Micro.provideContext(ctx),
-        Micro.runPromise
+        Effect.flip,
+        Effect.provideContext(ctx),
+        Effect.runPromise
       )
 
       expect(error).toBeInstanceOf(OrphanedPasskeyError)
@@ -261,8 +264,8 @@ describe(authenticatePasskey.name, () => {
 
     await pipe(
       authenticatePasskey({ authenticationToken: "dummyAuthenticationToken" }, { tenancyId }),
-      Micro.provideContext(ctx),
-      Micro.runPromise
+      Effect.provideContext(ctx),
+      Effect.runPromise
     )
 
     expect(fetchMock).toHavePosted(optionsRoute, {
@@ -285,9 +288,9 @@ describe(authenticatePasskey.name, () => {
 
     await pipe(
       authenticatePasskey({ authenticationToken: "dummyAuthenticationToken" }, { tenancyId }),
-      Micro.provideService(AuthenticationHelper, conditionalAuthenticationHelperTest),
-      Micro.provideContext(ctx),
-      Micro.runPromise
+      Effect.provideService(AuthenticationHelper, conditionalAuthenticationHelperTest),
+      Effect.provideContext(ctx),
+      Effect.runPromise
     )
 
     expect(startAuthentication).toHaveBeenCalledWith({
@@ -299,9 +302,9 @@ describe(authenticatePasskey.name, () => {
   it("should reject browser-started options before making a request", async () => {
     const error = await pipe(
       authenticatePasskey({ rpId: "localhost" } as never, { tenancyId }),
-      Micro.flip,
-      Micro.provideContext(ctx),
-      Micro.runPromise
+      Effect.flip,
+      Effect.provideContext(ctx),
+      Effect.runPromise
     )
 
     expect(error).toBeInstanceOf(OtherPasskeyError)

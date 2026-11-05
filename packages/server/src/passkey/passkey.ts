@@ -1,4 +1,4 @@
-import { Chunk, Effect, type Layer, Match, Option, pipe, Schema, Stream } from "effect"
+import { Effect, type Layer, Match, Option, pipe, Schema, Stream } from "effect"
 import {
   fetchNetwork,
   matchStatus,
@@ -306,8 +306,8 @@ const authorizationHeaders = (apiKey: string) => ({
   authorization: `Bearer ${apiKey}`,
 })
 
-const decodeResponseJson = <A, I, R>(response: NetworkResponse, schema: Schema.Schema<A, I, R>) =>
-  pipe(response.json, Effect.flatMap(Schema.decodeUnknown(schema)))
+const decodeResponseJson = <A, I, R>(response: NetworkResponse, schema: Schema.Codec<A, I, R>) =>
+  pipe(response.json, Effect.flatMap(Schema.decodeUnknownEffect(schema)))
 
 const normalizeAuthorizedRpId = <Options extends { readonly rpId: string }>(options: Options) => ({
   ...options,
@@ -458,7 +458,7 @@ export const authorizePasskeyRegistration = (
       const encoded: AuthorizedPasskeyRegistration | BadRequestError | ForbiddenError =
         yield* matchStatus(response, {
           "2xx": (res) => decodeResponseJson(res, PasskeySchemas.AuthorizedPasskeyRegistration),
-          orElse: (res) => decodeResponseJson(res, Schema.Union(BadRequestError, ForbiddenError)),
+          orElse: (res) => decodeResponseJson(res, Schema.Union([BadRequestError, ForbiddenError])),
         })
 
       return yield* pipe(
@@ -473,7 +473,7 @@ export const authorizePasskeyRegistration = (
       "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
       "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
       "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
+      SchemaError: (err) => Effect.die(err),
     }),
     Effect.provide(fetchLayer)
   )
@@ -632,7 +632,7 @@ export const authorizePasskeyAuthentication = (
       const encoded: AuthorizedPasskeyAuthentication | BadRequestError | ForbiddenError =
         yield* matchStatus(response, {
           "2xx": (res) => decodeResponseJson(res, PasskeySchemas.AuthorizedPasskeyAuthentication),
-          orElse: (res) => decodeResponseJson(res, Schema.Union(BadRequestError, ForbiddenError)),
+          orElse: (res) => decodeResponseJson(res, Schema.Union([BadRequestError, ForbiddenError])),
         })
 
       return yield* pipe(
@@ -647,7 +647,7 @@ export const authorizePasskeyAuthentication = (
       "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
       "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
       "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
+      SchemaError: (err) => Effect.die(err),
     }),
     Effect.provide(fetchLayer)
   )
@@ -695,7 +695,7 @@ export const getPasskey = (
 
       const encoded: Passkey | ForbiddenError | NotFoundError = yield* matchStatus(response, {
         "2xx": (res) => decodeResponseJson(res, PasskeySchemas.Passkey),
-        orElse: (res) => decodeResponseJson(res, Schema.Union(ForbiddenError, NotFoundError)),
+        orElse: (res) => decodeResponseJson(res, Schema.Union([ForbiddenError, NotFoundError])),
       })
 
       return yield* pipe(
@@ -710,7 +710,7 @@ export const getPasskey = (
       "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
       "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
       "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
+      SchemaError: (err) => Effect.die(err),
     }),
     Effect.provide(fetchLayer)
   )
@@ -779,7 +779,7 @@ export const updatePasskeys = (
         response,
         {
           "2xx": (res) => decodeResponseJson(res, PasskeySchemas.PreparedPasskeyUpdate),
-          orElse: (res) => decodeResponseJson(res, Schema.Union(BadRequestError, ForbiddenError)),
+          orElse: (res) => decodeResponseJson(res, Schema.Union([BadRequestError, ForbiddenError])),
         }
       )
 
@@ -795,7 +795,7 @@ export const updatePasskeys = (
       "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
       "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
       "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
+      SchemaError: (err) => Effect.die(err),
     }),
     Effect.provide(fetchLayer)
   )
@@ -861,7 +861,7 @@ export const deletePasskeys = (
       const encoded: PreparedPasskeyDeletion | BadRequestError | ForbiddenError =
         yield* matchStatus(response, {
           "2xx": (res) => decodeResponseJson(res, PasskeySchemas.PreparedPasskeyDeletion),
-          orElse: (res) => decodeResponseJson(res, Schema.Union(BadRequestError, ForbiddenError)),
+          orElse: (res) => decodeResponseJson(res, Schema.Union([BadRequestError, ForbiddenError])),
         })
 
       return yield* pipe(
@@ -876,7 +876,7 @@ export const deletePasskeys = (
       "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
       "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
       "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
+      SchemaError: (err) => Effect.die(err),
     }),
     Effect.provide(fetchLayer)
   )
@@ -931,7 +931,7 @@ export const prunePasskeys = (
         response,
         {
           "2xx": (res) => decodeResponseJson(res, PasskeySchemas.PreparedPasskeyPruning),
-          orElse: (res) => decodeResponseJson(res, Schema.Union(BadRequestError, ForbiddenError)),
+          orElse: (res) => decodeResponseJson(res, Schema.Union([BadRequestError, ForbiddenError])),
         }
       )
 
@@ -947,7 +947,7 @@ export const prunePasskeys = (
       "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
       "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
       "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
+      SchemaError: (err) => Effect.die(err),
     }),
     Effect.provide(fetchLayer)
   )
@@ -968,13 +968,10 @@ export const listPasskeysStream = (
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
 ): Stream.Stream<PasskeySummary, ForbiddenError> =>
   pipe(
-    Stream.paginateChunkEffect(null as string | null, (cursor) =>
+    Stream.paginate(null as string | null, (cursor) =>
       pipe(
         listPasskeys(cursor ? { cursor } : {}, config, fetchLayer),
-        Effect.map((result) => [
-          Chunk.fromIterable(result.records),
-          Option.fromNullable(result.cursor),
-        ])
+        Effect.map((result) => [result.records, Option.fromNullishOr(result.cursor)])
       )
     )
   )
@@ -1036,7 +1033,7 @@ export const listPasskeys = (
       "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
       "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
       "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
+      SchemaError: (err) => Effect.die(err),
     }),
     Effect.provide(fetchLayer)
   )

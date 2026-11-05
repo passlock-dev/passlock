@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { PUBLIC_ENABLE_DEV_NOTES } from '$env/static/public';
+	import { PUBLIC_ENABLE_DEV_NOTES } from '$app/env/public';
 
 	let { children }: { children: Snippet } = $props();
 </script>

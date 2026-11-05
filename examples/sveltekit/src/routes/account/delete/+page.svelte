@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { deleteAccountPasskeys } from '$lib/client/passkeys';
+	import { deleteAccountPasskeys } from '#lib/client/passkeys.js';
 	import { reAuthenticateIfNecessary } from '../utils.js';
 	import { superForm } from 'sveltekit-superforms';
 	import { valibotClient } from 'sveltekit-superforms/adapters';
@@ -113,7 +113,8 @@
 		<input type="hidden" name="intent" bind:value={$form.intent} />
 
 		<div class="mt-6 flex gap-3">
-			<a href={resolve('/account')} class="btn flex-1 btn-neutral">Cancel</a>
+			<a href={resolve('account')} class="btn flex-1 btn-neutral">Cancel</a>
+
 			<button class="btn flex-1 btn-error" disabled={deletingPasskeys}>
 				{#if $delayed || deletingPasskeys}
 					<Loader class="animate-spin duration-[4s]" />

@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { authenticatePasskey, authorizePasskeyAuthentication } from '$lib/client/passkeys';
-	import DevNotes from '$lib/components/DevNotes.svelte';
+	import { authenticatePasskey, authorizePasskeyAuthentication } from '#lib/client/passkeys.js';
+	import DevNotes from '#lib/components/DevNotes.svelte';
 	import type { PageProps } from './$types';
-	import Link from '$lib/components/Link.svelte';
-	import SubmitButton from '$lib/components/SubmitButton.svelte';
+	import Link from '#lib/components/Link.svelte';
+	import SubmitButton from '#lib/components/SubmitButton.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -19,7 +19,7 @@
 		const config = { tenancyId: data.tenancyId, endpoint: data.endpoint };
 
 		const authorizedAuthentication = await authorizePasskeyAuthentication({
-			url: resolve('/login/passkey/authorize'),
+			url: resolve('login/passkey/authorize'),
 			body: data.username ? { username: data.username } : {}
 		});
 
@@ -52,6 +52,7 @@
 <div class="flex h-full w-full items-center justify-center">
 	<div class="rounded-lg bg-base-200 p-10 pt-8">
 		<h2 class="text-center text-xl font-semibold">Login using your passkey</h2>
+
 		<p class="mt-3 w-xs text-center text-sm text-base-content/80">
 			Use your device passkey to sign in without waiting for an email code.
 		</p>
@@ -67,14 +68,15 @@
 		<div class="mt-4 text-center text-sm">
 			Need email login instead?
 			{#if data.username}
-				<form method="get" action={resolve('/login/email')} class="inline">
+				<form method="get" action={resolve('login/email')} class="inline">
 					<input type="hidden" name="username" value={data.username} />
+
 					<button type="submit" class="ml-1 cursor-pointer text-primary hover:underline">
 						Use an emailed code
 					</button>
 				</form>
 			{:else}
-				<Link href={resolve('/login')} class="ml-1">Use an emailed code</Link>
+				<Link href={resolve('login')} class="ml-1">Use an emailed code</Link>
 			{/if}
 		</div>
 	</div>

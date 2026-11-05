@@ -2,10 +2,10 @@
 	import { resolve } from '$app/paths';
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
-	import DevNotes from '$lib/components/DevNotes.svelte';
-	import ResendChallengeButton from '$lib/components/ResendChallengeButton.svelte';
-	import SubmitButton from '$lib/components/SubmitButton.svelte';
-	import TextInput from '$lib/components/TextInput.svelte';
+	import DevNotes from '#lib/components/DevNotes.svelte';
+	import ResendChallengeButton from '#lib/components/ResendChallengeButton.svelte';
+	import SubmitButton from '#lib/components/SubmitButton.svelte';
+	import TextInput from '#lib/components/TextInput.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -44,11 +44,12 @@
 			</fieldset>
 		</form>
 
-		<ResendChallengeButton url={resolve('/signup/verify-code/resend')} />
+		<ResendChallengeButton url={resolve('signup/verify-code/resend')} />
 
 		<p class="mt-4 text-center text-sm">
 			Need to start over?
-			<a href={resolve('/signup')} class="ml-1 text-primary hover:underline">Back to sign up</a>
+
+			<a href={resolve('signup')} class="ml-1 text-primary hover:underline">Back to sign up</a>
 		</p>
 	</div>
 </div>

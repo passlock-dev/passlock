@@ -16,8 +16,7 @@ export type ChallengeRateLimitView = v.InferOutput<typeof ChallengeRateLimitView
  * or a rate-limit countdown.
  */
 export type AccountEmailFormMessage =
-	| { type: 'success'; text: string }
-	| { type: 'rateLimited'; rateLimit: ChallengeRateLimitView };
+	{ type: 'success'; text: string } | { type: 'rateLimited'; rateLimit: ChallengeRateLimitView };
 
 /**
  * Discriminated message payload carried by Superforms for the login form.
@@ -25,8 +24,7 @@ export type AccountEmailFormMessage =
  * or a rate-limit countdown through a single `$message` channel.
  */
 export type LoginFormMessage =
-	| { type: 'notice'; text: string }
-	| { type: 'rateLimited'; rateLimit: ChallengeRateLimitView };
+	{ type: 'notice'; text: string } | { type: 'rateLimited'; rateLimit: ChallengeRateLimitView };
 
 /**
  * Discriminated message payload carried by Superforms for the signup form.
@@ -34,8 +32,7 @@ export type LoginFormMessage =
  * email") or a rate-limit countdown through a single `$message` channel.
  */
 export type SignupFormMessage =
-	| { type: 'notice'; text: string }
-	| { type: 'rateLimited'; rateLimit: ChallengeRateLimitView };
+	{ type: 'notice'; text: string } | { type: 'rateLimited'; rateLimit: ChallengeRateLimitView };
 
 export const CHALLENGE_RATE_LIMIT_READY_MESSAGE = 'You can request a new code now.';
 

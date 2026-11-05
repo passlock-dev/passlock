@@ -1,6 +1,6 @@
 import { describe, it } from "@effect/vitest"
 import { getHeaderValue } from "@test/utils.js"
-import { Chunk, Effect, Layer, pipe, Schema, Stream } from "effect"
+import { Effect, Layer, pipe, Schema, Stream } from "effect"
 import { expect } from "vitest"
 import { NetworkFetch } from "../network.js"
 import type { Passkey, PasskeyEncoded } from "../schemas/passkey.js"
@@ -418,8 +418,7 @@ describe(listPasskeysStream.name, () => {
 
         const summaries = yield* pipe(
           listPasskeysStream({ apiKey, tenancyId }, TestLayer),
-          Stream.runCollect,
-          Effect.map(Chunk.toReadonlyArray)
+          Stream.runCollect
         )
 
         expect(fetchCount).toEqual(1)
@@ -485,8 +484,7 @@ describe(listPasskeysStream.name, () => {
 
         const summaries = yield* pipe(
           listPasskeysStream({ apiKey, tenancyId }, TestLayer),
-          Stream.runCollect,
-          Effect.map(Chunk.toReadonlyArray)
+          Stream.runCollect
         )
 
         expect(fetchCount).toEqual(2)

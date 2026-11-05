@@ -1,17 +1,17 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import { getUserByEmail, countPasskeysByUserId } from '$lib/server/repository.js';
+import { getUserByEmail, countPasskeysByUserId } from '#lib/server/repository.js';
 import { superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { getPasslockConfig } from '$lib/server/passkeys';
+import { getPasslockConfig } from '#lib/server/passkeys.js';
 import * as PasslockServer from '@passlock/server';
 import {
 	toLoginEmailLocation,
 	toLoginPasskeyLocation,
 	toSignupLocation
-} from '$lib/shared/queryState.js';
+} from '#lib/shared/queryState.js';
 
 const schema = v.object({
 	email: v.pipe(

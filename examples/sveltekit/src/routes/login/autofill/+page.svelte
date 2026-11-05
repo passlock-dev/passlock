@@ -2,14 +2,14 @@
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
 
-	import { authenticatePasskey } from '$lib/client/passkeys';
+	import { authenticatePasskey } from '#lib/client/passkeys.js';
 	import { onMount } from 'svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import DevNotes from '$lib/components/DevNotes.svelte';
-	import EmailInput from '$lib/components/EmailInput.svelte';
-	import SubmitButton from '$lib/components/SubmitButton.svelte';
-	import Link from '$lib/components/Link.svelte';
+	import DevNotes from '#lib/components/DevNotes.svelte';
+	import EmailInput from '#lib/components/EmailInput.svelte';
+	import SubmitButton from '#lib/components/SubmitButton.svelte';
+	import Link from '#lib/components/Link.svelte';
 
 	let { data }: PageProps = $props();
 	let disabled = $state(false);
@@ -75,12 +75,13 @@
 				autocomplete="email webauthn"
 				required
 				{disabled} />
+
 			<SubmitButton loading={$delayed} {disabled}>Continue</SubmitButton>
 		</fieldset>
 
 		<p class="mt-4 text-center text-sm">
 			Not yet a member?
-			<Link href={resolve('/signup')} class="ml-1">Sign up</Link>
+			<Link href={resolve('signup')} class="ml-1">Sign up</Link>
 		</p>
 	</form>
 </div>
@@ -89,7 +90,9 @@
 	<p>
 		Uses passkey autofill. Essentially allows users with passkeys to login in a single step vs the
 		usual
-		<a href={resolve('/login')} class="link link-secondary">two step login</a>
+
+		<a href={resolve('login')} class="link link-secondary">two step login</a>
+
 		flow.
 	</p>
 

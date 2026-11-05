@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import svelteLogo from '$lib/assets/svelte-logo.svg';
+	import svelteLogo from '#lib/assets/svelte-logo.svg';
 	import Mail from '@lucide/svelte/icons/mail';
 	import Database from '@lucide/svelte/icons/database';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import Smartphone from '@lucide/svelte/icons/smartphone';
-	import PasskeyIcon from '$lib/components/PasskeyIcon.svelte';
+	import PasskeyIcon from '#lib/components/PasskeyIcon.svelte';
 
 	const features = [
 		{
@@ -47,9 +47,9 @@
 			+
 			<span class="font-mono text-primary">Passlock</span>
 		</div>
-		<div>
-			<h1 class="text-4xl font-semibold lg:text-5xl">Advanced SvelteKit authentication</h1>
-		</div>
+
+		<div><h1 class="text-4xl font-semibold lg:text-5xl">Advanced SvelteKit authentication</h1></div>
+
 		<div>
 			<p class="text-lg leading-relaxed">
 				Sample SvelteKit app illustrating how to support passkey authentication alongside email
@@ -58,8 +58,9 @@
 			</p>
 		</div>
 		<div class="flex items-center gap-6">
-			<a href={resolve('/signup')} class="btn btn-wide text-white btn-primary">Sign up</a>
-			<a href={resolve('/login')} class="link link-secondary">Login</a>
+			<a href={resolve('signup')} class="btn btn-wide text-white btn-primary">Sign up</a>
+
+			<a href={resolve('login')} class="link link-secondary">Login</a>
 		</div>
 	</div>
 	<div class="lg:basis-1/2">

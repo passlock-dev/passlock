@@ -1,4 +1,4 @@
-import { toAccountLocation, type AccountEmailErrorReason } from '$lib/shared/queryState.js';
+import { toAccountLocation, type AccountEmailErrorReason } from '#lib/shared/queryState.js';
 
 /**
  * Redirect helper used when the email verification flow needs to return the

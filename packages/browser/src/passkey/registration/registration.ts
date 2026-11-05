@@ -4,7 +4,7 @@ import {
   type RegistrationResponseJSON,
   WebAuthnError,
 } from "@simplewebauthn/browser"
-import { Context, Micro, pipe } from "effect"
+import { Context, Effect, pipe } from "effect"
 import { Endpoint, makeEndpoint, makeRequest, TenancyId } from "../../internal/index.js"
 import type { NetworkError } from "../../internal/network.js"
 import { Logger } from "../../logger.js"
@@ -43,13 +43,13 @@ export interface RegistrationOptions {
  * @internal
  * @hidden
  */
-export class RegistrationHelper extends Context.Tag("RegistrationHelper")<
+export class RegistrationHelper extends Context.Service<
   RegistrationHelper,
   {
     browserSupportsWebAuthn: typeof Helper.browserSupportsWebAuthn
     startRegistration: typeof Helper.startRegistration
   }
->() {
+>()("RegistrationHelper") {
   static Default = {
     browserSupportsWebAuthn: Helper.browserSupportsWebAuthn,
     startRegistration: Helper.startRegistration,
@@ -133,10 +133,10 @@ export const isOptionsResponse = (payload: unknown): payload is OptionsResponse 
 }
 
 export const fetchOptions = (options: RegistrationOptions) =>
-  Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger)
-    const { endpoint } = yield* Micro.service(Endpoint)
-    const { tenancyId } = yield* Micro.service(TenancyId)
+  Effect.gen(function* () {
+    const logger = yield* Effect.service(Logger)
+    const { endpoint } = yield* Effect.service(Endpoint)
+    const { tenancyId } = yield* Effect.service(TenancyId)
 
     const { registrationToken, onEvent } = options
 
@@ -157,22 +157,22 @@ export const startRegistration = (
   optionsJSON: PublicKeyCredentialCreationOptionsJSON,
   { onEvent }: { onEvent?: OnRegistrationEvent | undefined }
 ) =>
-  Micro.gen(function* () {
+  Effect.gen(function* () {
     onEvent?.("createCredential")
-    const logger = yield* Micro.service(Logger)
+    const logger = yield* Effect.service(Logger)
     yield* logger.logInfo("Registering passkey on device")
 
-    const helper = yield* Micro.service(RegistrationHelper)
+    const helper = yield* Effect.service(RegistrationHelper)
 
     const isSupport = helper.browserSupportsWebAuthn()
     if (!isSupport)
-      yield* Micro.fail(
+      yield* Effect.fail(
         new PasskeyUnsupportedError({
           message: "Device does not support passkeys",
         })
       )
 
-    return yield* Micro.tryPromise({
+    return yield* Effect.tryPromise({
       try: () => helper.startRegistration({ optionsJSON }),
       catch: (error) => {
         if (
@@ -198,10 +198,10 @@ export const verifyCredential = (
   response: RegistrationResponseJSON,
   { onEvent }: { onEvent?: OnRegistrationEvent | undefined }
 ) =>
-  Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger)
-    const { endpoint } = yield* Micro.service(Endpoint)
-    const { tenancyId } = yield* Micro.service(TenancyId)
+  Effect.gen(function* () {
+    const logger = yield* Effect.service(Logger)
+    const { endpoint } = yield* Effect.service(Endpoint)
+    const { tenancyId } = yield* Effect.service(TenancyId)
 
     const url = new URL(`v2/${tenancyId}/passkey/registration/verification`, endpoint)
 
@@ -248,16 +248,16 @@ export type RegistrationError =
  *
  * @param options Registration token and optional lifecycle callback.
  * @param config Passlock tenancy and API endpoint options.
- * @returns A Micro effect that resolves with {@link RegistrationSuccess} or
+ * @returns An Effect that resolves with {@link RegistrationSuccess} or
  * fails with {@link RegistrationError}.
  */
 export const registerPasskey = (
   options: RegistrationOptions,
   config: PasslockOptions
-): Micro.Micro<RegistrationSuccess, RegistrationError, Logger | RegistrationHelper> => {
+): Effect.Effect<RegistrationSuccess, RegistrationError, Logger | RegistrationHelper> => {
   const endpoint = makeEndpoint(config)
 
-  const effect = Micro.gen(function* () {
+  const effect = Effect.gen(function* () {
     const { sessionToken, optionsJSON } = yield* fetchOptions(options)
     const response = yield* startRegistration(optionsJSON, {
       onEvent: options.onEvent,
@@ -269,8 +269,8 @@ export const registerPasskey = (
 
   return pipe(
     effect,
-    Micro.provideService(TenancyId, config),
-    Micro.provideService(Endpoint, endpoint)
+    Effect.provideService(TenancyId, config),
+    Effect.provideService(Endpoint, endpoint)
   )
 }
 

@@ -1,4 +1,4 @@
-import { Micro, pipe } from "effect"
+import { Effect, pipe } from "effect"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { Logger } from "../../logger.js"
 import { DeleteError, OrphanedPasskeyError } from "../errors.js"
@@ -8,10 +8,10 @@ const originalFetch = globalThis.fetch
 const originalPublicKeyCredential = globalThis.PublicKeyCredential
 
 const loggerTest = {
-  logDebug: () => Micro.void,
-  logError: () => Micro.void,
-  logInfo: () => Micro.void,
-  logWarn: () => Micro.void,
+  logDebug: () => Effect.void,
+  logError: () => Effect.void,
+  logInfo: () => Effect.void,
+  logWarn: () => Effect.void,
 } satisfies typeof Logger.Service
 
 const config = {
@@ -79,8 +79,8 @@ describe(updatePasskeys.name, () => {
 
     const result = await pipe(
       updatePasskeys({ updatePasskeysToken: "dummyUpdateToken" }, config),
-      Micro.provideService(Logger, loggerTest),
-      Micro.runPromise
+      Effect.provideService(Logger, loggerTest),
+      Effect.runPromise
     )
 
     expect(result).toEqual({ _tag: "UpdateSuccess", warnings: [] })
@@ -107,8 +107,8 @@ describe(updatePasskeys.name, () => {
 
     const result = await pipe(
       updatePasskeys({ updatePasskeysToken: "dummyUpdateToken" }, config),
-      Micro.provideService(Logger, loggerTest),
-      Micro.runPromise
+      Effect.provideService(Logger, loggerTest),
+      Effect.runPromise
     )
 
     expect(result).toEqual({
@@ -154,8 +154,8 @@ describe(deletePasskeys.name, () => {
 
     const result = await pipe(
       deletePasskeys({ deletePasskeysToken: "dummyDeleteToken" }, config),
-      Micro.provideService(Logger, loggerTest),
-      Micro.runPromise
+      Effect.provideService(Logger, loggerTest),
+      Effect.runPromise
     )
 
     expect(result).toEqual({
@@ -199,8 +199,8 @@ describe(deletePasskeys.name, () => {
 
     const result = await pipe(
       deletePasskeys({ deletePasskeysToken: "dummyDeleteToken" }, config),
-      Micro.provideService(Logger, loggerTest),
-      Micro.runPromise
+      Effect.provideService(Logger, loggerTest),
+      Effect.runPromise
     )
 
     expect(result).toEqual({
@@ -238,8 +238,8 @@ describe(deletePasskeys.name, () => {
 
     const result = await pipe(
       deletePasskeys({ deletePasskeysToken: "dummyDeleteToken" }, config),
-      Micro.provideService(Logger, loggerTest),
-      Micro.runPromise
+      Effect.provideService(Logger, loggerTest),
+      Effect.runPromise
     )
 
     expect(result).toEqual({
@@ -272,9 +272,9 @@ describe(deletePasskeys.name, () => {
 
     const error = await pipe(
       deletePasskeys({ deletePasskeysToken: "dummyDeleteToken" }, config),
-      Micro.flip,
-      Micro.provideService(Logger, loggerTest),
-      Micro.runPromise
+      Effect.flip,
+      Effect.provideService(Logger, loggerTest),
+      Effect.runPromise
     )
 
     expect(error).toBeInstanceOf(DeleteError)
@@ -293,7 +293,7 @@ describe(deleteOrphanedPasskey.name, () => {
     })
 
   const run = (error: OrphanedPasskeyError, logger: typeof Logger.Service = loggerTest) =>
-    pipe(deleteOrphanedPasskey(error), Micro.provideService(Logger, logger), Micro.runPromise)
+    pipe(deleteOrphanedPasskey(error), Effect.provideService(Logger, logger), Effect.runPromise)
 
   it("signals exactly the RP ID and credential ID without making a request", async () => {
     const signalUnknownCredential = vi.fn((_options: unknown) => Promise.resolve())
@@ -359,7 +359,7 @@ describe(deleteOrphanedPasskey.name, () => {
       ...loggerTest,
       logWarn: (message: string) => {
         logWarn(message)
-        return Micro.void
+        return Effect.void
       },
     } satisfies typeof Logger.Service
 
@@ -420,9 +420,9 @@ describe(deleteOrphanedPasskey.name, () => {
         message: "Passkey not found",
         rpId: "example.test",
       } as OrphanedPasskeyError),
-      Micro.flip,
-      Micro.provideService(Logger, loggerTest),
-      Micro.runPromise
+      Effect.flip,
+      Effect.provideService(Logger, loggerTest),
+      Effect.runPromise
     )
 
     expect(error).toBeInstanceOf(DeleteError)
@@ -456,8 +456,8 @@ describe(prunePasskeys.name, () => {
 
     const result = await pipe(
       prunePasskeys({ prunePasskeysToken: "dummyPruneToken" }, config),
-      Micro.provideService(Logger, loggerTest),
-      Micro.runPromise
+      Effect.provideService(Logger, loggerTest),
+      Effect.runPromise
     )
 
     expect(result).toEqual({ _tag: "PruningSuccess", warnings: [] })

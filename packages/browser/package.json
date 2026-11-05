@@ -1,6 +1,6 @@
 {
   "name": "@passlock/browser",
-  "version": "2.10.0",
+  "version": "2.11.0",
   "description": "Flexible passkey authentication for Astro, SvelteKit, NextJS and other frameworks",
   "keywords": [
     "passkey",
@@ -43,11 +43,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc",
     "build:clean": "$npm_execpath run clean:all && $npm_execpath run build",
     "build:production": "$npm_execpath run build:clean && $npm_execpath run build:readme && $npm_execpath run replaceTokens && echo '' && publint",
     "build:readme": "VERSION=${npm_package_version} tsx ../../scripts/replace-readme-tokens.ts ./packages/browser",
-    "clean": "tsc -p tsconfig.json --clean",
+    "clean": "tsc --build --clean",
     "clean:all": "rimraf dist tsconfig.tsbuildinfo",
     "format": "biome format --fix .",
     "format:check": "biome format .",
@@ -73,9 +73,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/language-service": "^0.87.2",
+    "@effect/language-service": "^0.87.5",
     "@fetch-mock/vitest": "^0.2.18",
-    "@typescript/lib-dom": "npm:@types/web@^0.0.356",
+    "@typescript/lib-dom": "npm:@types/web@^0.0.360",
     "globals": "catalog:",
     "npm-check-updates": "catalog:",
     "publint": "catalog:",

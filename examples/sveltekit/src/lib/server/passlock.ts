@@ -1,5 +1,5 @@
-import { PASSLOCK_API_KEY, PASSLOCK_RP_ID } from '$env/static/private';
-import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$env/static/public';
+import { PASSLOCK_API_KEY, PASSLOCK_RP_ID } from '$app/env/private';
+import { PUBLIC_PASSLOCK_ENDPOINT, PUBLIC_PASSLOCK_TENANCY_ID } from '$app/env/public';
 import { error as kitError } from '@sveltejs/kit';
 
 /**

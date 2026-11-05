@@ -1,9 +1,9 @@
 import type { PageServerLoad } from './$types';
-import { createChallengeRateLimitView } from '$lib/server/mailbox/mailboxChallenge.js';
-import { createOrRefreshSignupChallenge } from '$lib/server/mailbox/signupChallenge.js';
-import { setSignupLoginCookie } from '$lib/server/cookies.js';
-import { getSignupQueryState, toLoginLocation } from '$lib/shared/queryState.js';
-import type { SignupFormMessage } from '$lib/shared/challengeRateLimit.js';
+import { createChallengeRateLimitView } from '#lib/server/mailbox/mailboxChallenge.js';
+import { createOrRefreshSignupChallenge } from '#lib/server/mailbox/signupChallenge.js';
+import { setSignupLoginCookie } from '#lib/server/cookies.js';
+import { getSignupQueryState, toLoginLocation } from '#lib/shared/queryState.js';
+import type { SignupFormMessage } from '#lib/shared/challengeRateLimit.js';
 
 import { message, setMessage, superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
@@ -80,6 +80,6 @@ export const actions = {
 			secret: result.secret
 		});
 
-		redirect(303, resolve('/signup/verify-code'));
+		redirect(303, resolve('signup/verify-code'));
 	}
 };

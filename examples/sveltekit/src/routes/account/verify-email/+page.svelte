@@ -2,11 +2,11 @@
 	import { resolve } from '$app/paths';
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
-	import DevNotes from '$lib/components/DevNotes.svelte';
-	import Link from '$lib/components/Link.svelte';
-	import ResendChallengeButton from '$lib/components/ResendChallengeButton.svelte';
-	import SubmitButton from '$lib/components/SubmitButton.svelte';
-	import TextInput from '$lib/components/TextInput.svelte';
+	import DevNotes from '#lib/components/DevNotes.svelte';
+	import Link from '#lib/components/Link.svelte';
+	import ResendChallengeButton from '#lib/components/ResendChallengeButton.svelte';
+	import SubmitButton from '#lib/components/SubmitButton.svelte';
+	import TextInput from '#lib/components/TextInput.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -30,6 +30,7 @@
 			We sent a 6-digit code to <span class="font-semibold">{data.email}</span>
 			.
 		</p>
+
 		<p class="mt-2 text-center text-sm text-base-content/80">
 			Your account email will only change after you enter this code.
 		</p>
@@ -47,11 +48,11 @@
 			</fieldset>
 		</form>
 
-		<ResendChallengeButton url={resolve('/account/verify-email/resend')} />
+		<ResendChallengeButton url={resolve('account/verify-email/resend')} />
 
 		<p class="mt-4 text-center text-sm">
 			Need to start over?
-			<Link href={resolve('/account')} class="ml-1">Back to account</Link>
+			<Link href={resolve('account')} class="ml-1">Back to account</Link>
 		</p>
 	</div>
 </div>

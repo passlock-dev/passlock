@@ -4,7 +4,7 @@ import {
   type PublicKeyCredentialRequestOptionsJSON,
   WebAuthnError,
 } from "@simplewebauthn/browser"
-import { Context, Micro, pipe } from "effect"
+import { Context, Effect, pipe } from "effect"
 import { Endpoint, makeEndpoint, makeRequest, TenancyId } from "../../internal/index.js"
 import type { NetworkError } from "../../internal/network.js"
 import { Logger } from "../../logger.js"
@@ -70,13 +70,13 @@ export interface AuthorizedAuthenticationOptions {
  * @internal
  * @hidden
  */
-export class AuthenticationHelper extends Context.Tag("AuthenticationHelper")<
+export class AuthenticationHelper extends Context.Service<
   AuthenticationHelper,
   {
     browserSupportsWebAuthn: typeof Helper.browserSupportsWebAuthn
     startAuthentication: typeof Helper.startAuthentication
   }
->() {
+>()("AuthenticationHelper") {
   static Default = {
     browserSupportsWebAuthn: Helper.browserSupportsWebAuthn,
     startAuthentication: Helper.startAuthentication,
@@ -175,7 +175,7 @@ const findRemovedAuthenticationOptionKey = (options: unknown): string | undefine
 const validateAuthenticationOptions = (options: unknown) => {
   const removedKey = findRemovedAuthenticationOptionKey(options)
   if (removedKey) {
-    return Micro.fail(
+    return Effect.fail(
       new OtherPasskeyError({
         error: options,
         message: `authenticatePasskey no longer accepts browser-started option "${removedKey}". Authorize authentication on your backend and pass only { authenticationToken, onEvent } to the browser.`,
@@ -184,7 +184,7 @@ const validateAuthenticationOptions = (options: unknown) => {
   }
 
   if (!isAuthenticationOptions(options)) {
-    return Micro.fail(
+    return Effect.fail(
       new OtherPasskeyError({
         error: options,
         message: "authenticatePasskey requires an authenticationToken authorized by your backend.",
@@ -192,15 +192,15 @@ const validateAuthenticationOptions = (options: unknown) => {
     )
   }
 
-  return Micro.succeed(options)
+  return Effect.succeed(options)
 }
 
 export const fetchOptions = (options: AuthenticationOptions) =>
-  Micro.gen(function* () {
+  Effect.gen(function* () {
     const authenticationOptions = yield* validateAuthenticationOptions(options)
-    const logger = yield* Micro.service(Logger)
-    const { endpoint } = yield* Micro.service(Endpoint)
-    const { tenancyId } = yield* Micro.service(TenancyId)
+    const logger = yield* Effect.service(Logger)
+    const { endpoint } = yield* Effect.service(Endpoint)
+    const { tenancyId } = yield* Effect.service(TenancyId)
 
     const { onEvent } = authenticationOptions
     const url = new URL(`v2/${tenancyId}/passkey/authentication/options`, endpoint)
@@ -208,7 +208,9 @@ export const fetchOptions = (options: AuthenticationOptions) =>
     onEvent?.("optionsRequest")
     yield* logger.logInfo("Fetching passkey authentication options from Passlock")
 
-    const payload = { authenticationToken: authenticationOptions.authenticationToken }
+    const payload = {
+      authenticationToken: authenticationOptions.authenticationToken,
+    }
 
     return yield* makeRequest({
       label: "authentication options",
@@ -272,22 +274,22 @@ export const startAuthentication = (
     onEvent?: OnAuthenticationEvent | undefined
   }
 ) =>
-  Micro.gen(function* () {
+  Effect.gen(function* () {
     onEvent?.("getCredential")
-    const logger = yield* Micro.service(Logger)
+    const logger = yield* Effect.service(Logger)
     yield* logger.logInfo("Requesting passkey authentication on device")
 
-    const helper = yield* Micro.service(AuthenticationHelper)
+    const helper = yield* Effect.service(AuthenticationHelper)
 
     const isSupport = helper.browserSupportsWebAuthn()
     if (!isSupport)
-      yield* Micro.fail(
+      yield* Effect.fail(
         new PasskeyUnsupportedError({
           message: "Device does not support passkeys",
         })
       )
 
-    return yield* Micro.tryPromise({
+    return yield* Effect.tryPromise({
       catch: (error) => {
         if (error instanceof WebAuthnError) {
           return new OtherPasskeyError({
@@ -336,10 +338,10 @@ export const verifyCredential = (
   response: AuthenticationResponseJSON,
   { onEvent }: { onEvent?: OnAuthenticationEvent | undefined }
 ) =>
-  Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger)
-    const { endpoint } = yield* Micro.service(Endpoint)
-    const { tenancyId } = yield* Micro.service(TenancyId)
+  Effect.gen(function* () {
+    const logger = yield* Effect.service(Logger)
+    const { endpoint } = yield* Effect.service(Endpoint)
+    const { tenancyId } = yield* Effect.service(TenancyId)
 
     const url = new URL(`v2/${tenancyId}/passkey/authentication/verification`, endpoint)
 
@@ -359,7 +361,7 @@ export const verifyCredential = (
         responsePredicate: isAuthenticationSuccess,
         url,
       }),
-      Micro.catchTag("@error/PasskeyNotFound", (err) => Micro.fail(new OrphanedPasskeyError(err)))
+      Effect.catchTag("@error/PasskeyNotFound", (err) => Effect.fail(new OrphanedPasskeyError(err)))
     )
 
     yield* logger.logInfo(
@@ -393,22 +395,22 @@ export type AuthenticationError =
  *
  * @param options Authentication ceremony options.
  * @param config Passlock tenancy and API endpoint options.
- * @returns A Micro effect that resolves with {@link AuthenticationSuccess} or
+ * @returns An Effect that resolves with {@link AuthenticationSuccess} or
  * fails with {@link AuthenticationError}.
  */
 export const authenticatePasskey = (
   options: AuthenticationOptions,
   config: PasslockOptions
-): Micro.Micro<AuthenticationSuccess, AuthenticationError, Logger | AuthenticationHelper> => {
+): Effect.Effect<AuthenticationSuccess, AuthenticationError, Logger | AuthenticationHelper> => {
   const endpoint = makeEndpoint(config)
 
-  const micro = Micro.gen(function* () {
+  const effect = Effect.gen(function* () {
     const authenticationOptions = yield* validateAuthenticationOptions(options)
     const { sessionToken, optionsJSON, mediation } = yield* fetchOptions(authenticationOptions)
 
     const go = (useBrowserAutofill: boolean) =>
-      Micro.gen(function* () {
-        if (useBrowserAutofill) yield* Micro.sleep(100)
+      Effect.gen(function* () {
+        if (useBrowserAutofill) yield* Effect.sleep(100)
 
         const response = yield* startAuthentication(optionsJSON, {
           onEvent: authenticationOptions.onEvent,
@@ -425,9 +427,9 @@ export const authenticatePasskey = (
   })
 
   return pipe(
-    micro,
-    Micro.provideService(TenancyId, config),
-    Micro.provideService(Endpoint, endpoint)
+    effect,
+    Effect.provideService(TenancyId, config),
+    Effect.provideService(Endpoint, endpoint)
   )
 }
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import passlockDark from '$lib/assets/passlock-logo.dark.svg';
+	import passlockDark from '#lib/assets/passlock-logo.dark.svg';
 </script>
 
 <footer class="footer items-center bg-neutral p-4 text-neutral-content sm:footer-horizontal">

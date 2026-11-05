@@ -69,7 +69,7 @@
  * @module index
  */
 
-import { Micro, pipe } from "effect"
+import { Effect, pipe } from "effect"
 import { runToPromise } from "./internal/index.js"
 import type { Result } from "./internal/result.js"
 import { eventLogger, Logger } from "./logger.js"
@@ -175,8 +175,8 @@ export const registerPasskey = async (
 ): Promise<Result<RegistrationSuccess, RegistrationError>> =>
   pipe(
     registerPasskeyM(options, config),
-    Micro.provideService(RegistrationHelper, RegistrationHelper.Default),
-    Micro.provideService(Logger, logger),
+    Effect.provideService(RegistrationHelper, RegistrationHelper.Default),
+    Effect.provideService(Logger, logger),
     runToPromise
   )
 
@@ -237,8 +237,8 @@ export const authenticatePasskey = (
 ): Promise<Result<AuthenticationSuccess, AuthenticationError>> =>
   pipe(
     authenticatePasskeyM(options, config),
-    Micro.provideService(AuthenticationHelper, AuthenticationHelper.Default),
-    Micro.provideService(Logger, logger),
+    Effect.provideService(AuthenticationHelper, AuthenticationHelper.Default),
+    Effect.provideService(Logger, logger),
     runToPromise
   )
 
@@ -286,8 +286,8 @@ export const updatePasskeys = (
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<Result<UpdateSuccess, UpdateError>> => {
-  const micro = updatePasskeysM(options, config)
-  return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
+  const effect = updatePasskeysM(options, config)
+  return pipe(effect, Effect.provideService(Logger, logger), runToPromise)
 }
 
 /**
@@ -332,8 +332,8 @@ export const deletePasskeys = (
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<Result<DeleteSuccess, DeleteError>> => {
-  const micro = deletePasskeysM(options, config)
-  return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
+  const effect = deletePasskeysM(options, config)
+  return pipe(effect, Effect.provideService(Logger, logger), runToPromise)
 }
 
 /**
@@ -385,8 +385,8 @@ export const deleteOrphanedPasskey = (
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<Result<DeleteSuccess, DeleteError>> => {
-  const micro = deleteOrphanedPasskeyM(error)
-  return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
+  const effect = deleteOrphanedPasskeyM(error)
+  return pipe(effect, Effect.provideService(Logger, logger), runToPromise)
 }
 
 /**
@@ -431,8 +431,8 @@ export const prunePasskeys = (
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
 ): Promise<Result<PruningSuccess, PruningError>> => {
-  const micro = prunePasskeysM(options, config)
-  return pipe(micro, Micro.provideService(Logger, logger), runToPromise)
+  const effect = prunePasskeysM(options, config)
+  return pipe(effect, Effect.provideService(Logger, logger), runToPromise)
 }
 
 /* Support */
@@ -444,7 +444,7 @@ export const prunePasskeys = (
  *
  * @category Passkeys (other)
  */
-export const isPasskeyDeleteSupport = () => pipe(isPasskeyDeleteSupportM, Micro.runSync)
+export const isPasskeyDeleteSupport = () => pipe(isPasskeyDeleteSupportM, Effect.runSync)
 
 /**
  * Does the local device support passkey pruning via accepted-credentials
@@ -454,7 +454,7 @@ export const isPasskeyDeleteSupport = () => pipe(isPasskeyDeleteSupportM, Micro.
  *
  * @category Passkeys (other)
  */
-export const isPasskeyPruningSupport = () => pipe(isPasskeyPruningSupportM, Micro.runSync)
+export const isPasskeyPruningSupport = () => pipe(isPasskeyPruningSupportM, Effect.runSync)
 
 /**
  * Does the local device support passkey user-detail update signalling?
@@ -463,7 +463,7 @@ export const isPasskeyPruningSupport = () => pipe(isPasskeyPruningSupportM, Micr
  *
  * @category Passkeys (other)
  */
-export const isPasskeyUpdateSupport = () => pipe(isPasskeyUpdateSupportM, Micro.runSync)
+export const isPasskeyUpdateSupport = () => pipe(isPasskeyUpdateSupportM, Effect.runSync)
 
 /* Client */
 

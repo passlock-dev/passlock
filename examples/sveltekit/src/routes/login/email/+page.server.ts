@@ -3,14 +3,14 @@ import type { PageServerLoad } from './$types';
 import {
 	createOrRefreshLoginChallenge,
 	getPendingLoginChallenge
-} from '$lib/server/mailbox/loginChallenge.js';
-import { getUserByEmail } from '$lib/server/repository.js';
-import { getSignupLoginCookie, setSignupLoginCookie } from '$lib/server/cookies.js';
+} from '#lib/server/mailbox/loginChallenge.js';
+import { getUserByEmail } from '#lib/server/repository.js';
+import { getSignupLoginCookie, setSignupLoginCookie } from '#lib/server/cookies.js';
 import {
 	getLoginEmailQueryState,
 	toLoginLocation,
 	toSignupLocation
-} from '$lib/shared/queryState.js';
+} from '#lib/shared/queryState.js';
 import { redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
 
@@ -33,7 +33,7 @@ const redirectToLoginRateLimited = (email: string, retryAfterSeconds: number): n
  * email on `/login`.
  */
 const sendLoginCode = async (username: string | null, cookies: import('@sveltejs/kit').Cookies) => {
-	if (!username) redirect(302, resolve('/login'));
+	if (!username) redirect(302, resolve('login'));
 
 	const account = await getUserByEmail(username);
 	if (!account) {
@@ -45,7 +45,7 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 		const challenge = await getPendingLoginChallenge(pendingChallenge.challengeId);
 		if (challenge?.email === account.email) {
 			// Reuse the in-progress challenge instead of generating another email.
-			redirect(303, resolve('/login/email/verify-code'));
+			redirect(303, resolve('login/email/verify-code'));
 		}
 	}
 
@@ -67,7 +67,7 @@ const sendLoginCode = async (username: string | null, cookies: import('@sveltejs
 		secret: result.secret
 	});
 
-	redirect(303, resolve('/login/email/verify-code'));
+	redirect(303, resolve('login/email/verify-code'));
 };
 
 /**

@@ -22,7 +22,7 @@ import {
 	AuthorizedPasskeyAuthentication,
 	AuthorizedPasskeyRegistration,
 	UpdatePasskeysSuccess
-} from '$lib/shared/schemas';
+} from '#lib/shared/schemas.js';
 import { parse } from 'valibot';
 import { resolve } from '$app/paths';
 import { fetchData } from './network';
@@ -48,7 +48,7 @@ export const registerPasskey = async (config: PasslockClientConfig) => {
 	const ERROR_TAG = '@error/CreatePasskeyError' as const;
 
 	const authorizedRegistration = await fetchData({
-		url: resolve('/passkeys/registration'),
+		url: resolve('passkeys/registration'),
 		method: 'POST',
 		body: {},
 		on2xx: (jsonResponse) => parse(AuthorizedPasskeyRegistration, jsonResponse),
@@ -79,7 +79,7 @@ export const registerPasskey = async (config: PasslockClientConfig) => {
 	// Post to the /passkeys/+server.ts endpoint, which verifies
 	// the passkey and links it to the user account.
 	return fetchData({
-		url: resolve('/passkeys'),
+		url: resolve('passkeys'),
 		method: 'POST',
 		body: { code: clientResult.code },
 		on2xx: () => ({ _tag: 'CreatePasskeySuccess' }) as const,
@@ -222,7 +222,7 @@ export const updateUserPasskeys = async (
 	// `PATCH /passkeys` updates the Passlock vault and the local SQLite record,
 	// then returns a prepared token for browser-side signal instructions.
 	const serverResult = await fetchData({
-		url: resolve('/passkeys'),
+		url: resolve('passkeys'),
 		method: 'PATCH',
 		body: { username, displayName },
 		on2xx: (jsonResponse) => parse(UpdatePasskeysSuccess, jsonResponse),
@@ -262,7 +262,7 @@ export const deletePasskey = async (input: DeletePasskeyInput, config: PasslockC
 	// `DELETE /passkeys/[id]` removes the server-side association first and
 	// returns a prepared token for browser-side cleanup.
 	const serverResult = await fetchData({
-		url: resolve(`/passkeys/${encodeURIComponent(input.passkeyId)}`),
+		url: resolve(`passkeys/${encodeURIComponent(input.passkeyId)}`),
 		method: 'DELETE',
 		body: {},
 		on2xx: (jsonResponse) => parse(DeletePasskeySuccess, jsonResponse),
@@ -318,7 +318,7 @@ export const deleteAccountPasskeys = async (config: PasslockClientConfig) => {
 	const PAUSED_TAG = '@warning/PasskeyDeletePaused';
 
 	const serverResult = await fetchData({
-		url: resolve('/passkeys'),
+		url: resolve('passkeys'),
 		method: 'DELETE',
 		body: { scope: 'user' },
 		on2xx: (jsonResponse) => parse(DeleteUserPasskeysSuccess, jsonResponse),

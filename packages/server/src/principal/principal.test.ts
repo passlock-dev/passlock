@@ -202,7 +202,14 @@ describe(verifyIdToken.name, () => {
 
       const principal = yield* Effect.acquireUseRelease(
         mockGlobalFetch,
-        () => verifyIdToken({ token }, { tenancyId }),
+        () =>
+          Effect.gen(function* () {
+            const principal = yield* verifyIdToken({ token }, { tenancyId })
+            const repeated = yield* verifyIdToken({ token }, { tenancyId })
+            expect(repeated).toEqual(principal)
+            expect(globalThis.fetch).toHaveBeenCalledOnce()
+            return principal
+          }),
         restoreGlobalFetch
       )
 

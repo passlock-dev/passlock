@@ -3,15 +3,15 @@ import type { Cookies } from '@sveltejs/kit';
 import {
 	consumeEmailChallenge as verifyChangeEmailChallenge,
 	getPendingEmailChallenge
-} from '$lib/server/mailbox/emailChange.js';
-import { deleteEmailChangeCookie, getEmailChangeCookie } from '$lib/server/cookies.js';
-import { getChallengeCodeErrorMessage } from '$lib/server/mailbox/mailboxChallenge.js';
-import { getPendingChallengeContext } from '$lib/server/mailbox/pendingChallenge.js';
-import { createVerifyCodeForm, validateVerifyCodeForm } from '$lib/server/mailbox/verifyCode.js';
+} from '#lib/server/mailbox/emailChange.js';
+import { deleteEmailChangeCookie, getEmailChangeCookie } from '#lib/server/cookies.js';
+import { getChallengeCodeErrorMessage } from '#lib/server/mailbox/mailboxChallenge.js';
+import { getPendingChallengeContext } from '#lib/server/mailbox/pendingChallenge.js';
+import { createVerifyCodeForm, validateVerifyCodeForm } from '#lib/server/mailbox/verifyCode.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
 import { setError } from 'sveltekit-superforms';
-import { toAccountLocation } from '$lib/shared/queryState.js';
+import { toAccountLocation } from '#lib/shared/queryState.js';
 import { getAccountEmailErrorLocation } from './challenge.js';
 
 const getPendingEmailChangeContext = (cookies: Cookies, userId: number) =>
@@ -26,7 +26,7 @@ const getPendingEmailChangeContext = (cookies: Cookies, userId: number) =>
  * Load the email-change verification page using the pending challenge cookie.
  */
 export const load = (async ({ locals, cookies }) => {
-	if (!locals.user) redirect(302, resolve('/login'));
+	if (!locals.user) redirect(302, resolve('login'));
 
 	// The pending challenge cookie lets the page show which address is being
 	// verified before the user has entered the code.
@@ -49,7 +49,7 @@ export const load = (async ({ locals, cookies }) => {
 
 export const actions = {
 	verify: async ({ request, locals, cookies }) => {
-		if (!locals.user) redirect(302, resolve('/login'));
+		if (!locals.user) redirect(302, resolve('login'));
 
 		const user = locals.user;
 

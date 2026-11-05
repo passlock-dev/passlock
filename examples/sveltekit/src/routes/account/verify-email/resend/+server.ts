@@ -2,18 +2,18 @@ import {
 	deleteEmailChangeCookie,
 	getEmailChangeCookie,
 	setEmailChangeCookie
-} from '$lib/server/cookies.js';
+} from '#lib/server/cookies.js';
 import {
 	createOrRefreshEmailChallenge,
 	getPendingEmailChallenge
-} from '$lib/server/mailbox/emailChange.js';
-import { getPendingChallengeContext } from '$lib/server/mailbox/pendingChallenge.js';
+} from '#lib/server/mailbox/emailChange.js';
+import { getPendingChallengeContext } from '#lib/server/mailbox/pendingChallenge.js';
 import {
 	resendErrorResponse,
 	resendMailboxChallenge,
 	resendRedirectResponse
-} from '$lib/server/resend.js';
-import { toAccountLocation } from '$lib/shared/queryState.js';
+} from '#lib/server/resend.js';
+import { toAccountLocation } from '#lib/shared/queryState.js';
 import type { RequestHandler } from './$types';
 import { getAccountEmailErrorLocation } from '../challenge.js';
 

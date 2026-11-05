@@ -240,8 +240,8 @@ const authorizationHeaders = (apiKey: string) => ({
   authorization: `Bearer ${apiKey}`,
 })
 
-const decodeResponseJson = <A, I, R>(response: NetworkResponse, schema: Schema.Schema<A, I, R>) =>
-  pipe(response.json, Effect.flatMap(Schema.decodeUnknown(schema)))
+const decodeResponseJson = <A, I, R>(response: NetworkResponse, schema: Schema.Codec<A, I, R>) =>
+  pipe(response.json, Effect.flatMap(Schema.decodeUnknownEffect(schema)))
 
 /**
  * Options for creating a mailbox challenge.
@@ -350,7 +350,16 @@ export const createMailboxChallenge = (
       const response = yield* fetchNetwork(
         url,
         "post",
-        { email, name, purpose, userId, metadata, invalidateOthers, skipRateLimit, sendEmail },
+        {
+          email,
+          name,
+          purpose,
+          userId,
+          metadata,
+          invalidateOthers,
+          skipRateLimit,
+          sendEmail,
+        },
         {
           headers: authorizationHeaders(config.apiKey),
         }
@@ -365,7 +374,7 @@ export const createMailboxChallenge = (
         orElse: (res) =>
           decodeResponseJson(
             res,
-            Schema.Union(ForbiddenError, ChallengeRateLimitedError, BadRequestError)
+            Schema.Union([ForbiddenError, ChallengeRateLimitedError, BadRequestError])
           ),
       })
 
@@ -382,7 +391,7 @@ export const createMailboxChallenge = (
       "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
       "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
       "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
+      SchemaError: (err) => Effect.die(err),
     }),
     Effect.provide(fetchLayer)
   )
@@ -432,7 +441,7 @@ export const getMailboxChallenge = (
         response,
         {
           "2xx": (res) => decodeResponseJson(res, ChallengeSchemas.ReadableChallenge),
-          orElse: (res) => decodeResponseJson(res, Schema.Union(ForbiddenError, NotFoundError)),
+          orElse: (res) => decodeResponseJson(res, Schema.Union([ForbiddenError, NotFoundError])),
         }
       )
 
@@ -448,7 +457,7 @@ export const getMailboxChallenge = (
       "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
       "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
       "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
+      SchemaError: (err) => Effect.die(err),
     }),
     Effect.provide(fetchLayer)
   )
@@ -533,13 +542,13 @@ export const verifyMailboxChallenge = (
         orElse: (res) =>
           decodeResponseJson(
             res,
-            Schema.Union(
+            Schema.Union([
               ForbiddenError,
               InvalidChallengeError,
               InvalidChallengeCodeError,
               ChallengeExpiredError,
-              ChallengeAttemptsExceededError
-            )
+              ChallengeAttemptsExceededError,
+            ])
           ),
       })
 
@@ -558,7 +567,7 @@ export const verifyMailboxChallenge = (
       "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
       "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
       "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
+      SchemaError: (err) => Effect.die(err),
     }),
     Effect.provide(fetchLayer)
   )
@@ -618,7 +627,7 @@ export const deleteMailboxChallenge = (
       "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
       "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
       "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
+      SchemaError: (err) => Effect.die(err),
     }),
     Effect.provide(fetchLayer)
   )

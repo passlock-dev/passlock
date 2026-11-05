@@ -1,5 +1,5 @@
 import { safeParse } from 'valibot';
-import { ResendChallengeResponse } from '$lib/shared/schemas.js';
+import { ResendChallengeResponse } from '#lib/shared/schemas.js';
 
 const RESEND_ERROR_MESSAGE = 'Unable to send a new code.';
 

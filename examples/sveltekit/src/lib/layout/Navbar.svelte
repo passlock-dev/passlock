@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { ChevronDown } from '@lucide/svelte';
-	import logo from '$lib/assets/passlock-logo.svg';
-	import logoDark from '$lib/assets/passlock-logo.dark.svg';
+	import logo from '#lib/assets/passlock-logo.svg';
+	import logoDark from '#lib/assets/passlock-logo.dark.svg';
 
 	let { user }: { user: { givenName: string } | null } = $props();
 </script>
@@ -21,14 +21,15 @@
 						stroke-linecap="round"
 						stroke-linejoin="round"
 						stroke-width="2"
-						d="M4 6h16M4 12h8m-8 6h16" />
+						d="M4 6h16M4 12h8m-8 6h16">
+					</path>
 				</svg>
 			</div>
 			<ul
 				tabindex="-1"
-				class="dropdown-content menu z-1 mt-3 w-52 menu-sm rounded-box bg-base-100 p-2 shadow">
-				<li><a href={resolve('/login')}>Login</a></li>
-				<li><a href={resolve('/login/autofill')}>Autofill login</a></li>
+				class="menu dropdown-content z-1 mt-3 w-52 menu-sm rounded-box bg-base-100 p-2 shadow">
+				<li><a href={resolve('login')}>Login</a></li>
+				<li><a href={resolve('login/autofill')}>Autofill login</a></li>
 			</ul>
 		</div>
 		<a href={resolve('/')} class="mx-5">
@@ -51,18 +52,20 @@
 				</div>
 				<ul
 					tabindex="-1"
-					class="dropdown-content menu z-1 mt-1 w-52 rounded-box bg-base-200 p-2 shadow-sm group-hover:bg-base-200">
-					<li><a href={resolve('/account')}>My Account</a></li>
-					<li><a href={resolve('/passkeys')}>My Passkeys</a></li>
-					<li><a href={resolve('/logout')}>Logout</a></li>
+					class="menu dropdown-content z-1 mt-1 w-52 rounded-box bg-base-200 p-2 shadow-sm group-hover:bg-base-200">
+					<li><a href={resolve('account')}>My Account</a></li>
+					<li><a href={resolve('passkeys')}>My Passkeys</a></li>
+					<li><a href={resolve('logout')}>Logout</a></li>
 				</ul>
 			</div>
 		{:else}
-			<a href={resolve('/login')} class="mr-5 link link-secondary">Login</a>
-			<a href={resolve('/login/autofill')} class="mr-5 hidden link link-accent lg:block">
+			<a href={resolve('login')} class="mr-5 link link-secondary">Login</a>
+
+			<a href={resolve('login/autofill')} class="mr-5 hidden link link-accent lg:block">
 				Autofill login
 			</a>
-			<a href={resolve('/signup')} class="btn mr-5 text-white btn-primary">Sign up</a>
+
+			<a href={resolve('signup')} class="btn mr-5 text-white btn-primary">Sign up</a>
 		{/if}
 	</div>
 </div>

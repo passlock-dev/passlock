@@ -1,4 +1,4 @@
-import { Micro, pipe } from "effect"
+import { Effect, pipe } from "effect"
 import { makeEndpoint, makeRequest } from "../../internal/index.js"
 import { NetworkError } from "../../internal/network.js"
 import { Logger } from "../../logger.js"
@@ -15,7 +15,7 @@ import {
  * Detect support for browser-driven local passkey removal via
  * `PublicKeyCredential.signalUnknownCredential`.
  */
-export const isPasskeyDeleteSupport = Micro.sync(() => {
+export const isPasskeyDeleteSupport = Effect.sync(() => {
   return (
     PublicKeyCredential?.signalUnknownCredential &&
     typeof PublicKeyCredential.signalUnknownCredential === "function"
@@ -26,7 +26,7 @@ export const isPasskeyDeleteSupport = Micro.sync(() => {
  * Detect support for browser-driven passkey pruning via
  * `PublicKeyCredential.signalAllAcceptedCredentials`.
  */
-export const isPasskeyPruningSupport = Micro.sync(() => {
+export const isPasskeyPruningSupport = Effect.sync(() => {
   return (
     PublicKeyCredential?.signalAllAcceptedCredentials &&
     typeof PublicKeyCredential.signalAllAcceptedCredentials === "function"
@@ -37,7 +37,7 @@ export const isPasskeyPruningSupport = Micro.sync(() => {
  * Detect support for browser-driven passkey user-detail updates via
  * `PublicKeyCredential.signalCurrentUserDetails`.
  */
-export const isPasskeyUpdateSupport = Micro.sync(() => {
+export const isPasskeyUpdateSupport = Effect.sync(() => {
   return (
     PublicKeyCredential?.signalCurrentUserDetails &&
     typeof PublicKeyCredential.signalCurrentUserDetails === "function"
@@ -429,7 +429,7 @@ const isPasskeyPruningInstructions = (payload: unknown): payload is PasskeyPruni
 }
 
 const exchangeUpdateToken = (options: UpdatePasskeysOptions, config: PasslockOptions) =>
-  Micro.gen(function* () {
+  Effect.gen(function* () {
     const { tenancyId } = config
     const { endpoint } = makeEndpoint(config)
     const url = new URL(`v2/${tenancyId}/passkeys/update/exchange`, endpoint)
@@ -443,7 +443,7 @@ const exchangeUpdateToken = (options: UpdatePasskeysOptions, config: PasslockOpt
   })
 
 const exchangeDeleteToken = (options: DeletePasskeysOptions, config: PasslockOptions) =>
-  Micro.gen(function* () {
+  Effect.gen(function* () {
     const { tenancyId } = config
     const { endpoint } = makeEndpoint(config)
     const url = new URL(`v2/${tenancyId}/passkeys/delete/exchange`, endpoint)
@@ -457,7 +457,7 @@ const exchangeDeleteToken = (options: DeletePasskeysOptions, config: PasslockOpt
   })
 
 const exchangePruneToken = (options: PrunePasskeysOptions, config: PasslockOptions) =>
-  Micro.gen(function* () {
+  Effect.gen(function* () {
     const { tenancyId } = config
     const { endpoint } = makeEndpoint(config)
     const url = new URL(`v2/${tenancyId}/passkeys/prune/exchange`, endpoint)
@@ -471,7 +471,7 @@ const exchangePruneToken = (options: PrunePasskeysOptions, config: PasslockOptio
   })
 
 const signalUpdateInstruction = (instruction: PasskeyUpdateInstruction) =>
-  Micro.gen(function* () {
+  Effect.gen(function* () {
     const details = {
       displayName: instruction.displayName,
       name: instruction.username,
@@ -479,7 +479,7 @@ const signalUpdateInstruction = (instruction: PasskeyUpdateInstruction) =>
       userId: instruction.userId,
     }
 
-    return yield* Micro.tryPromise({
+    return yield* Effect.tryPromise({
       try: () => PublicKeyCredential.signalCurrentUserDetails(details),
       catch: (err) =>
         err instanceof Error ? err : new Error("Unable to signal credential update"),
@@ -493,8 +493,8 @@ type PasskeyDeletionSignalInstruction = {
 }
 
 const signalDeleteInstruction = (instruction: PasskeyDeletionSignalInstruction) =>
-  Micro.gen(function* () {
-    return yield* Micro.tryPromise({
+  Effect.gen(function* () {
+    return yield* Effect.tryPromise({
       try: () => PublicKeyCredential.signalUnknownCredential(instruction),
       catch: (err) =>
         err instanceof Error ? err : new Error("Unable to signal credential removal"),
@@ -502,13 +502,13 @@ const signalDeleteInstruction = (instruction: PasskeyDeletionSignalInstruction) 
   })
 
 const signalPruningInstruction = (instruction: PasskeyPruningInstruction) =>
-  Micro.gen(function* () {
+  Effect.gen(function* () {
     const details = {
       ...instruction,
       allAcceptedCredentialIds: [...instruction.allAcceptedCredentialIds],
     }
 
-    return yield* Micro.tryPromise({
+    return yield* Effect.tryPromise({
       try: () => PublicKeyCredential.signalAllAcceptedCredentials(details),
       catch: (err) =>
         err instanceof Error ? err : new Error("Unable to signal accepted credentials"),
@@ -519,27 +519,27 @@ const SIGNAL_TIMEOUT_MS = 1_000
 
 const collectSignalWarnings = <A>(
   instructions: ReadonlyArray<A>,
-  signal: (instruction: A) => Micro.Micro<void, Error>,
+  signal: (instruction: A) => Effect.Effect<void, Error>,
   fallback: string,
   includeErrorMessage = true
 ) =>
-  Micro.gen(function* () {
+  Effect.gen(function* () {
     const warnings: PasskeyManagementWarning[] = []
-    const logger = yield* Micro.service(Logger)
+    const logger = yield* Effect.service(Logger)
 
     for (const instruction of instructions) {
       const result = yield* pipe(
         signal(instruction),
-        Micro.timeoutOrElse({
+        Effect.timeoutOrElse({
           duration: SIGNAL_TIMEOUT_MS,
-          onTimeout: () => Micro.fail(new Error(`${fallback}: browser signal timed out`)),
+          orElse: () => Effect.fail(new Error(`${fallback}: browser signal timed out`)),
         }),
-        Micro.catchAll((error) => {
+        Effect.catch((error) => {
           const message = includeErrorMessage ? errorMessage(error, fallback) : fallback
           warnings.push(failedWarning(message))
           return logger.logWarn(message)
         }),
-        Micro.catchAllDefect((error) => {
+        Effect.catchDefect((error) => {
           const message = includeErrorMessage ? errorMessage(error, fallback) : fallback
           warnings.push(failedWarning(message))
           return logger.logWarn(message)
@@ -561,16 +561,16 @@ const collectSignalWarnings = <A>(
  *
  * @param options Prepared update token returned by your backend.
  * @param config Passlock tenancy and API endpoint options.
- * @returns A Micro effect that resolves with an {@link UpdateSuccess}.
+ * @returns An Effect that resolves with an {@link UpdateSuccess}.
  *
  * @category Passkeys (core)
  */
 export const updatePasskeys = (
   options: UpdatePasskeysOptions,
   config: PasslockOptions
-): Micro.Micro<UpdateSuccess, UpdateError, Logger> =>
-  Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger)
+): Effect.Effect<UpdateSuccess, UpdateError, Logger> =>
+  Effect.gen(function* () {
+    const logger = yield* Effect.service(Logger)
 
     yield* logger.logInfo("Testing for local passkey update support")
     const canUpdate = yield* isPasskeyUpdateSupport
@@ -584,7 +584,7 @@ export const updatePasskeys = (
     yield* logger.logInfo("Exchanging passkey update token")
     const exchange = yield* pipe(
       exchangeUpdateToken(options, config),
-      Micro.mapError((error) => toUpdateError(error))
+      Effect.mapError((error) => toUpdateError(error))
     )
 
     const warnings = [...exchange.warnings]
@@ -613,16 +613,16 @@ export const updatePasskeys = (
  *
  * @param options Prepared deletion token returned by your backend.
  * @param config Passlock tenancy and API endpoint options.
- * @returns A Micro effect that resolves with a {@link DeleteSuccess}.
+ * @returns An Effect that resolves with a {@link DeleteSuccess}.
  *
  * @category Passkeys (core)
  */
 export const deletePasskeys = (
   options: DeletePasskeysOptions,
   config: PasslockOptions
-): Micro.Micro<DeleteSuccess, DeleteError, Logger> =>
-  Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger)
+): Effect.Effect<DeleteSuccess, DeleteError, Logger> =>
+  Effect.gen(function* () {
+    const logger = yield* Effect.service(Logger)
 
     yield* logger.logInfo("Testing for local passkey removal support")
     const canDelete = yield* isPasskeyDeleteSupport
@@ -636,7 +636,7 @@ export const deletePasskeys = (
     yield* logger.logInfo("Exchanging passkey deletion token")
     const exchange = yield* pipe(
       exchangeDeleteToken(options, config),
-      Micro.mapError((error) => toDeleteError(error))
+      Effect.mapError((error) => toDeleteError(error))
     )
 
     const warnings = [...exchange.warnings]
@@ -671,7 +671,7 @@ export const deletePasskeys = (
  * the credential.
  *
  * @param error Live orphan error returned by `authenticatePasskey`.
- * @returns A Micro effect that resolves with a {@link DeleteSuccess}, or fails
+ * @returns An Effect that resolves with a {@link DeleteSuccess}, or fails
  * with a {@link DeleteError} when the runtime input is invalid.
  *
  * @see {@link deletePasskeys} for deleting passkeys that still have vault records.
@@ -680,10 +680,10 @@ export const deletePasskeys = (
  */
 export const deleteOrphanedPasskey = (
   error: OrphanedPasskeyError
-): Micro.Micro<DeleteSuccess, DeleteError, Logger> =>
-  Micro.gen(function* () {
+): Effect.Effect<DeleteSuccess, DeleteError, Logger> =>
+  Effect.gen(function* () {
     if (!isOrphanedPasskeyError(error)) {
-      return yield* Micro.fail(
+      return yield* Effect.fail(
         new DeleteError({
           code: "OTHER_ERROR",
           message: "A live OrphanedPasskeyError is required",
@@ -691,7 +691,7 @@ export const deleteOrphanedPasskey = (
       )
     }
 
-    const logger = yield* Micro.service(Logger)
+    const logger = yield* Effect.service(Logger)
 
     yield* logger.logInfo("Testing for orphaned passkey removal support")
     const canDelete = yield* isPasskeyDeleteSupport
@@ -728,16 +728,16 @@ export const deleteOrphanedPasskey = (
  *
  * @param options Prepared pruning token returned by your backend.
  * @param config Passlock tenancy and API endpoint options.
- * @returns A Micro effect that resolves with a {@link PruningSuccess}.
+ * @returns An Effect that resolves with a {@link PruningSuccess}.
  *
  * @category Passkeys (core)
  */
 export const prunePasskeys = (
   options: PrunePasskeysOptions,
   config: PasslockOptions
-): Micro.Micro<PruningSuccess, PruningError, Logger> =>
-  Micro.gen(function* () {
-    const logger = yield* Micro.service(Logger)
+): Effect.Effect<PruningSuccess, PruningError, Logger> =>
+  Effect.gen(function* () {
+    const logger = yield* Effect.service(Logger)
 
     yield* logger.logInfo("Testing for local passkey pruning support")
     const canPrune = yield* isPasskeyPruningSupport
@@ -751,7 +751,7 @@ export const prunePasskeys = (
     yield* logger.logInfo("Exchanging passkey pruning token")
     const exchange = yield* pipe(
       exchangePruneToken(options, config),
-      Micro.mapError((error) => toPruningError(error))
+      Effect.mapError((error) => toPruningError(error))
     )
 
     const warnings = [...exchange.warnings]

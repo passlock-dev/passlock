@@ -3,7 +3,7 @@ import type {
   PublicKeyCredentialCreationOptionsJSON,
   RegistrationResponseJSON,
 } from "@simplewebauthn/browser"
-import { Context, Micro, pipe } from "effect"
+import { Context, Effect, pipe } from "effect"
 import { afterAll, describe, expect, it, vi } from "vitest"
 import { Endpoint, TenancyId } from "../../internal/index.js"
 import { Logger } from "../../logger.js"
@@ -17,10 +17,10 @@ import {
 } from "./registration.js"
 
 const loggerTest = {
-  logDebug: () => Micro.void,
-  logError: () => Micro.void,
-  logInfo: () => Micro.void,
-  logWarn: () => Micro.void,
+  logDebug: () => Effect.void,
+  logError: () => Effect.void,
+  logInfo: () => Effect.void,
+  logWarn: () => Effect.void,
 } satisfies typeof Logger.Service
 
 describe(fetchOptions.name, () => {
@@ -46,13 +46,15 @@ describe(fetchOptions.name, () => {
 
     const result = await pipe(
       fetchOptions({ registrationToken }),
-      Micro.provideContext(ctx),
-      Micro.runPromise
+      Effect.provideContext(ctx),
+      Effect.runPromise
     )
 
     expect(result.sessionToken).toBeTruthy()
     expect(result.optionsJSON).toBeTruthy()
-    expect(fetchMock).toHavePosted(expectedRoute, { body: { registrationToken } })
+    expect(fetchMock).toHavePosted(expectedRoute, {
+      body: { registrationToken },
+    })
   })
 
   it("should invoke the onEvent handler", async () => {
@@ -62,8 +64,8 @@ describe(fetchOptions.name, () => {
 
     await pipe(
       fetchOptions({ onEvent, registrationToken }),
-      Micro.provideContext(ctx),
-      Micro.runPromise
+      Effect.provideContext(ctx),
+      Effect.runPromise
     )
 
     expect(onEvent).toHaveBeenCalledWith("optionsRequest")
@@ -94,9 +96,9 @@ describe(startRegistration.name, () => {
     it("should invoke the underlying startRegistration function", async () => {
       await pipe(
         startRegistration({} as PublicKeyCredentialCreationOptionsJSON, {}),
-        Micro.provideService(Logger, loggerTest),
-        Micro.provideService(RegistrationHelper, registrationHelperTest),
-        Micro.runPromise
+        Effect.provideService(Logger, loggerTest),
+        Effect.provideService(RegistrationHelper, registrationHelperTest),
+        Effect.runPromise
       )
     })
 
@@ -109,9 +111,9 @@ describe(startRegistration.name, () => {
 
       await pipe(
         startRegistration(optionsJSON, {}),
-        Micro.provideService(Logger, loggerTest),
-        Micro.provideService(RegistrationHelper, registrationHelperTest),
-        Micro.runPromise
+        Effect.provideService(Logger, loggerTest),
+        Effect.provideService(RegistrationHelper, registrationHelperTest),
+        Effect.runPromise
       )
 
       expect(startRegistrationMock).toHaveBeenCalledWith({ optionsJSON })
@@ -127,10 +129,10 @@ describe(startRegistration.name, () => {
     it("should return an error", async () => {
       const result = await pipe(
         startRegistration({} as PublicKeyCredentialCreationOptionsJSON, {}),
-        Micro.flip,
-        Micro.provideService(Logger, loggerTest),
-        Micro.provideService(RegistrationHelper, registrationHelperTest),
-        Micro.runPromise
+        Effect.flip,
+        Effect.provideService(Logger, loggerTest),
+        Effect.provideService(RegistrationHelper, registrationHelperTest),
+        Effect.runPromise
       )
 
       expect(result).toBeInstanceOf(PasskeyUnsupportedError)
@@ -164,8 +166,8 @@ describe(verifyCredential.name, () => {
 
     const result = await pipe(
       verifyCredential("dummySessionToken", {} as RegistrationResponseJSON, {}),
-      Micro.provideContext(ctx),
-      Micro.runPromise
+      Effect.provideContext(ctx),
+      Effect.runPromise
     )
 
     expect(result).toStrictEqual(mockResponse)
@@ -213,8 +215,8 @@ describe(registerPasskey.name, () => {
 
     await pipe(
       registerPasskey({ registrationToken }, { tenancyId }),
-      Micro.provideContext(ctx),
-      Micro.runPromise
+      Effect.provideContext(ctx),
+      Effect.runPromise
     )
   })
 })

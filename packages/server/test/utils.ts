@@ -1,18 +1,18 @@
 import { Config, Effect, pipe, Redacted } from "effect"
 
-const lookupTenancyId = pipe(Config.string("PASSLOCK_TENANCY_ID"), Config.withDefault("itTenancy"))
+const lookupTenancyId = pipe(Config.String("PASSLOCK_TENANCY_ID"), Config.withDefault("itTenancy"))
 
-const lookupPasskeyId = pipe(Config.string("PASSLOCK_PASSKEY_ID"), Config.withDefault("itPasskey"))
+const lookupPasskeyId = pipe(Config.String("PASSLOCK_PASSKEY_ID"), Config.withDefault("itPasskey"))
 
-const lookupCode = pipe(Config.string("PASSLOCK_PRINCIPAL_CODE"), Config.withDefault("itPrincipal"))
+const lookupCode = pipe(Config.String("PASSLOCK_PRINCIPAL_CODE"), Config.withDefault("itPrincipal"))
 
 const lookupApiKey = pipe(
-  Config.redacted("PASSLOCK_API_KEY"),
+  Config.Redacted("PASSLOCK_API_KEY"),
   Config.withDefault(Redacted.make("itApiKey"))
 )
 
 const lookupEndpoint = pipe(
-  Config.string("PASSLOCK_ENDPOINT"),
+  Config.String("PASSLOCK_ENDPOINT"),
   Config.withDefault("http://localhost:3000")
 )
 

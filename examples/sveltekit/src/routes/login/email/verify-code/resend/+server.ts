@@ -2,18 +2,18 @@ import {
 	deleteSignupLoginCookie,
 	getSignupLoginCookie,
 	setSignupLoginCookie
-} from '$lib/server/cookies.js';
+} from '#lib/server/cookies.js';
 import {
 	resendMailboxChallenge,
 	resendRedirectResponse,
 	resendErrorResponse
-} from '$lib/server/resend.js';
-import { getPendingChallengeContext } from '$lib/server/mailbox/pendingChallenge.js';
+} from '#lib/server/resend.js';
+import { getPendingChallengeContext } from '#lib/server/mailbox/pendingChallenge.js';
 import {
 	createOrRefreshLoginChallenge,
 	getPendingLoginChallenge
-} from '$lib/server/mailbox/loginChallenge.js';
-import { toSignupLocation } from '$lib/shared/queryState.js';
+} from '#lib/server/mailbox/loginChallenge.js';
+import { toSignupLocation } from '#lib/shared/queryState.js';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ cookies }) => {

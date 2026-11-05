@@ -10,7 +10,7 @@ import {
 	type LoginPasskeyLocation,
 	type QueryLocation,
 	type SignupLocation
-} from '$lib/shared/routes.js';
+} from '#lib/shared/routes.js';
 
 /**
  * Helpers for encoding small pieces of auth flow state into the URL.

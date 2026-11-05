@@ -161,8 +161,8 @@ const program = pipe(
   Effect.catchTag("@error/CliParse", ({ message }) =>
     pipe(
       Console.error(message),
-      Effect.zipRight(Console.log("Run 'passlock --help' for usage.")),
-      Effect.zipRight(
+      Effect.andThen(Console.log("Run 'passlock --help' for usage.")),
+      Effect.andThen(
         Effect.sync(() => {
           process.exitCode = 1
         })

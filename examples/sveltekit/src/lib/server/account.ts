@@ -55,7 +55,7 @@ export const getAccountContext = async (locals: App.Locals): Promise<AccountCont
  */
 export const requireAccountContext = async (locals: App.Locals): Promise<AccountContext> => {
 	const context = await getAccountContext(locals);
-	if (!context) redirect(302, resolve('/login'));
+	if (!context) redirect(302, resolve('login'));
 
 	return context;
 };

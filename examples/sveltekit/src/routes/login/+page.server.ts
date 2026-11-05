@@ -1,15 +1,15 @@
 import type { Actions, PageServerLoad } from './$types';
 
-import { createChallengeRateLimitView } from '$lib/server/mailbox/mailboxChallenge.js';
-import { createOrRefreshLoginChallenge } from '$lib/server/mailbox/loginChallenge.js';
-import { getUserByEmail, countPasskeysByUserId } from '$lib/server/repository.js';
-import { setSignupLoginCookie } from '$lib/server/cookies.js';
+import { createChallengeRateLimitView } from '#lib/server/mailbox/mailboxChallenge.js';
+import { createOrRefreshLoginChallenge } from '#lib/server/mailbox/loginChallenge.js';
+import { getUserByEmail, countPasskeysByUserId } from '#lib/server/repository.js';
+import { setSignupLoginCookie } from '#lib/server/cookies.js';
 import {
 	getLoginQueryState,
 	toLoginPasskeyLocation as toPasskeyLogin,
 	toSignupLocation
-} from '$lib/shared/queryState.js';
-import type { LoginFormMessage } from '$lib/shared/challengeRateLimit.js';
+} from '#lib/shared/queryState.js';
+import type { LoginFormMessage } from '#lib/shared/challengeRateLimit.js';
 import { message, setMessage, superValidate } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';

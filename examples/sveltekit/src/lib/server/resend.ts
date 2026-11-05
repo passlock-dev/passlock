@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { createChallengeRateLimitView } from './mailbox/mailboxChallenge';
 import type { PendingChallengeCookie } from './cookies.js';
-import type { ResendRedirectLocation } from '$lib/shared/routes.js';
+import type { ResendRedirectLocation } from '#lib/shared/routes.js';
 
 type CreatedChallengeLike = {
 	_tag: 'CreatedChallenge';

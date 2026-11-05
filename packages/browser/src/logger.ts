@@ -1,41 +1,41 @@
-import { Context, Micro } from "effect"
+import { Context, Effect } from "effect"
 
 /**
  * Effect service used by the browser modules for structured logging.
  *
  * @see consoleLogger and eventLogger
  */
-export class Logger extends Context.Tag("BrowserLogger")<
+export class Logger extends Context.Service<
   Logger,
   {
-    readonly logDebug: (message: string) => Micro.Micro<void>
-    readonly logInfo: (message: string) => Micro.Micro<void>
-    readonly logWarn: (message: string) => Micro.Micro<void>
-    readonly logError: (message: string) => Micro.Micro<void>
+    readonly logDebug: (message: string) => Effect.Effect<void>
+    readonly logInfo: (message: string) => Effect.Effect<void>
+    readonly logWarn: (message: string) => Effect.Effect<void>
+    readonly logError: (message: string) => Effect.Effect<void>
   }
->() {}
+>()("BrowserLogger") {}
 
 /**
  * Logger implementation that writes messages to the browser console.
  */
 export const consoleLogger: typeof Logger.Service = {
   logDebug: (message: string | object, ...optionalArgs: Array<unknown>) =>
-    Micro.sync(() => {
+    Effect.sync(() => {
       console.log(message, optionalArgs)
     }),
 
   logError: (message: string | object, ...optionalArgs: Array<unknown>) =>
-    Micro.sync(() => {
+    Effect.sync(() => {
       console.log(message, optionalArgs)
     }),
 
   logInfo: (message: string | object, ...optionalArgs: Array<unknown>) =>
-    Micro.sync(() => {
+    Effect.sync(() => {
       console.log(message, optionalArgs)
     }),
 
   logWarn: (message: string | object, ...optionalArgs: Array<unknown>) =>
-    Micro.sync(() => {
+    Effect.sync(() => {
       console.log(message, optionalArgs)
     }),
 }
@@ -90,7 +90,7 @@ export class LogEvent extends Event {
 }
 
 const logEvent = (level: LogLevel) => (message: string) =>
-  Micro.sync(() => {
+  Effect.sync(() => {
     if (typeof message === "string") {
       window.dispatchEvent(new LogEvent(message, level))
     }

@@ -2,11 +2,11 @@
 	import { resolve } from '$app/paths';
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
-	import DevNotes from '$lib/components/DevNotes.svelte';
-	import ResendChallengeButton from '$lib/components/ResendChallengeButton.svelte';
-	import TextInput from '$lib/components/TextInput.svelte';
-	import SubmitButton from '$lib/components/SubmitButton.svelte';
-	import Link from '$lib/components/Link.svelte';
+	import DevNotes from '#lib/components/DevNotes.svelte';
+	import ResendChallengeButton from '#lib/components/ResendChallengeButton.svelte';
+	import TextInput from '#lib/components/TextInput.svelte';
+	import SubmitButton from '#lib/components/SubmitButton.svelte';
+	import Link from '#lib/components/Link.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -30,6 +30,7 @@
 			We sent a 6-digit login code to <span class="font-semibold">{data.email}</span>
 			.
 		</p>
+
 		<p class="mt-2 text-center text-sm text-base-content/80">Codes remain valid for 10 minutes.</p>
 
 		<form method="post" action="?/verify" use:enhance class="mt-6">
@@ -45,11 +46,11 @@
 			</fieldset>
 		</form>
 
-		<ResendChallengeButton url={resolve('/login/email/verify-code/resend')} />
+		<ResendChallengeButton url={resolve('login/email/verify-code/resend')} />
 
 		<p class="mt-4 text-center text-sm">
 			Need to start over?
-			<Link href={resolve('/login')} class="ml-1">Back to login</Link>
+			<Link href={resolve('login')} class="ml-1">Back to login</Link>
 		</p>
 	</div>
 </div>

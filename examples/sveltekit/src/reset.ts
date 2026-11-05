@@ -1,6 +1,6 @@
-import db from '$lib/server/db';
-import { passkeysTable, sessionsTable, usersTable } from '$lib/server/dbSchema';
-import { getPasslockConfig } from '$lib/server/passlock';
+import db from '#lib/server/db.js';
+import { passkeysTable, sessionsTable, usersTable } from '#lib/server/dbSchema.js';
+import { getPasslockConfig } from '#lib/server/passlock.js';
 import { confirm, intro, isCancel, log, outro } from '@clack/prompts';
 import * as PasslockServer from '@passlock/server';
 import { eq } from 'drizzle-orm';

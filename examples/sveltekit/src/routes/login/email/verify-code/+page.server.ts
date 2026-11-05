@@ -5,15 +5,15 @@ import {
 	deleteSignupLoginCookie,
 	getSignupLoginCookie,
 	setSessionTokenCookie
-} from '$lib/server/cookies.js';
-import { getChallengeCodeErrorMessage } from '$lib/server/mailbox/mailboxChallenge.js';
-import { getPendingChallengeContext } from '$lib/server/mailbox/pendingChallenge.js';
+} from '#lib/server/cookies.js';
+import { getChallengeCodeErrorMessage } from '#lib/server/mailbox/mailboxChallenge.js';
+import { getPendingChallengeContext } from '#lib/server/mailbox/pendingChallenge.js';
 import {
 	consumeLoginChallenge,
 	getPendingLoginChallenge
-} from '$lib/server/mailbox/loginChallenge.js';
-import { createVerifyCodeForm, validateVerifyCodeForm } from '$lib/server/mailbox/verifyCode.js';
-import { countPasskeysByUserId, createSession } from '$lib/server/repository.js';
+} from '#lib/server/mailbox/loginChallenge.js';
+import { createVerifyCodeForm, validateVerifyCodeForm } from '#lib/server/mailbox/verifyCode.js';
+import { countPasskeysByUserId, createSession } from '#lib/server/repository.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
 import { setError } from 'sveltekit-superforms';
@@ -34,11 +34,11 @@ export const load = (async ({ locals, cookies }) => {
 
 	const pendingContext = await getPendingLoginContext(cookies);
 	if (pendingContext._tag === 'MissingPendingChallenge') {
-		redirect(303, resolve('/login'));
+		redirect(303, resolve('login'));
 	}
 	if (pendingContext._tag === 'InvalidPendingChallenge') {
 		deleteSignupLoginCookie(cookies);
-		redirect(303, resolve('/login'));
+		redirect(303, resolve('login'));
 	}
 
 	const verifyForm = await createVerifyCodeForm();
@@ -57,11 +57,11 @@ export const actions = {
 
 		const pendingContext = await getPendingLoginContext(cookies);
 		if (pendingContext._tag === 'MissingPendingChallenge') {
-			redirect(303, resolve('/login'));
+			redirect(303, resolve('login'));
 		}
 		if (pendingContext._tag === 'InvalidPendingChallenge') {
 			deleteSignupLoginCookie(cookies);
-			redirect(303, resolve('/login'));
+			redirect(303, resolve('login'));
 		}
 
 		const { challenge, cookie: pending } = pendingContext;
@@ -83,13 +83,13 @@ export const actions = {
 			// First-time email-only users are nudged to register a passkey after
 			// login; existing passkey users go straight to the app.
 			const passkeysCount = await countPasskeysByUserId(result.user.userId);
-			const redirectTo = passkeysCount === 0 ? resolve('/passkeys') : resolve('/');
+			const redirectTo = passkeysCount === 0 ? resolve('passkeys') : resolve('/');
 			redirect(303, redirectTo);
 		}
 
 		if (result._tag === '@error/InvalidChallenge' || result._tag === '@error/AccountNotFound') {
 			deleteSignupLoginCookie(cookies);
-			redirect(303, resolve('/login'));
+			redirect(303, resolve('login'));
 		}
 
 		setError(verifyForm, 'code', getChallengeCodeErrorMessage(result));

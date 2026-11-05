@@ -2,9 +2,9 @@
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { Loader } from '@lucide/svelte';
-	import { resendChallenge } from '$lib/client/challenges.js';
-	import { asResendRedirectLocation } from '$lib/shared/routes.js';
-	import type { ChallengeRateLimitView } from '$lib/shared/challengeRateLimit.js';
+	import { resendChallenge } from '#lib/client/challenges.js';
+	import { asResendRedirectLocation } from '#lib/shared/routes.js';
+	import type { ChallengeRateLimitView } from '#lib/shared/challengeRateLimit.js';
 	import ChallengeRateLimitNotice from './ChallengeRateLimitNotice.svelte';
 
 	let {

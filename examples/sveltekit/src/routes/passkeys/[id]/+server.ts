@@ -1,6 +1,6 @@
-import { getPasslockConfig } from '$lib/server/passkeys.js';
-import { deletePasskeyByUserId, getUserByPasskeyId } from '$lib/server/repository.js';
-import { DeletePasskeySuccess } from '$lib/shared/schemas';
+import { getPasslockConfig } from '#lib/server/passkeys.js';
+import { deletePasskeyByUserId, getUserByPasskeyId } from '#lib/server/repository.js';
+import { DeletePasskeySuccess } from '#lib/shared/schemas.js';
 import * as PasslockServer from '@passlock/server';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';

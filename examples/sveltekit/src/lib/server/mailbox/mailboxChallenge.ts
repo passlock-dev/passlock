@@ -1,11 +1,11 @@
 import * as PasslockServer from '@passlock/server';
 import type { MailboxChallengeDetails, MailboxChallengeMetadata } from '@passlock/server';
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 import { error as kitError } from '@sveltejs/kit';
 import {
 	CHALLENGE_RATE_LIMIT_READY_MESSAGE,
 	type ChallengeRateLimitView
-} from '$lib/shared/challengeRateLimit.js';
+} from '#lib/shared/challengeRateLimit.js';
 import * as v from 'valibot';
 import { getPasslockConfig } from '../passlock.js';
 import type { SessionUser } from '../repository.js';

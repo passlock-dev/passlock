@@ -1,10 +1,10 @@
-import type { Handle } from '@sveltejs/kit';
-import { validateSessionToken } from '$lib/server/repository.js';
+import type { Handle } from '@sveltejs/kit/hooks';
+import { validateSessionToken } from '#lib/server/repository.js';
 import {
 	deleteSessionTokenCookie,
 	SESSION_COOKIE_NAME,
 	setSessionTokenCookie
-} from '$lib/server/cookies.js';
+} from '#lib/server/cookies.js';
 
 /**
  * Validate the session cookie on every request and hydrate `event.locals` with

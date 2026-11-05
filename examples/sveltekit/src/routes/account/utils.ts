@@ -4,7 +4,7 @@ import {
 	getPasskeyStatus,
 	authorizePasskeyAuthentication,
 	type PasslockClientConfig
-} from '$lib/client/passkeys';
+} from '#lib/client/passkeys.js';
 import { resolve } from '$app/paths';
 
 type FormErrors = SuperFormErrors<Record<string, unknown>>;
@@ -58,7 +58,7 @@ export const reAuthenticateIfNecessary = async (
 	}
 
 	const authorizedAuthentication = await authorizePasskeyAuthentication({
-		url: resolve('/account/re-authenticate/authorize')
+		url: resolve('account/re-authenticate/authorize')
 	});
 
 	if (authorizedAuthentication._tag === '@error/AuthorizePasskeyAuthenticationError') {
@@ -71,7 +71,7 @@ export const reAuthenticateIfNecessary = async (
 	const result = await authenticatePasskey(
 		{
 			authenticationToken: authorizedAuthentication.authenticationToken,
-			verificationRoute: resolve('/account/re-authenticate')
+			verificationRoute: resolve('account/re-authenticate')
 		},
 		config
 	);

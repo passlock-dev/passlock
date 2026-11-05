@@ -103,11 +103,11 @@ export const signup = (
       const response = yield* fetchNetwork(new URL("/v2/signup", endpoint), "post", payload)
 
       const encoded: TenancyData | InvalidEmail | DuplicateEmail = yield* matchStatus(response, {
-        "2xx": ({ json }) => pipe(json, Effect.flatMap(Schema.decodeUnknown(TenancyData))),
+        "2xx": ({ json }) => pipe(json, Effect.flatMap(Schema.decodeUnknownEffect(TenancyData))),
         orElse: ({ json }) =>
           pipe(
             json,
-            Effect.flatMap(Schema.decodeUnknown(Schema.Union(InvalidEmail, DuplicateEmail)))
+            Effect.flatMap(Schema.decodeUnknownEffect(Schema.Union([InvalidEmail, DuplicateEmail])))
           ),
       })
 
@@ -123,7 +123,7 @@ export const signup = (
       "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
       "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
       "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
+      SchemaError: (err) => Effect.die(err),
     })
   )
 

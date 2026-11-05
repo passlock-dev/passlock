@@ -3,18 +3,18 @@
 	import { resolve } from '$app/paths';
 	import { superForm } from 'sveltekit-superforms';
 	import { valibotClient } from 'sveltekit-superforms/adapters';
-	import ChallengeRateLimitNotice from '$lib/components/ChallengeRateLimitNotice.svelte';
-	import { clearAccountQueryState } from '$lib/shared/queryState.js';
-	import { EmailSchema, ProfileSchema } from '$lib/shared/schemas.js';
-	import { updateUserPasskeys } from '$lib/client/passkeys';
+	import ChallengeRateLimitNotice from '#lib/components/ChallengeRateLimitNotice.svelte';
+	import { clearAccountQueryState } from '#lib/shared/queryState.js';
+	import { EmailSchema, ProfileSchema } from '#lib/shared/schemas.js';
+	import { updateUserPasskeys } from '#lib/client/passkeys.js';
 	import { reAuthenticateIfNecessary } from './utils.js';
-	import DevNotes from '$lib/components/DevNotes.svelte';
-	import EmailInput from '$lib/components/EmailInput.svelte';
-	import TextInput from '$lib/components/TextInput.svelte';
+	import DevNotes from '#lib/components/DevNotes.svelte';
+	import EmailInput from '#lib/components/EmailInput.svelte';
+	import TextInput from '#lib/components/TextInput.svelte';
 	import type { PageProps } from './$types';
-	import { replaceState } from '$app/navigation';
-	import SubmitButton from '$lib/components/SubmitButton.svelte';
-	import { clearFormErrors, setFormError } from '$lib/client/forms.js';
+	import { goto } from '$app/navigation';
+	import SubmitButton from '#lib/components/SubmitButton.svelte';
+	import { clearFormErrors, setFormError } from '#lib/client/forms.js';
 
 	let { data }: PageProps = $props();
 
@@ -29,7 +29,7 @@
 		const url = new URL(window.location.href);
 		const search = new URL(clearAccountQueryState(url), window.location.origin).search;
 		// eslint-disable-next-line svelte/no-navigation-without-resolve
-		replaceState(`${resolve('/account')}${search}`, {});
+		goto(`${resolve('account')}${search}`, { shallow: true, replace: true });
 	};
 
 	/**
@@ -301,7 +301,7 @@
 
 		<div class="divider"></div>
 
-		<a href={resolve('/account/delete')} class="btn btn-block btn-outline btn-error">
+		<a href={resolve('account/delete')} class="btn btn-block btn-outline btn-error">
 			Delete account
 		</a>
 	</fieldset>

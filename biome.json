@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.16/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.5/schema.json",
   "assist": {
     "actions": {
       "source": {
@@ -12,6 +12,7 @@
       "**",
       "!**/node_modules",
       "!**/dist",
+      "!**/docs",
       "!**/coverage",
       "!**/*.gen.ts",
       "!**/docs/api",
@@ -45,7 +46,7 @@
         "useExhaustiveDependencies": "warn"
       },
       "nursery": {},
-      "recommended": true,
+      "preset": "recommended",
       "style": {
         "noNonNullAssertion": "warn",
         "noParameterAssign": "error",

@@ -1,4 +1,4 @@
-import { Micro } from "effect"
+import { Effect } from "effect"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   deleteOrphanedPasskey,
@@ -13,10 +13,10 @@ const originalFetch = globalThis.fetch
 const originalPublicKeyCredential = globalThis.PublicKeyCredential
 
 const loggerTest = {
-  logDebug: () => Micro.void,
-  logError: () => Micro.void,
-  logInfo: () => Micro.void,
-  logWarn: () => Micro.void,
+  logDebug: () => Effect.void,
+  logError: () => Effect.void,
+  logInfo: () => Effect.void,
+  logWarn: () => Effect.void,
 } satisfies typeof Logger.Service
 
 const config = {

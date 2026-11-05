@@ -1,4 +1,4 @@
-import { Data, Effect, type Layer, Match, pipe, Schema } from "effect"
+import { Cache, Data, Effect, type Layer, Match, pipe, Schema } from "effect"
 
 import * as jose from "jose"
 import {
@@ -66,11 +66,13 @@ export const exchangeCode = (
         response,
         {
           "2xx": ({ json }) =>
-            pipe(json, Effect.flatMap(Schema.decodeUnknown(ExtendedPrincipalSchema))),
+            pipe(json, Effect.flatMap(Schema.decodeUnknownEffect(ExtendedPrincipalSchema))),
           orElse: ({ json }) =>
             pipe(
               json,
-              Effect.flatMap(Schema.decodeUnknown(Schema.Union(InvalidCodeError, ForbiddenError)))
+              Effect.flatMap(
+                Schema.decodeUnknownEffect(Schema.Union([InvalidCodeError, ForbiddenError]))
+              )
             ),
         }
       )
@@ -87,7 +89,7 @@ export const exchangeCode = (
       "@error/NetworkPayload": (err: NetworkPayloadError) => Effect.die(err),
       "@error/NetworkRequest": (err: NetworkRequestError) => Effect.die(err),
       "@error/NetworkResponse": (err: NetworkResponseError) => Effect.die(err),
-      ParseError: (err) => Effect.die(err),
+      SchemaError: (err) => Effect.die(err),
     }),
     Effect.provide(fetchLayer)
   )
@@ -132,7 +134,7 @@ export const verifyIdToken = (
 ): Effect.Effect<Principal, VerificationError> =>
   pipe(
     Effect.gen(function* () {
-      const JWKS = yield* createCachedRemoteJwks(config.endpoint)
+      const JWKS = yield* Cache.get(remoteJwksCache, config.endpoint)
 
       const { payload } = yield* Effect.tryPromise({
         catch: (err) => {
@@ -147,7 +149,7 @@ export const verifyIdToken = (
           }),
       })
 
-      const idToken = yield* Schema.decodeUnknown(IdTokenSchema)({
+      const idToken = yield* Schema.decodeUnknownEffect(IdTokenSchema)({
         ...payload,
         _tag: "IdToken",
       })
@@ -168,7 +170,7 @@ export const verifyIdToken = (
 
       return principal
     }),
-    Effect.catchTag("ParseError", (err) => Effect.die(err))
+    Effect.catchTag("SchemaError", (err) => Effect.die(err))
   )
 
 const createJwks = (endpoint?: string) =>
@@ -178,4 +180,7 @@ const createJwks = (endpoint?: string) =>
     return jose.createRemoteJWKSet(new URL("/v2/.well-known/jwks.json", baseUrl))
   })
 
-const createCachedRemoteJwks = pipe(Effect.cachedFunction(createJwks), Effect.runSync)
+const remoteJwksCache = pipe(
+  Cache.make({ lookup: createJwks, capacity: Number.POSITIVE_INFINITY }),
+  Effect.runSync
+)

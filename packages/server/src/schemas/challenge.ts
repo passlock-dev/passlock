@@ -45,7 +45,7 @@ const isChallengeMetadataValue = (input: unknown): input is ChallengeMetadataVal
 export const ChallengeMetadata = Schema.declare(
   (input: unknown): input is ChallengeMetadata =>
     isPlainObject(input) && Object.values(input).every(isChallengeMetadataValue)
-).annotations({ identifier: "ChallengeMetadata" })
+).annotate({ identifier: "ChallengeMetadata" })
 
 /**
  * Schema for a mailbox challenge purpose string.
@@ -56,10 +56,12 @@ export const ChallengeMetadata = Schema.declare(
  * @category Mailbox
  */
 export const ChallengePurpose = Schema.String.pipe(
-  Schema.filter(
-    (purpose) =>
-      PurposeRegex.test(purpose) ||
-      "Challenge purpose must be 1-64 chars and use only A-Z a-z 0-9 . _ : -"
+  Schema.check(
+    Schema.makeFilter(
+      (purpose) =>
+        PurposeRegex.test(purpose) ||
+        "Challenge purpose must be 1-64 chars and use only A-Z a-z 0-9 . _ : -"
+    )
   )
 )
 
@@ -76,7 +78,7 @@ export type ChallengePurpose = typeof ChallengePurpose.Type
  * @category Mailbox
  */
 export const ChallengeEmail = Schema.String.pipe(
-  Schema.filter((email) => EmailRegex.test(email) || "Invalid email")
+  Schema.check(Schema.makeFilter((email) => EmailRegex.test(email) || "Invalid email"))
 )
 
 /**

@@ -24,7 +24,7 @@ export type SignupPayload = typeof SignupPayload.Type
  * @category Signup
  */
 export const TenancyData = Schema.TaggedStruct("TenancyData", {
-  apiKey: Schema.Redacted(Schema.String),
+  apiKey: Schema.RedactedFromValue(Schema.String),
   tenancyId: Schema.String,
 })
 

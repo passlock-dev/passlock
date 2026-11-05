@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
-	import { registerPasskey, deletePasskey } from '$lib/client/passkeys';
+	import { registerPasskey, deletePasskey } from '#lib/client/passkeys.js';
 	import { KeyRound, Loader, Trash2 } from '@lucide/svelte';
 	import type { PageProps } from './$types';
-	import DevNotes from '$lib/components/DevNotes.svelte';
-	import SubmitButton from '$lib/components/SubmitButton.svelte';
+	import DevNotes from '#lib/components/DevNotes.svelte';
+	import SubmitButton from '#lib/components/SubmitButton.svelte';
 
 	let { data }: PageProps = $props();
 	let passkeys = $derived(data.existingPasskeys);

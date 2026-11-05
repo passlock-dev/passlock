@@ -2,12 +2,12 @@
 	import { superForm } from 'sveltekit-superforms';
 	import type { PageProps } from './$types';
 	import { resolve } from '$app/paths';
-	import ChallengeRateLimitNotice from '$lib/components/ChallengeRateLimitNotice.svelte';
-	import EmailInput from '$lib/components/EmailInput.svelte';
-	import FormErrors from '$lib/components/FormErrors.svelte';
-	import Link from '$lib/components/Link.svelte';
-	import TextInput from '$lib/components/TextInput.svelte';
-	import SubmitButton from '$lib/components/SubmitButton.svelte';
+	import ChallengeRateLimitNotice from '#lib/components/ChallengeRateLimitNotice.svelte';
+	import EmailInput from '#lib/components/EmailInput.svelte';
+	import FormErrors from '#lib/components/FormErrors.svelte';
+	import Link from '#lib/components/Link.svelte';
+	import TextInput from '#lib/components/TextInput.svelte';
+	import SubmitButton from '#lib/components/SubmitButton.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -82,7 +82,7 @@
 
 				<p class="mt-4 text-center text-sm">
 					Already have an account?
-					<Link href={resolve('/login')} class="ml-1">Login</Link>
+					<Link href={resolve('login')} class="ml-1">Login</Link>
 				</p>
 			</fieldset>
 		</form>

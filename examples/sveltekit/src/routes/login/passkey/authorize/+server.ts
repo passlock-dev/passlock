@@ -1,5 +1,5 @@
-import { getPasslockConfig } from '$lib/server/passkeys.js';
-import { countPasskeysByUserId, getUserByEmail } from '$lib/server/repository.js';
+import { getPasslockConfig } from '#lib/server/passkeys.js';
+import { countPasskeysByUserId, getUserByEmail } from '#lib/server/repository.js';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import * as PasslockServer from '@passlock/server';
