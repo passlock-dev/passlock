@@ -1,6 +1,6 @@
 {
   "name": "@passlock/cli",
-  "version": "2.11.0",
+  "version": "2.11.1",
   "description": "CLI tooling support for the Passlock authentication framework",
   "keywords": [
     "passkey",
@@ -74,7 +74,6 @@
     "@effect/vitest": "catalog:",
     "@types/node": "catalog:",
     "globals": "catalog:",
-    "npm-check-updates": "catalog:",
     "publint": "catalog:",
     "rimraf": "catalog:",
     "sort-package-json": "catalog:",

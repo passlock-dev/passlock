@@ -1,6 +1,6 @@
 {
   "name": "@passlock/browser",
-  "version": "2.11.0",
+  "version": "2.11.1",
   "description": "Flexible passkey authentication for Astro, SvelteKit, NextJS and other frameworks",
   "keywords": [
     "passkey",
@@ -77,7 +77,6 @@
     "@fetch-mock/vitest": "^0.2.18",
     "@typescript/lib-dom": "npm:@types/web@^0.0.360",
     "globals": "catalog:",
-    "npm-check-updates": "catalog:",
     "publint": "catalog:",
     "rimraf": "catalog:",
     "sort-package-json": "catalog:",

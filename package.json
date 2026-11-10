@@ -1,6 +1,6 @@
 {
   "name": "passlock",
-  "version": "2.11.0",
+  "version": "2.11.1",
   "private": true,
   "description": "Passlock monorepo root",
   "keywords": [
@@ -28,7 +28,6 @@
   "type": "module",
   "scripts": {
     "build:readme": "VERSION=${npm_package_version} tsx ./scripts/replace-readme-tokens.ts .",
-    "ncu": "pnpm exec ncu -c 25h -x vite -x @types/node -w -u --peer",
     "sort-package-json": "sort-package-json"
   },
   "devDependencies": {
@@ -36,10 +35,9 @@
     "@qetza/replacetokens": "^1.9.0",
     "@types/node": "catalog:",
     "kleur": "^4.1.5",
-    "npm-check-updates": "catalog:",
     "sort-package-json": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:"
   },
-  "packageManager": "pnpm@12.4.2"
+  "packageManager": "pnpm@12.18.0"
 }

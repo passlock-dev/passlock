@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.11.1] - 2026-11-10
+
+### Changed
+
+- Upgrade dependencies and fix pnpm audit issues
+- Clean up example app
+
 ## [2.11.0] - 2026-11-05
 
 ### Changed

@@ -311,15 +311,14 @@
 	<h2 class="mt-2 text-lg font-semibold">Authentication</h2>
 
 	<p class="mt-2">
-		Sensitive operations require step up/re-authentication if a passkey is registered against the
-		account. If the user has not recently authenticated using their passkey we prompt them to
+		Sensitive operations require re-authentication. If the user has not recently authenticated using their passkey we prompt them to
 		authenticate again during the save.
 	</p>
 
 	<h2 class="mt-2 text-lg font-semibold">Changing the email</h2>
 
 	<p class="mt-2">
-		Changing the email will first create a verification code for the new address. When the code is
+		Changing the email will first send a verification code to the new address. When the code is
 		entered we:
 	</p>
 

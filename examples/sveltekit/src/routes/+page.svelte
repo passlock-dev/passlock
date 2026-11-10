@@ -77,8 +77,9 @@
 							Advanced passkeys
 						</h3>
 						<p class="text-sm leading-6 text-base-content/75">
-							Passkey registration, authentication and management. Plus support for multiple
-							authentication flows
+							Passkey registration, authentication and management. Plus support for
+							<a class="text-primary underline" href="https://passlock.dev/passkeys/autofill/">autofill</a> and
+							<a class="text-primary underline" href="https://passlock.dev/passkeys/authentication-patterns/#single-factor-two-step-authentication">two-step</a> login
 						</p>
 					</div>
 				</article>
