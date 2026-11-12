@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AccountReauthentication from '#lib/components/AccountReauthentication.svelte';
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { superForm } from 'sveltekit-superforms';
@@ -17,9 +18,29 @@
 	import { clearFormErrors, setFormError } from '#lib/client/forms.js';
 
 	let { data }: PageProps = $props();
+	let reauthentication: AccountReauthentication;
 
 	let syncingUpdatedEmailPasskeys = $state(false);
 	let rateLimitActive = $state(false);
+	let accountUnlocked = $state(false);
+	let checkingAuthentication = $state(false);
+	let authenticationError = $state('');
+	const unlockAccount = async () => {
+		checkingAuthentication = true;
+		authenticationError = '';
+		try {
+			accountUnlocked = await reauthentication.confirm();
+			if (!accountUnlocked) {
+				authenticationError =
+					'Confirm your identity to view your account. If your session expired, sign in again.';
+				return;
+			}
+			if (data.syncPasskeysOnLoad) await syncPasskeys();
+			else if (data.clearQueryStateOnLoad) clearQueryState();
+		} finally {
+			checkingAuthentication = false;
+		}
+	};
 
 	/**
 	 * Once the redirect-driven status has been rendered, clear the transient
@@ -71,25 +92,14 @@
 	};
 
 	onMount(() => {
-		// Email verification finishes on a different route, then redirects back
-		// here with query state that tells us whether local passkey metadata now
-		// needs to be refreshed.
-		if (data.syncPasskeysOnLoad) {
-			void syncPasskeys();
-			return;
-		}
-
-		if (data.clearQueryStateOnLoad) {
-			clearQueryState();
-			return;
-		}
+		void unlockAccount();
 	});
 
 	/**
 	 * When the user submits the profile form (first and last name) we:
 	 *
 	 * 1. Check if they authenticated within the last N mins
-	 * 2. If not, kick off passkey-based re-authentication
+	 * 2. If not, kick off passkey or TOTP re-authentication
 	 * 3. Submit the form and update the server-side records
 	 * 4. Refresh the passkey display name on the user's local device
 	 *
@@ -100,17 +110,12 @@
 		invalidateAll: 'pessimistic',
 		validators: valibotClient(ProfileSchema),
 		onSubmit: async ({ cancel }) => {
-			const config = {
-				tenancyId: data.tenancyId,
-				endpoint: data.endpoint
-			};
-
 			const authResult = await reAuthenticateIfNecessary(
 				{
 					errors: profileErrors,
 					validateForm: () => validateProfileForm({ update: true })
 				},
-				config
+				() => reauthentication.confirm()
 			);
 
 			// something went wrong, abort
@@ -157,7 +162,7 @@
 	 * When the user changes their email we:
 	 *
 	 * 1. Check if they authenticated within the last N mins
-	 * 2. If not, kick off passkey-based re-authentication
+	 * 2. If not, kick off passkey or TOTP re-authentication
 	 * 3. Submit the form so the server can start the email verification flow
 	 *
 	 * This creates a verification challenge for the replacement address and
@@ -172,17 +177,12 @@
 		invalidateAll: 'pessimistic',
 		validators: valibotClient(EmailSchema),
 		onSubmit: async ({ cancel }) => {
-			const config = {
-				tenancyId: data.tenancyId,
-				endpoint: data.endpoint
-			};
-
 			const authResult = await reAuthenticateIfNecessary(
 				{
 					errors: accountEmailErrors,
 					validateForm: () => validateAccountEmailForm({ update: true })
 				},
-				config
+				() => reauthentication.confirm()
 			);
 
 			if (authResult._tag === '@error/ReAuthenticationFailure') {
@@ -200,119 +200,140 @@
 	} = accountEmailSuperform;
 </script>
 
+<AccountReauthentication
+	bind:this={reauthentication}
+	config={{ tenancyId: data.tenancyId, endpoint: data.endpoint }} />
+
 <svelte:head>
 	<title>My Account</title>
 </svelte:head>
 
 <div class="flex h-full w-full flex-col items-center justify-center gap-4 px-4 py-8">
-	<fieldset class="mt-4 fieldset max-w-md rounded-lg bg-base-200 p-10 pt-8">
-		<form method="post" action="?/profile" use:profileEnhance>
-			<h2 class="text-center text-xl font-semibold">My account</h2>
-			<p class="mt-3 text-center text-sm text-base-content/80">
-				Update your name and keep your passkeys aligned with your account profile.
-			</p>
+	{#if !accountUnlocked}
+		<div class="max-w-md rounded-lg bg-base-200 p-10 text-center">
+			<h2 class="text-xl font-semibold">Confirm your identity</h2>
+			<p class="mt-3 text-sm">Recent authentication is required to view your account.</p>
+			{#if authenticationError}<p class="mt-4 text-sm text-error" role="alert">
+					{authenticationError}
+				</p>{/if}
+			<button
+				class="btn mt-4 btn-primary"
+				disabled={checkingAuthentication}
+				onclick={unlockAccount}>
+				{checkingAuthentication ? 'Checking authentication…' : 'Continue'}
+			</button>
+		</div>
+	{:else}
+		<fieldset class="mt-4 fieldset max-w-md rounded-lg bg-base-200 p-10 pt-8">
+			<form method="post" action="?/profile" use:profileEnhance>
+				<h2 class="text-center text-xl font-semibold">My account</h2>
+				<p class="mt-3 text-center text-sm text-base-content/80">
+					Update your name and keep your passkeys aligned with your account profile.
+				</p>
 
-			{#if $profileMessage}
-				<p class="mt-4 text-center text-sm text-success">{$profileMessage}</p>
-			{/if}
+				{#if $profileMessage}
+					<p class="mt-4 text-center text-sm text-success">{$profileMessage}</p>
+				{/if}
 
-			{#if $profileErrors._errors}
-				{#each $profileErrors._errors as error (error)}
-					<p class="mt-4 text-center text-sm text-error">{error}</p>
-				{/each}
-			{/if}
+				{#if $profileErrors._errors}
+					{#each $profileErrors._errors as error (error)}
+						<p class="mt-4 text-center text-sm text-error">{error}</p>
+					{/each}
+				{/if}
 
-			<div class="mt-4 flex flex-col gap-2">
-				<div>
-					<TextInput
-						superform={profileSuperform}
-						field="givenName"
-						label="First name"
-						autocomplete="given-name"
-						class="mt-2 w-full" />
+				<div class="mt-4 flex flex-col gap-2">
+					<div>
+						<TextInput
+							superform={profileSuperform}
+							field="givenName"
+							label="First name"
+							autocomplete="given-name"
+							class="mt-2 w-full" />
+					</div>
+
+					<div>
+						<TextInput
+							superform={profileSuperform}
+							field="familyName"
+							label="Last name"
+							autocomplete="family-name"
+							class="mt-2 w-full" />
+					</div>
 				</div>
 
-				<div>
-					<TextInput
-						superform={profileSuperform}
-						field="familyName"
-						label="Last name"
-						autocomplete="family-name"
-						class="mt-2 w-full" />
+				<SubmitButton class="w-full" loading={$profileDelayed}>Save name changes</SubmitButton>
+			</form>
+
+			<div class="divider"></div>
+
+			<form method="post" action="?/email" use:accountEmailEnhance>
+				<h3 class="text-center text-xl font-semibold">Change email address</h3>
+				<p class="mt-3 text-center text-sm text-base-content/80">
+					We’ll send a verification code to your new email before updating your account.
+				</p>
+
+				{#if syncingUpdatedEmailPasskeys}
+					<p class="mt-4 text-center text-sm text-base-content/80">Refreshing your passkeys...</p>
+				{:else if $accountEmailMessage?.type === 'success'}
+					<p class="mt-4 text-center text-sm text-success">{$accountEmailMessage.text}</p>
+				{:else if $accountEmailMessage?.type === 'rateLimited'}
+					<ChallengeRateLimitNotice
+						rateLimit={$accountEmailMessage.rateLimit}
+						onActiveChange={(isActive) => {
+							rateLimitActive = isActive;
+						}}
+						class="mt-4 text-center text-sm" />
+				{/if}
+
+				{#if $accountEmailErrors._errors}
+					{#each $accountEmailErrors._errors as error (error)}
+						<p class="mt-4 text-center text-sm text-error">{error}</p>
+					{/each}
+				{/if}
+
+				<div class="mt-4 flex flex-col gap-2">
+					<div>
+						<label for="account-email" class="label">Current email</label>
+						<input
+							id="account-email"
+							type="email"
+							autocomplete="email"
+							class="input mt-2 w-full text-base-content/60"
+							value={data.currentEmail}
+							readonly />
+					</div>
+
+					<div>
+						<EmailInput
+							superform={accountEmailSuperform}
+							field="email"
+							label="New email"
+							autocomplete="email"
+							class="mt-2 w-full" />
+					</div>
 				</div>
-			</div>
 
-			<SubmitButton class="w-full" loading={$profileDelayed}>Save name changes</SubmitButton>
-		</form>
+				<SubmitButton class="w-full" disabled={rateLimitActive} loading={$accountEmailDelayed}>
+					Verify new email
+				</SubmitButton>
+			</form>
 
-		<div class="divider"></div>
+			<div class="divider"></div>
 
-		<form method="post" action="?/email" use:accountEmailEnhance>
-			<h3 class="text-center text-xl font-semibold">Change email address</h3>
-			<p class="mt-3 text-center text-sm text-base-content/80">
-				We’ll send a verification code to your new email before updating your account.
-			</p>
-
-			{#if syncingUpdatedEmailPasskeys}
-				<p class="mt-4 text-center text-sm text-base-content/80">Refreshing your passkeys...</p>
-			{:else if $accountEmailMessage?.type === 'success'}
-				<p class="mt-4 text-center text-sm text-success">{$accountEmailMessage.text}</p>
-			{:else if $accountEmailMessage?.type === 'rateLimited'}
-				<ChallengeRateLimitNotice
-					rateLimit={$accountEmailMessage.rateLimit}
-					onActiveChange={(isActive) => {
-						rateLimitActive = isActive;
-					}}
-					class="mt-4 text-center text-sm" />
-			{/if}
-
-			{#if $accountEmailErrors._errors}
-				{#each $accountEmailErrors._errors as error (error)}
-					<p class="mt-4 text-center text-sm text-error">{error}</p>
-				{/each}
-			{/if}
-
-			<div class="mt-4 flex flex-col gap-2">
-				<div>
-					<label for="account-email" class="label">Current email</label>
-					<input
-						id="account-email"
-						type="email"
-						autocomplete="email"
-						class="input mt-2 w-full text-base-content/60"
-						value={data.currentEmail}
-						readonly />
-				</div>
-
-				<div>
-					<EmailInput
-						superform={accountEmailSuperform}
-						field="email"
-						label="New email"
-						autocomplete="email"
-						class="mt-2 w-full" />
-				</div>
-			</div>
-
-			<SubmitButton class="w-full" disabled={rateLimitActive} loading={$accountEmailDelayed}>
-				Verify new email
-			</SubmitButton>
-		</form>
-
-		<div class="divider"></div>
-
-		<a href={resolve('account/delete')} class="btn btn-block btn-outline btn-error">
-			Delete account
-		</a>
-	</fieldset>
+			<a href={resolve('account/delete')} class="btn btn-block btn-outline btn-error">
+				Delete account
+			</a>
+		</fieldset>
+	{/if}
 </div>
 
 <DevNotes>
 	<h2 class="mt-2 text-lg font-semibold">Authentication</h2>
 
 	<p class="mt-2">
-		Sensitive operations require re-authentication. If the user has not recently authenticated using their passkey we prompt them to
-		authenticate again during the save.
+		Viewing the account and saving changes require authentication within the last 10 minutes. We use
+		a registered passkey first, otherwise a confirmed TOTP authenticator. Accounts with neither skip
+		re-authentication. Saving or deleting checks again in case that window expired.
 	</p>
 
 	<h2 class="mt-2 text-lg font-semibold">Changing the email</h2>

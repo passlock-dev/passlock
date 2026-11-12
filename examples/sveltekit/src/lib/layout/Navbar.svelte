@@ -55,6 +55,7 @@
 					class="menu dropdown-content z-1 mt-1 w-52 rounded-box bg-base-200 p-2 shadow-sm group-hover:bg-base-200">
 					<li><a href={resolve('account')}>My Account</a></li>
 					<li><a href={resolve('passkeys')}>My Passkeys</a></li>
+					<li><a href={resolve('account/totp')}>My Authenticators</a></li>
 					<li><a href={resolve('logout')}>Logout</a></li>
 				</ul>
 			</div>

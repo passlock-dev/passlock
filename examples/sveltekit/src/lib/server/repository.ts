@@ -11,16 +11,16 @@ import { DrizzleQueryError } from 'drizzle-orm/errors';
 import { and, count, desc, eq } from 'drizzle-orm';
 import { LibsqlError } from '@libsql/client';
 import db from './db';
-import { passkeysTable, sessionsTable, usersTable } from './dbSchema';
-import { hashText, isEqualHash } from './hashing';
 import {
-	parseSessionToken,
-	SESSION_MAX_INACTIVE_MS,
-	SESSION_REFRESH_INTERVAL_MS,
-	SESSION_ID_LENGTH,
-	SESSION_SECRET_LENGTH
-} from './session';
-import { generateRandomString } from './utils';
+	passkeysTable,
+	sessionsTable,
+	usersTable,
+	totpAuthenticatorsTable,
+	pendingTotpLoginsTable
+} from './dbSchema';
+import { hashText, isEqualHash } from './hashing';
+import { parseSessionToken, SESSION_MAX_INACTIVE_MS, SESSION_REFRESH_INTERVAL_MS } from './session';
+import { createSessionRecord } from './sessionRecord';
 
 /**
  * Data required to create a new local user account after signup verification.
@@ -106,6 +106,7 @@ export type Session = {
 	lastVerifiedAt: number;
 	// when the last passkey based authentication took place
 	passkeyAuthenticatedAt: number | null;
+	totpAuthenticatedAt: number | null;
 };
 
 /**
@@ -272,13 +273,15 @@ export const updateUserEmail = async (
 };
 
 /**
- * Delete the local account plus all local sessions and passkey records.
+ * Delete the local account and all associated records in one transaction.
  *
- * The surrounding route flow deletes passkeys from Passlock before calling
- * this so the local transaction only needs to clean up app data.
+ * The caller must finish Passlock cleanup first. Explicit deletes also work
+ * when SQLite foreign key enforcement is disabled.
  */
 export const deleteUser = async (userId: number): Promise<boolean> => {
 	return await db.transaction(async (tx) => {
+		await tx.delete(pendingTotpLoginsTable).where(eq(pendingTotpLoginsTable.userId, userId));
+		await tx.delete(totpAuthenticatorsTable).where(eq(totpAuthenticatorsTable.userId, userId));
 		await tx.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
 		await tx.delete(passkeysTable).where(eq(passkeysTable.userId, userId));
 
@@ -434,45 +437,19 @@ export const createSession = async (
 	userId: number,
 	options?: { passkeyVerified?: boolean }
 ): Promise<CreatedSession> => {
+	// Retain the existing collision retry for ordinary session creation.
 	for (let i = 0; i < 5; i++) {
-		const sessionId = generateRandomString(SESSION_ID_LENGTH);
-		const sessionSecret = generateRandomString(SESSION_SECRET_LENGTH);
-		const secretHash = hashText(sessionSecret);
-		const token = `${sessionId}.${sessionSecret}`;
-		const now = Date.now();
-		const passkeyAuthenticatedAt = options?.passkeyVerified ? now : null;
-
 		try {
-			await db.insert(sessionsTable).values({
-				id: sessionId,
-				userId,
-				secretHash,
-				createdAt: now,
-				lastVerifiedAt: now,
-				passkeyAuthenticatedAt
-			});
-		} catch (e) {
-			if (isSqliteConstraintError(e) && e.cause.extendedCode === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
+			return await createSessionRecord(db, userId, options);
+		} catch (error) {
+			if (
+				isSqliteConstraintError(error) &&
+				error.cause.extendedCode === 'SQLITE_CONSTRAINT_PRIMARYKEY'
+			)
 				continue;
-			}
-
-			throw e;
+			throw error;
 		}
-
-		return {
-			_tag: 'CreatedSession' as const,
-			session: {
-				_tag: 'Session',
-				id: sessionId,
-				userId,
-				createdAt: now,
-				lastVerifiedAt: now,
-				passkeyAuthenticatedAt
-			},
-			token
-		};
 	}
-
 	throw new Error('Unable to create session');
 };
 
@@ -494,6 +471,7 @@ export const validateSessionToken = async (
 			createdAt: sessionsTable.createdAt,
 			lastVerifiedAt: sessionsTable.lastVerifiedAt,
 			passkeyAuthenticatedAt: sessionsTable.passkeyAuthenticatedAt,
+			totpAuthenticatedAt: sessionsTable.totpAuthenticatedAt,
 			email: usersTable.email,
 			givenName: usersTable.givenName,
 			familyName: usersTable.familyName
@@ -535,6 +513,7 @@ export const validateSessionToken = async (
 			userId: row.userId,
 			createdAt: row.createdAt,
 			passkeyAuthenticatedAt: row.passkeyAuthenticatedAt,
+			totpAuthenticatedAt: row.totpAuthenticatedAt,
 			lastVerifiedAt
 		},
 		user: {
@@ -570,4 +549,12 @@ export const invalidateSession = async (sessionId: string): Promise<void> => {
  */
 export const invalidateSessionsByUserId = async (userId: number): Promise<void> => {
 	await db.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
+};
+
+/** Refresh only the current session after verifying an owned TOTP authenticator. */
+export const refreshTotpAuthenticatedAt = async (sessionId: string): Promise<void> => {
+	await db
+		.update(sessionsTable)
+		.set({ totpAuthenticatedAt: Date.now() })
+		.where(eq(sessionsTable.id, sessionId));
 };

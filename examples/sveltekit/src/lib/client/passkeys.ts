@@ -16,7 +16,6 @@ import * as PasslockBrowser from '@passlock/browser';
 
 import {
 	DeletePasskeySuccess,
-	DeleteUserPasskeysSuccess,
 	Error,
 	PasskeyStatusSuccess,
 	AuthorizedPasskeyAuthentication,
@@ -304,64 +303,4 @@ export const deletePasskey = async (input: DeletePasskeyInput, config: PasslockC
 
 	const message = `Passkey was removed from your account but local deletion failed: ${clientResult.message}`;
 	return { _tag: ERROR_TAG, message } as const;
-};
-
-/**
- * Delete every passkey associated with the current account.
- *
- * `DELETE /passkeys` removes the trusted server-side records and returns a
- * short-lived token. The browser exchanges that token to request local cleanup.
- * Browser limitations are reported as warnings so account deletion can continue.
- */
-export const deleteAccountPasskeys = async (config: PasslockClientConfig) => {
-	const ERROR_TAG = '@error/DeletePasskeyError';
-	const PAUSED_TAG = '@warning/PasskeyDeletePaused';
-
-	const serverResult = await fetchData({
-		url: resolve('passkeys'),
-		method: 'DELETE',
-		body: { scope: 'user' },
-		on2xx: (jsonResponse) => parse(DeleteUserPasskeysSuccess, jsonResponse),
-		orElse: (jsonResponse) => {
-			const { message } = parse(Error, jsonResponse);
-			return { _tag: ERROR_TAG, message } as const;
-		}
-	});
-
-	// If this fails, the account would still trust one or more passkeys.
-	if (serverResult._tag === ERROR_TAG) {
-		return serverResult;
-	}
-
-	const clientResult = await PasslockBrowser.deletePasskeys(
-		{ deletePasskeysToken: serverResult.deletePasskeysToken },
-		config
-	);
-
-	if (clientResult.success && clientResult.warnings.length === 0) {
-		return { _tag: 'DeleteSuccess' } as const;
-	}
-
-	if (clientResult.success) {
-		return {
-			_tag: PAUSED_TAG,
-			message:
-				'Passkeys were removed from your account, but browser cleanup returned warnings. ' +
-				'Remove any remaining passkeys manually from your device password manager after ' +
-				'the account is deleted.'
-		} as const;
-	}
-
-	if (clientResult.code === 'PASSKEY_DELETION_UNSUPPORTED') {
-		return {
-			_tag: PAUSED_TAG,
-			message:
-				'Passkeys were removed from your account, but this browser cannot delete them ' +
-				'programmatically. Remove them manually from your device password manager after ' +
-				'the account is deleted.'
-		} as const;
-	} else {
-		const message = `Passkeys were removed from your account but local deletion failed: ${clientResult.message}`;
-		return { _tag: ERROR_TAG, message } as const;
-	}
 };

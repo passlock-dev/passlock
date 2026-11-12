@@ -3,31 +3,30 @@
 	import svelteLogo from '#lib/assets/svelte-logo.svg';
 	import Mail from '@lucide/svelte/icons/mail';
 	import Database from '@lucide/svelte/icons/database';
-	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import Smartphone from '@lucide/svelte/icons/smartphone';
+	import Hourglass from '@lucide/svelte/icons/hourglass';
+	import ShieldEllipsis from '@lucide/svelte/icons/shield-ellipsis';
 	import PasskeyIcon from '#lib/components/PasskeyIcon.svelte';
 
 	const features = [
 		{
-			icon: Smartphone,
-			title: 'Local device updates',
-			description: "Update passkeys on a user's device to reflect account username/email changes"
+			icon: ShieldEllipsis,
+			title: 'TOTP Authenticators',
+			description: "Supports Google Authenticator, Authy and other TOTP based authenticators."
 		},
 		{
-			icon: Trash2,
-			title: 'Local passkey deletion',
-			description:
-				"Prevent orphaned passkeys by deleting stale passkeys from the user's passkey manager"
+			icon: Mail,
+			title: 'Mailbox verification',
+			description: 'Single use email codes for account verification, recovery and sign in.'
+		},
+		{
+			icon: Hourglass,
+			title: 'Rate limiting',
+			description: "Rate limiting and other controls to prevent brute force and denial of service attacks."
 		},
 		{
 			icon: Database,
 			title: 'Session management',
-			description: 'Lucia style sessions offer power and flexibility, with no framework lock-in'
-		},
-		{
-			icon: Mail,
-			title: 'One time codes',
-			description: 'Email based one time codes for mailbox verification and account recovery'
+			description: 'Lucia style sessions offer power and flexibility, with no framework lock-in.'
 		}
 	];
 </script>
@@ -77,9 +76,14 @@
 							Advanced passkeys
 						</h3>
 						<p class="text-sm leading-6 text-base-content/75">
-							Passkey registration, authentication and management. Plus support for
-							<a class="text-primary underline" href="https://passlock.dev/passkeys/autofill/">autofill</a> and
-							<a class="text-primary underline" href="https://passlock.dev/passkeys/authentication-patterns/#single-factor-two-step-authentication">two-step</a> login
+							Passkey registration, authentication and management. Support for
+							<a class="text-primary underline" href="https://passlock.dev/passkeys/autofill/">
+								autofill
+							</a>, <a class="text-primary underline" href="https://passlock.dev/passkeys/roaming-authenticators/">
+							  roaming authenticators
+							</a>, <a class="text-primary underline" href="https://passlock.dev/passkeys/credential-updates/">
+							  device management
+							</a>, plus many other features.
 						</p>
 					</div>
 				</article>

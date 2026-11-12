@@ -50,10 +50,10 @@
 </script>
 
 <div class="flex h-full w-full items-center justify-center">
-	<div class="rounded-lg bg-base-200 p-10 pt-8">
+	<div class="rounded-lg bg-base-200 p-10 pt-8 max-w-sm">
 		<h2 class="text-center text-xl font-semibold">Login using your passkey</h2>
 
-		<p class="mt-3 w-xs text-center text-sm text-base-content/80">
+		<p class="mt-3 text-center text-sm text-base-content/80">
 			Use your device passkey to sign in without waiting for an email code.
 		</p>
 
@@ -66,18 +66,19 @@
 		{/if}
 
 		<div class="mt-4 text-center text-sm">
-			Need email login instead?
 			{#if data.username}
 				<form method="get" action={resolve('login/email')} class="inline">
 					<input type="hidden" name="username" value={data.username} />
-
 					<button type="submit" class="ml-1 cursor-pointer text-primary hover:underline">
-						Use an emailed code
+						Email me a login code
 					</button>
 				</form>
 			{:else}
-				<Link href={resolve('login')} class="ml-1">Use an emailed code</Link>
+				<Link href={resolve('login')} class="ml-1">Email me a login code</Link>
 			{/if}
+		</div>
+		<div class="mt-1 text-center text-sm text-base-content/70">
+			Email sign-in also requires an authenticator code if you’ve enrolled an authenticator.
 		</div>
 	</div>
 </div>

@@ -1,3 +1,9 @@
+import { totpStore } from '#lib/server/totpRuntime.js';
+import {
+	deleteSessionTokenCookie,
+	deleteTotpLoginCookie,
+	setTotpLoginCookie
+} from '#lib/server/cookies.js';
 import type { Actions, PageServerLoad } from './$types';
 import type { Cookies } from '@sveltejs/kit';
 
@@ -13,7 +19,7 @@ import {
 	getPendingLoginChallenge
 } from '#lib/server/mailbox/loginChallenge.js';
 import { createVerifyCodeForm, validateVerifyCodeForm } from '#lib/server/mailbox/verifyCode.js';
-import { countPasskeysByUserId, createSession } from '#lib/server/repository.js';
+import { countPasskeysByUserId, invalidateSession } from '#lib/server/repository.js';
 import { resolve } from '$app/paths';
 import { fail, redirect } from '@sveltejs/kit';
 import { setError } from 'sveltekit-superforms';
@@ -50,7 +56,7 @@ export const load = (async ({ locals, cookies }) => {
 }) satisfies PageServerLoad;
 
 export const actions = {
-	verify: async ({ request, cookies }) => {
+	verify: async ({ request, cookies, locals }) => {
 		const verifyForm = await validateVerifyCodeForm(request);
 
 		if (!verifyForm.valid) return fail(400, { verifyForm });
@@ -77,8 +83,17 @@ export const actions = {
 		if (result._tag === 'ChallengeConsumed') {
 			deleteSignupLoginCookie(cookies);
 
-			const { token: sessionToken } = await createSession(result.user.userId);
-			setSessionTokenCookie(cookies, sessionToken);
+			// A verified email is only the first factor when this account requires TOTP.
+			// The database checks policy atomically with issuing either kind of token.
+			if (locals.session) await invalidateSession(locals.session.id);
+			deleteSessionTokenCookie(cookies);
+			deleteTotpLoginCookie(cookies);
+			const login = await totpStore.beginEmailLogin(result.user.userId);
+			if (login.kind === 'pending') {
+				setTotpLoginCookie(cookies, login.token, login.expiresAt);
+				redirect(303, resolve('login/totp'));
+			}
+			setSessionTokenCookie(cookies, login.token);
 
 			// First-time email-only users are nudged to register a passkey after
 			// login; existing passkey users go straight to the app.

@@ -60,6 +60,12 @@ describe("public surface", () => {
       | "listPasskeys"
       | "exchangeCode"
       | "verifyIdToken"
+      | "createTotpAuthenticator"
+      | "confirmTotpAuthenticator"
+      | "verifyTotp"
+      | "getTotpAuthenticator"
+      | "listTotpAuthenticators"
+      | "deleteTotpAuthenticator"
     type ParameterChecks = {
       [Name in MethodName]: IsEqual<
         Parameters<Passlock[Name]>,

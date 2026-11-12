@@ -1,6 +1,6 @@
 {
   "name": "passlock",
-  "version": "2.11.1",
+  "version": "2.12.0",
   "private": true,
   "description": "Passlock monorepo root",
   "keywords": [
@@ -39,5 +39,5 @@
     "tsx": "catalog:",
     "typescript": "catalog:"
   },
-  "packageManager": "pnpm@12.18.0"
+  "packageManager": "pnpm@12.23.0"
 }

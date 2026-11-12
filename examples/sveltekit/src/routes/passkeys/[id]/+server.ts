@@ -1,3 +1,4 @@
+import { getAccountContext } from '#lib/server/account.js';
 import { getPasslockConfig } from '#lib/server/passkeys.js';
 import { deletePasskeyByUserId, getUserByPasskeyId } from '#lib/server/repository.js';
 import { DeletePasskeySuccess } from '#lib/shared/schemas.js';
@@ -30,6 +31,10 @@ export const DELETE: RequestHandler = async (event) => {
 	if (!associatedUser || associatedUser.userId !== event.locals.user.userId) {
 		return errorResponse('Passkey not found for this account.', 404);
 	}
+
+	const context = await getAccountContext(event.locals);
+	if (!context || context.reauthenticationRequired)
+		return errorResponse('Confirm your passkey before deleting passkeys.', 403);
 
 	// Remove the credential from the Passlock vault first so the account stops
 	// trusting it, and snapshot browser cleanup data into a prepared token.

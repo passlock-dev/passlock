@@ -169,7 +169,8 @@ export const DELETE: RequestHandler = async (event) => {
 		return errorResponse('Confirm your passkey before deleting passkeys.', 403);
 	}
 
-	// Account deletion reuses this endpoint to clear server-side passkeys first.
+	// This endpoint is for passkey-only removal. Account deletion uses the
+	// combined credential deletion API so TOTP cleanup commits with passkeys.
 	const vaultResult = await PasslockServer.deletePasskeys(
 		{
 			userId: String(context.user.userId)

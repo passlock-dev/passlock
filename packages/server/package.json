@@ -1,6 +1,6 @@
 {
   "name": "@passlock/server",
-  "version": "2.11.1",
+  "version": "2.12.0",
   "description": "Passkey authentication library for Fetch capable backends (Node, Bun, Vercel, Cloudflare workers etc.)",
   "keywords": [
     "passkey",
@@ -68,7 +68,7 @@
   },
   "dependencies": {
     "effect": "catalog:",
-    "jose": "^6.2.12"
+    "jose": "^6.2.18"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

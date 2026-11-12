@@ -1,3 +1,4 @@
+import { getAccountContext } from '#lib/server/account.js';
 import { getPasslockConfig } from '#lib/server/passkeys.js';
 import {
 	countPasskeysByUserId,
@@ -48,6 +49,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		return errorResponse(principal.message, status);
 	}
 
+	if (
+		principal.userId !== String(locals.user.userId) ||
+		!principal.passkey?.verified ||
+		!principal.passkey.userVerified
+	) {
+		return errorResponse('A verified passkey belonging to this account is required.', 403);
+	}
 	// Re-authentication is only valid when the presented passkey still belongs
 	// to the signed-in account.
 	const user = await getUserByPasskeyId(principal.authenticatorId);
@@ -60,4 +68,18 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	await refreshPasskeyAuthenticatedAt(locals.session.id);
 
 	return json({ success: true });
+};
+
+/** Account-specific policy; authenticator management retains its existing passkey policy. */
+export const GET: RequestHandler = async ({ locals }) => {
+	const context = await getAccountContext(locals);
+	if (!context) return errorResponse('Authentication required.', 401);
+	return json(
+		{
+			required: context.accountReauthenticationRequired,
+			method: context.reauthenticationMethod,
+			credentials: context.totpCredentials
+		},
+		{ headers: { 'Cache-Control': 'no-store' } }
+	);
 };

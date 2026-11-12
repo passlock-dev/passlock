@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ReauthenticationGate from '#lib/components/ReauthenticationGate.svelte';
 	import { invalidate } from '$app/navigation';
 	import { registerPasskey, deletePasskey } from '#lib/client/passkeys.js';
 	import { KeyRound, Loader, Trash2 } from '@lucide/svelte';
@@ -66,76 +67,78 @@
 	<title>My Passkeys</title>
 </svelte:head>
 
-<div class="flex h-full w-full flex-col items-center justify-center">
-	<div class="flex w-full max-w-sm flex-col gap-2">
-		<div class="rounded-lg bg-base-200 p-10 pt-8">
-			<h2 class="text-center text-xl font-semibold">Create a passkey</h2>
-			<p class="mt-3 w-xs text-center text-sm text-base-content/80">
-				Create a passkey to sign in faster and without waiting for an email code.
-			</p>
+<ReauthenticationGate config={data} pageName="your passkeys">
+	<div class="flex h-full w-full flex-col items-center justify-center">
+		<div class="flex w-full max-w-sm flex-col gap-2">
+			<div class="rounded-lg bg-base-200 p-10 pt-8">
+				<h2 class="text-center text-xl font-semibold">Create a passkey</h2>
+				<p class="mt-3 w-xs text-center text-sm text-base-content/80">
+					Create a passkey to sign in faster and without waiting for an email code.
+				</p>
 
-			<SubmitButton
-				class="mt-6 w-full"
-				onclick={createPasskey}
-				{loading}
-				disabled={loading || deletingPasskeyId !== null}>
-				Create a passkey
-			</SubmitButton>
+				<SubmitButton
+					class="mt-6 w-full"
+					onclick={createPasskey}
+					{loading}
+					disabled={loading || deletingPasskeyId !== null}>
+					Create a passkey
+				</SubmitButton>
 
-			{#if info}
-				<p class="mt-4 text-sm text-success">{info}</p>
-			{/if}
+				{#if info}
+					<p class="mt-4 text-sm text-success">{info}</p>
+				{/if}
 
-			{#if warning}
-				<p class="mt-4 text-sm text-warning">{warning}</p>
-			{/if}
+				{#if warning}
+					<p class="mt-4 text-sm text-warning">{warning}</p>
+				{/if}
 
-			{#if error}
-				<p class="mt-4 text-sm text-error">{error}</p>
-			{/if}
-		</div>
+				{#if error}
+					<p class="mt-4 text-sm text-error">{error}</p>
+				{/if}
+			</div>
 
-		<ul class="list rounded-box bg-base-200 shadow-md">
-			<li class="p-4 pb-2 text-xs tracking-wide opacity-60">Your passkeys</li>
+			<ul class="list rounded-box bg-base-200 shadow-md">
+				<li class="p-4 pb-2 text-xs tracking-wide opacity-60">Your passkeys</li>
 
-			{#if passkeys.length === 0}
-				<li class="list-row">
-					<div class="text-sm opacity-70">No passkeys yet.</div>
-				</li>
-			{:else}
-				{#each passkeys as passkey (passkey.passkeyId)}
+				{#if passkeys.length === 0}
 					<li class="list-row">
-						<div>
-							{#if passkey.platformIcon}
-								<img class="size-10 rounded-box" src={passkey.platformIcon} alt="" />
-							{:else}
-								<KeyRound class="size-10 rounded-box" />
-							{/if}
-						</div>
-						<div>
-							<div class="font-mono text-sm">{passkey.username ?? passkey.passkeyId}</div>
-							<div class="mt-1 text-xs font-semibold uppercase opacity-60">
-								{passkey.platformName ?? 'Unknown Platform'}
-							</div>
-						</div>
-						<button
-							type="button"
-							class="btn btn-square btn-ghost"
-							aria-label="Delete passkey"
-							disabled={loading || deletingPasskeyId === passkey.passkeyId}
-							onclick={() => removePasskey(passkey.passkeyId)}>
-							{#if deletingPasskeyId === passkey.passkeyId}
-								<Loader class="animate-spin duration-[4s]" />
-							{:else}
-								<Trash2 />
-							{/if}
-						</button>
+						<div class="text-sm opacity-70">No passkeys yet.</div>
 					</li>
-				{/each}
-			{/if}
-		</ul>
+				{:else}
+					{#each passkeys as passkey (passkey.passkeyId)}
+						<li class="list-row">
+							<div>
+								{#if passkey.platformIcon}
+									<img class="size-10 rounded-box" src={passkey.platformIcon} alt="" />
+								{:else}
+									<KeyRound class="size-10 rounded-box" />
+								{/if}
+							</div>
+							<div>
+								<div class="font-mono text-sm">{passkey.username ?? passkey.passkeyId}</div>
+								<div class="mt-1 text-xs font-semibold uppercase opacity-60">
+									{passkey.platformName ?? 'Unknown Platform'}
+								</div>
+							</div>
+							<button
+								type="button"
+								class="btn btn-square btn-ghost"
+								aria-label="Delete passkey"
+								disabled={loading || deletingPasskeyId === passkey.passkeyId}
+								onclick={() => removePasskey(passkey.passkeyId)}>
+								{#if deletingPasskeyId === passkey.passkeyId}
+									<Loader class="animate-spin duration-[4s]" />
+								{:else}
+									<Trash2 />
+								{/if}
+							</button>
+						</li>
+					{/each}
+				{/if}
+			</ul>
+		</div>
 	</div>
-</div>
+</ReauthenticationGate>
 
 <DevNotes>
 	<p>

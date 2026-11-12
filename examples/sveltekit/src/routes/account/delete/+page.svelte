@@ -1,77 +1,44 @@
 <script lang="ts">
+	import AccountReauthentication from '#lib/components/AccountReauthentication.svelte';
 	import { resolve } from '$app/paths';
-	import { deleteAccountPasskeys } from '#lib/client/passkeys.js';
 	import { reAuthenticateIfNecessary } from '../utils.js';
 	import { superForm } from 'sveltekit-superforms';
 	import { valibotClient } from 'sveltekit-superforms/adapters';
-	import type { SuperFormErrors } from 'sveltekit-superforms/client';
 	import type { PageProps } from './$types';
 	import { deleteAccountSchema } from './schema.js';
 	import { Loader } from '@lucide/svelte';
 
 	let { data }: PageProps = $props();
+	let reauthentication: AccountReauthentication;
 	let passkeyCount = $derived(data.passkeyCount);
 
-	let warning = $state('');
-	let deletingPasskeys = $state(false);
-
-	type FormErrors = SuperFormErrors<Record<string, unknown>>;
-
-	const setFormError = (formErrors: FormErrors, message: string) => {
-		formErrors.update((current) => ({ ...current, _errors: [message] }));
-	};
-
 	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance, delayed, validateForm } = superForm(data.form, {
+	const { form, errors, enhance, delayed, submitting, validateForm } = superForm(data.form, {
 		applyAction: true,
 		invalidateAll: 'pessimistic',
 		validators: valibotClient(deleteAccountSchema),
 		onSubmit: async ({ cancel }) => {
-			warning = '';
-
-			const config = {
-				tenancyId: data.tenancyId,
-				endpoint: data.endpoint
-			};
-
-			// Account deletion is sensitive, so reuse the same passkey re-auth
+			// Account deletion is sensitive, so reuse the same account re-auth
 			// helper used by the profile/email forms before allowing submission.
 			const authResult = await reAuthenticateIfNecessary(
 				{
 					errors,
 					validateForm: () => validateForm({ update: true })
 				},
-				config
+				() => reauthentication.confirm()
 			);
 
 			if (authResult._tag === '@error/ReAuthenticationFailure') {
 				cancel();
 				return;
 			}
-
-			// Accounts without passkeys can submit immediately once the form is
-			// valid.
-			if (authResult.passkeyCount === 0) return;
-
-			// Clear trusted passkeys before the account record itself is deleted.
-			deletingPasskeys = true;
-			const result = await deleteAccountPasskeys(config);
-			deletingPasskeys = false;
-
-			if (result._tag === '@error/DeletePasskeyError') {
-				setFormError(errors, result.message);
-				cancel();
-				return;
-			}
-
-			// Browser/device cleanup is best-effort. Keep the user informed, but do
-			// not block account deletion once the server-side records are gone.
-			if (result._tag === '@warning/PasskeyDeletePaused') {
-				warning = result.message;
-			}
 		}
 	});
 </script>
+
+<AccountReauthentication
+	bind:this={reauthentication}
+	config={{ tenancyId: data.tenancyId, endpoint: data.endpoint }} />
 
 <svelte:head>
 	<title>Delete Account</title>
@@ -82,21 +49,16 @@
 		<h2 class="text-center text-xl font-semibold">Delete account</h2>
 		<p class="mt-3 text-center text-sm text-base-content/80">
 			This permanently deletes <span class="font-semibold">{data.user.email}</span>
-			and signs you out everywhere.
+			and all associated authenticators, and signs you out everywhere.
 		</p>
 		<p class="mt-2 text-center text-sm text-base-content/80">
 			{#if passkeyCount === 0}
 				Your local account data and sessions will be removed immediately.
 			{:else}
 				We will delete {passkeyCount} linked {passkeyCount === 1 ? 'passkey' : 'passkeys'}
-				from Passlock first. Some browsers may still require you to remove them manually from your password
-				manager afterwards.
+				from Passlock. Remove any remaining copies manually from your password manager afterwards.
 			{/if}
 		</p>
-
-		{#if warning}
-			<p class="mt-4 text-sm text-warning">{warning}</p>
-		{/if}
 
 		{#if $errors._errors}
 			{#each $errors._errors as error (error)}
@@ -115,8 +77,8 @@
 		<div class="mt-6 flex gap-3">
 			<a href={resolve('account')} class="btn flex-1 btn-neutral">Cancel</a>
 
-			<button class="btn flex-1 btn-error" disabled={deletingPasskeys}>
-				{#if $delayed || deletingPasskeys}
+			<button class="btn flex-1 btn-error" disabled={$submitting}>
+				{#if $delayed}
 					<Loader class="animate-spin duration-[4s]" />
 				{:else}
 					Delete account

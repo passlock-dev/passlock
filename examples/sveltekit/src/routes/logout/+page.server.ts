@@ -1,3 +1,5 @@
+import { totpStore } from '#lib/server/totpRuntime.js';
+import { TOTP_LOGIN_COOKIE_NAME, deleteTotpLoginCookie } from '#lib/server/cookies.js';
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { invalidateSession } from '#lib/server/repository.js';
@@ -15,6 +17,9 @@ export const actions = {
 			await invalidateSession(locals.session.id);
 		}
 
+		const pending = cookies.get(TOTP_LOGIN_COOKIE_NAME);
+		if (pending) await totpStore.cancelLogin(pending);
+		deleteTotpLoginCookie(cookies);
 		deleteSessionTokenCookie(cookies);
 		redirect(303, '/');
 	}

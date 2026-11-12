@@ -136,3 +136,22 @@ export const deleteSessionTokenCookie = (cookies: Cookies): void => {
 		maxAge: 0
 	});
 };
+
+/* Restricted email-login state: this cookie is never accepted as a session. */
+export const TOTP_LOGIN_COOKIE_NAME = dev ? 'demo.totp-login' : '__Host-totp-login';
+export const setTotpLoginCookie = (cookies: Cookies, token: string, expiresAt: number) =>
+	cookies.set(TOTP_LOGIN_COOKIE_NAME, token, {
+		path: '/',
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: !dev,
+		expires: new Date(expiresAt)
+	});
+export const deleteTotpLoginCookie = (cookies: Cookies) =>
+	cookies.set(TOTP_LOGIN_COOKIE_NAME, '', {
+		path: '/',
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: !dev,
+		maxAge: 0
+	});

@@ -2,6 +2,12 @@
   "$schema": "https://typedoc.org/schema.json",
   "name": "@passlock/server",
   "entryPoints": ["src/index.ts"],
+  "excludeExternals": true,
+  "intentionallyNotExported": [
+    "src/schemas/errors.ts:BadRequestError",
+    "src/schemas/errors.ts:ForbiddenError",
+    "src/schemas/errors.ts:UnauthorizedError"
+  ],
   "plugin": ["typedoc-plugin-markdown"],
   "outputs": [
     {
@@ -30,7 +36,7 @@
   "categorizeByGroup": false,
   "readme": "none",
   "cleanOutputDir": true,
-  "categoryOrder": ["Clients", "Passkeys", "Principal", "Mailbox", "Authentication", "*"],
+  "categoryOrder": ["Clients", "Passkeys", "Principal", "Mailbox", "TOTP", "Authentication", "*"],
   "groupOrder": ["Functions", "Interfaces", "Classes", "*"],
   "sort": ["kind", "instance-first", "source-order"],
   "navigationLinks": {

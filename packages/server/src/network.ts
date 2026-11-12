@@ -30,6 +30,8 @@ export type NetworkHeaders = Headers | Readonly<Record<string, string>> | Array<
  * Optional request options for {@link fetchNetwork}.
  */
 export interface FetchNetworkOptions {
+  /** Optional redirect policy for sensitive, single-shot requests. */
+  readonly redirect?: RequestRedirect
   readonly headers?: NetworkHeaders
 }
 
@@ -321,6 +323,7 @@ export const fetchNetwork = (
       try: () =>
         fetchImpl(requestUrl, {
           method: method.toUpperCase(),
+          ...(options?.redirect ? { redirect: options.redirect } : {}),
           ...(hasHeaders ? { headers: requestHeaders } : {}),
           ...(serialized
             ? {

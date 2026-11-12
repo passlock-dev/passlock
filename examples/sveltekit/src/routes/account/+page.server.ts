@@ -44,10 +44,10 @@ const authenticationRequired = (
 ) => {
 	switch (formToDisplayError) {
 		case 'profile':
-			setError(profileForm, 'Confirm your passkey before saving account changes.');
+			setError(profileForm, 'Confirm your identity before saving account changes.');
 			break;
 		case 'email':
-			setError(accountEmailForm, 'Confirm your passkey before saving account changes.');
+			setError(accountEmailForm, 'Confirm your identity before saving account changes.');
 			break;
 	}
 
@@ -116,7 +116,11 @@ export const load = (async ({ locals, url }) => {
 
 export const actions = {
 	profile: async ({ request, locals }) => {
-		const { user, hasPasskeys, reauthenticationRequired } = await requireAccountContext(locals);
+		const {
+			user,
+			hasPasskeys,
+			accountReauthenticationRequired: reauthenticationRequired
+		} = await requireAccountContext(locals);
 
 		const accountEmailForm = await createAccountEmailForm(undefined, { errors: false });
 		const profileForm = await superValidate(request, valibot(ProfileSchema), {
@@ -155,7 +159,11 @@ export const actions = {
 		return message(profileForm, 'Account details updated');
 	},
 	email: async ({ request, locals, cookies }) => {
-		const { user, hasPasskeys, reauthenticationRequired } = await requireAccountContext(locals);
+		const {
+			user,
+			hasPasskeys,
+			accountReauthenticationRequired: reauthenticationRequired
+		} = await requireAccountContext(locals);
 
 		const profileForm = await createProfileForm({
 			givenName: user.givenName,
@@ -189,7 +197,7 @@ export const actions = {
 
 		if (reauthenticationRequired) {
 			// Changing the sign-in email is sensitive, so it requires a recent
-			// passkey confirmation when the account has passkeys.
+			// passkey confirmation, or TOTP when no passkey is registered.
 			return authenticationRequired(profileForm, accountEmailForm, 'email', user, hasPasskeys);
 		}
 

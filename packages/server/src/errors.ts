@@ -316,3 +316,101 @@ export type BadRequestError = {
  * @category Validation
  */
 export const isBadRequestError = isTagged<BadRequestError>("@error/BadRequest")
+
+/** The submitted code did not match any time step in the verification window.
+ * @category TOTP
+ */
+export type InvalidTotpCodeError = { _tag: "@error/InvalidTotpCode"; message: string }
+
+/** Type guard for {@link InvalidTotpCodeError}.
+ * @category TOTP
+ */
+export const isInvalidTotpCodeError = isTagged<InvalidTotpCodeError>("@error/InvalidTotpCode")
+
+/** The matching TOTP step was already consumed or invalidated by a later accepted step.
+ * @category TOTP
+ */
+export type TotpCodeAlreadyUsedError = { _tag: "@error/TotpCodeAlreadyUsed"; message: string }
+
+/** Type guard for {@link TotpCodeAlreadyUsedError}.
+ * @category TOTP
+ */
+export const isTotpCodeAlreadyUsedError = isTagged<TotpCodeAlreadyUsedError>(
+  "@error/TotpCodeAlreadyUsed"
+)
+
+/** The enrollment deadline has passed; start a new enrollment.
+ * @category TOTP
+ */
+export type TotpEnrollmentExpiredError = { _tag: "@error/TotpEnrollmentExpired"; message: string }
+
+/** Type guard for {@link TotpEnrollmentExpiredError}.
+ * @category TOTP
+ */
+export const isTotpEnrollmentExpiredError = isTagged<TotpEnrollmentExpiredError>(
+  "@error/TotpEnrollmentExpired"
+)
+
+/** Verification was attempted with a pending or suspended authenticator.
+ * @category TOTP
+ */
+export type TotpAuthenticatorNotActiveError = {
+  _tag: "@error/TotpAuthenticatorNotActive"
+  message: string
+}
+
+/** Type guard for {@link TotpAuthenticatorNotActiveError}.
+ * @category TOTP
+ */
+export const isTotpAuthenticatorNotActiveError = isTagged<TotpAuthenticatorNotActiveError>(
+  "@error/TotpAuthenticatorNotActive"
+)
+
+/** An active authenticator cannot be confirmed again.
+ * @category TOTP
+ */
+export type TotpAuthenticatorAlreadyActiveError = {
+  _tag: "@error/TotpAuthenticatorAlreadyActive"
+  message: string
+}
+
+/** Type guard for {@link TotpAuthenticatorAlreadyActiveError}.
+ * @category TOTP
+ */
+export const isTotpAuthenticatorAlreadyActiveError = isTagged<TotpAuthenticatorAlreadyActiveError>(
+  "@error/TotpAuthenticatorAlreadyActive"
+)
+
+/** The user has reached the active or pending authenticator quota.
+ * @category TOTP
+ */
+export type TotpAuthenticatorLimitError = {
+  _tag: "@error/TotpAuthenticatorLimit"
+  message: string
+  /** Maximum number of authenticators of this kind per user. */
+  limit: number
+  /** The quota that was reached. */
+  kind: "active" | "pending"
+}
+
+/** Type guard for {@link TotpAuthenticatorLimitError}.
+ * @category TOTP
+ */
+export const isTotpAuthenticatorLimitError = isTagged<TotpAuthenticatorLimitError>(
+  "@error/TotpAuthenticatorLimit"
+)
+
+/** The request was throttled. Wait `retryAfterSeconds` before another attempt.
+ * @category TOTP
+ */
+export type TotpRateLimitedError = {
+  _tag: "@error/TotpRateLimited"
+  message: string
+  /** Positive integer seconds to wait before another attempt. */
+  retryAfterSeconds: number
+}
+
+/** Type guard for {@link TotpRateLimitedError}.
+ * @category TOTP
+ */
+export const isTotpRateLimitedError = isTagged<TotpRateLimitedError>("@error/TotpRateLimited")

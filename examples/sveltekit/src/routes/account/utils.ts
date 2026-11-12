@@ -1,88 +1,21 @@
 import type { SuperFormErrors } from 'sveltekit-superforms/client';
-import {
-	authenticatePasskey,
-	getPasskeyStatus,
-	authorizePasskeyAuthentication,
-	type PasslockClientConfig
-} from '#lib/client/passkeys.js';
-import { resolve } from '$app/paths';
 
-type FormErrors = SuperFormErrors<Record<string, unknown>>;
-
-const clearFormErrors = (errors: FormErrors) => {
-	errors.update((current) => ({ ...current, _errors: undefined }));
-};
-
-const setFormError = (errors: FormErrors, message: string) => {
-	errors.update((current) => ({ ...current, _errors: [message] }));
-};
-
-/**
- * Ensure the current account action has a recent passkey confirmation.
- *
- * The server owns the real authorization check. This helper just performs the
- * client-side prompt when needed. The prompt uses an authorized token from
- * `/account/re-authenticate/authorize`, then posts the resulting Passlock code
- * to `/account/re-authenticate`, which refreshes the session's
- * `passkeyAuthenticatedAt` timestamp.
- *
- * If the user authenticated recently or has no passkeys, this is a no-op.
- */
+/** Validate before prompting, then recheck freshness without losing the user's form input. */
 export const reAuthenticateIfNecessary = async (
 	input: {
-		errors: FormErrors;
+		errors: SuperFormErrors<Record<string, unknown>>;
 		validateForm: () => Promise<{ valid: boolean }>;
 	},
-	config: PasslockClientConfig
+	confirm: () => Promise<boolean>
 ) => {
-	clearFormErrors(input.errors);
+	input.errors.update((current) => ({ ...current, _errors: undefined }));
 	const error = { _tag: '@error/ReAuthenticationFailure' as const };
-
-	// Avoid prompting for a passkey when the form would fail validation anyway.
 	const validation = await input.validateForm();
 	if (!validation.valid) return error;
-
-	// Ask the server whether this session still falls inside the re-auth window.
-	const passkeyStatus = await getPasskeyStatus();
-	if (passkeyStatus._tag === '@error/PasskeyStatusError') {
-		setFormError(input.errors, passkeyStatus.message);
-		return error;
-	}
-
-	// No passkeys or a still-fresh passkey login means the action can proceed.
-	if (passkeyStatus.passkeyCount === 0 || !passkeyStatus.reauthenticationRequired) {
-		return {
-			_tag: 'ReAuthenticationSuccess',
-			passkeyCount: passkeyStatus.passkeyCount
-		} as const;
-	}
-
-	const authorizedAuthentication = await authorizePasskeyAuthentication({
-		url: resolve('account/re-authenticate/authorize')
-	});
-
-	if (authorizedAuthentication._tag === '@error/AuthorizePasskeyAuthenticationError') {
-		setFormError(input.errors, authorizedAuthentication.message);
-		return error;
-	}
-
-	// Let the browser authenticate with the authorized token, then let the server
-	// refresh the re-auth timestamp for the current session.
-	const result = await authenticatePasskey(
-		{
-			authenticationToken: authorizedAuthentication.authenticationToken,
-			verificationRoute: resolve('account/re-authenticate')
-		},
-		config
-	);
-
-	if (result._tag === 'PasslockLoginSuccess') {
-		return {
-			_tag: 'ReAuthenticationSuccess',
-			passkeyCount: passkeyStatus.passkeyCount
-		} as const;
-	}
-
-	setFormError(input.errors, result.message);
+	if (await confirm()) return { _tag: 'ReAuthenticationSuccess' as const };
+	input.errors.update((current) => ({
+		...current,
+		_errors: ['Confirm your identity to continue. If your session expired, sign in again.']
+	}));
 	return error;
 };

@@ -199,3 +199,49 @@ export class BadRequestError extends Schema.TaggedError<BadRequestError>()("@err
 /** @internal */
 export const isBadRequestError = (payload: unknown): payload is BadRequestError =>
   Schema.is(BadRequestError)(payload)
+
+/** @internal */
+export class InvalidTotpCodeError extends Schema.TaggedError<InvalidTotpCodeError>()(
+  "@error/InvalidTotpCode",
+  { message: Schema.String }
+) {}
+
+/** @internal */
+export class TotpCodeAlreadyUsedError extends Schema.TaggedError<TotpCodeAlreadyUsedError>()(
+  "@error/TotpCodeAlreadyUsed",
+  { message: Schema.String }
+) {}
+
+/** @internal */
+export class TotpEnrollmentExpiredError extends Schema.TaggedError<TotpEnrollmentExpiredError>()(
+  "@error/TotpEnrollmentExpired",
+  { message: Schema.String }
+) {}
+
+/** @internal */
+export class TotpAuthenticatorNotActiveError extends Schema.TaggedError<TotpAuthenticatorNotActiveError>()(
+  "@error/TotpAuthenticatorNotActive",
+  { message: Schema.String }
+) {}
+
+/** @internal */
+export class TotpAuthenticatorAlreadyActiveError extends Schema.TaggedError<TotpAuthenticatorAlreadyActiveError>()(
+  "@error/TotpAuthenticatorAlreadyActive",
+  { message: Schema.String }
+) {}
+
+/** @internal */
+export class TotpAuthenticatorLimitError extends Schema.TaggedError<TotpAuthenticatorLimitError>()(
+  "@error/TotpAuthenticatorLimit",
+  {
+    message: Schema.String,
+    limit: Schema.Int.check(Schema.isGreaterThan(0)),
+    kind: Schema.Literals(["active", "pending"]),
+  }
+) {}
+
+/** @internal */
+export class TotpRateLimitedError extends Schema.TaggedError<TotpRateLimitedError>()(
+  "@error/TotpRateLimited",
+  { message: Schema.String, retryAfterSeconds: Schema.Int.check(Schema.isGreaterThan(0)) }
+) {}

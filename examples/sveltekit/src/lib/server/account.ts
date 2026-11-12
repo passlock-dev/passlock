@@ -5,6 +5,7 @@
 import { resolve } from '$app/paths';
 import { redirect } from '@sveltejs/kit';
 import { findPasskeysByUserId, type Session, type SessionUser } from './repository.js';
+import { totpStore } from './totpRuntime.js';
 import { isRecentAuthentication } from './session.js';
 
 /**
@@ -21,7 +22,12 @@ export type AccountContext = {
 	session: Session;
 	passkeyIds: string[];
 	hasPasskeys: boolean;
+	/** Existing passkey policy used by credential management. */
 	reauthenticationRequired: boolean;
+	/** Account viewing/updates/deletion additionally fall back to TOTP. */
+	accountReauthenticationRequired: boolean;
+	reauthenticationMethod: 'passkey' | 'totp' | null;
+	totpCredentials: { id: string; displayName: string; digits: number }[];
 };
 
 /**
@@ -39,7 +45,19 @@ export const getAccountContext = async (locals: App.Locals): Promise<AccountCont
 	const reauthenticationRequired =
 		hasPasskeys && !isRecentAuthentication(session.passkeyAuthenticatedAt);
 
+	const authenticators = hasPasskeys ? [] : await totpStore.list(user.userId);
+	// An uncertain enrollment must not silently bypass the account's MFA policy.
+	const hasTotp = authenticators.some((row) => row.status !== 'pending');
+	const reauthenticationMethod = hasPasskeys ? 'passkey' : hasTotp ? 'totp' : null;
+	const accountReauthenticationRequired =
+		reauthenticationRequired || (hasTotp && !isRecentAuthentication(session.totpAuthenticatedAt));
+	const totpCredentials = authenticators
+		.filter((row) => row.status === 'active')
+		.map((row) => ({ id: row.authenticatorId, displayName: row.displayName, digits: row.digits }));
 	return {
+		accountReauthenticationRequired,
+		reauthenticationMethod,
+		totpCredentials,
 		_tag: 'AccountContext' as const,
 		user,
 		session,

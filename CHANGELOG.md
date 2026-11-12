@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.0] - 2026-11-24
+
+### Added
+
+- Enroll TOTP authenticators
+- Verify TOTP generated codes
+- Manage authenticators
+- Update the SvelteKit demo app to incorporate TOTP authentication
+
 ## [2.11.1] - 2026-11-10
 
 ### Changed

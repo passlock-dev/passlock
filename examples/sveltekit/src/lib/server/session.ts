@@ -3,7 +3,7 @@
  *
  * The browser stores an opaque session token in a cookie. The server stores a
  * hashed secret plus timestamps that let the sample enforce idle expiry and
- * require a fresh passkey confirmation for sensitive account actions.
+ * require fresh authentication for sensitive account actions.
  */
 
 export const MS_IN_A_DAY = 1000 * 60 * 60 * 24;
@@ -11,7 +11,7 @@ export const SESSION_ID_LENGTH = 24;
 export const SESSION_SECRET_LENGTH = 24;
 export const SESSION_REFRESH_INTERVAL_MS = MS_IN_A_DAY;
 export const SESSION_MAX_INACTIVE_MS = 30 * MS_IN_A_DAY;
-// Sensitive actions require a passkey confirmation within this rolling window.
+// Sensitive actions require the selected factor within this rolling window.
 export const SESSION_PASSKEY_REAUTH_WINDOW_MS = 10 * 60 * 1000;
 
 /**
@@ -29,10 +29,10 @@ export const parseSessionToken = (token: string): { id: string; secret: string }
 };
 
 /**
- * Decide whether the current session has a recent enough passkey confirmation
+ * Decide whether the current session has a recent enough authentication
  * to allow sensitive account updates without prompting again.
  */
-export const isRecentAuthentication = (lastPasskeyAuthentication: number | null): boolean => {
-	if (lastPasskeyAuthentication === null) return false;
-	return Date.now() - lastPasskeyAuthentication < SESSION_PASSKEY_REAUTH_WINDOW_MS;
+export const isRecentAuthentication = (authenticatedAt: number | null): boolean => {
+	if (authenticatedAt === null) return false;
+	return Date.now() - authenticatedAt < SESSION_PASSKEY_REAUTH_WINDOW_MS;
 };

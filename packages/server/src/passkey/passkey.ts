@@ -14,10 +14,11 @@ import {
   FindAllPasskeys as FindAllPasskeysSchema,
   ForbiddenError,
   NotFoundError,
+  UnauthorizedError,
 } from "../schemas/index.js"
 import * as PasskeySchemas from "../schemas/passkey.js"
 import type { satisfy } from "../schemas/satisfy.js"
-import type { AuthenticatedOptions } from "../shared.js"
+import { type AuthenticatedOptions, UnexpectedError } from "../shared.js"
 
 /* Passkey */
 
@@ -1037,3 +1038,97 @@ export const listPasskeys = (
     }),
     Effect.provide(fetchLayer)
   )
+
+/** All remote credentials were deleted. Application account data is managed separately.
+ * @category Passkeys
+ */
+export type UserCredentialsDeleted = { _tag: "UserCredentialsDeleted" }
+
+/** A conflict, transaction size limit, or temporarily unavailable deletion service.
+ * @category Passkeys
+ */
+export class UserCredentialsDeletionError extends Schema.TaggedError<UserCredentialsDeletionError>()(
+  "@error/UserCredentialsDeletion",
+  { message: Schema.String }
+) {}
+
+/**
+ * Permanently delete a user's passkeys and TOTP authenticators together.
+ * Resolve userId from trusted application state. Repeated calls succeed, and
+ * deleted tenancy/user IDs cannot be reused for credential registration.
+ * The backend rejects operations exceeding its transaction size limit without
+ * partial deletion. Device password-manager copies require manual removal.
+ * This does not participate in a transaction with your application's database.
+ * @internal
+ */
+export const deleteUserCredentials = (
+  options: { userId: string },
+  config: AuthenticatedOptions,
+  fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
+): Effect.Effect<
+  UserCredentialsDeleted,
+  BadRequestError | ForbiddenError | UnauthorizedError | UserCredentialsDeletionError
+> =>
+  Effect.gen(function* () {
+    const input = yield* Schema.decodeUnknownEffect(
+      Schema.Struct({
+        userId: Schema.String.check(
+          Schema.makeFilter(
+            (value) =>
+              value.trim().length > 0 &&
+              new TextEncoder().encode(value).length <= 256 &&
+              !/[\p{Cc}\p{Cs}]/u.test(value)
+          )
+        ),
+      })
+    )(options, { onExcessProperty: "error" }).pipe(
+      Effect.mapError(() => new BadRequestError({ message: "Invalid user ID" }))
+    )
+    const url = new URL(
+      `/v2/${encodeURIComponent(config.tenancyId)}/users/credentials`,
+      config.endpoint ?? "https://api.passlock.dev"
+    )
+    url.searchParams.set("userId", input.userId)
+    const response = yield* fetchNetwork(url, "delete", undefined, {
+      headers: authorizationHeaders(config.apiKey),
+      redirect: "error",
+    }).pipe(
+      Effect.catch(() =>
+        Effect.die(
+          new UnexpectedError({ _tag: "@error/Unexpected", message: "Credential deletion failed" })
+        )
+      )
+    )
+    const payload = yield* response.json.pipe(
+      Effect.catch(() =>
+        Effect.die(
+          new UnexpectedError({ _tag: "@error/Unexpected", message: "Credential deletion failed" })
+        )
+      )
+    )
+    if (response.status === 200)
+      return yield* Schema.decodeUnknownEffect(
+        Schema.Struct({ _tag: Schema.Literal("UserCredentialsDeleted") })
+      )(payload).pipe(Effect.orDie)
+    const error = yield* Schema.decodeUnknownEffect(
+      Schema.Union([
+        BadRequestError,
+        ForbiddenError,
+        UnauthorizedError,
+        UserCredentialsDeletionError,
+      ])
+    )(payload).pipe(Effect.orDie)
+    const validStatus =
+      error._tag === "@error/BadRequest"
+        ? response.status === 400
+        : error._tag === "@error/Forbidden"
+          ? response.status === 403
+          : error._tag === "@error/Unauthorized"
+            ? response.status === 401
+            : response.status === 409 || response.status === 503
+    if (!validStatus)
+      return yield* Effect.die(
+        new UnexpectedError({ _tag: "@error/Unexpected", message: "Credential deletion failed" })
+      )
+    return yield* Effect.fail(error)
+  }).pipe(Effect.provide(fetchLayer))

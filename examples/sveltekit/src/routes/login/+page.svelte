@@ -60,13 +60,16 @@
 <DevNotes>
 	<p>We adopt a two-step login flow:</p>
 	<ol class="mt-2 list-inside list-decimal">
-		<li class="mt-2">First we lookup the claimed user id and check if a passkey is associated with the account.</li>
+		<li class="mt-2">
+			First we lookup the claimed user id and check if a passkey is associated with the account.
+		</li>
 		<li class="mt-2">
 			If a passkey is registered we use it for authentication, otherwise we email a single-use code.
 		</li>
 	</ol>
 	<p class="mt-2">
-		<span class="font-semibold">tip:</span> Check out the
+		<span class="font-semibold">tip:</span>
+		Check out the
 
 		<a class="link link-primary" href={resolve('login/autofill')}>Autofill</a>
 

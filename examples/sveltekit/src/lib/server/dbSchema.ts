@@ -47,7 +47,42 @@ export const sessionsTable = sqliteTable(
 		lastVerifiedAt: int().notNull(),
 		// Used to enforce fresh passkey confirmation for sensitive actions.
 		passkeyAuthenticatedAt: int(),
+		// Kept separate so TOTP cannot satisfy a registered passkey requirement.
+		totpAuthenticatedAt: int(),
 		createdAt: int().notNull()
 	},
 	(table) => [index('sessions_user_id_idx').on(table.userId)]
 );
+
+// Public authenticator metadata only. Setup secrets and submitted codes are never stored here.
+export const totpAuthenticatorsTable = sqliteTable(
+	'totp_authenticators',
+	{
+		authenticatorId: text().primaryKey(),
+		userId: int()
+			.notNull()
+			.references(() => usersTable.id, { onDelete: 'cascade' }),
+		enrollmentSessionId: text().notNull(),
+		status: text({ enum: ['pending', 'confirming', 'active'] }).notNull(),
+		displayName: text().notNull(),
+		digits: int().notNull(),
+		expiresAt: int().notNull(),
+		createdAt: int().notNull()
+	},
+	(table) => [index('totp_user_id_idx').on(table.userId)]
+);
+
+// A pending login is not a session. Only its random token hash is stored.
+export const pendingTotpLoginsTable = sqliteTable('pending_totp_logins', {
+	tokenHash: text().primaryKey(),
+	userId: int()
+		.notNull()
+		.unique()
+		.references(() => usersTable.id, { onDelete: 'cascade' }),
+	authenticatorIds: text({ mode: 'json' }).$type<string[]>().notNull(),
+	expiresAt: int().notNull(),
+	attempts: int().notNull().default(0),
+	state: text({ enum: ['ready', 'verifying'] })
+		.notNull()
+		.default('ready')
+});

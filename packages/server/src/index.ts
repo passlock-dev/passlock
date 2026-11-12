@@ -61,6 +61,16 @@
  * @categoryDescription Mailbox
  * Functions and related types for managing mailbox one-time-code challenges.
  *
+ * @categoryDescription TOTP
+ * Enroll an authenticator with {@link createTotpAuthenticator}, then activate it
+ * with {@link confirmTotpAuthenticator}. Use {@link verifyTotp} to check a code
+ * during sign-in. These operations use your application's user ID and a
+ * server-held Passlock API key.
+ *
+ * Expected failures are available in `result.error` when `result.failure` is
+ * `true`. Unexpected transport or service failures reject the promise.
+ * The SDK sends each request once.
+ *
  * @categoryDescription Principal
  * Functions and related types for exchanging browser codes and verifying
  * Passlock tokens.
@@ -122,6 +132,7 @@ import {
   authorizePasskeyAuthentication as authorizePasskeyAuthenticationE,
   authorizePasskeyRegistration as authorizePasskeyRegistrationE,
   deletePasskeys as deletePasskeysE,
+  deleteUserCredentials as deleteUserCredentialsE,
   getPasskey as getPasskeyE,
   listPasskeys as listPasskeysE,
   prunePasskeys as prunePasskeysE,
@@ -135,6 +146,8 @@ import {
 import { type Result, toErrResult, toOkResult } from "./safe-result.js"
 import type { ExtendedPrincipal, Principal } from "./schemas/principal.js"
 import type { AuthenticatedOptions, PasslockOptions } from "./shared.js"
+
+import * as Totp from "./totp/totp.js"
 
 const runSafe = <A extends object, E extends object>(
   effect: Effect.Effect<A, E>
@@ -178,6 +191,64 @@ export class Passlock {
 
   constructor(config: AuthenticatedOptions) {
     this.#config = { ...config }
+  }
+
+  /** Start enrollment and return the pending authenticator and setup material.
+   * See {@link createTotpAuthenticator} for the enrollment flow.
+   * @category TOTP
+   */
+  createTotpAuthenticator(
+    options: Totp.CreateTotpAuthenticatorOptions
+  ): ReturnType<typeof createTotpAuthenticator> {
+    return createTotpAuthenticator(options, this.#config)
+  }
+
+  /** Activate a pending authenticator and consume the confirmation code.
+   * See {@link confirmTotpAuthenticator} for the code requirements.
+   * @category TOTP
+   */
+  confirmTotpAuthenticator(
+    options: Totp.ConfirmTotpAuthenticatorOptions
+  ): ReturnType<typeof confirmTotpAuthenticator> {
+    return confirmTotpAuthenticator(options, this.#config)
+  }
+
+  /** Verify and consume a code for an active authenticator.
+   * See {@link verifyTotp} for how to use the result during sign-in.
+   * @category TOTP
+   */
+  verifyTotp(options: Totp.VerifyTotpOptions): ReturnType<typeof verifyTotp> {
+    return verifyTotp(options, this.#config)
+  }
+
+  /** Fetch an active authenticator or a pending enrollment before its deadline.
+   * See {@link getTotpAuthenticator} for lookup behavior.
+   * @category TOTP
+   */
+  getTotpAuthenticator(
+    options: Totp.GetTotpAuthenticatorOptions
+  ): ReturnType<typeof getTotpAuthenticator> {
+    return getTotpAuthenticator(options, this.#config)
+  }
+
+  /** List a user's active authenticators and unexpired pending enrollments.
+   * See {@link listTotpAuthenticators} for pagination.
+   * @category TOTP
+   */
+  listTotpAuthenticators(
+    options: Totp.ListTotpAuthenticatorsOptions
+  ): ReturnType<typeof listTotpAuthenticators> {
+    return listTotpAuthenticators(options, this.#config)
+  }
+
+  /** Permanently delete an authenticator owned by the specified application user.
+   * See {@link deleteTotpAuthenticator} for deletion behavior.
+   * @category TOTP
+   */
+  deleteTotpAuthenticator(
+    options: Totp.DeleteTotpAuthenticatorOptions
+  ): ReturnType<typeof deleteTotpAuthenticator> {
+    return deleteTotpAuthenticator(options, this.#config)
   }
 
   /**
@@ -344,6 +415,14 @@ export class Passlock {
    */
   updatePasskeys(request: Parameters<typeof updatePasskeys>[0]): ReturnType<typeof updatePasskeys> {
     return updatePasskeys(request, this.#config)
+  }
+
+  /** Permanently delete all remote credentials for an application user.
+   * Deleted user IDs cannot be reused. Local application data and device copies
+   * must be removed separately. See {@link deleteUserCredentials}.
+   */
+  deleteUserCredentials(request: { userId: string }): ReturnType<typeof deleteUserCredentials> {
+    return deleteUserCredentials(request, this.#config)
   }
 
   /**
@@ -876,3 +955,159 @@ export type {
   AuthenticatedOptions,
   PasslockOptions,
 } from "./shared.js"
+
+/** Start enrollment and return a pending authenticator with its one-time {@link TotpSetup}.
+ * Present the setup material to the enrolling user, then pass the returned
+ * authenticator's `id` and the user's code to {@link confirmTotpAuthenticator}.
+ * See {@link CreateTotpAuthenticatorOptions} for settings and defaults.
+ * @param options Enrollment settings and the user ID from trusted application state.
+ * @param config Passlock tenancy, API key and optional custom endpoint.
+ * @returns A Result containing {@link TotpAuthenticatorCreated} or {@link CreateTotpAuthenticatorError}.
+ * @category TOTP
+ */
+export const createTotpAuthenticator = (
+  options: Totp.CreateTotpAuthenticatorOptions,
+  config: AuthenticatedOptions
+): Promise<Result<Totp.TotpAuthenticatorCreated, Totp.CreateTotpAuthenticatorError>> =>
+  runSafe(Totp.createTotpAuthenticator(options, config))
+
+/** Activate a pending authenticator before its enrollment deadline.
+ * A successful confirmation consumes the matching time step. Ask for a fresh
+ * code when subsequently calling {@link verifyTotp}.
+ * @param options Authenticator identity and the user-entered code as a string.
+ * @param config Passlock tenancy, API key and optional custom endpoint.
+ * @returns A Result containing {@link TotpAuthenticatorConfirmed} or {@link ConfirmTotpAuthenticatorError}.
+ * @category TOTP
+ */
+export const confirmTotpAuthenticator = (
+  options: Totp.ConfirmTotpAuthenticatorOptions,
+  config: AuthenticatedOptions
+): Promise<Result<Totp.TotpAuthenticatorConfirmed, Totp.ConfirmTotpAuthenticatorError>> =>
+  runSafe(Totp.confirmTotpAuthenticator(options, config))
+
+/** Verify and consume a code for an active authenticator.
+ * Resolve the user and authenticator IDs from trusted application state. Use
+ * the verification result as part of your application's own sign-in flow.
+ * @param options Authenticator identity and the user-entered code as a string.
+ * @param config Passlock tenancy, API key and optional custom endpoint.
+ * @returns A Result containing {@link TotpVerified} or {@link VerifyTotpError}.
+ * @category TOTP
+ */
+export const verifyTotp = (
+  options: Totp.VerifyTotpOptions,
+  config: AuthenticatedOptions
+): Promise<Result<Totp.TotpVerified, Totp.VerifyTotpError>> =>
+  runSafe(Totp.verifyTotp(options, config))
+
+/** Fetch an active authenticator or an unexpired pending enrollment by ID.
+ * A missing authenticator, an expired enrollment, or an ID outside the supplied
+ * tenancy and user scope yields {@link NotFoundError}.
+ * @param options Authenticator identity scoped to the application user.
+ * @param config Passlock tenancy, API key and optional custom endpoint.
+ * @returns A Result containing {@link TotpAuthenticator} or {@link GetTotpAuthenticatorError}.
+ * @category TOTP
+ */
+export const getTotpAuthenticator = (
+  options: Totp.GetTotpAuthenticatorOptions,
+  config: AuthenticatedOptions
+): Promise<Result<Totp.TotpAuthenticator, Totp.GetTotpAuthenticatorError>> =>
+  runSafe(Totp.getTotpAuthenticator(options, config))
+
+/** List a user's active authenticators and unexpired pending enrollments.
+ * A page can contain zero records and still have a continuation cursor. Pass
+ * that cursor with the same user ID until the response cursor is `null`.
+ * @param options Application user ID and optional continuation cursor.
+ * @param config Passlock tenancy, API key and optional custom endpoint.
+ * @returns A Result containing {@link FindAllTotpAuthenticators} or {@link ListTotpAuthenticatorsError}.
+ * @category TOTP
+ */
+export const listTotpAuthenticators = (
+  options: Totp.ListTotpAuthenticatorsOptions,
+  config: AuthenticatedOptions
+): Promise<Result<Totp.FindAllTotpAuthenticators, Totp.ListTotpAuthenticatorsError>> =>
+  runSafe(Totp.listTotpAuthenticators(options, config))
+
+/** Permanently delete an authenticator owned by the specified application user.
+ * A subsequent delete for the same authenticator returns {@link NotFoundError}.
+ * @param options Authenticator identity scoped to the application user.
+ * @param config Passlock tenancy, API key and optional custom endpoint.
+ * @returns A Result containing {@link TotpAuthenticatorDeleted} or {@link DeleteTotpAuthenticatorError}.
+ * @category TOTP
+ */
+export const deleteTotpAuthenticator = (
+  options: Totp.DeleteTotpAuthenticatorOptions,
+  config: AuthenticatedOptions
+): Promise<Result<Totp.TotpAuthenticatorDeleted, Totp.DeleteTotpAuthenticatorError>> =>
+  runSafe(Totp.deleteTotpAuthenticator(options, config))
+
+export type {
+  InvalidTotpCodeError,
+  TotpAuthenticatorAlreadyActiveError,
+  TotpAuthenticatorLimitError,
+  TotpAuthenticatorNotActiveError,
+  TotpCodeAlreadyUsedError,
+  TotpEnrollmentExpiredError,
+  TotpRateLimitedError,
+} from "./errors.js"
+export {
+  isInvalidTotpCodeError,
+  isTotpAuthenticatorAlreadyActiveError,
+  isTotpAuthenticatorLimitError,
+  isTotpAuthenticatorNotActiveError,
+  isTotpCodeAlreadyUsedError,
+  isTotpEnrollmentExpiredError,
+  isTotpRateLimitedError,
+} from "./errors.js"
+export type {
+  ActiveTotpAuthenticator,
+  ConfirmTotpAuthenticatorError,
+  ConfirmTotpAuthenticatorOptions,
+  CreateTotpAuthenticatorError,
+  CreateTotpAuthenticatorOptions,
+  DeleteTotpAuthenticatorError,
+  DeleteTotpAuthenticatorOptions,
+  FindAllTotpAuthenticators,
+  GetTotpAuthenticatorError,
+  GetTotpAuthenticatorOptions,
+  ListTotpAuthenticatorsError,
+  ListTotpAuthenticatorsOptions,
+  PendingTotpAuthenticator,
+  TotpAuthenticator,
+  TotpAuthenticatorConfirmed,
+  TotpAuthenticatorCreated,
+  TotpAuthenticatorDeleted,
+  TotpAuthenticatorDetails,
+  TotpSetup,
+  TotpVerified,
+  VerifyTotpError,
+  VerifyTotpOptions,
+} from "./totp/totp.js"
+export {
+  isActiveTotpAuthenticator,
+  isFindAllTotpAuthenticators,
+  isPendingTotpAuthenticator,
+  isTotpAuthenticator,
+  isTotpAuthenticatorConfirmed,
+  isTotpAuthenticatorCreated,
+  isTotpAuthenticatorDeleted,
+  isTotpAuthenticatorDetails,
+  isTotpSetup,
+  isTotpVerified,
+} from "./totp/totp.js"
+
+/**
+ * Atomically delete all Passlock passkeys and TOTP authenticators for a user.
+ * Repeated calls succeed. Deleted user IDs cannot be reused for registration.
+ * Requests exceeding the backend transaction limit fail without partial deletion.
+ * Your application's database and device password-manager copies are separate.
+ * @param options Application user ID resolved from trusted server state.
+ * @param config Passlock tenancy, API key and optional endpoint.
+ * @returns A promise resolving to a {@link Result} with {@link UserCredentialsDeleted}
+ * on success. Expected failures are {@link BadRequestError}, {@link ForbiddenError},
+ * {@link UnauthorizedError}, and {@link UserCredentialsDeletionError}.
+ * @category Passkeys
+ */
+export const deleteUserCredentials = (options: { userId: string }, config: AuthenticatedOptions) =>
+  runSafe(deleteUserCredentialsE(options, config))
+
+export { type UserCredentialsDeleted, UserCredentialsDeletionError } from "./passkey/passkey.js"
