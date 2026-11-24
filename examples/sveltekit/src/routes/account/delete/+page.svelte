@@ -1,5 +1,6 @@
 <script lang="ts">
 	import AccountReauthentication from '#lib/components/AccountReauthentication.svelte';
+	import { Passlock } from '@passlock/browser';
 	import { resolve } from '$app/paths';
 	import { reAuthenticateIfNecessary } from '../utils.js';
 	import { superForm } from 'sveltekit-superforms';
@@ -25,12 +26,23 @@
 					errors,
 					validateForm: () => validateForm({ update: true })
 				},
-				() => reauthentication.confirm()
+				() => reauthentication.confirm('delete-account')
 			);
 
 			if (authResult._tag === '@error/ReAuthenticationFailure') {
 				cancel();
 				return;
+			}
+		},
+		onUpdate: async ({ form, result, cancel }) => {
+			if (result.type !== 'success' || !form.message) return;
+			// The session is gone. Finish device signalling before leaving the account page.
+			cancel();
+			try {
+				const passlock = new Passlock({ tenancyId: data.tenancyId, endpoint: data.endpoint });
+				await passlock.deletePasskeys(form.message);
+			} finally {
+				window.location.replace(resolve('/'));
 			}
 		}
 	});
@@ -56,7 +68,8 @@
 				Your local account data and sessions will be removed immediately.
 			{:else}
 				We will delete {passkeyCount} linked {passkeyCount === 1 ? 'passkey' : 'passkeys'}
-				from Passlock. Remove any remaining copies manually from your password manager afterwards.
+				from Passlock and ask your password manager to remove them on this device. You can remove any
+				remaining copies manually.
 			{/if}
 		</p>
 

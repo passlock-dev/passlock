@@ -35,7 +35,10 @@ The browser calls this application's own endpoints; the API key stays on the ser
   and can delete their passkeys while keeping TOTP enabled. A verified,
   user-verified passkey belonging to the account remains an independent sign-in method.
 - Enrollment and management require a full session. Accounts with passkeys also
-  require recent passkey confirmation. Remove TOTP enrollments before deleting the account.
+  require recent passkey confirmation.
+- Account deletion removes the user's passkeys and TOTP enrollments, deletes their local account
+  and sessions, and forwards the Server SDK's deletion response to the browser. The Browser SDK
+  uses that response to ask the device's password manager to remove the deleted passkeys.
 - If you lose your authenticator and have a passkey, sign in with it, open **Authenticators**,
   and remove the lost authenticator. You can enroll and confirm a replacement
   before removing the old one. Removal of the last authenticator turns off the

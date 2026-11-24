@@ -11,7 +11,7 @@
 		{
 			icon: ShieldEllipsis,
 			title: 'TOTP Authenticators',
-			description: "Supports Google Authenticator, Authy and other TOTP based authenticators."
+			description: 'Supports Google Authenticator, Authy and other TOTP based authenticators.'
 		},
 		{
 			icon: Mail,
@@ -21,7 +21,8 @@
 		{
 			icon: Hourglass,
 			title: 'Rate limiting',
-			description: "Rate limiting and other controls to prevent brute force and denial of service attacks."
+			description:
+				'Rate limiting and other controls to prevent brute force and denial of service attacks.'
 		},
 		{
 			icon: Database,
@@ -79,11 +80,20 @@
 							Passkey registration, authentication and management. Support for
 							<a class="text-primary underline" href="https://passlock.dev/passkeys/autofill/">
 								autofill
-							</a>, <a class="text-primary underline" href="https://passlock.dev/passkeys/roaming-authenticators/">
-							  roaming authenticators
-							</a>, <a class="text-primary underline" href="https://passlock.dev/passkeys/credential-updates/">
-							  device management
-							</a>, plus many other features.
+							</a>
+							,
+							<a
+								class="text-primary underline"
+								href="https://passlock.dev/passkeys/roaming-authenticators/">
+								roaming authenticators
+							</a>
+							,
+							<a
+								class="text-primary underline"
+								href="https://passlock.dev/passkeys/credential-updates/">
+								device management
+							</a>
+							, plus many other features.
 						</p>
 					</div>
 				</article>

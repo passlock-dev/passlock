@@ -16,6 +16,7 @@
 	let selected = $state('');
 	let code = $state('');
 	let busy = $state(false);
+	let orphanMessage = $state('');
 	let message = $state('');
 	let retryAt = $state(0);
 	let now = $state(Date.now());
@@ -31,17 +32,19 @@
 
 	/** Recheck server policy every time; TOTP never substitutes for a registered passkey. */
 	let inFlight: Promise<boolean> | undefined;
-	export function confirm(): Promise<boolean> {
+	export function confirm(intent?: 'delete-account'): Promise<boolean> {
 		// Concurrent form submissions share one prompt and cannot replace its resolver.
-		inFlight ??= confirmOnce().finally(() => {
+		inFlight ??= confirmOnce(intent).finally(() => {
 			inFlight = undefined;
 		});
 		return inFlight;
 	}
-	async function confirmOnce(): Promise<boolean> {
+	async function confirmOnce(intent?: 'delete-account'): Promise<boolean> {
 		message = '';
+		orphanMessage = '';
 		try {
-			const response = await fetch(resolve('account/re-authenticate'), {
+			const route = resolve('account/re-authenticate');
+			const response = await fetch(intent ? `${route}?intent=${intent}` : route, {
 				cache: 'no-store',
 				redirect: 'error'
 			});
@@ -60,6 +63,7 @@
 					},
 					config
 				);
+				if (result._tag === '@error/OrphanedPasskey') orphanMessage = result.message;
 				return result._tag === 'PasslockLoginSuccess';
 			}
 			if (status.method !== 'totp') return false;
@@ -107,6 +111,8 @@
 	});
 	onDestroy(() => finish?.(false));
 </script>
+
+{#if orphanMessage}<p role="alert" class="text-sm text-error">{orphanMessage}</p>{/if}
 
 <dialog
 	bind:this={dialog}

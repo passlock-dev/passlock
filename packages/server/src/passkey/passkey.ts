@@ -1042,7 +1042,14 @@ export const listPasskeys = (
 /** All remote credentials were deleted. Application account data is managed separately.
  * @category Passkeys
  */
-export type UserCredentialsDeleted = { _tag: "UserCredentialsDeleted" }
+export type UserCredentialsDeleted = {
+  readonly _tag: "UserCredentialsDeleted"
+  /** WebAuthn signals for the passkeys deleted by this request. Repeated deletions return an empty list. */
+  readonly passkeyDeletionSignals: ReadonlyArray<{
+    readonly rpId: string
+    readonly credentialId: string
+  }>
+}
 
 /** A conflict, transaction size limit, or temporarily unavailable deletion service.
  * @category Passkeys
@@ -1057,11 +1064,11 @@ export class UserCredentialsDeletionError extends Schema.TaggedError<UserCredent
  * Resolve userId from trusted application state. Repeated calls succeed, and
  * deleted tenancy/user IDs cannot be reused for credential registration.
  * The backend rejects operations exceeding its transaction size limit without
- * partial deletion. Device password-manager copies require manual removal.
+ * partial deletion. Forward the successful response to the user’s browser for optional passkey removal.
  * This does not participate in a transaction with your application's database.
  * @internal
  */
-export const deleteUserCredentials = (
+export const deleteUser = (
   options: { userId: string },
   config: AuthenticatedOptions,
   fetchLayer: Layer.Layer<NetworkFetch> = NetworkFetchLive
@@ -1076,6 +1083,8 @@ export const deleteUserCredentials = (
           Schema.makeFilter(
             (value) =>
               value.trim().length > 0 &&
+              value !== "." &&
+              value !== ".." &&
               new TextEncoder().encode(value).length <= 256 &&
               !/[\p{Cc}\p{Cs}]/u.test(value)
           )
@@ -1085,10 +1094,9 @@ export const deleteUserCredentials = (
       Effect.mapError(() => new BadRequestError({ message: "Invalid user ID" }))
     )
     const url = new URL(
-      `/v2/${encodeURIComponent(config.tenancyId)}/users/credentials`,
+      `/v2/${encodeURIComponent(config.tenancyId)}/users/${encodeURIComponent(input.userId)}`,
       config.endpoint ?? "https://api.passlock.dev"
     )
-    url.searchParams.set("userId", input.userId)
     const response = yield* fetchNetwork(url, "delete", undefined, {
       headers: authorizationHeaders(config.apiKey),
       redirect: "error",
@@ -1108,7 +1116,12 @@ export const deleteUserCredentials = (
     )
     if (response.status === 200)
       return yield* Schema.decodeUnknownEffect(
-        Schema.Struct({ _tag: Schema.Literal("UserCredentialsDeleted") })
+        Schema.Struct({
+          _tag: Schema.Literal("UserCredentialsDeleted"),
+          passkeyDeletionSignals: Schema.Array(
+            Schema.Struct({ rpId: Schema.String, credentialId: Schema.String })
+          ).pipe(Schema.withDecodingDefaultKey(Effect.succeed([]))),
+        })
       )(payload).pipe(Effect.orDie)
     const error = yield* Schema.decodeUnknownEffect(
       Schema.Union([

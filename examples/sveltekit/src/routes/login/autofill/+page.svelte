@@ -12,6 +12,7 @@
 	import Link from '#lib/components/Link.svelte';
 
 	let { data }: PageProps = $props();
+	let orphanMessage = $state('');
 	let disabled = $state(false);
 
 	/* can be ignored as superforms uses stores for dynamic state */
@@ -53,7 +54,8 @@
 			await goto(resolve('/'));
 			disabled = false;
 		} else {
-			console.log(result.message);
+			if (result._tag === '@error/OrphanedPasskey') orphanMessage = result.message;
+			else console.log(result.message);
 			disabled = false;
 		}
 	});
@@ -67,12 +69,14 @@
 	<form method="post" use:enhance class="rounded-lg bg-base-200 p-10 pt-8">
 		<h2 class="text-center text-xl font-semibold">Login</h2>
 
+		{#if orphanMessage}<p role="alert" class="mt-3 text-sm text-error">{orphanMessage}</p>{/if}
+
 		<fieldset class="mt-3 fieldset w-xs">
 			<EmailInput
 				{superform}
 				field="email"
 				label="Account email"
-				autocomplete="email webauthn"
+				autocomplete="username webauthn"
 				required
 				{disabled} />
 

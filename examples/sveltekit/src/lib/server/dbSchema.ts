@@ -49,6 +49,7 @@ export const sessionsTable = sqliteTable(
 		passkeyAuthenticatedAt: int(),
 		// Kept separate so TOTP cannot satisfy a registered passkey requirement.
 		totpAuthenticatedAt: int(),
+		accountDeletionAuthorizedAt: int(),
 		createdAt: int().notNull()
 	},
 	(table) => [index('sessions_user_id_idx').on(table.userId)]

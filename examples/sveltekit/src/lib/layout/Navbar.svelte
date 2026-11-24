@@ -27,7 +27,7 @@
 			</div>
 			<ul
 				tabindex="-1"
-				class="menu dropdown-content z-1 mt-3 w-52 menu-sm rounded-box bg-base-100 p-2 shadow">
+				class="dropdown-content menu z-1 mt-3 w-52 menu-sm rounded-box bg-base-100 p-2 shadow">
 				<li><a href={resolve('login')}>Login</a></li>
 				<li><a href={resolve('login/autofill')}>Autofill login</a></li>
 			</ul>
@@ -52,7 +52,7 @@
 				</div>
 				<ul
 					tabindex="-1"
-					class="menu dropdown-content z-1 mt-1 w-52 rounded-box bg-base-200 p-2 shadow-sm group-hover:bg-base-200">
+					class="dropdown-content menu z-1 mt-1 w-52 rounded-box bg-base-200 p-2 shadow-sm group-hover:bg-base-200">
 					<li><a href={resolve('account')}>My Account</a></li>
 					<li><a href={resolve('passkeys')}>My Passkeys</a></li>
 					<li><a href={resolve('account/totp')}>My Authenticators</a></li>

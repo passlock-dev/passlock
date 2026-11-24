@@ -107,6 +107,7 @@ export type Session = {
 	// when the last passkey based authentication took place
 	passkeyAuthenticatedAt: number | null;
 	totpAuthenticatedAt: number | null;
+	accountDeletionAuthorizedAt: number | null;
 };
 
 /**
@@ -472,6 +473,7 @@ export const validateSessionToken = async (
 			lastVerifiedAt: sessionsTable.lastVerifiedAt,
 			passkeyAuthenticatedAt: sessionsTable.passkeyAuthenticatedAt,
 			totpAuthenticatedAt: sessionsTable.totpAuthenticatedAt,
+			accountDeletionAuthorizedAt: sessionsTable.accountDeletionAuthorizedAt,
 			email: usersTable.email,
 			givenName: usersTable.givenName,
 			familyName: usersTable.familyName
@@ -514,6 +516,7 @@ export const validateSessionToken = async (
 			createdAt: row.createdAt,
 			passkeyAuthenticatedAt: row.passkeyAuthenticatedAt,
 			totpAuthenticatedAt: row.totpAuthenticatedAt,
+			accountDeletionAuthorizedAt: row.accountDeletionAuthorizedAt,
 			lastVerifiedAt
 		},
 		user: {
@@ -525,6 +528,19 @@ export const validateSessionToken = async (
 		},
 		fresh
 	};
+};
+
+/** Record an authorized deletion on the initiating session before contacting Passlock. */
+export const recordAccountDeletionAuthorization = async (
+	sessionId: string,
+	userId: number
+): Promise<boolean> => {
+	const [session] = await db
+		.update(sessionsTable)
+		.set({ accountDeletionAuthorizedAt: Date.now() })
+		.where(and(eq(sessionsTable.id, sessionId), eq(sessionsTable.userId, userId)))
+		.returning({ id: sessionsTable.id });
+	return Boolean(session);
 };
 
 /**

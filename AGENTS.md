@@ -95,4 +95,14 @@ Common package-level scripts include; check the target package's `package.json` 
 
 After making code changes, run `pnpm run typecheck` in the affected project.
 
+## Background process management
+
+- Prefer non-interactive, one-shot test commands.
+- Avoid watch mode unless explicitly requested.
+- Check for existing development servers before starting new ones.
+- Track the PIDs and ports of all background processes you start.
+- Terminate all background processes you started before completing a task, unless explicitly requested to leave them running.
+- Never terminate processes belonging to the user or another agent.
+- Report any remaining background processes in your final response.
+
 [effect]: https://effect.website/docs

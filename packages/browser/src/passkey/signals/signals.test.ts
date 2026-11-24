@@ -125,6 +125,42 @@ describe(updatePasskeys.name, () => {
 })
 
 describe(deletePasskeys.name, () => {
+  it("signals every credential in a user deletion response without exchanging a token", async () => {
+    const signalUnknownCredential = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("signal failed"))
+      .mockResolvedValue(undefined)
+    const fetchMock = vi.fn<typeof fetch>()
+    setPublicKeyCredential({ signalUnknownCredential })
+    setFetch(fetchMock)
+    const passkeyDeletionSignals = [
+      { rpId: "localhost", credentialId: "YQ" },
+      { rpId: "login.example", credentialId: "Yg" },
+    ]
+    const result = await pipe(
+      deletePasskeys({ passkeyDeletionSignals }, config),
+      Effect.provideService(Logger, loggerTest),
+      Effect.runPromise
+    )
+    expect(signalUnknownCredential.mock.calls).toEqual(
+      passkeyDeletionSignals.map((signal) => [signal])
+    )
+    expect(result.warnings).toMatchObject([{ code: "BROWSER_SIGNAL_FAILED" }])
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it("accepts an empty user deletion response without signalling or fetching", async () => {
+    const fetchMock = vi.fn<typeof fetch>()
+    setFetch(fetchMock)
+    const result = await pipe(
+      deletePasskeys({ passkeyDeletionSignals: [] }, config),
+      Effect.provideService(Logger, loggerTest),
+      Effect.runPromise
+    )
+    expect(result).toEqual({ _tag: "DeleteSuccess", warnings: [] })
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it("exchanges a deletion token and signals each instruction", async () => {
     const signalUnknownCredential = vi.fn(() => Promise.resolve())
     const fetchMock = vi.fn(() =>

@@ -17,7 +17,12 @@ import {
 	passkeysTable,
 	totpAuthenticatorsTable
 } from './lib/server/dbSchema';
-import { deleteUser, validateSessionToken } from './lib/server/repository';
+import {
+	deleteUser,
+	refreshPasskeyAuthenticatedAt,
+	validateSessionToken
+} from './lib/server/repository';
+import { SESSION_PASSKEY_REAUTH_WINDOW_MS } from './lib/server/session';
 import { readTotpJson, requireTotpActor, totpEndpoint, totpJson } from './lib/server/totpHttp';
 import { TotpSubmission } from './lib/shared/totp';
 import { handle } from './hooks.server';
@@ -27,6 +32,7 @@ import { POST as confirmRoute } from './routes/account/totp/confirm/+server';
 import { POST as removeRoute } from './routes/account/totp/remove/+server';
 import { POST as verifyRoute } from './routes/login/totp/verify/+server';
 import { load as accountLoad } from './routes/account/totp/+page.server';
+import { GET as reauthenticationStatus } from './routes/account/re-authenticate/+server';
 import {
 	SESSION_COOKIE_NAME,
 	TOTP_LOGIN_COOKIE_NAME,
@@ -36,6 +42,10 @@ import {
 // Refuse to touch a developer's database. The test script supplies this explicitly.
 assert.equal(DB_FILE_NAME, 'file::memory:');
 const id = 'abcdefghijklmno';
+const deletedCredentials = {
+	_tag: 'UserCredentialsDeleted' as const,
+	passkeyDeletionSignals: [{ rpId: 'example.test', credentialId: 'Y3JlZGVudGlhbA' }]
+};
 const actor = { userId: 1, sessionId: 'enrollment-session', email: 'one@example.test' };
 const setup = {
 	secret: 'TEST-SETUP-SECRET',
@@ -62,7 +72,7 @@ async function fixture(db = drizzle('file::memory:')) {
     DROP TABLE IF EXISTS pending_totp_logins; DROP TABLE IF EXISTS totp_authenticators;
     DROP TABLE IF EXISTS sessions; DROP TABLE IF EXISTS passkeys; DROP TABLE IF EXISTS users;
     CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, givenName TEXT NOT NULL, familyName TEXT NOT NULL, createdAt INTEGER NOT NULL);
-    CREATE TABLE sessions (id TEXT PRIMARY KEY, userId INTEGER NOT NULL REFERENCES users(id), secretHash TEXT NOT NULL, lastVerifiedAt INTEGER NOT NULL, passkeyAuthenticatedAt INTEGER, totpAuthenticatedAt INTEGER, createdAt INTEGER NOT NULL);
+    CREATE TABLE sessions (id TEXT PRIMARY KEY, userId INTEGER NOT NULL REFERENCES users(id), secretHash TEXT NOT NULL, lastVerifiedAt INTEGER NOT NULL, passkeyAuthenticatedAt INTEGER, totpAuthenticatedAt INTEGER, accountDeletionAuthorizedAt INTEGER, createdAt INTEGER NOT NULL);
     CREATE TABLE passkeys (passkeyId TEXT PRIMARY KEY, userId INTEGER NOT NULL REFERENCES users(id), username TEXT, platformName TEXT, platformIcon TEXT, createdAt INTEGER NOT NULL);
     CREATE TABLE totp_authenticators (authenticatorId TEXT PRIMARY KEY, userId INTEGER NOT NULL REFERENCES users(id), enrollmentSessionId TEXT NOT NULL, status TEXT NOT NULL, displayName TEXT NOT NULL, digits INTEGER NOT NULL, expiresAt INTEGER NOT NULL, createdAt INTEGER NOT NULL);
     CREATE TABLE pending_totp_logins (tokenHash TEXT PRIMARY KEY, userId INTEGER NOT NULL UNIQUE REFERENCES users(id), authenticatorIds TEXT NOT NULL, expiresAt INTEGER NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, state TEXT NOT NULL DEFAULT 'ready');
@@ -399,7 +409,8 @@ await test('pending cookies cannot hydrate a session; management requires fresh 
 			createdAt: Date.now(),
 			lastVerifiedAt: Date.now(),
 			passkeyAuthenticatedAt: null,
-			totpAuthenticatedAt: null
+			totpAuthenticatedAt: null,
+			accountDeletionAuthorizedAt: null
 		}
 	} as App.Locals;
 	assert.equal((await requireTotpActor(event)).userId, 1);
@@ -540,9 +551,7 @@ await test('account deletion removes all local children atomically and preserves
 			database.select().from(pendingTotpLoginsTable)
 		]);
 	const snapshot = await before();
-	const remote = mock.method(Passlock.prototype, 'deleteUserCredentials', async () =>
-		ok({ _tag: 'UserCredentialsDeleted' as const })
-	);
+	const remote = mock.method(Passlock.prototype, 'deleteUser', async () => ok(deletedCredentials));
 	// Force a failure at the final delete, after all children have been removed.
 	await database.$client.execute(
 		`CREATE TRIGGER reject_user_deletion BEFORE DELETE ON users BEGIN SELECT RAISE(ABORT, 'test rollback'); END`
@@ -550,7 +559,7 @@ await test('account deletion removes all local children atomically and preserves
 	await assert.rejects(deleteAccount(1));
 	assert.deepEqual(await before(), snapshot);
 	await database.$client.execute('DROP TRIGGER reject_user_deletion');
-	assert.equal(await deleteAccount(1), true);
+	assert.deepEqual(await deleteAccount(1), deletedCredentials);
 	assert.equal(remote.mock.callCount(), 2);
 	assert.deepEqual(remote.mock.calls[0].arguments, [{ userId: '1' }]);
 	const [users, sessions, passkeys, authenticators, logins] = await before();
@@ -571,10 +580,8 @@ await test('remote account cleanup failure leaves every local record intact', as
 	await f.activate();
 	await f.pending();
 	await database.insert(passkeysTable).values({ userId: 1, passkeyId: 'keep', createdAt: 1 });
-	mock.method(Passlock.prototype, 'deleteUserCredentials', async () =>
-		fail('@error/UserCredentialsDeletion')
-	);
-	assert.equal(await deleteAccount(1), false);
+	mock.method(Passlock.prototype, 'deleteUser', async () => fail('@error/UserCredentialsDeletion'));
+	assert.equal(await deleteAccount(1), null);
 	assert.equal((await database.select().from(usersTable)).length, 2);
 	assert.equal((await database.select().from(passkeysTable)).length, 1);
 	assert.equal((await f.store.list(1)).length, 1);
@@ -593,34 +600,152 @@ await test('account deletion action validates and re-authenticates before touchi
 	await f.pending();
 	await database.insert(passkeysTable).values({ userId: 1, passkeyId: 'passkey', createdAt: 1 });
 	const jar = cookieJar();
-	const remote = mock.method(Passlock.prototype, 'deleteUserCredentials', async () =>
-		ok({ _tag: 'UserCredentialsDeleted' as const })
-	);
+	const remote = mock.method(Passlock.prototype, 'deleteUser', async () => ok(deletedCredentials));
+	const responseHeaders = new Headers();
 	const submit = (intent: string) => {
 		const event = eventFor('/account/delete', jar, locals);
+		event.setHeaders = (headers) => {
+			for (const [name, value] of Object.entries(headers)) responseHeaders.set(name, value);
+		};
 		event.request = new Request(event.url, {
 			method: 'POST',
+			headers: { 'x-sveltekit-action': 'true' },
 			body: new URLSearchParams({ intent })
 		});
 		return deleteAccountActions.default(
 			event as Parameters<typeof deleteAccountActions.default>[0]
 		);
 	};
-	assert.equal((await submit('invalid')).status, 400);
-	assert.equal((await submit('delete-account')).status, 400);
+	for (const intent of ['invalid', 'delete-account']) {
+		const rejected = await submit(intent);
+		assert.ok('status' in rejected);
+		assert.equal(rejected.status, 400);
+		assert.equal(rejected.data.form.message, undefined);
+	}
 	assert.equal(remote.mock.callCount(), 0);
 	assert.equal((await database.select().from(passkeysTable)).length, 1);
 	locals.session.passkeyAuthenticatedAt = Date.now();
-	await assert.rejects(submit('delete-account'), (error: unknown) => {
-		assert.equal((error as { status: number }).status, 303);
-		assert.equal((error as { location: string }).location, '/');
-		return true;
-	});
+	const accepted = await submit('delete-account');
+	assert.ok('form' in accepted);
+	assert.deepEqual(accepted.form.message, deletedCredentials);
+	assert.equal(responseHeaders.get('Cache-Control'), 'no-store');
 	assert.equal(remote.mock.callCount(), 1);
 	assert.equal(jar.values.get(SESSION_COOKIE_NAME), '');
 	assert.deepEqual(await f.store.list(1), []);
 	assert.equal((await database.select().from(pendingTotpLoginsTable)).length, 0);
 	assert.equal((await database.select().from(passkeysTable)).length, 0);
+});
+
+await test('native account deletion signs out and redirects home without device signalling', async ({
+	mock
+}) => {
+	const f = await fixture(database);
+	const login = await f.store.beginEmailLogin(1);
+	assert.equal(login.kind, 'session');
+	const locals = await validateSessionToken(login.token);
+	assert.ok(locals);
+	const jar = cookieJar();
+	const event = eventFor('/account/delete', jar, locals);
+	event.request = new Request(event.url, {
+		method: 'POST',
+		body: new URLSearchParams({ intent: 'delete-account' })
+	});
+	mock.method(Passlock.prototype, 'deleteUser', async () => ok(deletedCredentials));
+	await assert.rejects(
+		deleteAccountActions.default(event as Parameters<typeof deleteAccountActions.default>[0]),
+		{ status: 303, location: '/' }
+	);
+	assert.equal(jar.values.get(SESSION_COOKIE_NAME), '');
+});
+
+await test('account deletion action retries a rolled-back cleanup after re-authentication expires', async ({
+	mock
+}) => {
+	let now = Date.now();
+	mock.method(Date, 'now', () => now);
+	const f = await fixture(database);
+	const login = await f.store.beginEmailLogin(1);
+	const otherLogin = await f.store.beginEmailLogin(1);
+	assert.equal(login.kind, 'session');
+	assert.equal(otherLogin.kind, 'session');
+	await f.activate();
+	await f.pending();
+	await database.insert(passkeysTable).values({ userId: 1, passkeyId: 'passkey', createdAt: now });
+	await refreshPasskeyAuthenticatedAt(login.session.id);
+
+	const jar = cookieJar();
+	jar.values.set(SESSION_COOKIE_NAME, login.token);
+	const eventForSession = async (path: string, token: string) => {
+		const locals = await validateSessionToken(token);
+		assert.ok(locals);
+		return eventFor(path, jar, locals);
+	};
+	const submit = async (token: string) => {
+		const event = await eventForSession('/account/delete', token);
+		event.setHeaders = () => {};
+		event.request = new Request(event.url, {
+			method: 'POST',
+			headers: { 'x-sveltekit-action': 'true' },
+			body: new URLSearchParams({ intent: 'delete-account' })
+		});
+		return deleteAccountActions.default(
+			event as Parameters<typeof deleteAccountActions.default>[0]
+		);
+	};
+	const remote = mock.method(Passlock.prototype, 'deleteUser', async () => ok(deletedCredentials));
+	const alreadyDeleted = { ...deletedCredentials, passkeyDeletionSignals: [] };
+	remote.mock.mockImplementationOnce(async () => ok(alreadyDeleted), 1);
+	await database.$client.execute(
+		`CREATE TRIGGER reject_user_deletion BEFORE DELETE ON users BEGIN SELECT RAISE(ABORT, 'test rollback'); END`
+	);
+	const failed = await submit(login.token);
+	await database.$client.execute('DROP TRIGGER reject_user_deletion');
+	assert.ok('status' in failed);
+	assert.deepEqual(failed.data.form.errors.intent, [
+		'Unable to complete account deletion. Please retry.'
+	]);
+	assert.equal(remote.mock.callCount(), 1);
+	assert.equal((await database.select().from(passkeysTable)).length, 1);
+	assert.equal((await f.store.list(1)).length, 1);
+	assert.equal((await database.select().from(pendingTotpLoginsTable)).length, 1);
+	assert.equal(jar.values.get(SESSION_COOKIE_NAME), login.token);
+
+	now += SESSION_PASSKEY_REAUTH_WINDOW_MS;
+	const readStatus = async (path: string) => {
+		const event = await eventForSession(path, login.token);
+		return (
+			await reauthenticationStatus(event as Parameters<typeof reauthenticationStatus>[0])
+		).json();
+	};
+	const statusPath = '/account/re-authenticate';
+	assert.equal((await readStatus(statusPath)).required, true);
+	const deletionStatus = await readStatus(`${statusPath}?intent=delete-account`);
+	const otherSession = await submit(otherLogin.token);
+	assert.ok('status' in otherSession);
+	assert.equal(otherSession.status, 400);
+	assert.equal(remote.mock.callCount(), 1);
+
+	const retried = await submit(login.token);
+	assert.ok(
+		'form' in retried,
+		'the authorized deletion should resume after re-authentication expires'
+	);
+	assert.equal(deletionStatus.required, false);
+	assert.deepEqual(retried.form.message, alreadyDeleted);
+	assert.deepEqual(
+		remote.mock.calls.map(({ arguments: args }) => args),
+		[[{ userId: '1' }], [{ userId: '1' }]]
+	);
+	assert.equal(jar.values.get(SESSION_COOKIE_NAME), '');
+	assert.equal(await validateSessionToken(login.token), null);
+	assert.equal(await validateSessionToken(otherLogin.token), null);
+	assert.deepEqual(
+		(await database.select().from(usersTable)).map(({ id }) => id),
+		[2]
+	);
+	assert.deepEqual(await database.select().from(passkeysTable), []);
+	assert.deepEqual(await f.store.list(1), []);
+	assert.deepEqual(await database.select().from(pendingTotpLoginsTable), []);
 });
 
 await test('account re-authentication skips absent factors, uses TOTP freshness, and prioritizes passkeys', async () => {
@@ -730,9 +855,7 @@ await test('stale TOTP blocks account updates and deletion before any account mu
 	const locals = await validateSessionToken(login.token);
 	assert.ok(locals);
 	await f.activate();
-	const remote = mock.method(Passlock.prototype, 'deleteUserCredentials', async () =>
-		ok({ _tag: 'UserCredentialsDeleted' as const })
-	);
+	const remote = mock.method(Passlock.prototype, 'deleteUser', async () => ok(deletedCredentials));
 	const event = (body: Record<string, string>) => {
 		const event = eventFor('/account', cookieJar(), locals);
 		event.request = new Request(event.url, { method: 'POST', body: new URLSearchParams(body) });
@@ -749,14 +872,11 @@ await test('stale TOTP blocks account updates and deletion before any account mu
 	assert.ok('status' in emailResult);
 	assert.equal(emailResult.status, 400);
 	const deleteEvent = event({ intent: 'delete-account' });
-	assert.equal(
-		(
-			await deleteAccountActions.default(
-				deleteEvent as Parameters<typeof deleteAccountActions.default>[0]
-			)
-		).status,
-		400
+	const rejected = await deleteAccountActions.default(
+		deleteEvent as Parameters<typeof deleteAccountActions.default>[0]
 	);
+	assert.ok('status' in rejected);
+	assert.equal(rejected.status, 400);
 	assert.equal(remote.mock.callCount(), 0);
 	assert.equal((await database.select().from(usersTable))[0].givenName, 'Example');
 	locals.session.totpAuthenticatedAt = Date.now();

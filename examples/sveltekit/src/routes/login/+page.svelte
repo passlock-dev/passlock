@@ -41,7 +41,7 @@
 		<FormErrors {superform} />
 
 		<fieldset class="mt-3 fieldset w-xs">
-			<EmailInput {superform} field="email" label="Account email" autocomplete="email" required />
+			<EmailInput {superform} field="email" label="Account email" autocomplete="off" required />
 
 			<SubmitButton loading={$delayed} disabled={rateLimitActive}>Continue</SubmitButton>
 		</fieldset>

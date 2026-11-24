@@ -71,12 +71,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 };
 
 /** Account-specific policy; authenticator management retains its existing passkey policy. */
-export const GET: RequestHandler = async ({ locals }) => {
+export const GET: RequestHandler = async ({ locals, url }) => {
 	const context = await getAccountContext(locals);
 	if (!context) return errorResponse('Authentication required.', 401);
 	return json(
 		{
-			required: context.accountReauthenticationRequired,
+			required:
+				url.searchParams.get('intent') === 'delete-account'
+					? context.accountDeletionReauthenticationRequired
+					: context.accountReauthenticationRequired,
 			method: context.reauthenticationMethod,
 			credentials: context.totpCredentials
 		},

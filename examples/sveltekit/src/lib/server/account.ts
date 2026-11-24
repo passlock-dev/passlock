@@ -24,8 +24,10 @@ export type AccountContext = {
 	hasPasskeys: boolean;
 	/** Existing passkey policy used by credential management. */
 	reauthenticationRequired: boolean;
-	/** Account viewing/updates/deletion additionally fall back to TOTP. */
+	/** Account actions additionally fall back to TOTP. */
 	accountReauthenticationRequired: boolean;
+	/** An already authorized deletion can resume on the same session. */
+	accountDeletionReauthenticationRequired: boolean;
 	reauthenticationMethod: 'passkey' | 'totp' | null;
 	totpCredentials: { id: string; displayName: string; digits: number }[];
 };
@@ -56,6 +58,8 @@ export const getAccountContext = async (locals: App.Locals): Promise<AccountCont
 		.map((row) => ({ id: row.authenticatorId, displayName: row.displayName, digits: row.digits }));
 	return {
 		accountReauthenticationRequired,
+		accountDeletionReauthenticationRequired:
+			accountReauthenticationRequired && session.accountDeletionAuthorizedAt === null,
 		reauthenticationMethod,
 		totpCredentials,
 		_tag: 'AccountContext' as const,

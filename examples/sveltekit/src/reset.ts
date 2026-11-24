@@ -1,5 +1,10 @@
 import db from '#lib/server/db.js';
-import { passkeysTable, sessionsTable, usersTable } from '#lib/server/dbSchema.js';
+import {
+	passkeysTable,
+	sessionsTable,
+	totpAuthenticatorsTable,
+	usersTable
+} from '#lib/server/dbSchema.js';
 import { getPasslockConfig } from '#lib/server/passlock.js';
 import { confirm, intro, isCancel, log, outro } from '@clack/prompts';
 import * as PasslockServer from '@passlock/server';
@@ -30,10 +35,34 @@ const deletePasskeys = async (passkeyIds: Array<string>) => {
 	}
 };
 
+const deleteTotpAuthenticators = async () => {
+	const authenticators = await db
+		.select({
+			authenticatorId: totpAuthenticatorsTable.authenticatorId,
+			userId: totpAuthenticatorsTable.userId
+		})
+		.from(totpAuthenticatorsTable);
+
+	for (const { authenticatorId, userId } of authenticators) {
+		const result = await PasslockServer.deleteTotpAuthenticator(
+			{ authenticatorId, userId: String(userId) },
+			getPasslockConfig()
+		);
+		if (result.failure && result._tag !== '@error/NotFound') {
+			log.warn(`Warning: unable to delete TOTP authenticator ${authenticatorId} from Passlock`);
+		}
+	}
+
+	await db.delete(totpAuthenticatorsTable);
+};
+
 const reset = async () => {
 	log.info('Deleting passkeys');
 	const passkeys = await findAllPasskeys();
 	await deletePasskeys(passkeys);
+
+	log.info('Deleting TOTP authenticators');
+	await deleteTotpAuthenticators();
 
 	log.info(`Deleting sessions`);
 	await db.delete(sessionsTable);
@@ -48,7 +77,7 @@ const reset = async () => {
 
 intro(`Reset Example app data`);
 log.warn(
-	'This will delete all data from your local database. \nIt will also remove the relevant passkeys from your Passlock vault'
+	'This will delete all data from your local database. \nIt will also remove the relevant passkeys and TOTP authenticators from your Passlock vault'
 );
 
 const result = await confirm({ message: 'Do you want to continue?' });

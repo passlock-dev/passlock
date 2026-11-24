@@ -101,6 +101,7 @@ import {
 } from "./passkey/registration/registration.js"
 
 import type {
+  DeletedUserPasskeys,
   DeletePasskeysOptions,
   DeleteSuccess,
   PrunePasskeysOptions,
@@ -291,19 +292,19 @@ export const updatePasskeys = (
 }
 
 /**
- * Exchange a prepared deletion token and signal local passkey removals.
+ * Signal local passkey removals on the end user's device.
  *
- * Your backend should first call `deletePasskeys` from `@passlock/server`,
- * return the resulting `deletePasskeysToken` to the browser, then pass that
- * token to this function. The browser exchanges the token for exact
- * WebAuthn signal instructions chosen by your backend.
+ * After deleting a user via REST or the Server SDK, forward the success payload
+ * to that user's browser. Pass it directly to this helper to signal each
+ * credential without another request to Passlock. For individually selected
+ * passkeys, pass the prepared `deletePasskeysToken` from your backend.
  *
  * Unsupported signal APIs and browser-side signal failures are returned as
  * warnings on the success branch. A successful result means the signalling
  * workflow completed or no-op'd; it does not guarantee that a browser or
  * password manager removed local passkeys.
  *
- * @param options Prepared deletion token.
+ * @param options A prepared deletion token or the deletion signals from your backend.
  * @param config Passlock tenancy and API endpoint options.
  * @returns A {@link Result} whose success branch contains an
  * {@link DeleteSuccess} with warnings and whose error branch contains a
@@ -327,7 +328,7 @@ export const updatePasskeys = (
  * @category Passkeys (core)
  */
 export const deletePasskeys = (
-  options: DeletePasskeysOptions,
+  options: DeletePasskeysOptions | DeletedUserPasskeys,
   config: PasslockOptions,
   /** @hidden */
   logger: typeof Logger.Service = eventLogger
@@ -624,20 +625,20 @@ export class Passlock {
   }
 
   /**
-   * Exchange a prepared deletion token and signal local passkey removals.
+   * Signal local passkey removals. Pass the success payload from user deletion
+   * directly to signal each credential without a token exchange. Browser and
+   * password-manager support determines whether the device removes a copy.
    *
-   * The token is prepared by `@passlock/server` after your backend chooses
-   * passkey IDs or a user ID. A successful result means the browser signalling
-   * flow completed or no-op'd, not that local passkeys were definitely removed.
-   *
-   * @param options Prepared deletion token.
+   * @param options A prepared deletion token or the deletion signals from your backend.
    * @returns A {@link Result} whose success branch contains a
    * {@link DeleteSuccess} with warnings and whose error branch contains a
    * {@link DeleteError}.
    *
    * @category Passkeys (core)
    */
-  deletePasskeys(options: DeletePasskeysOptions): Promise<Result<DeleteSuccess, DeleteError>> {
+  deletePasskeys(
+    options: DeletePasskeysOptions | DeletedUserPasskeys
+  ): Promise<Result<DeleteSuccess, DeleteError>> {
     return deletePasskeys(options, this.config)
   }
 
@@ -740,6 +741,7 @@ export {
 } from "./passkey/registration/registration.js"
 export type { UserVerification } from "./passkey/shared.js"
 export type {
+  DeletedUserPasskeys,
   DeletePasskeysOptions,
   DeleteSuccess,
   PasskeyDeletionInstruction,

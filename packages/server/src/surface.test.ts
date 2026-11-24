@@ -55,6 +55,8 @@ describe("public surface", () => {
       | "authorizePasskeyRegistration"
       | "updatePasskeys"
       | "deletePasskeys"
+      | "deleteUser"
+      | "deleteUserCredentials"
       | "prunePasskeys"
       | "getPasskey"
       | "listPasskeys"

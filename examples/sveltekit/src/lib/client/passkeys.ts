@@ -150,9 +150,36 @@ export const authenticatePasskey = async (
 		config
 	);
 
-	// Authentication never left the device, so there is nothing to verify
-	// server-side.
+	// An orphan has no vault record. Offer local cleanup while the SDK error is still live.
 	if (clientResult.failure) {
+		if (PasslockBrowser.isOrphanedPasskeyError(clientResult.error)) {
+			const orphanTag = '@error/OrphanedPasskey';
+			const manual = 'Remove this passkey manually from your password manager.';
+			if (
+				!window.confirm(
+					'This passkey is no longer recognized. Request removal from your password manager?'
+				)
+			) {
+				return {
+					_tag: orphanTag,
+					message: `This passkey is no longer recognized. ${manual}`
+				} as const;
+			}
+
+			try {
+				const cleanup = await PasslockBrowser.deleteOrphanedPasskey(clientResult.error);
+				if (cleanup.success && cleanup.warnings.length === 0) {
+					return {
+						_tag: orphanTag,
+						message: 'Passkey removal requested. Try another sign-in method.'
+					} as const;
+				}
+			} catch {
+				// A browser without the WebAuthn global can reject the cleanup request.
+			}
+			return { _tag: orphanTag, message: `Automatic cleanup was unavailable. ${manual}` } as const;
+		}
+
 		return { _tag: ERROR_TAG, message: clientResult.message } as const;
 	}
 

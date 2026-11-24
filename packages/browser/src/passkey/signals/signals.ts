@@ -16,10 +16,7 @@ import {
  * `PublicKeyCredential.signalUnknownCredential`.
  */
 export const isPasskeyDeleteSupport = Effect.sync(() => {
-  return (
-    PublicKeyCredential?.signalUnknownCredential &&
-    typeof PublicKeyCredential.signalUnknownCredential === "function"
-  )
+  return typeof globalThis.PublicKeyCredential?.signalUnknownCredential === "function"
 })
 
 /**
@@ -169,10 +166,20 @@ export interface DeletePasskeysOptions {
   /**
    * Prepared deletion token returned by `@passlock/server`'s `deletePasskeys`.
    *
-   * The browser helper accepts only this token; passkey selection and deletion
-   * metadata are prepared by your backend.
+   * The browser exchanges this token for the selected passkeys.
    */
   deletePasskeysToken: string
+}
+
+/**
+ * Device signals returned by a successful REST or Server SDK user deletion.
+ * @category Passkeys (core)
+ */
+export interface DeletedUserPasskeys {
+  readonly passkeyDeletionSignals: ReadonlyArray<{
+    readonly rpId: string
+    readonly credentialId: string
+  }>
 }
 
 /**
@@ -605,24 +612,39 @@ export const updatePasskeys = (
   })
 
 /**
- * Exchange a prepared deletion token and signal passkey removals.
+ * Signal passkey removals using a prepared token or the signals from user deletion.
  *
  * The helper checks for `PublicKeyCredential.signalUnknownCredential` support
  * before exchanging the token when it can. Unsupported signalling is returned
  * as a warning on the success payload.
  *
- * @param options Prepared deletion token returned by your backend.
+ * @param options A prepared token or the passkey deletion signals returned by your backend.
  * @param config Passlock tenancy and API endpoint options.
  * @returns An Effect that resolves with a {@link DeleteSuccess}.
  *
  * @category Passkeys (core)
  */
 export const deletePasskeys = (
-  options: DeletePasskeysOptions,
+  options: DeletePasskeysOptions | DeletedUserPasskeys,
   config: PasslockOptions
 ): Effect.Effect<DeleteSuccess, DeleteError, Logger> =>
   Effect.gen(function* () {
     const logger = yield* Effect.service(Logger)
+
+    if ("passkeyDeletionSignals" in options) {
+      const signals = options.passkeyDeletionSignals
+      if (
+        !Array.isArray(signals) ||
+        !signals.every(
+          (signal) => typeof signal?.rpId === "string" && typeof signal?.credentialId === "string"
+        )
+      ) {
+        return yield* Effect.fail(
+          new DeleteError({ code: "OTHER_ERROR", message: "Invalid passkey deletion signals" })
+        )
+      }
+      if (signals.length === 0) return { _tag: "DeleteSuccess", warnings: [] } as const
+    }
 
     yield* logger.logInfo("Testing for local passkey removal support")
     const canDelete = yield* isPasskeyDeleteSupport
@@ -633,11 +655,12 @@ export const deletePasskeys = (
       } as const
     }
 
-    yield* logger.logInfo("Exchanging passkey deletion token")
-    const exchange = yield* pipe(
-      exchangeDeleteToken(options, config),
-      Effect.mapError((error) => toDeleteError(error))
-    )
+    const exchange =
+      "passkeyDeletionSignals" in options
+        ? { instructions: options.passkeyDeletionSignals, warnings: [] }
+        : yield* exchangeDeleteToken(options, config).pipe(
+            Effect.mapError((error) => toDeleteError(error))
+          )
 
     const warnings = [...exchange.warnings]
     if (exchange.instructions.length === 0) {

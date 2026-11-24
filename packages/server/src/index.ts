@@ -132,7 +132,7 @@ import {
   authorizePasskeyAuthentication as authorizePasskeyAuthenticationE,
   authorizePasskeyRegistration as authorizePasskeyRegistrationE,
   deletePasskeys as deletePasskeysE,
-  deleteUserCredentials as deleteUserCredentialsE,
+  deleteUser as deleteUserE,
   getPasskey as getPasskeyE,
   listPasskeys as listPasskeysE,
   prunePasskeys as prunePasskeysE,
@@ -418,11 +418,16 @@ export class Passlock {
   }
 
   /** Permanently delete all remote credentials for an application user.
-   * Deleted user IDs cannot be reused. Local application data and device copies
-   * must be removed separately. See {@link deleteUserCredentials}.
+   * Deleted user IDs cannot be reused. Forward the success payload to the user’s browser
+   * for best-effort passkey removal. See {@link deleteUser}.
    */
-  deleteUserCredentials(request: { userId: string }): ReturnType<typeof deleteUserCredentials> {
-    return deleteUserCredentials(request, this.#config)
+  deleteUser(request: { userId: string }): ReturnType<typeof deleteUser> {
+    return deleteUser(request, this.#config)
+  }
+
+  /** @deprecated Use {@link Passlock.deleteUser} instead. */
+  deleteUserCredentials(request: { userId: string }): ReturnType<typeof deleteUser> {
+    return this.deleteUser(request)
   }
 
   /**
@@ -1099,7 +1104,9 @@ export {
  * Atomically delete all Passlock passkeys and TOTP authenticators for a user.
  * Repeated calls succeed. Deleted user IDs cannot be reused for registration.
  * Requests exceeding the backend transaction limit fail without partial deletion.
- * Your application's database and device password-manager copies are separate.
+ * Your application manages its own account records. Forward the success payload
+ * to the affected user’s browser and pass it to the Browser SDK’s `deletePasskeys`
+ * method to signal local passkey removal. Repeated calls return an empty signal list.
  * @param options Application user ID resolved from trusted server state.
  * @param config Passlock tenancy, API key and optional endpoint.
  * @returns A promise resolving to a {@link Result} with {@link UserCredentialsDeleted}
@@ -1107,7 +1114,13 @@ export {
  * {@link UnauthorizedError}, and {@link UserCredentialsDeletionError}.
  * @category Passkeys
  */
-export const deleteUserCredentials = (options: { userId: string }, config: AuthenticatedOptions) =>
-  runSafe(deleteUserCredentialsE(options, config))
+export const deleteUser = (options: { userId: string }, config: AuthenticatedOptions) =>
+  runSafe(deleteUserE(options, config))
+
+/**
+ * @deprecated Use {@link deleteUser} instead.
+ * @category Passkeys
+ */
+export const deleteUserCredentials = deleteUser
 
 export { type UserCredentialsDeleted, UserCredentialsDeletionError } from "./passkey/passkey.js"

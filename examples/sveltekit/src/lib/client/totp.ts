@@ -54,6 +54,7 @@ export const confirmTotpAccess = async (config: PasslockClientConfig): Promise<s
 			},
 			config
 		);
+		if (result._tag === '@error/OrphanedPasskey') return result.message;
 		return result._tag === 'PasslockLoginSuccess'
 			? null
 			: 'Confirm your passkey before changing authenticators.';

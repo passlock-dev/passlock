@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `@passlock/server` adds `deleteUser` as a standalone function and `Passlock` method. Both call `DELETE /v2/{tenancyId}/users/{userId}`, with the user ID encoded as a single path segment. The operation atomically deletes passkeys, TOTP authenticators, and pending, unexpired mailbox challenges linked to the user. It returns passkey deletion signals for the Browser SDK and queues historical cleanup.
+
+### Deprecated
+
+- Replace `passlock.deleteUserCredentials({ userId })` with `passlock.deleteUser({ userId })`, or `deleteUserCredentials({ userId }, config)` with `deleteUser({ userId }, config)`. After upgrading the SDK, the deprecated aliases also use the new endpoint. Direct REST callers must migrate from `DELETE /v2/{tenancyId}/users/credentials?userId=...` to the new path because the revised API rejects the old URL.
+
+### Fixed
+
+- Sveltekit example now handles [orphaned passkeys][missing-passkeys]
+
 ## [2.12.0] - 2026-11-24
 
 ### Added
@@ -315,3 +327,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   If you have assigned a `userId` to one or more passkeys, you can now use the `deleteUserPasskeys` function to delete all passkeys associated with that `userId`. This is useful for account closure scenarios.
 
   Note: `deleteUserPasskeys` is available in the `@passlock/client` and `@passlock/server` packages and can be used to delete passkeys in your Passlock vault and also from local devices/browsers.
+
+[missing-passkeys]: https://passlock.dev/passkeys/handling-missing-passkeys
