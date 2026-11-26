@@ -8,7 +8,7 @@
  */
 
 import { DrizzleQueryError } from 'drizzle-orm/errors';
-import { and, count, desc, eq } from 'drizzle-orm';
+import { and, count, desc, eq, isNull } from 'drizzle-orm';
 import { LibsqlError } from '@libsql/client';
 import db from './db';
 import {
@@ -107,7 +107,7 @@ export type Session = {
 	// when the last passkey based authentication took place
 	passkeyAuthenticatedAt: number | null;
 	totpAuthenticatedAt: number | null;
-	accountDeletionAuthorizedAt: number | null;
+	accountDeletionRetryAt: number | null;
 };
 
 /**
@@ -473,7 +473,7 @@ export const validateSessionToken = async (
 			lastVerifiedAt: sessionsTable.lastVerifiedAt,
 			passkeyAuthenticatedAt: sessionsTable.passkeyAuthenticatedAt,
 			totpAuthenticatedAt: sessionsTable.totpAuthenticatedAt,
-			accountDeletionAuthorizedAt: sessionsTable.accountDeletionAuthorizedAt,
+			accountDeletionRetryAt: sessionsTable.accountDeletionRetryAt,
 			email: usersTable.email,
 			givenName: usersTable.givenName,
 			familyName: usersTable.familyName
@@ -516,7 +516,7 @@ export const validateSessionToken = async (
 			createdAt: row.createdAt,
 			passkeyAuthenticatedAt: row.passkeyAuthenticatedAt,
 			totpAuthenticatedAt: row.totpAuthenticatedAt,
-			accountDeletionAuthorizedAt: row.accountDeletionAuthorizedAt,
+			accountDeletionRetryAt: row.accountDeletionRetryAt,
 			lastVerifiedAt
 		},
 		user: {
@@ -530,17 +530,47 @@ export const validateSessionToken = async (
 	};
 };
 
-/** Record an authorized deletion on the initiating session before contacting Passlock. */
-export const recordAccountDeletionAuthorization = async (
-	sessionId: string,
-	userId: number
-): Promise<boolean> => {
-	const [session] = await db
+const ACCOUNT_DELETION_ATTEMPT_LEASE_MS = 60_000;
+
+/** Persist authorization before calling Passlock and give one request time to finish. */
+export const beginAccountDeletionAttempt = async (session: Session): Promise<number | null> => {
+	const now = Date.now();
+	const { accountDeletionRetryAt: previousRetryAt } = session;
+	if (previousRetryAt !== null && previousRetryAt > now) return null;
+
+	const leaseExpiresAt = now + ACCOUNT_DELETION_ATTEMPT_LEASE_MS;
+	const [claimed] = await db
 		.update(sessionsTable)
-		.set({ accountDeletionAuthorizedAt: Date.now() })
-		.where(and(eq(sessionsTable.id, sessionId), eq(sessionsTable.userId, userId)))
+		.set({ accountDeletionRetryAt: leaseExpiresAt })
+		.where(
+			and(
+				eq(sessionsTable.id, session.id),
+				eq(sessionsTable.userId, session.userId),
+				previousRetryAt === null
+					? isNull(sessionsTable.accountDeletionRetryAt)
+					: eq(sessionsTable.accountDeletionRetryAt, previousRetryAt)
+			)
+		)
 		.returning({ id: sessionsTable.id });
-	return Boolean(session);
+	return claimed ? leaseExpiresAt : null;
+};
+
+/** A definite rejection restores the prior authorization. Other outcomes allow immediate retry. */
+export const finishAccountDeletionAttempt = async (
+	session: Session,
+	leaseExpiresAt: number,
+	remoteRejected: boolean
+): Promise<void> => {
+	await db
+		.update(sessionsTable)
+		.set({ accountDeletionRetryAt: remoteRejected ? session.accountDeletionRetryAt : Date.now() })
+		.where(
+			and(
+				eq(sessionsTable.id, session.id),
+				eq(sessionsTable.userId, session.userId),
+				eq(sessionsTable.accountDeletionRetryAt, leaseExpiresAt)
+			)
+		);
 };
 
 /**

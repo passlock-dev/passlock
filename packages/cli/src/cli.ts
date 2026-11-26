@@ -1,45 +1,18 @@
 #!/usr/bin/env node
 
-/*
- * Originally built using @effect/cli but kept hitting
- * peer resolution issues. This might get easier with
- * Effect v4 so we might go back to cli later.
- */
-import { Console, Data, Effect, pipe } from "effect"
+import { existsSync, realpathSync } from "node:fs"
+import * as NodeRuntime from "@effect/platform-node/NodeRuntime"
+import * as NodeServices from "@effect/platform-node/NodeServices"
+import { Console, Data, Effect, Schema } from "effect"
+import { CliConfig, CliError, CliOutput, Command, Flag, GlobalFlag } from "effect/cli"
 import { init } from "./init.js"
-import { type NetworkFetch, NetworkFetchLive } from "./network.js"
+import { NetworkFetchLive } from "./network.js"
 
 const VERSION = "#{VERSION}#"
 const DEFAULT_ENDPOINT = "https://api.passlock.dev"
+const DESCRIPTION = "Passlock CLI tools"
 
-const MAIN_HELP_TEXT = [
-  "Passlock CLI tools",
-  "",
-  "Usage:",
-  "  passlock [command] [options]",
-  "",
-  "Commands:",
-  "  init              Setup a new Passlock cloud instance",
-  "",
-  "Options:",
-  "  -h, --help        Show this help message",
-  "  -v, --version     Show the current version",
-  "",
-  "Run 'passlock init --help' for command-specific options.",
-].join("\n")
-
-const INIT_HELP_TEXT = [
-  "Setup a new Passlock cloud instance",
-  "",
-  "Usage:",
-  "  passlock init [options]",
-  "",
-  "Options:",
-  "  -e, --endpoint <url>  Passlock API endpoint",
-  `                       (default: ${DEFAULT_ENDPOINT})`,
-  "  -h, --help            Show this help message",
-].join("\n")
-
+// Preserve the parser exports for callers that import the package.
 export type ParsedCommand =
   | { readonly _tag: "show-main" }
   | { readonly _tag: "show-main-help" }
@@ -139,36 +112,47 @@ export const parseArgs = (
     })
   })
 
-const runCommand = (command: ParsedCommand): Effect.Effect<void, never, NetworkFetch> =>
-  pipe(command, (parsed) => {
-    switch (parsed._tag) {
-      case "show-main":
-        return Console.log("Passlock CLI tools\nRun with --help for commands and options")
-      case "show-main-help":
-        return Console.log(MAIN_HELP_TEXT)
-      case "show-init-help":
-        return Console.log(INIT_HELP_TEXT)
-      case "show-version":
-        return Console.log(VERSION)
-      case "run-init":
-        return init(parsed.endpoint)
-    }
-  })
-
-const program = pipe(
-  parseArgs(process.argv.slice(2)),
-  Effect.flatMap(runCommand),
-  Effect.catchTag("@error/CliParse", ({ message }) =>
-    pipe(
-      Console.error(message),
-      Effect.andThen(Console.log("Run 'passlock --help' for usage.")),
-      Effect.andThen(
-        Effect.sync(() => {
-          process.exitCode = 1
-        })
-      )
-    )
-  )
+const endpoint = Flag.String("endpoint").pipe(
+  Flag.withAlias("e"),
+  Flag.withMetavar("url"),
+  Flag.withDescription(`Passlock API endpoint (default: ${DEFAULT_ENDPOINT})`),
+  Flag.withSchema(Schema.NonEmptyString),
+  // The last occurrence wins when users repeat the flag.
+  Flag.atLeast(0),
+  Flag.map((values) => values.at(-1) ?? DEFAULT_ENDPOINT)
 )
 
-;(async () => pipe(program, Effect.provide(NetworkFetchLive), Effect.runPromise))()
+const initCommand = Command.make("init", { endpoint }, ({ endpoint }) => init(endpoint)).pipe(
+  Command.withDescription("Set up a new Passlock cloud instance")
+)
+
+const passlock = Command.make("passlock", {}, () =>
+  Console.log(`${DESCRIPTION}\nRun with --help for commands and options`)
+).pipe(Command.withDescription(DESCRIPTION), Command.withSubcommands([initCommand]))
+
+const cliConfig = CliConfig.layer({ builtIns: [GlobalFlag.Help, GlobalFlag.Version] })
+const cliOutput = CliOutput.layerPresenter({
+  present: (event) =>
+    event._tag === "Version"
+      ? Console.log(event.version)
+      : CliOutput.defaultPresenter.present(event),
+})
+
+const isMain =
+  import.meta.main ??
+  (process.argv[1] !== undefined &&
+    existsSync(process.argv[1]) &&
+    realpathSync(process.argv[1]) === import.meta.filename)
+
+if (isMain) {
+  passlock.pipe(
+    Command.run({ version: VERSION }),
+    Effect.provide([NodeServices.layer, NetworkFetchLive, cliConfig, cliOutput]),
+    Effect.catchIf(CliError.isCliError, () =>
+      Effect.sync(() => {
+        process.exitCode = 1
+      })
+    ),
+    NodeRuntime.runMain
+  )
+}

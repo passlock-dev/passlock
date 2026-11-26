@@ -59,7 +59,7 @@ export const getAccountContext = async (locals: App.Locals): Promise<AccountCont
 	return {
 		accountReauthenticationRequired,
 		accountDeletionReauthenticationRequired:
-			accountReauthenticationRequired && session.accountDeletionAuthorizedAt === null,
+			accountReauthenticationRequired && session.accountDeletionRetryAt === null,
 		reauthenticationMethod,
 		totpCredentials,
 		_tag: 'AccountContext' as const,

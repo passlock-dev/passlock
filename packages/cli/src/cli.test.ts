@@ -1,6 +1,45 @@
+import { spawnSync } from "node:child_process"
+import { fileURLToPath } from "node:url"
+import { stripVTControlCharacters } from "node:util"
 import { describe, expect, it } from "@effect/vitest"
 import { Effect } from "effect"
 import { parseArgs, parseInitArgs } from "./cli.js"
+
+describe("passlock executable", () => {
+  const entry = fileURLToPath(new URL("./cli.ts", import.meta.url))
+  const run = (...args: string[]) =>
+    spawnSync(process.execPath, ["--import", "tsx", entry, ...args], {
+      encoding: "utf8",
+      timeout: 5_000,
+    })
+
+  it("prints a hint and succeeds with no arguments", () => {
+    const result = run()
+    expect(result.status).toBe(0)
+    expect(result.stdout).toContain("Run with --help for commands and options")
+  })
+
+  it.each(["-v", "--version"])("prints only the version for %s", (flag) => {
+    const result = run(flag)
+    expect(result.status).toBe(0)
+    expect(result.stdout.trim()).toBe("#{VERSION}#")
+  })
+
+  it("shows the endpoint option and its default in init help", () => {
+    const result = run("init", "--help")
+    expect(result.status).toBe(0)
+    const help = stripVTControlCharacters(result.stdout)
+    expect(help).toContain("--endpoint, -e")
+    expect(help).toContain("https://api.passlock.dev")
+  })
+
+  it.each(["-e", "--endpoint="])("exits with an error for init %s", (flag) => {
+    const result = run("init", flag)
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain("--endpoint")
+    expect(result.stderr).not.toContain("ShowHelp")
+  })
+})
 
 describe("parseArgs", () => {
   describe("when parsed []", () => {

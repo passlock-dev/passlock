@@ -3,7 +3,10 @@ import type { Actions, PageServerLoad } from './$types';
 import { requireAccountContext } from '#lib/server/account.js';
 import { getPasslockClientConfig } from '#lib/server/passkeys.js';
 import { deleteSessionTokenCookie } from '#lib/server/cookies.js';
-import { recordAccountDeletionAuthorization } from '#lib/server/repository.js';
+import {
+	beginAccountDeletionAttempt,
+	finishAccountDeletionAttempt
+} from '#lib/server/repository.js';
 import type { UserCredentialsDeleted } from '@passlock/server';
 import type { InferOutput } from 'valibot';
 import { fail, redirect } from '@sveltejs/kit';
@@ -46,17 +49,23 @@ export const actions = {
 		}
 
 		try {
-			// Save authorization before Passlock can remove the factors needed to confirm again.
-			if (
-				session.accountDeletionAuthorizedAt === null &&
-				!(await recordAccountDeletionAuthorization(session.id, user.userId))
-			) {
-				return setError(form, '', 'Your session expired. Sign in again to delete your account.');
+			const leaseExpiresAt = await beginAccountDeletionAttempt(session);
+			if (leaseExpiresAt === null) {
+				return setError(form, '', 'Unable to start account deletion. Please retry.');
 			}
-			const deletion = await deleteAccount(user.userId);
-			if (!deletion)
-				return setError(form, 'intent', 'Unable to delete this account. Please retry.');
-			form.message = deletion;
+			let remoteRejected = false;
+			try {
+				const deletion = await deleteAccount(user.userId);
+				// The SDK returns typed errors for pre-commit rejections. Unknown outcomes throw.
+				remoteRejected = deletion?.failure === true;
+				if (!deletion?.success)
+					return setError(form, 'intent', 'Unable to delete this account. Please retry.');
+				form.message = deletion.value;
+			} finally {
+				if (!form.message) {
+					await finishAccountDeletionAttempt(session, leaseExpiresAt, remoteRejected);
+				}
+			}
 		} catch {
 			return setError(form, 'intent', 'Unable to complete account deletion. Please retry.');
 		}

@@ -32,7 +32,7 @@ in README.template.md and outputs to README.md
 
 ## Requirements
 
-Node 20+
+Node 22.19 or later
 
 ## Usage
 

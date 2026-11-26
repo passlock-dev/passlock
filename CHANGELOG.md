@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.13.0] - 2026-11-26
+
 ### Added
 
 - `@passlock/server` adds `deleteUser` as a standalone function and `Passlock` method. Both call `DELETE /v2/{tenancyId}/users/{userId}`, with the user ID encoded as a single path segment. The operation atomically deletes passkeys, TOTP authenticators, and pending, unexpired mailbox challenges linked to the user. It returns passkey deletion signals for the Browser SDK and queues historical cleanup.
@@ -14,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 
 - Replace `passlock.deleteUserCredentials({ userId })` with `passlock.deleteUser({ userId })`, or `deleteUserCredentials({ userId }, config)` with `deleteUser({ userId }, config)`. After upgrading the SDK, the deprecated aliases also use the new endpoint. Direct REST callers must migrate from `DELETE /v2/{tenancyId}/users/credentials?userId=...` to the new path because the revised API rejects the old URL.
+
+### Refactored
+
+- `@passlock/cli` now uses effect/cli under the hood.
 
 ### Fixed
 

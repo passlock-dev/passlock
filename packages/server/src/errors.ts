@@ -24,7 +24,7 @@ const isTagged =
 /**
  * Error payload returned when a request is not authenticated.
  *
- * @category Authentication
+ * @category Common
  */
 export type UnauthorizedError = {
   _tag: "@error/Unauthorized"
@@ -34,7 +34,7 @@ export type UnauthorizedError = {
 /**
  * Type guard for {@link UnauthorizedError}.
  *
- * @category Authentication
+ * @category Common
  */
 export const isUnauthorizedError = isTagged<UnauthorizedError>("@error/Unauthorized")
 
@@ -44,7 +44,7 @@ export const isUnauthorizedError = isTagged<UnauthorizedError>("@error/Unauthori
  * Error payload returned when the API key or tenancy is not permitted to
  * perform the requested action.
  *
- * @category Authentication
+ * @category Common
  */
 export type ForbiddenError = {
   _tag: "@error/Forbidden"
@@ -54,7 +54,7 @@ export type ForbiddenError = {
 /**
  * Type guard for {@link ForbiddenError}.
  *
- * @category Authentication
+ * @category Common
  */
 export const isForbiddenError = isTagged<ForbiddenError>("@error/Forbidden")
 
@@ -205,7 +205,7 @@ export const isVerificationError = isTagged<VerificationError>("@error/Verificat
 /**
  * Error payload returned when the supplied tenancy identifier is invalid.
  *
- * @category Authentication
+ * @category Common
  */
 export type InvalidTenancyError = {
   _tag: "@error/InvalidTenancy"
@@ -215,7 +215,7 @@ export type InvalidTenancyError = {
 /**
  * Type guard for {@link InvalidTenancyError}.
  *
- * @category Authentication
+ * @category Common
  */
 export const isInvalidTenancyError = isTagged<InvalidTenancyError>("@error/InvalidTenancy")
 

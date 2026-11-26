@@ -410,7 +410,7 @@ await test('pending cookies cannot hydrate a session; management requires fresh 
 			lastVerifiedAt: Date.now(),
 			passkeyAuthenticatedAt: null,
 			totpAuthenticatedAt: null,
-			accountDeletionAuthorizedAt: null
+			accountDeletionRetryAt: null
 		}
 	} as App.Locals;
 	assert.equal((await requireTotpActor(event)).userId, 1);
@@ -559,7 +559,7 @@ await test('account deletion removes all local children atomically and preserves
 	await assert.rejects(deleteAccount(1));
 	assert.deepEqual(await before(), snapshot);
 	await database.$client.execute('DROP TRIGGER reject_user_deletion');
-	assert.deepEqual(await deleteAccount(1), deletedCredentials);
+	assert.deepEqual(await deleteAccount(1), ok(deletedCredentials));
 	assert.equal(remote.mock.callCount(), 2);
 	assert.deepEqual(remote.mock.calls[0].arguments, [{ userId: '1' }]);
 	const [users, sessions, passkeys, authenticators, logins] = await before();
@@ -581,7 +581,7 @@ await test('remote account cleanup failure leaves every local record intact', as
 	await f.pending();
 	await database.insert(passkeysTable).values({ userId: 1, passkeyId: 'keep', createdAt: 1 });
 	mock.method(Passlock.prototype, 'deleteUser', async () => fail('@error/UserCredentialsDeletion'));
-	assert.equal(await deleteAccount(1), null);
+	assert.deepEqual(await deleteAccount(1), fail('@error/UserCredentialsDeletion'));
 	assert.equal((await database.select().from(usersTable)).length, 2);
 	assert.equal((await database.select().from(passkeysTable)).length, 1);
 	assert.equal((await f.store.list(1)).length, 1);
@@ -656,6 +656,65 @@ await test('native account deletion signs out and redirects home without device 
 		{ status: 303, location: '/' }
 	);
 	assert.equal(jar.values.get(SESSION_COOKIE_NAME), '');
+});
+
+await test('account deletion requires fresh re-authentication after a Passlock 409', async ({
+	mock
+}) => {
+	let now = Date.now();
+	mock.method(Date, 'now', () => now);
+	const f = await fixture(database);
+	const login = await f.store.beginEmailLogin(1);
+	assert.equal(login.kind, 'session');
+	await database.insert(passkeysTable).values({ userId: 1, passkeyId: 'passkey', createdAt: now });
+	await refreshPasskeyAuthenticatedAt(login.session.id);
+
+	const remote = mock.method(Passlock.prototype, 'deleteUser', async () => ok(deletedCredentials));
+	const jar = cookieJar();
+	jar.values.set(SESSION_COOKIE_NAME, login.token);
+	const submit = async () => {
+		const locals = await validateSessionToken(login.token);
+		assert.ok(locals);
+		const event = eventFor('/account/delete', jar, locals);
+		event.setHeaders = () => {};
+		event.request = new Request(event.url, {
+			method: 'POST',
+			headers: { 'x-sveltekit-action': 'true' },
+			body: new URLSearchParams({ intent: 'delete-account' })
+		});
+		return deleteAccountActions.default(
+			event as Parameters<typeof deleteAccountActions.default>[0]
+		);
+	};
+	remote.mock.mockImplementationOnce(async () => {
+		const duplicate = await submit();
+		assert.ok('status' in duplicate);
+		assert.equal(remote.mock.callCount(), 1);
+		// The Server SDK returns this typed failure for a 409 response.
+		return fail('@error/UserCredentialsDeletion');
+	});
+
+	const conflict = await submit();
+	assert.ok('status' in conflict);
+	assert.deepEqual(conflict.data.form.errors.intent, [
+		'Unable to delete this account. Please retry.'
+	]);
+	assert.equal(jar.values.get(SESSION_COOKIE_NAME), login.token);
+	assert.equal((await database.select().from(passkeysTable)).length, 1);
+
+	now += SESSION_PASSKEY_REAUTH_WINDOW_MS;
+	const retry = await submit();
+	assert.ok('status' in retry);
+	assert.deepEqual(retry.data.form.errors._errors, [
+		'Confirm your identity before deleting your account.'
+	]);
+	assert.equal(remote.mock.callCount(), 1);
+
+	await refreshPasskeyAuthenticatedAt(login.session.id);
+	const confirmed = await submit();
+	assert.ok('form' in confirmed);
+	assert.deepEqual(confirmed.form.message, deletedCredentials);
+	assert.equal(remote.mock.callCount(), 2);
 });
 
 await test('account deletion action retries a rolled-back cleanup after re-authentication expires', async ({

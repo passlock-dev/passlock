@@ -46,9 +46,6 @@
  * @categoryDescription Clients
  * Class based API. Pass the Passlock config to the constructor.
  *
- * @categoryDescription Authentication
- * Error payloads related to API keys, tenancy access, and token validation.
- *
  * @categoryDescription Common
  * Cross-cutting payloads shared across multiple feature areas.
  *
@@ -420,12 +417,17 @@ export class Passlock {
   /** Permanently delete all remote credentials for an application user.
    * Deleted user IDs cannot be reused. Forward the success payload to the user’s browser
    * for best-effort passkey removal. See {@link deleteUser}.
+   *
+   * @category Users
    */
   deleteUser(request: { userId: string }): ReturnType<typeof deleteUser> {
     return deleteUser(request, this.#config)
   }
 
-  /** @deprecated Use {@link Passlock.deleteUser} instead. */
+  /** @deprecated Use {@link Passlock.deleteUser} instead.
+   *
+   * @category Users
+   */
   deleteUserCredentials(request: { userId: string }): ReturnType<typeof deleteUser> {
     return this.deleteUser(request)
   }
@@ -1112,7 +1114,7 @@ export {
  * @returns A promise resolving to a {@link Result} with {@link UserCredentialsDeleted}
  * on success. Expected failures are {@link BadRequestError}, {@link ForbiddenError},
  * {@link UnauthorizedError}, and {@link UserCredentialsDeletionError}.
- * @category Passkeys
+ * @category Users
  */
 export const deleteUser = (options: { userId: string }, config: AuthenticatedOptions) =>
   runSafe(deleteUserE(options, config))

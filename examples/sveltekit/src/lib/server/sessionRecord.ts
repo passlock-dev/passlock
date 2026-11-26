@@ -36,7 +36,7 @@ export const createSessionRecord = async (
 			lastVerifiedAt: now,
 			passkeyAuthenticatedAt,
 			totpAuthenticatedAt,
-			accountDeletionAuthorizedAt: null
+			accountDeletionRetryAt: null
 		}
 	};
 };

@@ -1,4 +1,4 @@
-import { Passlock, type UserCredentialsDeleted } from '@passlock/server';
+import { Passlock } from '@passlock/server';
 import { getPasslockConfig } from './passlock';
 import { deleteUser } from './repository';
 
@@ -7,9 +7,9 @@ import { deleteUser } from './repository';
  * These stores cannot share an ACID transaction. If local cleanup fails after
  * remote success, the idempotent remote operation lets a retry finish cleanup.
  */
-export const deleteAccount = async (userId: number): Promise<UserCredentialsDeleted | null> => {
+export const deleteAccount = async (userId: number) => {
 	const sdk = new Passlock(getPasslockConfig());
 	const result = await sdk.deleteUser({ userId: String(userId) });
-	if (result.failure || !(await deleteUser(userId))) return null;
-	return result.value;
+	if (result.failure) return result;
+	return (await deleteUser(userId)) ? result : null;
 };
